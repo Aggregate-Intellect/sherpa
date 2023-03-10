@@ -1,7 +1,7 @@
 # Practical Large Language Models: What can you do with LLMs at home?
 This repo contains material and information from the workshop run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). We will continue adding material to this repository, but feel free to add any questions or suggestions through pull requests or through reporting issues. 
 
-# Table of Contents
+**Table of Contents**
 ![Table of Contents](https://github.com/Aggregate-Intellect/practical-llms/blob/main/Peek%202023-03-10%2007-59.gif)
 
 ---
