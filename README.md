@@ -105,6 +105,7 @@ _Material_
 - [Sentiment Spin: Attacking Financial Sentiment with GPT-3](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4337182)
 - [Is ChatGPT a General-Purpose Natural Language Processing Task Solver?](https://arxiv.org/abs/2302.06476)
 - [Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165)
+- [Transformers learn in-context by gradient descent](https://arxiv.org/abs/2212.07677)
 - [News Summarization and Evaluation in the Era of GPT-3](https://arxiv.org/abs/2209.12356)
 - [Benchmarking Large Language Models for News Summarization](https://arxiv.org/abs/2301.13848)
 - [BIG-Bench - Beyond the Imitation Game Benchmark](https://github.com/google/BIG-bench/)
