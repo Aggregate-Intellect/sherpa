@@ -12,19 +12,19 @@ DevOps and ModelOps have transformed software development over the past two deca
 
 **Twitter Thread Summary of the Talk:**
 
-1/13: #KnowledgeOps is about managing an organization's or community’s knowledge assets and processes to enable reuse and collaboration. #DevOps and #ModelOps (#MLOps) are specific examples that help develop software faster and with lower chances of failure.
-2/13: #ShiftingLeft and #CI/CD are important #DevOps concepts that bring testing and quality assurance to the beginning of the software development process and provide tools to automate them for consistency and repeatability.
-3/13: Although automation has improved many parts of the development process, the step of discovering and planning is still largely manual, requiring continuous communication and collaboration with teammates, which creates a single point of failure.
-4/13: #ModelOps (e.g., #MLOps) has allowed for the automation of data and model handling, but the manual interpretation and decision-making steps are still present. #Automation
-5/13: Generative AI can help us shift further left into the exploration, planning, and coding steps, significantly improving our ability to explore options and conduct experiments. #GenerativeAI #SoftwareDevelopment
-6/13: There will eventually be more automation in our problem-solving processes, but in the meantime, tools built with generative AI will significantly augment our ability for interpretation and decision-making in ensuring the success of the development of complex software systems. #MachineLearning #AI
-7/13: Emerging tools for thinking allow for a more experimental approach to knowledge-intensive work, allowing for continuous hypothesis generation and experimentation leading to CE/CI/CD. #ContinuousExploration #ContinuousIntegration #ContinuousDelivery
-8/13: There is a trend towards interfacing generative copilots, retrieval systems, and other knowledge-intensive systems to create thinking machines with memory and reasoning skills. #GenerativeAI #RetrievalSystems #Reasoning
-9/13: Language models are essential for these tools because they need to interpret users’ instructions usually provided in natural language, communicate results, and facilitate human-human communication. #LanguageModels #Communication
-10/13: Language models can give us the ability to articulate and communicate complex ideas effectively to stakeholders and team members enabling more efficient problem solving in communities and organizations. #LanguageModels #Communication
-11/13: The biggest barriers to implementing #KnowledgeOps are cultural problems. The biggest challenge is to make knowledge architects reusable within an enterprise connected to knowledge bases of all teams. #CulturalProblems
-12/13: #GPT can be used as the language skill layer, primarily doing NLU and NLG activities. Smaller versions of GPT trained on internal knowledge can be built to avoid privacy and access issues. #NaturalLanguageUnderstanding #NaturalLanguageGeneration
-13/13: Large language models are enabling us to interface with tools that can reason and model the world around us without the barrier of coding and formal language.This can accelerate #KnowledgeOps to the point where no idea is too expensive to try. #Automation
+- 1/13: #KnowledgeOps is about managing an organization's or community’s knowledge assets and processes to enable reuse and collaboration. #DevOps and #ModelOps (#MLOps) are specific examples that help develop software faster and with lower chances of failure.
+- 2/13: #ShiftingLeft and #CI/CD are important #DevOps concepts that bring testing and quality assurance to the beginning of the software development process and provide tools to automate them for consistency and repeatability.
+- 3/13: Although automation has improved many parts of the development process, the step of discovering and planning is still largely manual, requiring continuous communication and collaboration with teammates, which creates a single point of failure.
+- 4/13: #ModelOps (e.g., #MLOps) has allowed for the automation of data and model handling, but the manual interpretation and decision-making steps are still present. #Automation
+- 5/13: Generative AI can help us shift further left into the exploration, planning, and coding steps, significantly improving our ability to explore options and conduct experiments. #GenerativeAI #SoftwareDevelopment
+- 6/13: There will eventually be more automation in our problem-solving processes, but in the meantime, tools built with generative AI will significantly augment our ability for interpretation and decision-making in ensuring the success of the development of complex software systems. #MachineLearning #AI
+- 7/13: Emerging tools for thinking allow for a more experimental approach to knowledge-intensive work, allowing for continuous hypothesis generation and experimentation leading to CE/CI/CD. #ContinuousExploration #ContinuousIntegration #ContinuousDelivery
+- 8/13: There is a trend towards interfacing generative copilots, retrieval systems, and other knowledge-intensive systems to create thinking machines with memory and reasoning skills. #GenerativeAI #RetrievalSystems #Reasoning
+- 9/13: Language models are essential for these tools because they need to interpret users’ instructions usually provided in natural language, communicate results, and facilitate human-human communication. #LanguageModels #Communication
+- 10/13: Language models can give us the ability to articulate and communicate complex ideas effectively to stakeholders and team members enabling more efficient problem solving in communities and organizations. #LanguageModels #Communication
+- 11/13: The biggest barriers to implementing #KnowledgeOps are cultural problems. The biggest challenge is to make knowledge architects reusable within an enterprise connected to knowledge bases of all teams. #CulturalProblems
+- 12/13: #GPT can be used as the language skill layer, primarily doing NLU and NLG activities. Smaller versions of GPT trained on internal knowledge can be built to avoid privacy and access issues. #NaturalLanguageUnderstanding #NaturalLanguageGeneration
+- 13/13: Large language models are enabling us to interface with tools that can reason and model the world around us without the barrier of coding and formal language.This can accelerate #KnowledgeOps to the point where no idea is too expensive to try. #Automation
 
 [Amir Feizpour](https://www.linkedin.com/in/amirfzpr/) (CEO @ Aggregate Intellect)
 
