@@ -67,6 +67,10 @@ Large language models (LLMs) have the potential to perform a wide range of tasks
 
 _Material_
 - RLPrompt: Optimizing Discrete Text Prompts with Reinforcement Learning [blog](https://blog.ml.cmu.edu/2023/02/24/rlprompt-optimizing-discrete-text-prompts-with-reinforcement-learning/) | [paper](https://arxiv.org/abs/2205.12548) | [code](https://github.com/mingkaid/rl-prompt)
+- [Prefix-Tuning: Optimizing Continuous Prompts for Generation](https://arxiv.org/abs/2101.00190)
+- [Making Pre-trained Language Models Better Few-shot Learners](https://aclanthology.org/2021.acl-long.295.pdf)
+- [Prompt Waywardness: The Curious Case of Discretized Interpretation of Continuous Prompts](https://arxiv.org/abs/2112.08348)
+- [A Recipe For Arbitrary Text Style Transfer with Large Language Models](https://arxiv.org/abs/2109.03910)
 
 [Mingkai Deng](https://www.linkedin.com/in/mingkaideng/) (PhD Student @ CMU)
 
@@ -81,6 +85,11 @@ In this talk, Josh, an ML expert with experience commercializing NLP-powered ser
 [Josh Seltzer](https://www.linkedin.com/in/josh-seltzer/) (CTO @ Nexxt Intelligence)
 
 Josh is the CTO at Nexxt Intelligence, where he leads R&D on LLMs and NLP to build innovative solutions for the market research industry. He also works in biodiversity and applications of AI for conservation.
+
+_Material_
+- [Which Model Shall I Choose? Cost/Quality Trade-offs for Text Classification Tasks](https://arxiv.org/abs/2301.07006)
+- [Canada Government Business Benefits Finder](https://innovation.ised-isde.canada.ca/innovation/s/?language=en_CA)
+- [Understanding UK Artificial Intelligence R&D commercialisation and the role of standards](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1079959/DCMS_and_OAI_-_Understanding_UK_Artificial_Intelligence_R_D_commercialisation__accessible.pdf)
 
 ---
 
