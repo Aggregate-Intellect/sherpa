@@ -10,7 +10,7 @@ TIP: Follow the gif below to find the **Table of Contents** on the top left corn
 
 DevOps and ModelOps have transformed software development over the past two decades, but now we are seeing a further shift left with the rise of KnowledgeOps. This new era leverages tools to augment our problem-solving, planning, and critical thinking abilities, enabling us to tackle highly complex knowledge work with greater efficiency and effectiveness. KnowledgeOps promises to enhance our ability to experiment with a wider range of ideas and select the most impactful ones, similar to the benefits seen in DevOps and related methodologies.
 
-**SLIDES ???** | **RECORDING ???**
+SLIDES ??? | RECORDING ???
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
