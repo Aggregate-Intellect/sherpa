@@ -10,7 +10,9 @@ TIP: Follow the gif below to find the **Table of Contents** on the top left corn
 
 DevOps and ModelOps have transformed software development over the past two decades, but now we are seeing a further shift left with the rise of KnowledgeOps. This new era leverages tools to augment our problem-solving, planning, and critical thinking abilities, enabling us to tackle highly complex knowledge work with greater efficiency and effectiveness. KnowledgeOps promises to enhance our ability to experiment with a wider range of ideas and select the most impactful ones, similar to the benefits seen in DevOps and related methodologies.
 
-**Twitter Thread Summary of the Talk:**
+**SLIDES ???** | **RECORDING ???**
+
+**TWITTER THREAD SUMMARY OF THE TALK:**
 
 - 1/14: #KnowledgeOps is about managing an organization's or community’s knowledge assets and processes to enable reuse and collaboration. #DevOps and #ModelOps (#MLOps) are specific examples that help develop software faster and with lower chances of failure.
 - 2/14: #ShiftingLeft and #CI/CD are important #DevOps concepts that bring testing and quality assurance to the beginning of the software development process and provide tools to automate them for consistency and repeatability.
@@ -27,9 +29,11 @@ DevOps and ModelOps have transformed software development over the past two deca
 - 13/14: Adoption of #LLM enabled thinking tools will start in smaller companies, and with improvements in corporate culture and maturing technology, we will see bigger companies joining the movement. 
 - 14/14: With these tools being able to talk to us, remember our context, and reason about the world around us without the barriers of coding and formal language, we can accelerate #KnowledgeOps to the point where no idea is too expensive to try. #Automation
 
-[Amir Feizpour](https://www.linkedin.com/in/amirfzpr/) (CEO @ Aggregate Intellect)
+### Amir Feizpour (CEO @ Aggregate Intellect)
 
-Amir is the co-founder of Aggregate Intellect ([https://ai.science/](https://ai.science/)), a Smart Knowledge Navigator platform for R&D teams in emerging technologies like AI. Prior to this, Amir was an NLP Product Lead at Royal Bank of Canada, and held a postdoctoral position at University of Oxford conducting research on experimental quantum computing. Amir holds a PhD in Physics from University of Toronto.
+[Amir](https://www.linkedin.com/in/amirfzpr/) is the co-founder of Aggregate Intellect ([https://ai.science/](https://ai.science/)), a Smart Knowledge Navigator platform for R&D teams in emerging technologies like AI. Prior to this, Amir was an NLP Product Lead at Royal Bank of Canada, and held a postdoctoral position at University of Oxford conducting research on experimental quantum computing. Amir holds a PhD in Physics from University of Toronto.
+
+#### CTA: ???
 
 ---
 
