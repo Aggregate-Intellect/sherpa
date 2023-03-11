@@ -121,7 +121,7 @@ Large Language Models (LLMs) have dramatically changed our expectations for AI. 
 * Interfacing LLMs and other Enterprise Systems 
     * 6/14: LLMs can be decision-makers, but it's crucial to set them up for success by combining them with other tools. For instance, for a math question LLM could be set up to call a calculator and then show the result to prevent it from giving the wrong answer with confidence.
     * 7/14: Large Language Models can enhance information retrieval by combining classic data / knowledge bases with LLMs to provide more accurate and human-readable responses to queries. For example, LLMs were used to retrieve information on how to install Transformers from Huggingface documentation with citation to resource.
-* Topic 5: Choosing and Keeping Up with LLMs
+* Choosing and Keeping Up with LLMs
     * 8/14: Choosing the right LLM depends on the specific use case, and there are various options available with different licensing requirements and costs.
     * 9/14: When choosing an LLM, consider factors like availability, cost, and accuracy for the specific task at hand. Open source models like Hugging Face can provide a wide variety of models and tools leveraging the collective knowledge of the community.
     * 10/14: The field of LLMs is evolving rapidly. Staying up to date on the latest developments and trends is crucial to make the most of this technology. Keep learning to keep improving!
