@@ -88,11 +88,50 @@ _Resources_
 
 ---
 
+## Integrating LLMs into Your Product: Considerations and Best Practices
+
+The proliferation of ChatGPT and other large language models has resulted in an explosion of LLM-based projects and startups. While these models can provide impressive initial demos, integrating them into a product requires careful consideration and planning. This talk will cover key considerations for creating, testing, and optimizing prompts for LLMs, as well as how to run analytics on key user metrics to ensure success.
+
+_Material_
+- [Talk Slides](https://pitch.com/public/7fce9d3f-fec7-40f5-9273-99ff1655a4e8)
+- [Prompt Engineering Guide](https://github.com/dair-ai/Prompt-Engineering-Guide)
+- [How GPT3 Works - Visualizations and Animations](https://jalammar.github.io/how-gpt3-works-visualizations-animations/)
+- [Open AI Product](https://openai.com/product)
+
+[Denys Linkov](https://www.linkedin.com/in/denyslinkov/) (ML Lead @ Voiceflow)
+
+Denys is the ML lead at Voiceflow focused on building the ML platform and data science offerings. His focus is on realtime NLP systems that help Voiceflow’s 60+ enterprise customers build better conversational assistants. Previously he worked at large bank as a senior cloud architect.
+
+---
+
 ## Incorporating Large Language Models into Enterprise Analytics: Navigating the Landscape of In-Context Learning and Agents
 
 Large Language Models (LLMs) have dramatically changed our expectations for AI. While a few innovators are building proof-of-concept projects using APIs, most enterprise analytic teams still need to figure out how to incorporate LLMs into their analytical toolbox. Rajiv shows the necessity of understanding the growth of "in-context learning" and agents. With these insights, he explains how LLMs will shape enterprise analytics. Along the way, he covers many practical factors, such as the different providers of LLMs, resource costs, and ethical issues.
 
-_Material_
+[SLIDES](#) | [RECORDING](#)
+
+**TWITTER THREAD SUMMARY OF THE TALK:**
+
+* Advantages and Use Cases of Large Language Models
+    * 1/14: NLP use cases in the enterprise primarily focus on text classification, summarization, question answering, and embeddings. Large language models like GPT-3 and ChatGPT can transform how enterprises approach these tasks. 
+    * 2/14: LLMs offer advantages over traditional NLP models, such as better performance in classification and language generation for use cases like financial sentiment analysis and customer service bots.
+    * 3/14: To leverage LLMs in enterprise workflows, companies can start by exploring pre-trained models, fine-tuning them on their data. However, LLMs are general-purpose models and adding domain-specific information might be challenging. Using dedicated models for certain tasks, combined with LLMs can be more efficient and cost-effective.
+    * 4/14: LLMs can connect previously siloed domains in an enterprise, allowing for more efficient and natural language searches across multiple domains. This makes it easier to access relevant information and insights from different parts of the organization.
+    * 5/14: The UI is just as important as the model in solving business problems. Therefore, it's essential to focus on UI/UX design in addition to developing models. While models can add new capabilities, the user interface plays a critical role in presenting them in a valuable way.
+* Interfacing LLMs and other Enterprise Systems 
+    * 6/14: LLMs can be decision-makers, but it's crucial to set them up for success by combining them with other tools. For instance, for a math question LLM could be set up to call a calculator and then show the result to prevent it from giving the wrong answer with confidence.
+    * 7/14: Large Language Models can enhance information retrieval by combining classic data / knowledge bases with LLMs to provide more accurate and human-readable responses to queries. For example, LLMs were used to retrieve information on how to install Transformers from Huggingface documentation with citation to resource.
+* Topic 5: Choosing and Keeping Up with LLMs
+    * 8/14: Choosing the right LLM depends on the specific use case, and there are various options available with different licensing requirements and costs.
+    * 9/14: When choosing an LLM, consider factors like availability, cost, and accuracy for the specific task at hand. Open source models like Hugging Face can provide a wide variety of models and tools leveraging the collective knowledge of the community.
+    * 10/14: The field of LLMs is evolving rapidly. Staying up to date on the latest developments and trends is crucial to make the most of this technology. Keep learning to keep improving!
+    * 11/14: For those looking to learn AI, OpenAI Sandbox and Hugging Face Spaces are excellent starting points. OpenAI Sandbox provides templates and examples for learning AI, while Hugging Face is a useful resource for natural language processing. LangChain and LlamaIndex are also good examples to get started.
+* Democratization and Ethical Considerations in AI
+    * 12/14: The democratization of AI is crucial for its widespread adoption. Co-pilots and natural language interfaces are enabling more people to experiment with AI, even those without a technical background. Lowering the barriers to entry for AI can have a significant impact on the democratization of AI.
+    * 13/14: Ethical considerations are essential in the development and deployment of AI. It's crucial to include diverse voices in the design and decision-making processes, educate users on the potential dangers of generative AI, and consider the ethical implications of AI.
+    * 14/14: Bias is a significant challenge in AI. Historic data used for training models can perpetuate biases and historical injustices. Therefore, it's crucial to be aware of these biases and work towards minimizing their impact.
+
+_Resources_
 - [Talk Slides](https://github.com/Aggregate-Intellect/practical-llms/blob/main/Enterprise_LLMs_Shah.pdf)
 - [Sentiment Spin: Attacking Financial Sentiment with GPT-3](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4337182)
 - [Is ChatGPT a General-Purpose Natural Language Processing Task Solver?](https://arxiv.org/abs/2302.06476)
@@ -108,25 +147,21 @@ _Material_
 - [The CEO’s Guide to the Generative AI Revolution](https://www.bcg.com/publications/2023/ceo-guide-to-ai-revolution)
 - [A New Era of Creativity: Expert-in-the-loop Generative AI](https://multithreaded.stitchfix.com/blog/2023/03/06/expert-in-the-loop-generative-ai-at-stitch-fix/)
 
-[Rajiv Shah](https://www.linkedin.com/in/rajistics/) (MLE @ Huggingface)
+## Rajiv Shah (MLE @ Huggingface)
 
-Rajiv is a machine learning engineer at Hugging Face, whose primary focus is on enabling enterprise teams to succeed with AI. He is a widely recognized speaker on enterprise AI and was part of data science teams at Snorkel AI, Caterpillar, and State Farm.
+[Rajiv](https://www.linkedin.com/in/rajistics/) is a machine learning engineer at Hugging Face, whose primary focus is on enabling enterprise teams to succeed with AI. He is a widely recognized speaker on enterprise AI and was part of data science teams at Snorkel AI, Caterpillar, and State Farm.
+
+#### CTA: ???
 
 ---
 
-## Integrating LLMs into Your Product: Considerations and Best Practices
+## Generative AI: Ethics and Accessibility
 
-The proliferation of ChatGPT and other large language models has resulted in an explosion of LLM-based projects and startups. While these models can provide impressive initial demos, integrating them into a product requires careful consideration and planning. This talk will cover key considerations for creating, testing, and optimizing prompts for LLMs, as well as how to run analytics on key user metrics to ensure success.
+Generative AI has made impressive advances in creating music, art, and even virtual worlds that were once thought to be exclusively the domain of human creators. However, with such power comes great responsibility, and we must be mindful of the ethical implications of our creations. In this session, we will explore the intersection of generative AI, ethics, and accessibility. We will examine ethical considerations related to bias, transparency, and ownership, as well as the challenges of making generative AI accessible to individuals with disabilities and those from underrepresented communities.
 
-_Material_
-- [Talk Slides](https://pitch.com/public/7fce9d3f-fec7-40f5-9273-99ff1655a4e8)
-- [Prompt Engineering Guide](https://github.com/dair-ai/Prompt-Engineering-Guide)
-- [How GPT3 Works - Visualizations and Animations](https://jalammar.github.io/how-gpt3-works-visualizations-animations/)
-- [Open AI Product](https://openai.com/product)
+[Noelle Russell](https://www.linkedin.com/in/noelleai/) (Global AI Solutions Lead @ Accenture)
 
-[Denys Linkov](https://www.linkedin.com/in/denyslinkov/) (ML Lead @ Voiceflow)
-
-Denys is the ML lead at Voiceflow focused on building the ML platform and data science offerings. His focus is on realtime NLP systems that help Voiceflow’s 60+ enterprise customers build better conversational assistants. Previously he worked at large bank as a senior cloud architect.
+Noelle Silver Russell is a multi-award-winning technologist and entrepreneur who specializes in advising companies on emerging technology, generative AI and LLMs. She is the Global AI Solutions Lead as well as the Global Industry Lead for Generative AI at Accenture. She has led teams at NPR, Microsoft, IBM, and Amazon Alexa, and is a consistent champion for AI literacy and the ethical use of AI based on her work building some of the largest AI models in the world. She is the founder of AI Leadership Institute and she was recently awarded the Microsoft Most Valuable Professional award for Artificial Intelligence as well as VentureBeat’s Women in AI Responsibility and Ethics award.
 
 ---
 
@@ -176,16 +211,6 @@ _Material_
 [Mingkai Deng](https://www.linkedin.com/in/mingkaideng/) (PhD Student @ CMU)
 
 Mingkai Deng is a PhD student at Carnegie Mellon University working at the intersection of machine learning, computer vision, and natural language processing. Prior to that, he was a data scientist who led award-winning projects and built analytics products that serve multiple Fortune 500 clients.
-
----
-
-## Generative AI: Ethics and Accessibility
-
-Generative AI has made impressive advances in creating music, art, and even virtual worlds that were once thought to be exclusively the domain of human creators. However, with such power comes great responsibility, and we must be mindful of the ethical implications of our creations. In this session, we will explore the intersection of generative AI, ethics, and accessibility. We will examine ethical considerations related to bias, transparency, and ownership, as well as the challenges of making generative AI accessible to individuals with disabilities and those from underrepresented communities.
-
-[Noelle Russell](https://www.linkedin.com/in/noelleai/) (Global AI Solutions Lead @ Accenture)
-
-Noelle Silver Russell is a multi-award-winning technologist and entrepreneur who specializes in advising companies on emerging technology, generative AI and LLMs. She is the Global AI Solutions Lead as well as the Global Industry Lead for Generative AI at Accenture. She has led teams at NPR, Microsoft, IBM, and Amazon Alexa, and is a consistent champion for AI literacy and the ethical use of AI based on her work building some of the largest AI models in the world. She is the founder of AI Leadership Institute and she was recently awarded the Microsoft Most Valuable Professional award for Artificial Intelligence as well as VentureBeat’s Women in AI Responsibility and Ethics award.
 
 ---
 
