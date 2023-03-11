@@ -14,20 +14,23 @@ DevOps and ModelOps have transformed software development over the past two deca
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
-- 1/14: #KnowledgeOps is about managing an organization's or community’s knowledge assets and processes to enable reuse and collaboration. #DevOps and #ModelOps (#MLOps) are specific examples that help develop software faster and with lower chances of failure.
-- 2/14: #ShiftingLeft and #CI/CD are important #DevOps concepts that bring testing and quality assurance to the beginning of the software development process and provide tools to automate them for consistency and repeatability.
-- 3/14: Although automation has improved many parts of the development process, the step of discovering and planning is still largely manual, requiring continuous communication and collaboration with teammates, which creates a single point of failure.
-- 4/14: #ModelOps (e.g., #MLOps) has allowed for the automation of data and model handling, but the manual interpretation and decision-making steps are still present. #Automation
-- 5/14: Generative AI can help us shift further left into the exploration, planning, and coding steps, significantly improving our ability to explore options and conduct experiments. #GenerativeAI #SoftwareDevelopment
-- 6/14: There will eventually be more automation in our problem-solving processes, but in the meantime, tools built with generative AI will significantly augment our ability for interpretation and decision-making in ensuring the success of the development of complex software systems. #MachineLearning #AI
-- 7/14: Emerging tools for thinking allow for a more experimental approach to knowledge-intensive work, allowing for continuous hypothesis generation and experimentation leading to CE/CI/CD. #ContinuousExploration #ContinuousIntegration #ContinuousDelivery
-- 8/14: There is a trend towards interfacing generative copilots, retrieval systems, and other knowledge-intensive systems to create thinking machines with memory and reasoning skills. #GenerativeAI #RetrievalSystems #Reasoning
-- 9/14: Language models are essential for these tools because they need to interpret users’ instructions usually provided in natural language, communicate results, and facilitate human-human communication. #LanguageModels #Communication
-- 10/14: Language models can give us the ability to articulate and communicate complex ideas effectively to stakeholders and team members enabling more efficient problem solving in communities and organizations. #LanguageModels #Communication
-- 11/14: In bigger companies, beyond technology, the biggest barriers to implementing #KnowledgeOps are cultural problems; eg. political reasons that prevent a unified and integrated knowledge and expertise system connected to knowledge bases of all teams across the enterprise. #CulturalProblems
-- 12/14: Since all #GPT can reliably provide in short term is the language skill, primarily NLU/NLG, smaller language models trained on internal knowledge can be built to avoid privacy and data access issues. #NaturalLanguageUnderstanding #NaturalLanguageGeneration
-- 13/14: Adoption of #LLM enabled thinking tools will start in smaller companies, and with improvements in corporate culture and maturing technology, we will see bigger companies joining the movement. 
-- 14/14: With these tools being able to talk to us, remember our context, and reason about the world around us without the barriers of coding and formal language, we can accelerate #KnowledgeOps to the point where no idea is too expensive to try. #Automation
+- KnowledgeOps and Development Processes
+    - 1/14: #KnowledgeOps is about managing an organization's or community’s knowledge assets and processes to enable reuse and collaboration. #DevOps and #ModelOps (#MLOps) are specific examples that help develop software faster and with lower chances of failure.
+    - 2/14: #ShiftingLeft and #CI/CD are important #DevOps concepts that bring testing and quality assurance to the beginning of the software development process and provide tools to automate them for consistency and repeatability.
+    - 3/14: Although automation has improved many parts of the development process, the step of discovering and planning is still largely manual, requiring continuous communication and collaboration with teammates, which creates a single point of failure.
+    - 4/14: #ModelOps (e.g., #MLOps) has allowed for the automation of data and model handling, but the manual interpretation and decision-making steps are still present. #Automation
+- Generative AI, and Continuous Exploration / Continuous Integration / Continuous Delivery 
+    - 5/14: Generative AI can help us shift further left into the exploration, planning, and coding steps, significantly improving our ability to explore options and conduct experiments. #GenerativeAI #SoftwareDevelopment
+    - 6/14: There will eventually be more automation in our problem-solving processes, but in the meantime, tools built with generative AI will significantly augment our ability for interpretation and decision-making in ensuring the success of the development of complex software systems. #MachineLearning #AI
+    - 7/14: Emerging tools for thinking allow for a more experimental approach to knowledge-intensive work, allowing for continuous hypothesis generation and experimentation leading to CE/CI/CD. #ContinuousExploration #ContinuousIntegration #ContinuousDelivery
+    - 8/14: There is a trend towards interfacing generative copilots, retrieval systems, and other knowledge-intensive systems to create thinking machines with memory and reasoning skills. #GenerativeAI #RetrievalSystems #Reasoning
+    - 9/14: Language models are essential for these tools because they need to interpret users’ instructions usually provided in natural language, communicate results, and facilitate human-human communication. #LanguageModels #Communication
+    - 10/14: Language models can give us the ability to articulate and communicate complex ideas effectively to stakeholders and team members enabling more efficient problem solving in communities and organizations. #LanguageModels #Communication
+- Adoption of Knowledge-Ops
+    - 11/14: In bigger companies, beyond technology, the biggest barriers to implementing #KnowledgeOps are cultural problems; eg. political reasons that prevent a unified and integrated knowledge and expertise system connected to knowledge bases of all teams across the enterprise. #CulturalProblems
+    - 12/14: Since all #GPT can reliably provide in short term is the language skill, primarily NLU/NLG, smaller language models trained on internal knowledge can be built to avoid privacy and data access issues. #NaturalLanguageUnderstanding #NaturalLanguageGeneration
+    - 13/14: Adoption of #LLM enabled thinking tools will start in smaller companies, and with improvements in corporate culture and maturing technology, we will see bigger companies joining the movement. 
+    - 14/14: With these tools being able to talk to us, remember our context, and reason about the world around us without the barriers of coding and formal language, we can accelerate #KnowledgeOps to the point where no idea is too expensive to try. #Automation
 
 ### Amir Feizpour (CEO @ Aggregate Intellect)
 
@@ -45,32 +48,32 @@ In this talk, Josh, an ML expert with experience commercializing NLP-powered ser
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
-* `Opportunities for large language models in startups and innovation`
-    * `1/4: Large language models offer exciting possibilities for startups and product development. They can revolutionize the innovation process with qualitatively new ways of problem-solving. Before building a product, take a step back and see if an approach powered by these models could serve a purpose.`
-    * `2/4: GitHub co-pilot is a perfect example of how large language models can be used in engineering. By offering new ways of writing code, it streamlines the development process and allows engineers to focus on solving problems.`
-    * `3/4: Quick feedback from users is crucial for product development, even if you are one of the target users. Hackathons and accelerators can be beneficial to startups by providing access to large language models as a service and infrastructure credits.`
-    * `4/4: Building a lean, agile startup focused on R&D is aided by resources such as infrastructure credits, tax credits, subsidies, marketing grants, and IP support. In Canada, AI startups receive federal and provincial programs supporting R&D. Bootstrapping can sustain a company from day one.`
-    * `Bootstrapping can be a good way to sustain a company based on revenue from day one. It also forces you to start selling as soon as possible to get revenue and establish quick feedback for market fit. Investment is not always necessary for R&D.`
-* `IP strategy for large language models`
-    * `Tweet 1: When building large language models for commercialization, it's important to consider IP strategy and seek advice from experts.`
-    * `Tweet 2: Applying large language models to improve existing capabilities may not be patentable, but rethinking the entire approach to solve a problem in a new way is more likely to be patentable. #MLdevelopment #IPstrategy`
-* `Large language models for R&D`
-    * `Tweet 1: During R&D, specify tasks, models to optimize, & create dataset to evaluate models against. Use large language models for weak label generation & data augmentation to make data set curation easier. #AI #ML #R&D`
-    * `Tweet 2: R&D conversations are often open & difficult to structure, but they can still be turned into components used by large language models. For example, to create a conversational bot for Slack, modularize into 3 LLM calls for message, trigger, & audience classification. #AI #ML #chatbot`
-    * `Tweet 3: With modularization & templated code repository, create conversational bot very quickly. Use LLM-generated info for message content classification, trigger classification, & audience classification. #AI #ML #chatbot #Slack`
-* `Microservices and modularization of products based on large language models`
-    * `1/7: Large language models (LLMs) can be used in various stages of a project, including engineering and production. They can be leveraged to build microservices or components that work together to produce the desired output.`
-    * `2/7: Treating a LLM as one of the microservices of a product enables breaking down the problem into smaller and more manageable pieces. This allows for easier implementation and development, additional R&D, unit testing, and quality control.`
-    * `3/7: This approach also allows for easier explainability and optimization of the process. The components in the architecture of a system that leverages LLMs should interface the language skills of GPT-like models and domain-specific expertise to get the best results.`
-    * `4/7: In our slack app example, the LLM prompts used depend on the context and specifics of what is being done. In some cases, having a good prompt engineer is crucial, while in others, we can just pass exemplars that would have a bigger influence on the performance.`
-    * `5/7: We can add a dialogue analysis component to control the prompts generated by LLMs in a particular domain. This component can infer information necessary to determine the most relevant examples when generating probing questions.`
-    * `6/7: Another component can create dynamic prompts for in-context learning by choosing the best exemplars from a repository or by retrieving documents containing domain knowledge. This can significantly improve the performance of LLMs.`
-    * `7/7: Finally, a quality control component can rank generated candidates in case the LLM generates a question or answer that is not suitable. Rule-based and human-crafted questions generated using question recipes can also be used to ensure that inappropriate responses are avoided.`
-* `Production stage of large language models`
-    * `Tweet 1: In production, large language models can be optimized by combining them with other components to create an ecosystem of microservices that work together. This approach ensures better performance and improved efficiency of the overall system.`
-    * `Tweet 2: When optimizing costs during a project, evaluating both performance and cost is crucial. If a cheaper model performs almost as well as a more expensive one, it's advisable to choose the former. This way, you can save money without compromising on performance.`
-    * `Tweet 3: After some data is collected and the overall system performance is more well established, it's sometimes possible to replace large language models with cheaper and leaner models in production. This approach helps to reduce costs without sacrificing performance.`
-    * `Tweet 4: When building a startup with large language models, it's essential to consider the service level availability uptime of cloud infrastructure. Microsoft Azure Open AI service offers 99.9% uptime, ensuring that your system will be available to users when they need it.
+* Opportunities for large language models in startups and innovation
+    * 1/21: Large language models offer exciting possibilities for startups and product development. They can revolutionize the innovation process with qualitatively new ways of problem-solving. Before building a product, take a step back and see if an approach powered by these models could serve a purpose.
+    * 2/21: GitHub co-pilot is a perfect example of how large language models can be used in engineering. By offering new ways of writing code, it streamlines the development process and allows engineers to focus on solving problems.
+    * 3/21: Quick feedback from users is crucial for product development, even if you are one of the target users. Hackathons and accelerators can be beneficial to startups by providing access to large language models as a service and infrastructure credits.
+    * 4/21: Building a lean, agile startup focused on R&D is aided by resources such as infrastructure credits, tax credits, subsidies, marketing grants, and IP support. In Canada, AI startups receive federal and provincial programs supporting R&D. Bootstrapping can sustain a company from day one.
+    * 5/21: Bootstrapping can be a good way to sustain a company based on revenue from day one. It also forces you to start selling as soon as possible to get revenue and establish quick feedback for market fit. Investment is not always necessary for R&D.
+* IP strategy for large language models
+    * 6/21: When building large language models for commercialization, it's important to consider IP strategy and seek advice from experts.
+    * 7/21: Applying large language models to improve existing capabilities may not be patentable, but rethinking the entire approach to solve a problem in a new way is more likely to be patentable. #MLdevelopment #IPstrategy
+* Large language models for R&D
+    * 8/21: During R&D, specify tasks, models to optimize, & create dataset to evaluate models against. Use large language models for weak label generation & data augmentation to make data set curation easier. #AI #ML #R&D
+    * 9/21: R&D conversations are often open & difficult to structure, but they can still be turned into components used by large language models. For example, to create a conversational bot for Slack, modularize into 3 LLM calls for message, trigger, & audience classification. #AI #ML #chatbot
+    * 10/21: With modularization & templated code repository, create conversational bot very quickly. Use LLM-generated info for message content classification, trigger classification, & audience classification. #AI #ML #chatbot #Slack
+* Microservices and modularization of products based on large language models
+    * 11/21: Large language models (LLMs) can be used in various stages of a project, including engineering and production. They can be leveraged to build microservices or components that work together to produce the desired output.
+    * 12/21: Treating a LLM as one of the microservices of a product enables breaking down the problem into smaller and more manageable pieces. This allows for easier implementation and development, additional R&D, unit testing, and quality control.
+    * 13/21: This approach also allows for easier explainability and optimization of the process. The components in the architecture of a system that leverages LLMs should interface the language skills of GPT-like models and domain-specific expertise to get the best results.
+    * 14/21: In our slack app example, the LLM prompts used depend on the context and specifics of what is being done. In some cases, having a good prompt engineer is crucial, while in others, we can just pass exemplars that would have a bigger influence on the performance.
+    * 15/21: We can add a dialogue analysis component to control the prompts generated by LLMs in a particular domain. This component can infer information necessary to determine the most relevant examples when generating probing questions.
+    * 16/21: Another component can create dynamic prompts for in-context learning by choosing the best exemplars from a repository or by retrieving documents containing domain knowledge. This can significantly improve the performance of LLMs.
+    * 17/21: Finally, a quality control component can rank generated candidates in case the LLM generates a question or answer that is not suitable. Rule-based and human-crafted questions generated using question recipes can also be used to ensure that inappropriate responses are avoided.
+* Production stage of large language models
+    * 18/21: In production, large language models can be optimized by combining them with other components to create an ecosystem of microservices that work together. This approach ensures better performance and improved efficiency of the overall system.
+    * 19/21: When optimizing costs during a project, evaluating both performance and cost is crucial. If a cheaper model performs almost as well as a more expensive one, it's advisable to choose the former. This way, you can save money without compromising on performance.
+    * 20/21: After some data is collected and the overall system performance is more well established, it's sometimes possible to replace large language models with cheaper and leaner models in production. This approach helps to reduce costs without sacrificing performance.
+    * 21/21: When building a startup with large language models, it's essential to consider the service level availability uptime of cloud infrastructure. Microsoft Azure Open AI service offers 99.9% uptime, ensuring that your system will be available to users when they need it.
 
 _Resources_
 - [Which Model Shall I Choose? Cost/Quality Trade-offs for Text Classification Tasks](https://arxiv.org/abs/2301.07006)
