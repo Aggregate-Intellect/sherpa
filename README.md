@@ -4,6 +4,7 @@ This repo contains material and information from the workshop run by [Aggregate 
 **An Open Book Project**
 Given the rapid pace of development in LLM space, we are releasing this information as an open book project which means that we welcome and encourage contributions from anyone who is interested and esp anyone who has used LLMs in production setting and wants to share their learnings with the broader community. See the bottom of this page for step by step instructions for how you can contribute.
 Here are some examples of contributions you can make:
+
 -If you are interested in this topic but you aren't an expert:
     - Fix typos or grammatical errors
     - Fix formatting issues
@@ -271,6 +272,8 @@ To make changes to this project, you will need to fork the repository to your ow
 7. Go to the main repository and submit a pull request with a description of your changes.
 
 Once your pull request is submitted, it will be reviewed by our team and either merged or commented on for further changes.
+
+NOTE: If the change you are considering is fairly major, please suggest it as an issue first so that we can coordinate before you put in the effort. 
 
 ## Suggesting Changes through Issues
 If you would like to suggest changes to the book without making direct changes, you can create an issue in our repository. Here are the steps:
