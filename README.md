@@ -5,7 +5,7 @@ This repo contains material and information from the workshop run by [Aggregate 
 Given the rapid pace of development in LLM space, we are releasing this information as an open book project which means that we welcome and encourage contributions from anyone who is interested and esp anyone who has used LLMs in production setting and wants to share their learnings with the broader community. See the bottom of this page for step by step instructions for how you can contribute.
 Here are some examples of contributions you can make:
 
--If you are interested in this topic but you aren't an expert:
+- If you are interested in this topic but you aren't an expert:
     - Fix typos or grammatical errors
     - Fix formatting issues
     - Rewords any sections to make them more understandable 
