@@ -60,7 +60,7 @@ DevOps and ModelOps have transformed software development over the past two deca
 
 In this talk, Josh, an ML expert with experience commercializing NLP-powered services, will discuss the potential for leveraging foundation models to drive agile innovation in both individual and organizational processes. He will share lessons learned from his work with a bootstrapped startup and provide insights on how LLMs can be commercialized effectively.
 
-[SLIDES](#) | [RECORDING](#)
+[SLIDES](#) | [RECORDING](https://youtu.be/QfX648IZg3U)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -108,7 +108,7 @@ _Resources_
 
 The proliferation of ChatGPT and other large language models has resulted in an explosion of LLM-based projects and startups. While these models can provide impressive initial demos, integrating them into a product requires careful consideration and planning. This talk will cover key considerations for creating, testing, and optimizing prompts for LLMs, as well as how to run analytics on key user metrics to ensure success.
 
-[SLIDES](#) | [RECORDING](#)
+[SLIDES](#) | [RECORDING](https://youtu.be/1C3rU3fxcME)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -151,7 +151,7 @@ _Resources_
 
 Large Language Models (LLMs) have dramatically changed our expectations for AI. While a few innovators are building proof-of-concept projects using APIs, most enterprise analytic teams still need to figure out how to incorporate LLMs into their analytical toolbox. Rajiv shows the necessity of understanding the growth of "in-context learning" and agents. With these insights, he explains how LLMs will shape enterprise analytics. Along the way, he covers many practical factors, such as the different providers of LLMs, resource costs, and ethical issues.
 
-[SLIDES](#) | [RECORDING](#)
+[SLIDES](#) | [RECORDING](https://youtu.be/GO6l7dbZIqY)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -202,7 +202,7 @@ _Resources_
 
 Generative AI has made impressive advances in creating music, art, and even virtual worlds that were once thought to be exclusively the domain of human creators. However, with such power comes great responsibility, and we must be mindful of the ethical implications of our creations. In this session, we will explore the intersection of generative AI, ethics, and accessibility. We will examine ethical considerations related to bias, transparency, and ownership, as well as the challenges of making generative AI accessible to individuals with disabilities and those from underrepresented communities.
 
-[SLIDES](#) | [RECORDING](#)
+[SLIDES](#) | [RECORDING](https://youtu.be/TEixBW1Bnow)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -243,7 +243,11 @@ Generative AI has made impressive advances in creating music, art, and even virt
 
 This talk explores how language models can be integrated with external tools, such as Python interpreters, API's, and data stores, to greatly expand their utility. We will examine the emerging field of 'LLMOps' and review some promising tools. Additionally, we will push the boundaries of what's possible by exploring how a language model could accurately answer complex questions like, "Who was the CFO at Apple when its stock price was at its lowest point in the last 10 years?"
 
-_Material_
+[SLIDES](#) | [RECORDING](#)
+
+**TWITTER THREAD SUMMARY OF THE TALK:**
+
+_Resources_
 - [Augmented Language Models: a Survey](https://arxiv.org/abs/2302.07842)
 - [Toolformer: Language Models Can Teach Themselves to Use Tools](https://arxiv.org/abs/2302.04761)
 - [Iterated Decomposition: Improving Science Q&A by Supervising Reasoning Processes](https://arxiv.org/abs/2301.01751)
@@ -251,9 +255,11 @@ _Material_
 - [LangChain Docs](https://langchain.readthedocs.io/en/latest/)
 - [LlamaIndex (formerly GPT-Index](https://gpt-index.readthedocs.io/en/latest/index.html)
 
-[Suhas Pai](https://www.linkedin.com/in/piesauce/) (CTO @ Bedrock AI)
+### Suhas Pai (CTO @ Bedrock AI)
 
-Suhas is the CTO & Co-founder of Bedrock AI, an NLP startup operating in the financial domain, where he conducts research on LLMs, domain adaptation, text ranking, and more. He was the co-chair of the Privacy WG at BigScience, the chair at TMLS 2022 and TMLS NLP 2022 conferences, and is currently writing a book on Large Language Models.
+[Suhas](https://www.linkedin.com/in/piesauce/) is the CTO & Co-founder of Bedrock AI, an NLP startup operating in the financial domain, where he conducts research on LLMs, domain adaptation, text ranking, and more. He was the co-chair of the Privacy WG at BigScience, the chair at TMLS 2022 and TMLS NLP 2022 conferences, and is currently writing a book on Large Language Models.
+
+#### CTA ???
 
 ---
 
@@ -261,13 +267,19 @@ Suhas is the CTO & Co-founder of Bedrock AI, an NLP startup operating in the fin
 
 An emerging aspect of large language models is their ability to generate datasets that allow them to self-improve. A fascinating recent example is Toolformer ([Schick et al.](https://arxiv.org/abs/2302.04761)) in which LLMs generate fine-tuning data that helps them learn how to use tools at run-time. In this talk, we’ll examine this trend by taking a close look at the Toolformer paper and other related research.
 
-_Material_
+[SLIDES](#) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
+
+**TWITTER THREAD SUMMARY OF THE TALK:**
+
+_Resources_
 - [Large Language Models Can Self-Improve](https://arxiv.org/abs/2210.11610)
 - [Constitutional AI: Harmlessness from AI Feedback](https://arxiv.org/abs/2212.08073)
 
-[Gordon Gibson](https://www.linkedin.com/in/gordon-gibson-874b3130/) (ML Lead @ Ada)
+### Gordon Gibson (ML Lead @ Ada)
 
-Gordon is the Senior Engineering Manager of the Applied Machine Learning team at Ada where he's helped lead the creation of Ada's ML engine and features. Gordon's background is in Engineering Physics and Operations Research, and he's passionate about building useful ML products.
+[Gordon](https://www.linkedin.com/in/gordon-gibson-874b3130/) is the Senior Engineering Manager of the Applied Machine Learning team at Ada where he's helped lead the creation of Ada's ML engine and features. Gordon's background is in Engineering Physics and Operations Research, and he's passionate about building useful ML products.
+
+#### CTA ???
 
 ---
 
@@ -275,16 +287,23 @@ Gordon is the Senior Engineering Manager of the Applied Machine Learning team at
 
 Large language models (LLMs) have the potential to perform a wide range of tasks by understanding human queries, but they are often sensitive to the wording of the prompts, which can greatly affect the output. This talk will introduce RLPrompt, an efficient algorithm that uses reinforcement learning to systematically search for the best prompts to improve LLM performance across diverse tasks.
 
-_Material_
+[SLIDES](#) | [RECORDING](https://youtu.be/SGInyKjzF7A)
+
+**TWITTER THREAD SUMMARY OF THE TALK:**
+coming soon...
+
+_Resources_
 - RLPrompt: Optimizing Discrete Text Prompts with Reinforcement Learning [blog](https://blog.ml.cmu.edu/2023/02/24/rlprompt-optimizing-discrete-text-prompts-with-reinforcement-learning/) | [paper](https://arxiv.org/abs/2205.12548) | [code](https://github.com/mingkaid/rl-prompt)
 - [Prefix-Tuning: Optimizing Continuous Prompts for Generation](https://arxiv.org/abs/2101.00190)
 - [Making Pre-trained Language Models Better Few-shot Learners](https://aclanthology.org/2021.acl-long.295.pdf)
 - [Prompt Waywardness: The Curious Case of Discretized Interpretation of Continuous Prompts](https://arxiv.org/abs/2112.08348)
 - [A Recipe For Arbitrary Text Style Transfer with Large Language Models](https://arxiv.org/abs/2109.03910)
 
-[Mingkai Deng](https://www.linkedin.com/in/mingkaideng/) (PhD Student @ CMU)
+### Mingkai Deng (PhD Student @ CMU)
 
-Mingkai Deng is a PhD student at Carnegie Mellon University working at the intersection of machine learning, computer vision, and natural language processing. Prior to that, he was a data scientist who led award-winning projects and built analytics products that serve multiple Fortune 500 clients.
+[Mingkai Deng](https://www.linkedin.com/in/mingkaideng/) is a PhD student at Carnegie Mellon University working at the intersection of machine learning, computer vision, and natural language processing. Prior to that, he was a data scientist who led award-winning projects and built analytics products that serve multiple Fortune 500 clients.
+
+#### CTA ???
 
 ---
 
