@@ -267,9 +267,33 @@ _Resources_
 
 An emerging aspect of large language models is their ability to generate datasets that allow them to self-improve. A fascinating recent example is Toolformer ([Schick et al.](https://arxiv.org/abs/2302.04761)) in which LLMs generate fine-tuning data that helps them learn how to use tools at run-time. In this talk, we’ll examine this trend by taking a close look at the Toolformer paper and other related research.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
+[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/Self-Improving%20LLMs.pdf) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
+
+* Large Language Models and Synthetic Data
+    * Research on using unlabeled data to improve large language models is exciting, and the potential impact on natural language processing is vast. These models are changing the way we think about language and the possibilities of AI.
+    * Large language models are trained on vast amounts of unlabeled data in a self-supervised manner. They continue to show impressive results as they scale, producing higher quality and more human-like text even for tasks they are not explicitly trained to perform. 
+    * As AI adoption increases, there will be a growing demand for human annotators soon surpassing human capacity to keep up with data needs of increasingly larger models and more complex use cases. 
+    * One of the interesting new areas is to use large language models themselves to create new data for training. For example, synthetic data can be generated to augment existing datasets for improving LLMs themselves or other types of models. 
+    * These kinds of data augmentation techniques can be used to improve large language models reducing the need for human annotation. This can reserve the more expensive human labor for creating high-quality or mission critical datasets.
+    * Another trend we're seeing in the industry is that human annotations will be used more for creating evaluation or quality control datasets, while LLMs will be used for generating training data. #machinelearning #datageneration #humansintheLoop
+    * This approach combines the strengths of both human annotation and machine learning, and has the potential to increase research capacity by generating more training data. #machinelearning #datageneration #humansintheLoop #researchcapacity
+* Using Large Language Models for Data Generation
+    * Recent research papers have shown that we can use large language models to generate weak labels for tasks such as named entity recognition, sentiment analysis, and question answering. We can then have humans revise or validate these labels to create high-quality training data. #machinelearning #datageneration #humansintheLoop
+    * [Toolformer](https://arxiv.org/abs/2302.04761) is one example of a system that uses LLMs to generate data for training other models. It splits up the data set and samples API calls to generate possible inputs and outputs for different tools. Toolformer then computes the model's loss to predict the next words in the sequence.
+* Techniques for Filtering Data for LLM Fine-Tuning
+    * Choosing the right data for fine-tuning is essential for improving LLMs' performance. Various approaches can be used to filter down the generated data for direct use, or human annotator intervention. 
+    * There are multiple ways to filter a data set for LLM fine-tuning. Techniques like perplexity-based approach (Toolformer), diversity of fine-tuning samples (Self-instruct), AI annotator (RLAIF), and self-consistency (Constitutional AI) can help with that. 
+* Fine-Tuning Language Models with Self-Consistency
+    * [Self-instruct](https://arxiv.org/abs/2212.10560) and [self-consistency](https://arxiv.org/abs/2210.11610) approaches are suitable for fine-tuning with available (frozen model) endpoints. These approaches involve generating new tasks and instructions for the model to fine-tune on. ???
+    * Self-instruct papers use human-created examples to train models to generate instructions and outputs for tasks. Language models can also use self-consistency to fine-tune themselves by generating different outputs and comparing them to select the most frequent one.
+    * This technique does not require the model to know the ground truth, but as the models become larger, the most frequent output is often the correct one. It is observed in literature that larger language models generate more accurate responses.
+    * The model filters down data using self-consistency, and if the majority of generations produce a specific output, e.g., "nine," the model takes all the cases where "nine" was generated as the output, assuming that these are correct, and feeds them back into the model which creates a feedback loop that improves the model's performance over time.
+* Reinforcement learning from AI feedback (RLAIF) for Harmless and Helpful Language Models
+    * [RLAIF](https://arxiv.org/abs/2212.08073) is a promising application for large language models where models can learn from their own mistakes and improve over time. It is a method for training language models to be more helpful and harmless. It uses a Constitution to critique the model and train it to rank outputs based on preferences.
+    * To train the model, harmful responses are generated through red teaming requests, and the Constitution is used to guide the model's behavior and critique its responses. The model is then fine-tuned on a dataset of revisions based on its critiques. #RedTeaming #ModelTraining
+    * The Constitution is created by humans as a guideline for the model's behavior, but the model is able to critique itself and generate revisions based on the Constitution. This allows for more training data to be generated using the model itself, increasing research capacity. #AIResearch
 
 _Resources_
 - [Large Language Models Can Self-Improve](https://arxiv.org/abs/2210.11610)
