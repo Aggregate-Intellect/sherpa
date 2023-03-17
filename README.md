@@ -60,7 +60,7 @@ DevOps and ModelOps have transformed software development over the past two deca
 
 In this talk, Josh, an ML expert with experience commercializing NLP-powered services, will discuss the potential for leveraging foundation models to drive agile innovation in both individual and organizational processes. He will share lessons learned from his work with a bootstrapped startup and provide insights on how LLMs can be commercialized effectively.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/QfX648IZg3U)
+[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/KnowledgeOps/Commercialization%20Strategy%20with%20LLMs.pdf) | [RECORDING](https://youtu.be/QfX648IZg3U)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -108,7 +108,7 @@ _Resources_
 
 The proliferation of ChatGPT and other large language models has resulted in an explosion of LLM-based projects and startups. While these models can provide impressive initial demos, integrating them into a product requires careful consideration and planning. This talk will cover key considerations for creating, testing, and optimizing prompts for LLMs, as well as how to run analytics on key user metrics to ensure success.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/1C3rU3fxcME)
+[SLIDES](https://pitch.com/public/7fce9d3f-fec7-40f5-9273-99ff1655a4e8) | [RECORDING](https://youtu.be/1C3rU3fxcME)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -151,7 +151,7 @@ _Resources_
 
 Large Language Models (LLMs) have dramatically changed our expectations for AI. While a few innovators are building proof-of-concept projects using APIs, most enterprise analytic teams still need to figure out how to incorporate LLMs into their analytical toolbox. Rajiv shows the necessity of understanding the growth of "in-context learning" and agents. With these insights, he explains how LLMs will shape enterprise analytics. Along the way, he covers many practical factors, such as the different providers of LLMs, resource costs, and ethical issues.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/GO6l7dbZIqY)
+[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Use%20Cases/Enterprise_LLMs_Shah.pdf) | [RECORDING](https://youtu.be/GO6l7dbZIqY)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -267,7 +267,7 @@ _Resources_
 
 An emerging aspect of large language models is their ability to generate datasets that allow them to self-improve. A fascinating recent example is Toolformer ([Schick et al.](https://arxiv.org/abs/2302.04761)) in which LLMs generate fine-tuning data that helps them learn how to use tools at run-time. In this talk, we’ll examine this trend by taking a close look at the Toolformer paper and other related research.
 
-[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/Self-Improving%20LLMs.pdf) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
+[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/Self-Improving%20LLMs.pdf) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -311,7 +311,7 @@ _Resources_
 
 Large language models (LLMs) have the potential to perform a wide range of tasks by understanding human queries, but they are often sensitive to the wording of the prompts, which can greatly affect the output. This talk will introduce RLPrompt, an efficient algorithm that uses reinforcement learning to systematically search for the best prompts to improve LLM performance across diverse tasks.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/SGInyKjzF7A)
+[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/RLPrompt%20Presentation.pdf) | [RECORDING](https://youtu.be/SGInyKjzF7A)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 coming soon...
