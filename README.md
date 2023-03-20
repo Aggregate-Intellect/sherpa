@@ -14,6 +14,7 @@ Here are some examples of contributions you can make:
     - Ask questions or make suggestions through _Issues_ (see the bottom of this page for details)
 - If you are closely familiar with the topic and / or have hands on experience:
     - Add new resources with explanation
+    - Add notebooks with examples of interesting things you tried
     - Add new sections for important topics that are missing
     - Improving existing content by adding more detail or context
 
