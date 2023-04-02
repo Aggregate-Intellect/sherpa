@@ -234,7 +234,7 @@ Generative AI has made impressive advances in creating music, art, and even virt
 
 This talk explores how language models can be integrated with external tools, such as Python interpreters, API's, and data stores, to greatly expand their utility. We will examine the emerging field of 'LLMOps' and review some promising tools. Additionally, we will push the boundaries of what's possible by exploring how a language model could accurately answer complex questions like, "Who was the CFO at Apple when its stock price was at its lowest point in the last 10 years?"
 
-[SLIDES](#) | [RECORDING]([#](https://youtu.be/WVV-lkYVLRY))
+[SLIDES](#) | [RECORDING](https://youtu.be/WVV-lkYVLRY)
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 * Recent Advancements in LLMs:
