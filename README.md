@@ -53,8 +53,6 @@ DevOps and ModelOps have transformed software development over the past two deca
 
 [Amir](https://www.linkedin.com/in/amirfzpr/) is the co-founder of Aggregate Intellect ([https://ai.science/](https://ai.science/)), a Smart Knowledge Navigator platform for R&D teams in emerging technologies like AI. Prior to this, Amir was an NLP Product Lead at Royal Bank of Canada, and held a postdoctoral position at University of Oxford conducting research on experimental quantum computing. Amir holds a PhD in Physics from University of Toronto.
 
-#### CTA: ???
-
 ---
 
 ## Commercializing LLMs: Lessons and Ideas for Agile Innovation
@@ -101,8 +99,6 @@ _Resources_
 
 [Josh](https://www.linkedin.com/in/josh-seltzer/) is the CTO at Nexxt Intelligence, where he leads R&D on LLMs and NLP to build innovative solutions for the market research industry. He also works in biodiversity and applications of AI for conservation.
 
-#### CTA: ???
-
 ---
 
 ## Integrating LLMs into Your Product: Considerations and Best Practices
@@ -143,8 +139,6 @@ _Resources_
 ### Denys Linkov (ML Lead @ Voiceflow)
 
 [Denys](https://www.linkedin.com/in/denyslinkov/) is the ML lead at Voiceflow focused on building the ML platform and data science offerings. His focus is on realtime NLP systems that help Voiceflow’s 60+ enterprise customers build better conversational assistants. Previously he worked at large bank as a senior cloud architect.
-
-#### CTA: ???
 
 ---
 
@@ -195,8 +189,6 @@ _Resources_
 
 [Rajiv](https://www.linkedin.com/in/rajistics/) is a machine learning engineer at Hugging Face, whose primary focus is on enabling enterprise teams to succeed with AI. He is a widely recognized speaker on enterprise AI and was part of data science teams at Snorkel AI, Caterpillar, and State Farm.
 
-#### CTA: ???
-
 ---
 
 ## Generative AI: Ethics, Accessibility, Legal Risk Mitigation
@@ -235,8 +227,6 @@ Generative AI has made impressive advances in creating music, art, and even virt
 ### Noelle Russell (Global AI Solutions Lead @ Accenture)
 
 [Noelle Silver Russell](https://www.linkedin.com/in/noelleai/) is a multi-award-winning technologist and entrepreneur who specializes in advising companies on emerging technology, generative AI and LLMs. She is the Global AI Solutions Lead as well as the Global Industry Lead for Generative AI at Accenture. She has led teams at NPR, Microsoft, IBM, and Amazon Alexa, and is a consistent champion for AI literacy and the ethical use of AI based on her work building some of the largest AI models in the world. She is the founder of AI Leadership Institute and she was recently awarded the Microsoft Most Valuable Professional award for Artificial Intelligence as well as VentureBeat’s Women in AI Responsibility and Ethics award.
-
-#### CTA: ???
 
 ---
 
@@ -281,8 +271,6 @@ _Resources_
 
 [Suhas](https://www.linkedin.com/in/piesauce/) is the CTO & Co-founder of Bedrock AI, an NLP startup operating in the financial domain, where he conducts research on LLMs, domain adaptation, text ranking, and more. He was the co-chair of the Privacy WG at BigScience, the chair at TMLS 2022 and TMLS NLP 2022 conferences, and is currently writing a book on Large Language Models.
 
-#### CTA ???
-
 ---
 
 ## Leveraging Language Models for Training Data Generation and Tool Learning
@@ -326,8 +314,6 @@ _Resources_
 
 [Gordon](https://www.linkedin.com/in/gordon-gibson-874b3130/) is the Senior Engineering Manager of the Applied Machine Learning team at Ada where he's helped lead the creation of Ada's ML engine and features. Gordon's background is in Engineering Physics and Operations Research, and he's passionate about building useful ML products.
 
-#### CTA ???
-
 ---
 
 ## Optimizing Large Language Models with Reinforcement Learning-Based Prompts
@@ -349,8 +335,6 @@ _Resources_
 ### Mingkai Deng (PhD Student @ CMU)
 
 [Mingkai Deng](https://www.linkedin.com/in/mingkaideng/) is a PhD student at Carnegie Mellon University working at the intersection of machine learning, computer vision, and natural language processing. Prior to that, he was a data scientist who led award-winning projects and built analytics products that serve multiple Fortune 500 clients.
-
-#### CTA ???
 
 ---
 
