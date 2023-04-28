@@ -394,3 +394,4 @@ Our team will review the issue and either implement the suggested change or resp
 ## Other Useful Resources
 - [Aggregate Intellect Weekly Journal Club on NLP, GNN, etc](https://lu.ma/aisc-journal-club)
 - [Augmented Thinking - A.I. Youtube Channel](https://www.youtube.com/@ai-science)
+- [LangChain Tutorials](https://github.com/gkamradt/langchain-tutorials)
