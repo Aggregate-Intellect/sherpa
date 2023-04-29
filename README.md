@@ -1,3 +1,31 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Practical Large Language Models: What can you do with LLMs at home?](#practical-large-language-models-what-can-you-do-with-llms-at-home)
+  - [The Emergence of KnowledgeOps](#the-emergence-of-knowledgeops)
+    - [Amir Feizpour (CEO @ Aggregate Intellect)](#amir-feizpour-ceo--aggregate-intellect)
+  - [Commercializing LLMs: Lessons and Ideas for Agile Innovation](#commercializing-llms-lessons-and-ideas-for-agile-innovation)
+    - [Josh Seltzer (CTO @ Nexxt Intelligence)](#josh-seltzer-cto--nexxt-intelligence)
+  - [Integrating LLMs into Your Product: Considerations and Best Practices](#integrating-llms-into-your-product-considerations-and-best-practices)
+    - [Denys Linkov (ML Lead @ Voiceflow)](#denys-linkov-ml-lead--voiceflow)
+  - [Incorporating Large Language Models into Enterprise Analytics: Navigating the Landscape of In-Context Learning and Agents](#incorporating-large-language-models-into-enterprise-analytics-navigating-the-landscape-of-in-context-learning-and-agents)
+    - [Rajiv Shah (MLE @ Huggingface)](#rajiv-shah-mle--huggingface)
+  - [Generative AI: Ethics, Accessibility, Legal Risk Mitigation](#generative-ai-ethics-accessibility-legal-risk-mitigation)
+    - [Noelle Russell (Global AI Solutions Lead @ Accenture)](#noelle-russell-global-ai-solutions-lead--accenture)
+  - [LLMOps: Expanding the Capabilities of Language Models with External Tools](#llmops-expanding-the-capabilities-of-language-models-with-external-tools)
+    - [Suhas Pai (CTO @ Bedrock AI)](#suhas-pai-cto--bedrock-ai)
+  - [Leveraging Language Models for Training Data Generation and Tool Learning](#leveraging-language-models-for-training-data-generation-and-tool-learning)
+    - [Gordon Gibson (ML Lead @ Ada)](#gordon-gibson-ml-lead--ada)
+  - [Optimizing Large Language Models with Reinforcement Learning-Based Prompts](#optimizing-large-language-models-with-reinforcement-learning-based-prompts)
+    - [Mingkai Deng (PhD Student @ CMU)](#mingkai-deng-phd-student--cmu)
+- [Contributions Guideline](#contributions-guideline)
+  - [Making Changes through Pull Requests](#making-changes-through-pull-requests)
+  - [Suggesting Changes through Issues](#suggesting-changes-through-issues)
+  - [Other Useful Resources](#other-useful-resources)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Practical Large Language Models: What can you do with LLMs at home?
 This repo contains material and information from the workshop run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). We will continue adding material to this repository, but feel free to add any questions or suggestions through pull requests or through reporting issues. 
 
