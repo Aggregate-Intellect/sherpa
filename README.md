@@ -637,7 +637,136 @@ This workshop focuses on Large Language Models (LLMs) and their capabilities in 
 [SLIDES](#) | [RECORDING](https://youtu.be/MGB2uahuX_o)
 
 **SUMMARY**
-_coming soon_
+
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and Line Chain can be found in Sue's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and Line Chain can be found in Sue's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+10. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and Line Chain can be found in Sue's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+10. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
+11. Launching documentation can be used as a context for a large language model to answer questions about launching.
+12. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
+13. The Big Token package can be used to split documents into smaller chunks.
+14. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
+15. Files can be used as a reactive database to store the vector embeddings.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and Line Chain can be found in Sue's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+10. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
+11. Launching documentation can be used as a context for a large language model to answer questions about launching.
+12. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
+13. The Big Token package can be used to split documents into smaller chunks.
+14. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
+15. Files can be used as a reactive database to store the vector embeddings.
+16. The Load QA tool from Launching can be used to create a question answering Chen by providing external documents and a question.
+17. Adding external knowledge improves the accuracy of the large language model's answers to questions.
+18. Different types of documents such as YouTube video transcripts or images can be used as external knowledge.
+19. There are different types of vector databases available for use with Launching, including in-memory and more scalable options.
+20. The prompt template used by the Chen includes context and the question to provide accurate answers to questions.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and Line Chain can be found in Sue's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+10. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
+11. Launching documentation can be used as a context for a large language model to answer questions about launching.
+12. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
+13. The Big Token package can be used to split documents into smaller chunks.
+14. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
+15. Files can be used as a reactive database to store the vector embeddings.
+16. The Load QA tool from Launching can be used to create a question answering Chen by providing external documents and a question.
+17. Adding external knowledge improves the accuracy of the large language model's answers to questions.
+18. Different types of documents such as YouTube video transcripts or images can be used as external knowledge.
+19. There are different types of vector databases available for use with Launching, including in-memory and more scalable options.
+20. The prompt template used by the Chen includes context and the question to provide accurate answers to questions.
+21. Launching simplifies the process of using large language models by integrating various tools and databases into a single framework.
+22. Exercises and solutions are available for participants to practice and further understand the concepts discussed in the talk.
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and Line Chain can be found in Sue's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+10. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
+11. Launching documentation can be used as a context for a large language model to answer questions about launching.
+12. Documents can be broken down into smaller chunks to store relevant information
+1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
+2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+3. The prompt template can be used to reduce repetition and input specific information later on.
+4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
+5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
+6. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and Line Chain can be found in Sue's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+10. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
+11. Launching documentation can be used as a context for a large language model to answer questions about launching.
+12. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
+13. The Big Token package can be used to split documents into smaller chunks.
+14. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
+15. Files can be used as a reactive database to store the vector embeddings.
+16. The Load QA tool from Launching can be used to create a question answering Chen by providing external documents and a question.
+17. Adding external knowledge improves the accuracy of the large language model's answers to questions.
+18. Different types of documents such as YouTube video transcripts or images can be used as external knowledge.
+19. There are different types of vector databases available for use with Launching, including in-memory and more scalable options.
+20. The prompt template used by the Chen includes context and the question to provide accurate answers to questions.
+21. Launching simplifies the process of using large language models by integrating various tools and databases into a single framework.
+22. Exercises and solutions are available for participants to practice and further understand the concepts discussed in the talk.
+23. Post-processing and checking are necessary to ensure that the model's output meets expectations, as it may still produce unexpected results.
 
 ### Percy Chen (PhD Student @ McGill University)
 
@@ -655,7 +784,52 @@ In this presentation, we will explore the latest breakthroughs in fine-tuning la
 [SLIDES](#) | [RECORDING](https://youtu.be/Bn2ZK_ctPbo)
 
 **SUMMARY**
-_coming soon_
+
+- Fine-tuning large language models is one of the most pressing topics in the field.
+- Customized models that are specific for domains and problems can be created through fine-tuning.
+- Transformer-based models are the focus of this talk, particularly those related to auto-regressive tasks.
+- Self-supervised training is mostly used for pre-training large language models, either through MLM or CLM.
+- Next token prediction is the main approach for pre-training, which is a simple setup and allows training on any kind of text.
+- Tokenization is a key concept in pre-training since it allows to tokenize almost anything, even tabular data.
+- The whole Internet can be a playground for pre-training large language models.
+- Large language models require scale to achieve good results.
+- Auto-regressive tasks push the model to learn interesting patterns and concepts.
+- Pre-trained language models are not usable in their raw form and require fine-tuning.
+- Fine-tuning is the process of extracting knowledge from pre-trained language models through injection of new biases and data sets.
+- There are two main methods of fine-tuning: supervised and reinforcement learning with human feedback.
+- In supervised fine-tuning, a diverse set of prompts compatible with the task is created.
+- Financial prompts may be used for tasks related to financial modeling.
+- Two main methods of fine-tuning are supervised fine-tuning and reinforcement learning with human feedback.
+- In supervised fine-tuning, a diverse set of prompts compatible with the task is created and shown to labelers who complete those prompts with the query appropriate for the task.
+- Reinforcement learning with human feedback (RLHF) is a more complex fine-tuning method that can replace human labelers with another AI or specific type of data.
+- RLHF works by exposing prompts to the model, getting responses from the model, then showing these responses together with the question to labelers who rank the responses.
+- The ranking mechanism is used to create a rewarding rule, which is then applied to every reinforcement learning to the base model.
+- There is a lot to learn and talk about when it comes to the RLHF method, and the UC Berkeley Reinforcement learning team has a comprehensive slideshow on it.
+- The speaker is creating a course on RLHF and it's free on YouTube, based on the Claus Allega diagram.
+- The speaker provides a real-time demo of how supervised fine-tuning changes the behavior of the model.
+- The fine-tuning process improves the performance of the model by making it more usable and focused on a specific type of interaction.
+- GPT and GPT-45 models achieved success by finding a way to tune the models in a usable format.
+- The fine-tuned model responds to prompts more accurately and provides relevant information.
+- There are pros and cons to both supervised fine-tuning and reinforcement learning with human feedback approaches to fine-tuning LLMs.
+- Online data collection for RLHF can be a weakness, while offline data collection for supervised fine-tuning is easier.
+- RLHF suffers less from catastrophic forgetting than supervised fine-tuning.
+- The amount of data needed for fine-tuning an LLM is an open question, but empirical results suggest tens of thousands of samples are needed.
+- The current benchmarks for measuring the quality of LLMs are not applicable and better metrics are needed.
+- Scaling laws for pre-training have been partially answered, but the question of fine-tuning is still vital.
+- Methods such as Path and Laura are used for parameter efficient fine-tuning, but each has strengths and weaknesses.
+- The speaker acknowledges the difficulty of answering some of the questions and that they are still being researched.
+- The conversation shifts to discussing what ML developers can do at home to work with LLMs. However, the AI did not provide any specific takeaways related to this topic.
+- It is possible to run smaller models using methods such as RLHF, even with limited compute such as a GPU from a platform like Colab.
+- Open source models and datasets, such as those from OpenAI and the Open Assistant effort, can be used for fine-tuning LLMs.
+- The methods discussed in the talk are model agnostic, allowing for flexibility in choosing which model to use.
+- The best LLM models for a single machine are currently open source, such as LAMA from Facebook and models from PCR.
+- Labeling tools such as Scale AI and Open Assistant can be used for collecting data for training LLMs.
+- Synthetic data generation is a potential method for generating training data for internal LLM models.
+- Applying reinforcement learning to fine-tune LLMs is a generic method that can be applied to any model, and has origins outside the language domain.
+- While specific fine-tuning methods like soft prompts and prompt tuning have emerged, it is important to stick to the principles and not become too attached to any one method.
+- Data is ultimately the goal for training LLMs, and the success of these models can be attributed to the unique data they have been trained on.
+- AWS has announced initiatives to create foundational models and collaborate with other labs to make their open source models more widely available.
+- AWS does not make money from models, but instead from compute, so it makes sense for them to publish data and models.
 
 ### Ehsan Kamalinejad (ML Scientist @ Amazon)
 
@@ -714,7 +888,40 @@ Large language Models (LLMs, e.g., GPT-3, OPT, TNLG,…) are shown to have a rem
 [SLIDES](#) | [RECORDING](https://youtu.be/r8pAP9zMM_4)
 
 **SUMMARY**
-_coming soon_
+
+- The speaker is introducing herself and her background, which includes defending her PhD dissertation and being a postdoc at the University of Washington, where she works on privacy and ethics in natural language processing (NLP).
+- The speaker is presenting a paper called "Mix and Match," which is a learning-free controllable text generation method that uses existing models as building blocks.
+- The paper has different applications, including ethical and privacy ones, but it's mainly focused on large language models and interfaces between them and financial models.
+- Large language models are transformer-based models that have huge parameter accounts and are pre-trained on massive datasets scraped from the web.
+- Large language models are good at generating fluent text that looks human-written but may not be truthful, and they have been subject to hype and excitement before, but it's unclear where their development will lead.
+- Large language models can memorize harmful or biased data from the web and regurgitate it, which poses ethical concerns, especially if they are put into products.
+- The "Mix and Match" method aims to address some of these concerns by allowing more control over the model's output and leveraging the strengths of existing models.
+- The speaker welcomes questions and interaction during the talk.
+- The speaker's main goal is to present a method called "Mix and Match" that allows for more control over text generation from large language models by using existing models as building blocks.
+- The speaker emphasizes the importance of giving control to smaller organizations and individuals who may not have the resources to train their own models.
+- Large language models can leak their training data, which poses privacy concerns that have been previously identified but have become more prominent with the advent of transformer models like GPT-2.
+- The mix and match method aims to address some of these privacy concerns by allowing for more control over the model's output without requiring additional training on sensitive data.
+- The talk is interactive, and the speaker welcomes questions and interruptions.
+- Large language models can generate creepy or inappropriate content, which can be a privacy concern and might require additional fine-tuning or control mechanisms to prevent.
+- One way to use large language models is for text generation, but controlling the output to enforce specific attributes or revisions can be challenging.
+- The Mix and Match method, which the speaker will discuss, aims to address some of these challenges by providing more direct control over generation without requiring additional training or resources.
+- Controllable generation and agency control are two specific tasks that the Mix and Match method can help to achieve. These tasks are important for applications like story writing or movie dialogues, where biases or stereotypes can be prevalent.
+- Gender bias and representation in movies and other works of fiction is a problem that can be addressed through techniques like attribute control in text generation.
+- Existing methods for attribute control include building or training new models, fine-tuning on specific data, or rejection sampling. However, these methods have limitations and may not be efficient or effective for all tasks.
+- The Mix and Match method aims to address some of these limitations by using a discriminator to directly enforce a desired attribute at decoding time. This approach requires fewer resources and can be more flexible than previous methods.
+- Some previous work in this area includes Pplm and Fudge, which both use discriminators to modify the generation of text. However, these methods have limitations and may require access to the full model, making them less suitable for black box models like GPT-3.
+- The Future Discriminator is a discriminator that is trained on all possible completions of uncompleted sentences. It assigns probabilities to each potential completion and can be used in conjunction with a generative model to create calibrated outputs that meet specific attribute constraints.
+- Fudge is a method for modifying the generation of text using a discriminator, but it requires access to a future discriminator and may not be suitable for black box models like GPT-3.
+- The proposed method involves building a globally normalized model that combines the potentials from various experts and heuristics. The potentials are treated as energy scores, and the model assigns probabilities to all possible sequences of words.
+- The proposed method is flexible and easy to use, as it allows for the composition of any number of models and constraints. It can also accommodate discrete constraints that are not differentiable, which is a limitation of prompting models like GPT.
+- The energy function is used to consolidate and enforce multiple constraints on the generation of text. It represents a sum of energy scores from various expert models and heuristics, and it can accommodate discrete constraints.
+- Sampling from an energy model is an iterative process that involves randomly selecting a token from the sequence, proposing a replacement from a model like BERT, and correcting the proposal using a correction step that involves the energy language model.
+- The normalization constant in the energy function is intractable, but there are methods for sampling from an energy model without calculating the probability distribution directly. The Metropolis Hastings Correction Step is one such method.
+- The iterative sampling process for generating text involves proposing replacements using a model like BERT and then correcting the proposal using the energy language model, which consolidates multiple constraints on the generation of text.
+- The corrector step is a Metropolis Hastings Correction Step, which involves checking if the energy improves after proposing a replacement and accepting or rejecting the proposal based on that. This is similar to Markov Chain Monte Carlo (MCMC) sampling.
+- The quality of the proposal model affects the diversity and appropriateness of the generated text.
+- The results of the method will be shown later in the talk.
+- The speaker acknowledges that there is a lot of math involved in the checking and correction steps, and that the method is similar to MCMC sampling.
 
 ### Fatemehsadat Mireshghallah (Post-doctoral Researcher @ UW)
 
