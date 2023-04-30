@@ -118,7 +118,7 @@ _coming soon_
 
 # LARGE LANGUAGE MODEL AGENTS - ONSET AGI?
 
-## LLMOps: Expanding the Capabilities of Language Models with External Tools
+## Expanding the Capabilities of Language Models with External Tools
 
 This talk explores how language models can be integrated with external tools, such as Python interpreters, API's, and data stores, to greatly expand their utility. We will examine the emerging field of 'LLMOps' and review some promising tools. Additionally, we will push the boundaries of what's possible by exploring how a language model could accurately answer complex questions like, "Who was the CFO at Apple when its stock price was at its lowest point in the last 10 years?"
 
@@ -154,6 +154,15 @@ _Resources_
 - [Demonstrate-Search-Predict: Composing retrieval and language models for knowledge-intensive NLP](https://arxiv.org/abs/2212.14024)
 - [LangChain Docs](https://langchain.readthedocs.io/en/latest/)
 - [LlamaIndex (formerly GPT-Index](https://gpt-index.readthedocs.io/en/latest/index.html)
+
+## Exploring the agency limits of today's LLMs
+
+GPT-4 and similar LLMs, powered with the ability to interface with external systems, have ushered in a whole variety of use cases into the realm of possibility that were previously considered impossible. However, possibility doesn't imply feasibility, with several limiting factors like effective retrieval hindering implementation. Tools like langchain and llamaindex are possibly the most impactful libraries of the year, but they are not a panacea to all problems. We will explore some of the limiting factors, approaches to tackle them, and showcase cutting-edge use cases that make the most of current capabilities.
+
+[SLIDES](#) | [RECORDING](https://youtu.be/7kNgnqgETGo)
+
+**SUMMARY**
+_coming soon_
 
 ### Suhas Pai (CTO @ Bedrock AI)
 
@@ -267,7 +276,22 @@ _coming soon_
 
 ---
 
-# LLM-OPS AND ENGINEERING
+## Building ResearchLLM: automated statistical research and interpretation
+
+ResearchGPT is a natural language statistics agent. Users provide the agent with a data set and natural language queries. The agent writes code to answer their questions and provide interpretations based on its analysis. Raw data is never shared with the LLM itself, and generated code is run locally. You can see a demo video [here](https://phasellm.com/researchgpt). This session will cover the underlying architecture of ResearchGPT and how it's been tested using PhaseLLM, a developer tooling framework for testing and robustifying LLM-powered apps.
+
+[SLIDES](#) | [RECORDING](https://youtu.be/yqmLF3a9aLM)
+
+**SUMMARY**
+_coming soon_
+
+### Wojciech Gryc (Founder @ Phase AI)
+
+[Wojciech](https://www.linkedin.com/in/wojciechgryc) is the co-founder and CEO of Phase AI, where he helps startups and scaleups launch AI-driven products. He is the developer behind PhaseLLM and ResearchGPT. Wojciech started his career as an AI researcher at IBM Research, and completed his graduate studies at the Oxford Internet Institute. Prior to Phase AI, he was the founder and CEO of Canopy Labs, a customer data platform funded by Y Combinator and acquired by Drop.
+
+---
+
+# LLM-OPS, ENGINEERING, AND ENTERPRISE CONSIDERATIONS
 
 ## Integrating LLMs into Your Product: Considerations and Best Practices
 
@@ -318,8 +342,6 @@ _coming soon_
 [Denys](https://www.linkedin.com/in/denyslinkov/) is the ML lead at Voiceflow focused on building the ML platform and data science offerings. His focus is on realtime NLP systems that help Voiceflow’s 60+ enterprise customers build better conversational assistants. Previously he worked at large bank as a senior cloud architect.
 
 ---
-
-# LARGE LANGUAGE MODELS IN ENTERPRISES
 
 ## Incorporating Large Language Models into Enterprise Analytics: Navigating the Landscape of In-Context Learning and Agents
 
@@ -411,7 +433,7 @@ Generative AI has made impressive advances in creating music, art, and even virt
 
 ---
 
-# LARGE LANGUAGE HANDS ON TUTORIALS AND RESOURCES
+# LLM HANDS ON TUTORIALS AND RESOURCES
 
 ## Building with LLMs Using LangChain - Hands-on
 
