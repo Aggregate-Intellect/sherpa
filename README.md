@@ -36,7 +36,8 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Practical Large Language Models: An Open Book Project - Introduction
+# PRACTICAL LARGE LANGUAGE MODELS (LLMs): AN OPEN BOOK PROJECT - INTRODUCTION
+
 This repo contains material and information from the workshops and journal club sessions run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). Our vision for this repo is to be an authoritive source of information for those who want to leverage generative AI in their work and build regardless of how small or big their projects are. 
 
 Our _mission_ is to create an ecosystem of experts, ideas, tools, and a community that build together until we get to a point where **no idea is too expensive to try**. 
@@ -65,7 +66,7 @@ Here are some examples of contributions you can make:
 
 # KNOWLEDGE-OPS
 
-## The Emergence of KnowledgeOps
+## DevOps -> MLOps -> KnowledgeOps
 
 DevOps and ModelOps have transformed software development over the past two decades, but now we are seeing a further shift left with the rise of KnowledgeOps. This new era leverages tools to augment our problem-solving, planning, and critical thinking abilities, enabling us to tackle highly complex knowledge work with greater efficiency and effectiveness. KnowledgeOps promises to enhance our ability to experiment with a wider range of ideas and select the most impactful ones, similar to the benefits seen in DevOps and related methodologies.
 
@@ -91,9 +92,106 @@ DevOps and ModelOps have transformed software development over the past two deca
     - 13/14: Adoption of #LLM enabled thinking tools will start in smaller companies, and with improvements in corporate culture and maturing technology, we will see bigger companies joining the movement. 
     - 14/14: With these tools being able to talk to us, remember our context, and reason about the world around us without the barriers of coding and formal language, we can accelerate #KnowledgeOps to the point where no idea is too expensive to try. #Automation
 
+## Rise of Autonomous Information Seeking Companions
+
+We continue observing a rapid movement towards creation of agents that can _reason_ about the objectives they are given, _use tools_ to carry out related tasks using formal languages, and use _natural anguage skills_ to communicate with their operators. This trend might (and most probably will) lead into _thinking companions_ that can interact with us, seek information and insight on our behald, and synthesize artifacts towards objectives we have. The ease of interaction with these companions could (and most probably will) get to a point where we can learn / plan / build on our own terms as we commute / run / cook.
+
+[SLIDES](#) | [RECORDING](https://youtu.be/kpDKaYRlEG4)
+
+**SUMMARY**
+_coming soon_
+
 ### Amir Feizpour (CEO @ Aggregate Intellect)
 
 [Amir](https://www.linkedin.com/in/amirfzpr/) is the co-founder of Aggregate Intellect ([https://ai.science/](https://ai.science/)), a Smart Knowledge Navigator platform for R&D teams in emerging technologies like AI. Prior to this, Amir was an NLP Product Lead at Royal Bank of Canada, and held a postdoctoral position at University of Oxford conducting research on experimental quantum computing. Amir holds a PhD in Physics from University of Toronto.
+
+---
+
+# LARGE LANGUAGE MODEL AGENTS - ONSET AGI?
+
+## LLMOps: Expanding the Capabilities of Language Models with External Tools
+
+This talk explores how language models can be integrated with external tools, such as Python interpreters, API's, and data stores, to greatly expand their utility. We will examine the emerging field of 'LLMOps' and review some promising tools. Additionally, we will push the boundaries of what's possible by exploring how a language model could accurately answer complex questions like, "Who was the CFO at Apple when its stock price was at its lowest point in the last 10 years?"
+
+[SLIDES](#) | [RECORDING](https://youtu.be/WVV-lkYVLRY)
+
+**TWITTER THREAD SUMMARY OF THE TALK:**
+* Recent Advancements in LLMs:
+    * The field of NLP is rapidly evolving with new models, tools, and techniques being introduced regularly. In fact, 90% of the content in the presentation did not exist a few months ago, and the content about LangChain and LlamaIndex is set to become woefully outdated within a month or two because those libraries are coming out with so many new updates. GPT-4 is evidence of the fast pace of development in the field. #NLP #GPT4 #MachineLearning
+    * Instruction tuning is a powerful technique for improving LLMs and making them more aligned with human preferences. OpenAI's Instructor-GPT paper introduced the use of reinforcement learning and human feedback to align LMs/LLMs with human preferences. #InstructionTuning #LLMs #ReinforcementLearning
+    * Evaluations are ongoing to determine the full capabilities of LLMs. The speaker notes that LLMs are good at following instructions and query understanding, but their limitations are not fully understood yet, especially in their reasoning capabilities. #LLMs #Evaluations #MachineLearning
+    * Being 99% accurate is not enough for many applications, especially if the failure cases are unpredictable. This is true for self-driving cars and may also be the case for a wide variety of NLP applications. #MachineLearning #NLP #Accuracy #SelfDrivingCars
+* Integration of LLMs with external tools
+    * Language models are being integrated with various external tools like code interpreters, search engines, APIs, databases and other kinds of datastores, facilitated by Python libraries like Llama Index and LangChain. #NLP #AI #LLMs
+    * The Holy Grail we are aspiring towards involves a LLM automatically decomposing a query into manageable subtasks, and calling appropriate external services to solve the subtasks if necessary. Currently, this approach is impractical for many usecases, and a lean approach is utilized where the external service is called to fetch relevant context and the LLM acts upon that context to generate the response.  #AI #taskautomation
+    * LLMs can use task decomposition and agents to dynamically determine which tool to use to answer a question, and custom agents can be created to enable LLMs to answer questions more effectively. #LLMs #AI #taskdecomposition
+    * LLMs are getting closer to fulfilling the promise of cross-document information retrieval, where information needs can be satisfied by going through multiple resources. #LLMs #AI #crossdocumentIR
+    * External sources of information can enhance LLMs' performance, such as using retrieval models to map a query to entries in an index and returning it with adjacent sentences to provide context. #LLMs #AI #informationretrieval
+    * OpenChatKit is a new LLM toolkit containing a 20 billion instruction tuned model based on GPT-NEOX, which can be used to automate tasks like answering complex questions and filtering search results. #LLMs #AI #OpenChatKit
+    * It is possible for LLMs to generate python code to perform mathematical operations and invoke a code interpreter that can execute those operations. It is also feasible for an LLM to convert natural language queries into SQL queries, provided the schema is specified in the context,  enabling them to answer aggregation-level queries. #LLMs #AI #SQL
+    * LLMs can construct API calls and browse the web for answers, such as answering a natural language query about the lowest stock price of Apple in the last 10 years or the weather in Toronto. #LLMs #AI #APIcalls
+    * LamaIndex provides a wide range of data connectors to import your own data like web pages, PDFs, Discord data, GitHub data, Google Docs data, notion data, Twitter data, and more. #LLMs #AI #LamaIndex
+    * Different types of indices include list index, keyword table index, vector store index, tree index and more, with each having its unique advantages and limitations. The vector store index is one of the most effective versions of indices. #LLMs #AI #indices 
+* Use cases of LLMs
+    * Language models break down complex questions into manageable components. For example, they can answer "who was the CTO of Apple when its share price was lowest in the last 10 years?" by finding the date of the lowest share price and the CTO on that date.
+    * LLMs can filter out irrelevant results and automate tasks like flight searches. They call external APIs and databases and then synthesize coherent answers based on the output.
+    * LLMs can answer questions about a company's policies, product planning, or any other information stored in Google Docs or Notion by using the data connectors provided by Lama index.
+    * LLMs can ensure answers don't contain personal identifiable information or misinformation using a moderation chain. Making an LLM good at a particular domain is exciting, as passing exams in a particular domain is easy due to data contamination.
+
+_Resources_
+- [Augmented Language Models: a Survey](https://arxiv.org/abs/2302.07842)
+- [Toolformer: Language Models Can Teach Themselves to Use Tools](https://arxiv.org/abs/2302.04761)
+- [Iterated Decomposition: Improving Science Q&A by Supervising Reasoning Processes](https://arxiv.org/abs/2301.01751)
+- [Demonstrate-Search-Predict: Composing retrieval and language models for knowledge-intensive NLP](https://arxiv.org/abs/2212.14024)
+- [LangChain Docs](https://langchain.readthedocs.io/en/latest/)
+- [LlamaIndex (formerly GPT-Index](https://gpt-index.readthedocs.io/en/latest/index.html)
+
+### Suhas Pai (CTO @ Bedrock AI)
+
+[Suhas](https://www.linkedin.com/in/piesauce/) is the CTO & Co-founder of Bedrock AI, an NLP startup operating in the financial domain, where he conducts research on LLMs, domain adaptation, text ranking, and more. He was the co-chair of the Privacy WG at BigScience, the chair at TMLS 2022 and TMLS NLP 2022 conferences, and is currently writing a book on Large Language Models.
+
+---
+
+## Leveraging Language Models for Training Data Generation and Tool Learning
+
+An emerging aspect of large language models is their ability to generate datasets that allow them to self-improve. A fascinating recent example is Toolformer ([Schick et al.](https://arxiv.org/abs/2302.04761)) in which LLMs generate fine-tuning data that helps them learn how to use tools at run-time. In this talk, we’ll examine this trend by taking a close look at the Toolformer paper and other related research.
+
+[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/Self-Improving%20LLMs.pdf) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
+
+**TWITTER THREAD SUMMARY OF THE TALK:**
+
+* Large Language Models and Synthetic Data
+    * As AI adoption increases, the growing demand for human annotations will quickly surpass human capacity.
+    * One of the interesting new areas is to use large language models to create the training data that further improve themselves.
+    * These kinds of data augmentation techniques can be used to improve large language models, reducing the need for human annotation of training data. This can reserve the more expensive human labor for creating high-quality or mission critical datasets.
+    * Another trend we're seeing in the industry is that human annotations will be used more for creating evaluation or quality control datasets, while LLMs will be used for generating training data. #machinelearning #datageneration #humansintheLoop
+* Techniques for Filtering Data for LLM Fine-Tuning
+    * Choosing the right data for fine-tuning is essential for improving LLMs' performance. Various approaches can be used to filter down the generated data for direct use, or human annotator intervention. 
+    * There are multiple ways to filter a data set for LLM fine-tuning, in this talk we discuss the following four: a perplexity-based approach (Toolformer), AI annotator (RLAIF), diversity of fine-tuning samples (Self-instruct), and self-consistency.
+* [Toolformer](https://arxiv.org/abs/2302.04761)
+    * Toolformer splits up a set of unlabelled data set and samples API calls to generate possible inputs and outputs for different tools. It then uses the model's loss (perplexity/entropy) to predict the next words in the sequence to determine whether or not the tool has made the task easier.
+* [Reinforcement learning from AI feedback](https://arxiv.org/abs/2212.08073) (RLAIF) for Harmless and Helpful Language Models
+    * RLAIF is a promising application for large language models where models can edit their own mistakes and learn from this signal.
+    * To train the model, harmful responses are generated through red teaming requests, and a 'Constitution' is used to guide the model's behavior and critique its responses. The model is then fine-tuned on a dataset of revisions based on its critiques. #RedTeaming #ModelTraining
+    * The Constitution is created by humans as a guideline for the model's behavior, but the model is able to critique itself and generate revisions based on the Constitution. This allows for more training data to be generated using the model itself.
+* [Self-Instruct: Aligning Language Model with Self Generated Instructions](https://arxiv.org/abs/2212.10560)
+    * This paper discusses using a model to generate new tasks and instructions to fine-tune itself on.
+    * It uses a diversity metric to choose samples - prioritizing generations that are significantly different from its current training data.
+* [Fine-Tuning Language Models with Self-Consistency](https://arxiv.org/abs/2210.11610)
+    *  [Self-consistency](https://arxiv.org/abs/2203.11171) is a recent concept in LLMs that involves creating multiple generations for the same input and using a form of voting to choose the most common one.
+    * This technique does not require the model to know the ground truth, meaning it can be applied on unlabelled data, but as the models become larger, the most frequent output is often the correct one.
+    * The model filters down data using self-consistency, and if the majority of generations produce a specific output, e.g., "nine," the model takes all the cases where "nine" was generated as the output, assuming that these are correct, and feeds them back into the model which creates a feedback loop that improves the model's performance over time.
+
+_Resources_
+- [Toolformer: Language Models Can Teach Themselves to Use Tools](https://arxiv.org/abs/2302.04761)
+- [Constitutional AI: Harmlessness from AI Feedback](https://arxiv.org/abs/2212.08073)
+- [SELF-INSTRUCT: Aligning Language Model with Self Generated Instructions](https://arxiv.org/abs/2212.10560)
+- [Large Language Models Can Self-Improve](https://arxiv.org/abs/2210.11610)
+- [Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
+
+### Gordon Gibson (ML Lead @ Ada)
+
+[Gordon](https://www.linkedin.com/in/gordon-gibson-874b3130/) is the Senior Engineering Manager of the Applied Machine Learning team at Ada where he's helped lead the creation of Ada's ML engine and features. Gordon's background is in Engineering Physics and Operations Research, and he's passionate about building useful ML products.
 
 ---
 
@@ -145,6 +243,21 @@ _Resources_
 
 ---
 
+## ChatGPT-like application for construction of mathematical financial models
+
+LLMs alone generally struggle with complex mathematical tasks. This limitation is particularly evident when a problem requires intricate simulations rather than basic arithmetic or a few simple calculations. For instance, while GPT-4 can compute the interest paid on a loan, it cannot determine the loan's duration over several years. In this talk, we show how we used ChatGPT to build an interface for a no-code financial planning application and allow users to use the chat interface to inspect and inquire about the financial projection model in the background.
+
+[SLIDES](#) | [RECORDING](https://youtu.be/NRnjra-WGmY)
+
+**SUMMARY**
+_coming soon_
+
+### Sina Shahandeh (Founder @ Plan with Flow)
+
+[Sina](https://www.linkedin.com/in/sinashahandeh/) holds a PhD in scientific computing and has led data science teams at three startups in Toronto's ecosystem. Before founding Plan with Flow, Sina served as the Vice President of Data Science at ecobee Inc., leading to an exit valued at $770 million. Currently, Sina is based in Madrid.
+
+---
+
 # LLM-OPS AND ENGINEERING
 
 ## Integrating LLMs into Your Product: Considerations and Best Practices
@@ -181,6 +294,15 @@ _Resources_
 - [Prompt Engineering Guide](https://github.com/dair-ai/Prompt-Engineering-Guide)
 - [How GPT3 Works - Visualizations and Animations](https://jalammar.github.io/how-gpt3-works-visualizations-animations/)
 - [Open AI Product](https://openai.com/product)
+
+## Running LLMs in Your Environment
+
+The availability of Large Language Models as a service (LLMaaS) has sparked a new wave of applications, use cases and companies. But what alternatives exist if you want to host your own LLMs? In this talk we’ll cover the landscape of LLMs and their deployment options. We’ll discuss the tradeoffs of hosting your own LLM vs using a commercial offering, including security, compliance, cost and delivery times. We’ll also cover a number of available open source options and how they can be hosted within your own environment whether a virtual private cloud or on prem.
+
+[SLIDES](#) | [RECORDING](https://youtu.be/REv-GgieWto)
+
+**SUMMARY**
+_coming soon_
 
 ### Denys Linkov (ML Lead @ Voiceflow)
 
@@ -280,101 +402,40 @@ Generative AI has made impressive advances in creating music, art, and even virt
 
 ---
 
-# LARGE LANGUAGE MODEL AGENTS - ONSET AGI?
-
-## LLMOps: Expanding the Capabilities of Language Models with External Tools
-
-This talk explores how language models can be integrated with external tools, such as Python interpreters, API's, and data stores, to greatly expand their utility. We will examine the emerging field of 'LLMOps' and review some promising tools. Additionally, we will push the boundaries of what's possible by exploring how a language model could accurately answer complex questions like, "Who was the CFO at Apple when its stock price was at its lowest point in the last 10 years?"
-
-[SLIDES](#) | [RECORDING](https://youtu.be/WVV-lkYVLRY)
-
-**TWITTER THREAD SUMMARY OF THE TALK:**
-* Recent Advancements in LLMs:
-    * The field of NLP is rapidly evolving with new models, tools, and techniques being introduced regularly. In fact, 90% of the content in the presentation did not exist a few months ago, and the content about LangChain and LlamaIndex is set to become woefully outdated within a month or two because those libraries are coming out with so many new updates. GPT-4 is evidence of the fast pace of development in the field. #NLP #GPT4 #MachineLearning
-    * Instruction tuning is a powerful technique for improving LLMs and making them more aligned with human preferences. OpenAI's Instructor-GPT paper introduced the use of reinforcement learning and human feedback to align LMs/LLMs with human preferences. #InstructionTuning #LLMs #ReinforcementLearning
-    * Evaluations are ongoing to determine the full capabilities of LLMs. The speaker notes that LLMs are good at following instructions and query understanding, but their limitations are not fully understood yet, especially in their reasoning capabilities. #LLMs #Evaluations #MachineLearning
-    * Being 99% accurate is not enough for many applications, especially if the failure cases are unpredictable. This is true for self-driving cars and may also be the case for a wide variety of NLP applications. #MachineLearning #NLP #Accuracy #SelfDrivingCars
-* Integration of LLMs with external tools
-    * Language models are being integrated with various external tools like code interpreters, search engines, APIs, databases and other kinds of datastores, facilitated by Python libraries like Llama Index and LangChain. #NLP #AI #LLMs
-    * The Holy Grail we are aspiring towards involves a LLM automatically decomposing a query into manageable subtasks, and calling appropriate external services to solve the subtasks if necessary. Currently, this approach is impractical for many usecases, and a lean approach is utilized where the external service is called to fetch relevant context and the LLM acts upon that context to generate the response.  #AI #taskautomation
-    * LLMs can use task decomposition and agents to dynamically determine which tool to use to answer a question, and custom agents can be created to enable LLMs to answer questions more effectively. #LLMs #AI #taskdecomposition
-    * LLMs are getting closer to fulfilling the promise of cross-document information retrieval, where information needs can be satisfied by going through multiple resources. #LLMs #AI #crossdocumentIR
-    * External sources of information can enhance LLMs' performance, such as using retrieval models to map a query to entries in an index and returning it with adjacent sentences to provide context. #LLMs #AI #informationretrieval
-    * OpenChatKit is a new LLM toolkit containing a 20 billion instruction tuned model based on GPT-NEOX, which can be used to automate tasks like answering complex questions and filtering search results. #LLMs #AI #OpenChatKit
-    * It is possible for LLMs to generate python code to perform mathematical operations and invoke a code interpreter that can execute those operations. It is also feasible for an LLM to convert natural language queries into SQL queries, provided the schema is specified in the context,  enabling them to answer aggregation-level queries. #LLMs #AI #SQL
-    * LLMs can construct API calls and browse the web for answers, such as answering a natural language query about the lowest stock price of Apple in the last 10 years or the weather in Toronto. #LLMs #AI #APIcalls
-    * LamaIndex provides a wide range of data connectors to import your own data like web pages, PDFs, Discord data, GitHub data, Google Docs data, notion data, Twitter data, and more. #LLMs #AI #LamaIndex
-    * Different types of indices include list index, keyword table index, vector store index, tree index and more, with each having its unique advantages and limitations. The vector store index is one of the most effective versions of indices. #LLMs #AI #indices 
-* Use cases of LLMs
-    * Language models break down complex questions into manageable components. For example, they can answer "who was the CTO of Apple when its share price was lowest in the last 10 years?" by finding the date of the lowest share price and the CTO on that date.
-    * LLMs can filter out irrelevant results and automate tasks like flight searches. They call external APIs and databases and then synthesize coherent answers based on the output.
-    * LLMs can answer questions about a company's policies, product planning, or any other information stored in Google Docs or Notion by using the data connectors provided by Lama index.
-    * LLMs can ensure answers don't contain personal identifiable information or misinformation using a moderation chain. Making an LLM good at a particular domain is exciting, as passing exams in a particular domain is easy due to data contamination.
-
-_Resources_
-- [Augmented Language Models: a Survey](https://arxiv.org/abs/2302.07842)
-- [Toolformer: Language Models Can Teach Themselves to Use Tools](https://arxiv.org/abs/2302.04761)
-- [Iterated Decomposition: Improving Science Q&A by Supervising Reasoning Processes](https://arxiv.org/abs/2301.01751)
-- [Demonstrate-Search-Predict: Composing retrieval and language models for knowledge-intensive NLP](https://arxiv.org/abs/2212.14024)
-- [LangChain Docs](https://langchain.readthedocs.io/en/latest/)
-- [LlamaIndex (formerly GPT-Index](https://gpt-index.readthedocs.io/en/latest/index.html)
-
-### Suhas Pai (CTO @ Bedrock AI)
-
-[Suhas](https://www.linkedin.com/in/piesauce/) is the CTO & Co-founder of Bedrock AI, an NLP startup operating in the financial domain, where he conducts research on LLMs, domain adaptation, text ranking, and more. He was the co-chair of the Privacy WG at BigScience, the chair at TMLS 2022 and TMLS NLP 2022 conferences, and is currently writing a book on Large Language Models.
-
----
-
-## Leveraging Language Models for Training Data Generation and Tool Learning
-
-An emerging aspect of large language models is their ability to generate datasets that allow them to self-improve. A fascinating recent example is Toolformer ([Schick et al.](https://arxiv.org/abs/2302.04761)) in which LLMs generate fine-tuning data that helps them learn how to use tools at run-time. In this talk, we’ll examine this trend by taking a close look at the Toolformer paper and other related research.
-
-[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/Self-Improving%20LLMs.pdf) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
-
-**TWITTER THREAD SUMMARY OF THE TALK:**
-
-* Large Language Models and Synthetic Data
-    * As AI adoption increases, the growing demand for human annotations will quickly surpass human capacity.
-    * One of the interesting new areas is to use large language models to create the training data that further improve themselves.
-    * These kinds of data augmentation techniques can be used to improve large language models, reducing the need for human annotation of training data. This can reserve the more expensive human labor for creating high-quality or mission critical datasets.
-    * Another trend we're seeing in the industry is that human annotations will be used more for creating evaluation or quality control datasets, while LLMs will be used for generating training data. #machinelearning #datageneration #humansintheLoop
-* Techniques for Filtering Data for LLM Fine-Tuning
-    * Choosing the right data for fine-tuning is essential for improving LLMs' performance. Various approaches can be used to filter down the generated data for direct use, or human annotator intervention. 
-    * There are multiple ways to filter a data set for LLM fine-tuning, in this talk we discuss the following four: a perplexity-based approach (Toolformer), AI annotator (RLAIF), diversity of fine-tuning samples (Self-instruct), and self-consistency.
-* [Toolformer](https://arxiv.org/abs/2302.04761)
-    * Toolformer splits up a set of unlabelled data set and samples API calls to generate possible inputs and outputs for different tools. It then uses the model's loss (perplexity/entropy) to predict the next words in the sequence to determine whether or not the tool has made the task easier.
-* [Reinforcement learning from AI feedback](https://arxiv.org/abs/2212.08073) (RLAIF) for Harmless and Helpful Language Models
-    * RLAIF is a promising application for large language models where models can edit their own mistakes and learn from this signal.
-    * To train the model, harmful responses are generated through red teaming requests, and a 'Constitution' is used to guide the model's behavior and critique its responses. The model is then fine-tuned on a dataset of revisions based on its critiques. #RedTeaming #ModelTraining
-    * The Constitution is created by humans as a guideline for the model's behavior, but the model is able to critique itself and generate revisions based on the Constitution. This allows for more training data to be generated using the model itself.
-* [Self-Instruct: Aligning Language Model with Self Generated Instructions](https://arxiv.org/abs/2212.10560)
-    * This paper discusses using a model to generate new tasks and instructions to fine-tune itself on.
-    * It uses a diversity metric to choose samples - prioritizing generations that are significantly different from its current training data.
-* [Fine-Tuning Language Models with Self-Consistency](https://arxiv.org/abs/2210.11610)
-    *  [Self-consistency](https://arxiv.org/abs/2203.11171) is a recent concept in LLMs that involves creating multiple generations for the same input and using a form of voting to choose the most common one.
-    * This technique does not require the model to know the ground truth, meaning it can be applied on unlabelled data, but as the models become larger, the most frequent output is often the correct one.
-    * The model filters down data using self-consistency, and if the majority of generations produce a specific output, e.g., "nine," the model takes all the cases where "nine" was generated as the output, assuming that these are correct, and feeds them back into the model which creates a feedback loop that improves the model's performance over time.
-
-_Resources_
-- [Toolformer: Language Models Can Teach Themselves to Use Tools](https://arxiv.org/abs/2302.04761)
-- [Constitutional AI: Harmlessness from AI Feedback](https://arxiv.org/abs/2212.08073)
-- [SELF-INSTRUCT: Aligning Language Model with Self Generated Instructions](https://arxiv.org/abs/2212.10560)
-- [Large Language Models Can Self-Improve](https://arxiv.org/abs/2210.11610)
-- [Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
-
-### Gordon Gibson (ML Lead @ Ada)
-
-[Gordon](https://www.linkedin.com/in/gordon-gibson-874b3130/) is the Senior Engineering Manager of the Applied Machine Learning team at Ada where he's helped lead the creation of Ada's ML engine and features. Gordon's background is in Engineering Physics and Operations Research, and he's passionate about building useful ML products.
-
----
-
 # LARGE LANGUAGE HANDS ON TUTORIALS AND RESOURCES
 
-## LangChain Hands-on
+## Building with LLMs Using LangChain - Hands-on
+
+This workshop focuses on Large Language Models (LLMs) and their capabilities in language understanding and generation. Despite their impressive performance, LLMs still face challenges in tasks like retrieval and math reasoning. Fortunately, several tools are available for these tasks. LangChain is a Python library that enables the integration of LLMs with external tools to accomplish a wide range of tasks. The workshop will provide an overview of LangChain's basics and demonstrate how it can interface with external tools. Additionally, we will create a simple system using LangChain to answer questions about itself LangChain itself.
+
+[SLIDES](#) | [RECORDING](https://youtu.be/MGB2uahuX_o)
+
+**SUMMARY**
+_coming soon_
+
+### Percy Chen (PhD Student @ McGill University)
+
+[Percy](https://www.linkedin.com/in/boqi-chen/) is a PhD student at McGill University. His research interests include model-driven software engineering, trustworthy AI, verification for ML systems, Graph Neural Networks, and Large Language Models. Percy leads R&D collaboration between McGill University and Aggregate Intellect. 
 
 ---
 
 # THEORETICAL FOUNDATIONS OF LARGE LANGUAGE MDOELS
+
+
+## Modern Innovations in Fine-Tuning Large Language Models
+
+In this presentation, we will explore the latest breakthroughs in fine-tuning large language models. Our conversation will encompass various fine-tuning techniques, including instruction following fine-tuning and reinforcement learning through human feedback (RLHF). Additionally, we will delve into computational aspects like scaling laws, parameter-efficient fine-tuning (PEFT), and the zero redundancy optimizer (ZeRO).
+
+[SLIDES](#) | [RECORDING](https://youtu.be/Bn2ZK_ctPbo)
+
+**SUMMARY**
+_coming soon_
+
+### Ehsan Kamalinejad (ML Scientist @ Amazon)
+
+[Ehsan](https://www.linkedin.com/in/ehsan-kamalinejad/) is a machine learning scientist. He is currently a lead scientist working on NLP developments at Amazon. Previously he co-founded Visual One which was a YCombinator startup in computer vision. Before that he was working at Apple for several years as a tech-lead machine learning scientist working on projects such as Photos Memories. Ehsan is also an associate professor at California State University. He got his PhD from the University of Toronto in applied mathematics.
+
+---
 
 ## Optimizing Large Language Models with Reinforcement Learning-Based Prompts
 
@@ -417,6 +478,21 @@ _Resources_
 ### Mingkai Deng (PhD Student @ CMU)
 
 [Mingkai Deng](https://www.linkedin.com/in/mingkaideng/) is a PhD student at Carnegie Mellon University working at the intersection of machine learning, computer vision, and natural language processing. Prior to that, he was a data scientist who led award-winning projects and built analytics products that serve multiple Fortune 500 clients.
+
+---
+
+## Learning-free Controllable Text Generation for Debiasing
+
+Large language Models (LLMs, e.g., GPT-3, OPT, TNLG,…) are shown to have a remarkably high performance on standard benchmarks, due to their high parameter count, extremely large training datasets, and significant compute. Although the high parameter count in these models leads to more expressiveness, it can also lead to higher memorization, which, coupled with large unvetted, web-scraped datasets can cause different negative societal and ethical impacts such as leakage of private, sensitive information and generation of harmful text. In this talk, we introduce a global score-based method for controllable text generation that combines arbitrary pre-trained black-box models for achieving the desired attributes in generated text from LLMs, without involving any fine-tuning or structural assumptions about the black-box models.
+
+[SLIDES](#) | [RECORDING](https://youtu.be/r8pAP9zMM_4)
+
+**SUMMARY**
+_coming soon_
+
+### Fatemehsadat Mireshghallah (Post-doctoral Researcher @ UW)
+
+[Fatemeh](https://twitter.com/limufar) received her Ph.D. from the CSE department of UC San Diego and will join UW as a post-doctoral fellow. Her research interests are Trustworthy Machine Learning and Natural Language Processing. She is a recipient of the National Center for Women & IT (NCWIT) Collegiate award in 2020 for her work on privacy-preserving inference, a finalist of the Qualcomm Innovation Fellowship in 2021 and a recipient of the 2022 Rising star in Adversarial ML award.
 
 ---
 
