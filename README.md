@@ -26,10 +26,15 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Practical Large Language Models: What can you do with LLMs at home?
-This repo contains material and information from the workshop run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). We will continue adding material to this repository, but feel free to add any questions or suggestions through pull requests or through reporting issues. 
+# Practical Large Language Models: An Open Book Project - Introduction
+This repo contains material and information from the workshops and journal club sessions run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). Our vision for this repo is to be an authoritive source of information for those who want to leverage generative AI in their work and build regardless of how small or big their projects are. 
 
-**An Open Book Project**
+Our _mission_ is to create an ecosystem of experts, ideas, tools, and a community that build together until we get to a point where **no idea is too expensive to try**. 
+
+## What does "An Open Book Project" mean?
+
+We will continue adding material to this repository, but feel free to add any questions or suggestions through pull requests or through reporting issues.
+
 Given the rapid pace of development in LLM space, we are releasing this information as an open book project which means that we welcome and encourage contributions from anyone who is interested and esp anyone who has used LLMs in production setting and wants to share their learnings with the broader community. See the bottom of this page for step by step instructions for how you can contribute.
 Here are some examples of contributions you can make:
 
@@ -46,10 +51,9 @@ Here are some examples of contributions you can make:
     - Add new sections for important topics that are missing
     - Improving existing content by adding more detail or context
 
-TIP: Follow the gif below to find the **Table of Contents** on the top left corner of this pane. 
-![Table of Contents](https://github.com/Aggregate-Intellect/practical-llms/blob/main/Peek%202023-03-10%2007-59.gif)
-
 ---
+
+# KNOWLEDGE-OPS
 
 ## The Emergence of KnowledgeOps
 
@@ -82,6 +86,8 @@ DevOps and ModelOps have transformed software development over the past two deca
 [Amir](https://www.linkedin.com/in/amirfzpr/) is the co-founder of Aggregate Intellect ([https://ai.science/](https://ai.science/)), a Smart Knowledge Navigator platform for R&D teams in emerging technologies like AI. Prior to this, Amir was an NLP Product Lead at Royal Bank of Canada, and held a postdoctoral position at University of Oxford conducting research on experimental quantum computing. Amir holds a PhD in Physics from University of Toronto.
 
 ---
+
+# USE CASES
 
 ## Commercializing LLMs: Lessons and Ideas for Agile Innovation
 
@@ -129,6 +135,8 @@ _Resources_
 
 ---
 
+# LLM-OPS AND ENGINEERING
+
 ## Integrating LLMs into Your Product: Considerations and Best Practices
 
 The proliferation of ChatGPT and other large language models has resulted in an explosion of LLM-based projects and startups. While these models can provide impressive initial demos, integrating them into a product requires careful consideration and planning. This talk will cover key considerations for creating, testing, and optimizing prompts for LLMs, as well as how to run analytics on key user metrics to ensure success.
@@ -169,6 +177,8 @@ _Resources_
 [Denys](https://www.linkedin.com/in/denyslinkov/) is the ML lead at Voiceflow focused on building the ML platform and data science offerings. His focus is on realtime NLP systems that help Voiceflow’s 60+ enterprise customers build better conversational assistants. Previously he worked at large bank as a senior cloud architect.
 
 ---
+
+# LARGE LANGUAGE MODELS IN ENTERPRISES
 
 ## Incorporating Large Language Models into Enterprise Analytics: Navigating the Landscape of In-Context Learning and Agents
 
@@ -219,6 +229,8 @@ _Resources_
 
 ---
 
+# RISK MITIGATION OF LARGE LANGUAGE MODELS
+
 ## Generative AI: Ethics, Accessibility, Legal Risk Mitigation
 
 Generative AI has made impressive advances in creating music, art, and even virtual worlds that were once thought to be exclusively the domain of human creators. However, with such power comes great responsibility, and we must be mindful of the ethical implications of our creations. In this session, we will explore the intersection of generative AI, ethics, and accessibility. We will examine ethical considerations related to bias, transparency, and ownership, as well as the challenges of making generative AI accessible to individuals with disabilities and those from underrepresented communities.
@@ -257,6 +269,8 @@ Generative AI has made impressive advances in creating music, art, and even virt
 [Noelle Silver Russell](https://www.linkedin.com/in/noelleai/) is a multi-award-winning technologist and entrepreneur who specializes in advising companies on emerging technology, generative AI and LLMs. She is the Global AI Solutions Lead as well as the Global Industry Lead for Generative AI at Accenture. She has led teams at NPR, Microsoft, IBM, and Amazon Alexa, and is a consistent champion for AI literacy and the ethical use of AI based on her work building some of the largest AI models in the world. She is the founder of AI Leadership Institute and she was recently awarded the Microsoft Most Valuable Professional award for Artificial Intelligence as well as VentureBeat’s Women in AI Responsibility and Ethics award.
 
 ---
+
+# LARGE LANGUAGE MODEL AGENTS - ONSET AGI?
 
 ## LLMOps: Expanding the Capabilities of Language Models with External Tools
 
@@ -344,6 +358,14 @@ _Resources_
 
 ---
 
+# LARGE LANGUAGE HANDS ON TUTORIALS AND RESOURCES
+
+## LangChain Hands-on
+
+---
+
+# THEORETICAL FOUNDATIONS OF LARGE LANGUAGE MDOELS
+
 ## Optimizing Large Language Models with Reinforcement Learning-Based Prompts
 
 Large language models (LLMs) have the potential to perform a wide range of tasks by understanding human queries, but they are often sensitive to the wording of the prompts, which can greatly affect the output. This talk will introduce RLPrompt, an efficient algorithm that uses reinforcement learning to systematically search for the best prompts to improve LLM performance across diverse tasks.
@@ -419,7 +441,7 @@ Our team will review the issue and either implement the suggested change or resp
 
 ---
 
-## Other Useful Resources
+# Other Useful Resources
 - [Aggregate Intellect Weekly Journal Club on NLP, GNN, etc](https://lu.ma/aisc-journal-club)
 - [Augmented Thinking - A.I. Youtube Channel](https://www.youtube.com/@ai-science)
 - [LangChain Tutorials](https://github.com/gkamradt/langchain-tutorials)
