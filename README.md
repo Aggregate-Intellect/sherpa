@@ -110,7 +110,43 @@ We continue observing a rapid movement towards creation of agents that can _reas
 [SLIDES](#) | [RECORDING](https://youtu.be/kpDKaYRlEG4)
 
 **SUMMARY**
-_coming soon_
+
+1. KnowledgeOps is the next stage where automation is created using information seeking agents.
+2. Knowledge jobs involve managing an organization's knowledge assets and processes to increase efficiency and effectiveness of information intensive tasks.
+3. Information intensive tasks include learning about LLMs and other topics that require consulting different resources and finding information.
+4. An agent like Sherpa could assist with learning by finding and presenting relevant information to the user.
+5. In the future, it may be possible to interact with such agents using voice commands while engaging in physical activities like jogging.
+1. An agent called Sherpa could assist with finding and presenting relevant information to the user.
+5. Knowledge assets include data, code, tools, and documentation, while processes include communication, collaboration, and project management.
+6. Agents like Sherpa could help with collaboration, communication, and project management.
+7. MLOps is a new concept that automates experimentation, data, and model handling.
+8. MLOps is a step forward from DevOps in terms of automating manual processes.
+1. KnowledgeOps is a new concept that automates exploration, planning, and coding of ideas.
+2. Continuous exploration (CE) is a key component of KnowledgeOps, where ideas are explored, built, integrated, delivered, measured, and repeated.
+4. Industry trends suggest a shift towards merging of specialized semantic search, recommendation, and other tools with generative co-pilots.
+5. In order to have an effective agent for information-intensive tasks, three types of skills are necessary: reasoning, content understanding, and execution.
+6. Large language models can provide these skills for an agent.
+7. The AI agent can prioritize tasks, execute them using different tools, keep track of them in memory, and reflect on its observations and achievements.
+8. Similar ideas are being developed by other companies and projects, such as AutoGPT, BabyAGI, and Microsoft Jarvis.
+1. Reflection is a step in the process of using large language models to prompt the system for information, reasoning, and criticism to suggest a resolution.
+2. These agents can call smaller or large language models or other ml models for regression or mathematical calculations.
+3. An engaged community and tools like this can be powerful in allowing people to try out their ideas quickly.
+4. MLOps and DevOps allowed us to move fast and break things, and now it is KnowledgeOps turn to empower trying out ideas cheaply.
+5. KnowledgeOpd can involve creating systems, processes, and collaboration tools that make it easy for anyone to try out ideas.
+8. The process of using large language models can generate implementation-ready code, but it is ultimately up to the operator to ensure its accuracy and feasibility.
+9. The power of this approach is in democratizing entrepreneurship and making it accessible to more people, regardless of their financial or social status.
+4. Ethical questions need to be asked and discussed regarding the control and sharing of data and intellectual property.
+5. For example large language models can be used to generate implementation plans and steps for a project, taking into account available information and time estimates.
+6. Auto-generated documents can be sent to clients or users, providing a starting point for further discussion and exploration of ideas.
+1. TThese agents dynamically construct prompts that control the behavior of the AI agent, allowing for more efficient and effective use of the system.
+2. The system can access both internal and external knowledge resources, synthesizing information from multiple sources to complete tasks.
+3. Prompt engineering may become obsolete as more tools allow for dynamic prompt construction.
+4. Evaluating and reflecting on past actions is important for refining and improving the approach to future tasks.
+5. Access to specialized tools and resources, such as the Notion API, can be integrated into the system to further streamline processes.
+1. The AI agent can be used for a variety of applications, such as teaching assistants or project management tools.
+2. The process of brainstorming with Sharepa and generating an action plan is iterative and can be refined based on new information or feedback.
+3. Collaboration and communication with the AI agent is important to ensure the action plan is tailored to specific needs and constraints.
+4. The AI agent can scrape information from external sources and incorporate it into the action plan, improving its accuracy and effectiveness.
 
 ### Amir Feizpour (CEO @ Aggregate Intellect)
 
@@ -164,7 +200,43 @@ GPT-4 and similar LLMs, powered with the ability to interface with external syst
 [SLIDES](#) | [RECORDING](https://youtu.be/7kNgnqgETGo)
 
 **SUMMARY**
-_coming soon_
+
+1. The talk explores the extreme limits and limitations of using LLMs in production, as well as how to address these limitations.
+3. Evaluating LLMs is challenging, especially when dealing with the strongest performing model like Gp4, which could be updated at any time without knowledge of the training process.
+5. Retrieval is often the limiting factor in startups that use a combination of LangChain, LammaIndex, vector databases, and GPT4.
+6. Context size limitations are also a concern, with 32,000 tokens not being enough and the way context is used being inefficient.
+7. Other limitations discussed include calibration and factuality.
+1. LLMs can be difficult to use in production, especially for use cases where the threshold for accuracy is high.
+2. Custom models can be better for domain-specific data than large language models.
+4. LLMs are good at code generation, summarization, instruction following, tuning, and reinforcement learning.
+5. There is a debate about whether LLMs truly understand language, especially in the context of reasoning tasks.
+6. Evaluating LLMs can involve comparing them to smaller models and being aware of their limitations in terms of bias amplification and memorization.
+7. Inverse scaling prize is a method for evaluating LLMs that compares their performance to their size.
+1. Bias amplification and overconfidence can be concerns when using larger language models.
+3. U-shaped performance can occur with LLMs, where performance initially decreases as the model size increases, but then improves at larger sizes.
+4. Some tasks, such as algebra questions and directional orientation, can be challenging for LLMs to solve.
+2. The frequency of certain terms in the input can impact LLMs' performance on certain tasks.
+3. Tools such as Snoopy and Koala can be used to evaluate LLMs and identify test set contamination.
+4. Test set contamination can amplify reasoning errors and should be avoided.
+3. Consolidation towards a generalist model that can solve multiple tasks is a driving force, but it may not be appropriate for all use cases.
+4. Smart product design may involve not relying on language models for tasks they are not currently good at.
+5. Prompt engineering can be used to limit the context and prevent the model from fetching information from memory.
+1. Tasks decomposition is important when asking LLMs to answer complex questions.
+2. LLMs may need to leverage external tools to answer certain questions, such as APIs or search engines.
+2. Tool integration paradigms include asking user queries and decomposing queries into a set of tasks.
+4. Strategies for task decomposition include matching the description of a tool with the user query and chaining services together.
+1. There are projects working on packaging everything into a single tool for user queries, but they are not yet production-ready.
+2. Vector stores are being used for retrieval augmented LLMs.
+3. Cosine similarity is a measure of geometric distance between two vectors in an embedding space, but it underestimates the similarity of frequent words.
+1. Sentences can have multiple facets and can be interpreted differently depending on the context.
+2. Instruction fine-tune text embeddings can be used to create embeddings tailored to solving specific tasks.
+3. Faceted embeddings can be used to focus on particular facets of an input.
+4. Query expansion and chaining of thought can help increase the likelihood of finding the right cosine similarity, but fundamental limitations still remain.
+1. Precision versus recall is important in answering questions within a context window.
+2. Production readiness of a tool depends on the complexity of user queries and the distribution of relevant information across the corpus.
+3. Fine-tuning models for specific problems works better than general large language models, especially if they are domain-adapted and continue to be pre-trained.
+4. In-house instruction tuning can be promising for domain-specific data sets.
+1. The prompt strategy for fine-tuning models can be promising, especially with prompt compression during instruction tuning.
 
 ### Suhas Pai (CTO @ Bedrock AI)
 
@@ -178,7 +250,7 @@ An emerging aspect of large language models is their ability to generate dataset
 
 [SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/Self-Improving%20LLMs.pdf) | [RECORDING](https://youtu.be/Zk_UcqvTTAA)
 
-**TWITTER THREAD SUMMARY OF THE TALK:**
+**SUMMARY**
 
 * Large Language Models and Synthetic Data
     * As AI adoption increases, the growing demand for human annotations will quickly surpass human capacity.
@@ -223,7 +295,7 @@ In this talk, Josh, an ML expert with experience commercializing NLP-powered ser
 
 [SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/KnowledgeOps/Commercialization%20Strategy%20with%20LLMs.pdf) | [RECORDING](https://youtu.be/QfX648IZg3U)
 
-**TWITTER THREAD SUMMARY OF THE TALK:**
+**SUMMARY**
 
 * Opportunities for large language models in startups and innovation
     * 1/21: Large language models offer exciting possibilities for startups and product development. They can revolutionize the innovation process with qualitatively new ways of problem-solving. Before building a product, take a step back and see if an approach powered by these models could serve a purpose.
@@ -270,7 +342,47 @@ LLMs alone generally struggle with complex mathematical tasks. This limitation i
 [SLIDES](#) | [RECORDING](https://youtu.be/NRnjra-WGmY)
 
 **SUMMARY**
-_coming soon_
+
+1. The interaction between LLMs and financial models is important.
+2. LLMs can be used to build models of the real world and provide information about it.
+3. Financial models are simple to see and find, making them a good context for LLMs.
+4. The goal is to use mathematical models for socioeconomical systems to improve and empower humanity to be more rational.
+5. Financial models are currently not easily accessible to people, but democratizing access to these models is important.
+6. LLMs have limitations in logical reasoning capability, but as the model scales, it becomes more skilled in performing logical reasoning tasks.
+7. If LLMs have reasoning capabilities, they can be used to help people understand how the world works and make good plans.
+8. LLMs can be used to simulate real-world scenarios in financial models.
+9. LLMs have different capabilities in understanding logical reasoning, with larger models performing better.
+10. LLMs can generate code to solve financial problems, but may make mistakes in understanding certain formulas.
+11. LLMs can be programmed to consider different factors, such as inflation, in financial simulations.
+14. The limitations of LLMs become more apparent when dealing with more complex scenarios in financial simulations.
+15. LLMs can be used to translate natural language to mathematical models, making it easier for non-modelers to understand.
+16. Tools like Plan with Flow can be used to create systems that bridge the gap between natural language and mathematical models in financial simulations.
+17. LLMs can be used to create intuitive user interfaces that allow non-modelers to interact with financial simulations.
+18. To communicate with mathematical models, there is a need for a domain-specific language.
+19. The process of going from a natural language prompt to a mathematical model involves several steps, including entity extraction and domain-specific language translation.
+20. Intermittent steps such as descriptions of assets may be necessary to fit all details into a language model prompt.
+21. LLMs can be used to extract financial information from natural language prompts and transfer it to a JSON format.
+22. A domain-specific language is necessary to communicate with the mathematical model in financial simulations.
+23. LLMs can be used to create simple user interfaces for financial simulations, such as changing assumptions about inflation rates.
+24. To change assumptions, a mathematical operation is necessary to construct a vector of assumptions for each month.
+25. A prompt format can be used to instruct the LLM on how to construct the vector, such as specifying when inflation rates change over time.
+26. LLMs can be used to extract date changes and construct mathematical operations to convert assumptions into vectors.
+27. A carefully formatted prompt is necessary to ensure accurate extraction of information.
+29. To answer questions about the model, the LLM needs to be told what the mathematical model says and then parse that information.
+31. LLMs can be used to answer questions about financial simulations, such as whether someone can afford to buy a house.
+32. LLMs can be used to reason about financial simulations based on user inputs and update the context prompt accordingly.
+33. To interact with financial simulations using LLMs, a detailed financial summary must be sent to the API to be embedded into the conversation context.
+34. The ability to update the context prompt with new information allows for dynamic and responsive financial simulations.
+35. The innovation of this work lies in the ability to use LLMs to traverse between natural language and a domain-specific language (DSL) for financial models.
+36. DSLs are used to abstract complex systems into configuration files of parameters and settings, making it easier for non-experts to use.
+37. The DSL used in this work simplifies the process of constructing and updating financial models in Excel or other software by allowing users to use natural language queries and prompts.
+38. The integration of LLMs and DSLs allows for dynamic and responsive financial simulations with natural language interfaces.
+39. The use of DSLs simplifies the process of constructing and updating financial models for non-experts by abstracting complex systems into configuration files of parameters and settings.
+40. The reliability of the response schemas depends on the accuracy and completeness of the financial data used to construct the models.
+41. The mathematical functions used in financial simulations are highly generalizable and can be used to solve complex tasks if the parameters and settings are properly defined.
+43. Trust is a key factor in the productization of this work, particularly in the consumer space where financial decisions are at stake.
+44. The solution to building trust is to involve humans in the loop, giving them control over the financial models and allowing them to make their own decisions.
+45. The positioning of the product as an analytics tool rather than financial advice gives users the expectations of being in control and making their own decisions.
 
 ### Sina Shahandeh (Founder @ Plan with Flow)
 
@@ -285,7 +397,43 @@ ResearchGPT is a natural language statistics agent. Users provide the agent with
 [SLIDES](#) | [RECORDING](https://youtu.be/yqmLF3a9aLM)
 
 **SUMMARY**
-_coming soon_
+
+- ResearchGPT is a demo product and project of a broader package called PhaseLLM, which is essentially a tool to help build more robust, large language model-powered apps.
+- There are three different models preloaded in the demo - GPT4, GPT 3.5, and Claude.
+- The model can generate Python code that can be used for data analysis.
+- The model is running locally and not sharing data with any of the large language models themselves.
+- The model can be used to find correlations between different variables, both numerical and categorical.
+- A future direction is creating a workflow where the model builds the whole project and even searches the web for results.
+- You can think of it as a data science assistant.
+- The model is given a specific prompt to act in a predictable way.
+- The data is loaded into a local server and described using functions.
+- The model is asked to generate Python code for data analysis.
+- The code is run locally and errors are tracked using specific exception classes.
+- A chat bot class is built to abstract the process for different models.
+- Sandbox functionality is being developed for public availability.
+- The chatbot resubmits prompts with updated instructions to make the model desensitized to specific types of errors.
+- The code output is interpreted to provide an analysis of the data.
+- LLMs offer opportunities to build cool apps without much knowledge of deep learning, but understanding which models to use in specific scenarios is crucial.
+- Non-deterministic errors such as how the model interprets results also need to be considered
+- There are still issues with LLMs, such as unterminated string literals, but overall the code generated by LLMs is impressive.
+- The speaker discusses a new approach called chain of thought reasoning, which generates a markdown file with analysis steps and code for each step.
+- The speaker is excited about the potential for LLMs to automate research and create new knowledge.
+- They mention that there are plans to incorporate other agents into the system and allow for data searching and data set creation.
+- There is discussion on benchmarking LLM performance, with speed of execution and quality of code being important factors.
+- The speaker discusses the importance of requesting specific types of code output from LLMs and guiding them towards certain libraries.
+- They mention the need to avoid visualizing data and instead focus on providing output that can be easily interpreted and evaluated by humans.
+- The speaker also touches upon the importance of testing and evaluating LLM outputs, and discusses a workflow that involves having models evaluate each other's interpretations.
+- The topic of not sending sensitive data to large language models is discussed, and the speaker provides details on how they refrain from sending sensitive data by only sending specific prompts and guiding the models towards certain types of outputs.
+- The speakers discuss the potential application of LLMs for creating small models that are trained on company data, which can provide an aggregate answer to queries without risking the exposure of sensitive data.
+- The focus of PhaseLLM is on robustness and user experience, with an emphasis on dealing with exceptions and testing.
+- The speakers mention the potential for collaboration between multiple models and the inclusion of a filtering layer to help with de-identification and data structuring.
+- The feedback from customer discovery interviews suggests that people are excited about the potential of LLMs for various applications
+- The speakers discuss the potential for open-core software and enterprise-level engineered products to be created around LLMs for various use cases.
+- The importance of controlling the behavior of the models and the need for robustness is emphasized.
+- Data visualization and merging datasets are identified as potential new features for LLMs.
+- The possibility of using LLMs to edit Excel files is brought up as a potential new feature to explore.
+- Different companies may have varying comfort levels with using open AI depending on their data retention policies.
+- The possibility of having different cloud solutions and open core solutions for LLMs is discussed, with companies selecting the ones that are right for them.
 
 ### Wojciech Gryc (Founder @ Phase AI)
 
@@ -337,7 +485,52 @@ The availability of Large Language Models as a service (LLMaaS) has sparked a ne
 [SLIDES](#) | [RECORDING](https://youtu.be/REv-GgieWto)
 
 **SUMMARY**
-_coming soon_
+
+- The talk covers the topic of deploying large language models in your own environment, specifically models that perform better than the original GPT-3.
+- Several new projects related to large language models have been released, such as Open Assistant and Red Pajama data set.
+- Controversy exists around what constitutes a large language model, with Denys defining it as any general purpose model that performs better than original GPT-3.
+- Francy 5 XXL, Llama 13 billion, and Flan XXL are all considered large language models under this definition.
+- Flan is the only open source large language model that can be used commercially due to Llama's restrictive license.
+- Reasons for deploying large language models in your own environment could include performance reasons and licensing restrictions.
+- Compliance and data localization requirements may necessitate deploying large language models in specific regions or on-premises.
+- Keeping domain-specific data in-house can be advantageous for training models and maintaining a strategic advantage.
+- Costs associated with training, inference, and embedding should be considered when deciding whether to deploy large language models in your own environment.
+- Deploying a large language model in your own environment can involve significant costs, both monetary and in terms of uptime and latency.
+- Factors to consider when deciding whether to deploy include compliance and data localization requirements, the advantages of keeping domain-specific data in-house, and trust in third-party vendors.
+- Considerations around costs include training cost, inference cost, embedding cost, and network cost. 
+- Uptime and latency can also be important factors to consider when deciding whether to deploy in your own environment or use a third-party service.
+- Trust in vendors, network security, compliance certifications, and identity and access management are important considerations when deciding whether to deploy large language models in your own environment or use a third-party service. 
+- In terms of network security, private connections and virtual private clouds are options for organizations that prioritize this type of defense. 
+- Identity and access management can be easier to manage when deploying in your own environment, with the ability to use existing cloud identities and follow standard IM practices.
+- Identity and access management is crucial for managing user access to multiple services and preventing security compromises. 
+- The definition of "own environment" can vary, depending on factors like cloud infrastructure and data localization requirements. 
+- Some services, like Databricks, offer the option to deploy within your own cloud environment while still providing the service's interface. 
+- On-premises solutions and server applications were more common in the past, but cloud computing has changed the landscape. 
+- Protecting API keys and preventing security breaches is important for organizations using third-party services like Open AI.
+- Segmenting access across different environments, such as dev, staging, and prod, can help prevent security breaches and limit the impact if one key is compromised. 
+- The definition of "own environment" can depend on factors like dedicated URLs or contractual obligations, but it's ultimately up to the organization to determine what they consider to be their own environment. 
+- Setting up a mature ML Ops practice is crucial for deploying LLMs in your own environment, but it can be a complex and difficult process.
+- Deploying LLMs in your own environment can range from using a fully managed solution to training your own model from scratch. 
+- Latency, cost, and model hallucination are some of the challenges that come with hosting LLMs in your own environment. 
+- There are various libraries, frameworks, and papers available to help with LLM deployment and training, such as Deep-speed Chat, Ray's Alfa, and Llama C++. 
+- It's important for the community to share and discuss their experiences with LLM deployment and training, as well as relevant architecture diagrams and blog posts.
+- Laura is a way to fine-tune models with a minimal number of parameters, which can improve performance without requiring a lot of resources. 
+- Stable 8-bit inference allows for running large language models on smaller hardware, which can make it easier to deploy models in production. 
+- 4-bit inference is a recent development that allows for high accuracy with very little bandwidth, which is impressive. 
+- Advancements in hardware and libraries are making LLM Ops more like ML Ops, and it's becoming easier to manage and deploy large language models. 
+- The notebook demo shows that it's possible to run large language models on easy-to-access hardware like T4 GPUs, but it's important to do proper ML Ops deployments.
+- Zero trust is an interesting concept in security where access is granted based on authentication and smart monitoring rather than assuming certain criteria for access. 
+- Multi-tenancy for large language models can involve segregating instances for data storage, compute, and model weights, but it can be expensive. 
+- Using Laura for fine-tuning can make it easier to have a shared service for hosting the primary language model and swapping out smaller sidecars for each user. 
+- The practicality of multi-tenancy depends on the organization's priorities and cost considerations.
+- There are frameworks like Microsoft Semantic Kernel and marketplaces where you can rent cloud compute from other people, which can decentralize compute and reduce reliance on big players. 
+- Federated learning and decomposition techniques can be interesting for distributed computing but networking latency and bandwidth can be a challenge for larger models.
+- Prompt injection can happen regardless of where your application is deployed and is a security risk, especially if you have many services relying on it. 
+- Companies training models should be aware of the potential for specific prompts to generate malicious code, and application and data design are important considerations for avoiding these risks.
+- Good data security practices are important for ensuring the reliability and security of language models.
+- Latency and uptime are still major challenges for large language models, and the user experience needs to be taken into consideration.
+- Hosting your own language model may not always be the best solution, as commercially available models often still perform better. 
+- Entity GPUs may offer a potential solution to latency issues, but further exploration is needed.
 
 ### Denys Linkov (ML Lead @ Voiceflow)
 
