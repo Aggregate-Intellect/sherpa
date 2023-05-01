@@ -786,7 +786,7 @@ This workshop focuses on Large Language Models (LLMs) and their capabilities in 
 
 In this presentation, we will explore the latest breakthroughs in fine-tuning large language models. Our conversation will encompass various fine-tuning techniques, including instruction following fine-tuning and reinforcement learning through human feedback (RLHF). Additionally, we will delve into computational aspects like scaling laws, parameter-efficient fine-tuning (PEFT), and the zero redundancy optimizer (ZeRO).
 
-[SLIDES](#) | [RECORDING](https://youtu.be/Bn2ZK_ctPbo)
+[SLIDES](https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/FT_LLMs_EK.pdf) | [RECORDING](https://youtu.be/Bn2ZK_ctPbo)
 
 **SUMMARY**
 
