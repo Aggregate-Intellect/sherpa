@@ -836,6 +836,9 @@ In this presentation, we will explore the latest breakthroughs in fine-tuning la
 - AWS has announced initiatives to create foundational models and collaborate with other labs to make their open source models more widely available.
 - AWS does not make money from models, but instead from compute, so it makes sense for them to publish data and models.
 
+**Resources**
+- Check out Ehsan's series on LLMs: [YouTube Playlist](https://www.youtube.com/watch?v=p7JYu65lDyY&list=PLb9xatikqn0fwsS-Le1mkyQ2uZzK8DeP1)
+
 ### Ehsan Kamalinejad (ML Scientist @ Amazon)
 
 [Ehsan](https://www.linkedin.com/in/ehsan-kamalinejad/) is a machine learning scientist. He is currently a lead scientist working on NLP developments at Amazon. Previously he co-founded Visual One which was a YCombinator startup in computer vision. Before that he was working at Apple for several years as a tech-lead machine learning scientist working on projects such as Photos Memories. Ehsan is also an associate professor at California State University. He got his PhD from the University of Toronto in applied mathematics.
@@ -892,7 +895,7 @@ _Resources_
 
 Large language Models (LLMs, e.g., GPT-3, OPT, TNLG,…) are shown to have a remarkably high performance on standard benchmarks, due to their high parameter count, extremely large training datasets, and significant compute. Although the high parameter count in these models leads to more expressiveness, it can also lead to higher memorization, which, coupled with large unvetted, web-scraped datasets can cause different negative societal and ethical impacts such as leakage of private, sensitive information and generation of harmful text. In this talk, we introduce a global score-based method for controllable text generation that combines arbitrary pre-trained black-box models for achieving the desired attributes in generated text from LLMs, without involving any fine-tuning or structural assumptions about the black-box models.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/r8pAP9zMM_4)
+[SLIDES](https://cseweb.ucsd.edu/~fmireshg/llms_april.pdf) | [RECORDING](https://youtu.be/r8pAP9zMM_4)
 
 **SUMMARY**
 
@@ -930,7 +933,7 @@ Large language Models (LLMs, e.g., GPT-3, OPT, TNLG,…) are shown to have a rem
 - The results of the method will be shown later in the talk.
 - The speaker acknowledges that there is a lot of math involved in the checking and correction steps, and that the method is similar to MCMC sampling.
 
-### Fatemehsadat Mireshghallah (Post-doctoral Researcher @ UW)
+### Fatemehsadat Mireshghallah (PhD Student @ UC San Diego)
 
 [Fatemeh](https://twitter.com/limufar) received her Ph.D. from the CSE department of UC San Diego and will join UW as a post-doctoral fellow. Her research interests are Trustworthy Machine Learning and Natural Language Processing. She is a recipient of the National Center for Women & IT (NCWIT) Collegiate award in 2020 for her work on privacy-preserving inference, a finalist of the Qualcomm Innovation Fellowship in 2021 and a recipient of the 2022 Rising star in Adversarial ML award.
 
