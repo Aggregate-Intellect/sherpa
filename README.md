@@ -39,7 +39,7 @@
   - [Optimizing Large Language Models with Reinforcement Learning-Based Prompts](#optimizing-large-language-models-with-reinforcement-learning-based-prompts)
     - [Mingkai Deng (PhD Student @ CMU)](#mingkai-deng-phd-student--cmu)
   - [Learning-free Controllable Text Generation for Debiasing](#learning-free-controllable-text-generation-for-debiasing)
-    - [Fatemehsadat Mireshghallah (Post-doctoral Researcher @ UW)](#fatemehsadat-mireshghallah-post-doctoral-researcher--uw)
+    - [Fatemehsadat Mireshghallah (PhD Student @ UC San Diego)](#fatemehsadat-mireshghallah-phd-student--uc-san-diego)
 - [Contributions Guideline](#contributions-guideline)
   - [Making Changes through Pull Requests](#making-changes-through-pull-requests)
   - [Suggesting Changes through Issues](#suggesting-changes-through-issues)
