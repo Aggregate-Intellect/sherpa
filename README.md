@@ -640,139 +640,31 @@ Generative AI has made impressive advances in creating music, art, and even virt
 
 This workshop focuses on Large Language Models (LLMs) and their capabilities in language understanding and generation. Despite their impressive performance, LLMs still face challenges in tasks like retrieval and math reasoning. Fortunately, several tools are available for these tasks. LangChain is a Python library that enables the integration of LLMs with external tools to accomplish a wide range of tasks. The workshop will provide an overview of LangChain's basics and demonstrate how it can interface with external tools. Additionally, we will create a simple system using LangChain to answer questions about itself LangChain itself.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/MGB2uahuX_o)
+[NOTEBOOK](https://colab.research.google.com/drive/1j-vDz0TWkwMavH6ld3K3V8uGMCsGJe-S?usp=sharing) | [SOLUTIONS](https://colab.research.google.com/drive/19ZZnxN8W_uw5nrZ6nE4c5ZKeH3PTjZta?usp=sharing) | [RECORDING](https://youtu.be/MGB2uahuX_o)
 
 **SUMMARY**
 
-1. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-2. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
+1. Large language models can be used with other systems to incorporate external knowledge or long term knowledge.
+2. LangChain can be made more interesting by incorporating the idea of a chain, which consists of a prompt template and a large language model.
 3. The prompt template can be used to reduce repetition and input specific information later on.
 4. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-5. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-6. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-7. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-8. The prompt template can be used to reduce repetition and input specific information later on.
-9. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-10. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-11. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-12. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-13. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-14. The prompt template can be used to reduce repetition and input specific information later on.
-15. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-16. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-17. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-18. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-19. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-20. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-21. The prompt template can be used to reduce repetition and input specific information later on.
-22. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-23. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-24. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-25. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-26. A comparison between Lama index and Line Chain can be found in Sue's talk.
-27. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
-28. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-29. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-30. The prompt template can be used to reduce repetition and input specific information later on.
-31. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-32. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-33. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-34. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-35. A comparison between Lama index and Line Chain can be found in Sue's talk.
-36. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
-37. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
-38. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-39. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-40. The prompt template can be used to reduce repetition and input specific information later on.
-41. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-42. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-43. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-44. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-45. A comparison between Lama index and Line Chain can be found in Sue's talk.
-46. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
-47. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
-48. Launching documentation can be used as a context for a large language model to answer questions about launching.
-49. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
-50. The Big Token package can be used to split documents into smaller chunks.
-51. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
-52. Files can be used as a reactive database to store the vector embeddings.
-53. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-54. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-55. The prompt template can be used to reduce repetition and input specific information later on.
-56. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-57. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-58. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-59. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-60. A comparison between Lama index and Line Chain can be found in Sue's talk.
-61. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
-62. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
-63. Launching documentation can be used as a context for a large language model to answer questions about launching.
-64. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
-65. The Big Token package can be used to split documents into smaller chunks.
-66. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
-67. Files can be used as a reactive database to store the vector embeddings.
-68. The Load QA tool from Launching can be used to create a question answering Chen by providing external documents and a question.
-69. Adding external knowledge improves the accuracy of the large language model's answers to questions.
-70. Different types of documents such as YouTube video transcripts or images can be used as external knowledge.
-71. There are different types of vector databases available for use with Launching, including in-memory and more scalable options.
-72. The prompt template used by the Chen includes context and the question to provide accurate answers to questions.
-73. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-74. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-75. The prompt template can be used to reduce repetition and input specific information later on.
-76. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-77. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-78. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-79. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-80. A comparison between Lama index and Line Chain can be found in Sue's talk.
-81. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
-82. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
-83. Launching documentation can be used as a context for a large language model to answer questions about launching.
-84. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
-85. The Big Token package can be used to split documents into smaller chunks.
-86. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
-87. Files can be used as a reactive database to store the vector embeddings.
-88. The Load QA tool from Launching can be used to create a question answering Chen by providing external documents and a question.
-89. Adding external knowledge improves the accuracy of the large language model's answers to questions.
-90. Different types of documents such as YouTube video transcripts or images can be used as external knowledge.
-91. There are different types of vector databases available for use with Launching, including in-memory and more scalable options.
-92. The prompt template used by the Chen includes context and the question to provide accurate answers to questions.
-93. Launching simplifies the process of using large language models by integrating various tools and databases into a single framework.
-94. Exercises and solutions are available for participants to practice and further understand the concepts discussed in the talk.
-95. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-96. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-97. The prompt template can be used to reduce repetition and input specific information later on.
-98. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-99. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-100. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-101. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-102. A comparison between Lama index and Line Chain can be found in Sue's talk.
-103. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
-104. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
-105. Launching documentation can be used as a context for a large language model to answer questions about launching.
-106. Documents can be broken down into smaller chunks to store relevant information
-107. Large language models can be used in other systems to incorporate external knowledge or long term knowledge.
-108. Launching can be made more interesting by incorporating the idea of a Chen, which consists of a prompt template and a large language model.
-109. The prompt template can be used to reduce repetition and input specific information later on.
-110. There are various configurations that can be done with the large language model, such as setting the temperature for randomness in generation.
-111. During the talk, if there are any questions, participants can unmute themselves or post in the chat.
-112. The concept of short-term memory can be incorporated into launching by using a conversation buffer memory to retain previous conversations.
-113. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
-114. A comparison between Lama index and Line Chain can be found in Sue's talk.
-115. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
-116. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
-117. Launching documentation can be used as a context for a large language model to answer questions about launching.
-118. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
-119. The Big Token package can be used to split documents into smaller chunks.
-120. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
-121. Files can be used as a reactive database to store the vector embeddings.
-122. The Load QA tool from Launching can be used to create a question answering Chen by providing external documents and a question.
-123. Adding external knowledge improves the accuracy of the large language model's answers to questions.
-124. Different types of documents such as YouTube video transcripts or images can be used as external knowledge.
-125. There are different types of vector databases available for use with Launching, including in-memory and more scalable options.
-126. The prompt template used by the Chen includes context and the question to provide accurate answers to questions.
-127. Launching simplifies the process of using large language models by integrating various tools and databases into a single framework.
-128. Exercises and solutions are available for participants to practice and further understand the concepts discussed in the talk.
-129. Post-processing and checking are necessary to ensure that the model's output meets expectations, as it may still produce unexpected results.
+5. LangChain can be made more interesting by incorporating the idea of a chain, which consists of a prompt template and a large language model.
+6. The concept of short-term memory can be incorporated into LangChain by using a conversation buffer memory to retain previous conversations.
+7. Adding history about conversations to the prompt can help the model incorporate external knowledge and interact within a particular context.
+8. A comparison between Lama index and LangChain can be found in Suhas's talk.
+9. It is possible to correct LLMS previous responses using subsequent prompts, either through memory or by providing external knowledge.
+10. External knowledge can be incorporated into a large language model by storing a snapshot of the knowledge in a vector database and retrieving relevant information to incorporate into a prompt.
+11. LangChain documentation can be used as a context for a large language model to answer questions about LangChain.
+12. Documents can be broken down into smaller chunks to store relevant information in a more manageable way.
+13. The TikToken package can be used to split documents into smaller chunks.
+14. OpenAI Embedding package can be used to embed the chunks of documents for storage in a vector database.
+15. Files can be used as a reactive database to store the vector embeddings.
+16. The Load QA Chain tool from LangChain can be used to create a question answering chain by providing external documents and a question.
+17. Adding external knowledge improves the accuracy of the large language model's answers to specific questions.
+18. Different types of documents such as YouTube video transcripts or images can be used as external knowledge.
+19. There are different types of vector databases available for use with LangChain, including in-memory and more scalable options.
+20. LangChain simplifies the process of using large language models by integrating various tools and databases into a single framework.
+21. Post-processing and checking are necessary to ensure that the model's output meets expectations, as it may still produce unexpected results.
 
 ### Percy Chen (PhD Student @ McGill University)
 
