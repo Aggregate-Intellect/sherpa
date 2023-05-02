@@ -653,7 +653,8 @@ This workshop focuses on Large Language Models (LLMs) and their capabilities in 
 20. LangChain simplifies the process of using large language models by integrating various tools and databases into a single framework.
 21. Post-processing and checking are necessary to ensure that the model's output meets expectations, as it may still produce unexpected results.
 
-**Other Resources**
+_Resources_
+
 - [LangChain Tutorials](https://github.com/gkamradt/langchain-tutorials)
 
 **Percy Chen (PhD Student @ McGill University)**
@@ -718,7 +719,8 @@ In this presentation, we will explore the latest breakthroughs in fine-tuning la
 - AWS has announced initiatives to create foundational models and collaborate with other labs to make their open source models more widely available.
 - AWS does not make money from models, but instead from compute, so it makes sense for them to publish data and models.
 
-**Resources**
+_Resources_
+
 - Check out Ehsan's series on LLMs: [YouTube Playlist](https://www.youtube.com/watch?v=p7JYu65lDyY&list=PLb9xatikqn0fwsS-Le1mkyQ2uZzK8DeP1)
 
 **Ehsan Kamalinejad (ML Scientist @ Amazon)**
