@@ -148,7 +148,7 @@ We continue observing a rapid movement towards creation of agents that can _reas
 35. Collaboration and communication with the AI agent is important to ensure the action plan is tailored to specific needs and constraints.
 36. The AI agent can scrape information from external sources and incorporate it into the action plan, improving its accuracy and effectiveness.
 
-### Amir Feizpour (CEO @ Aggregate Intellect)
+**Amir Feizpour (CEO @ Aggregate Intellect)**
 
 [Amir](https://www.linkedin.com/in/amirfzpr/) is the co-founder of Aggregate Intellect ([https://ai.science/](https://ai.science/)), a Smart Knowledge Navigator platform for R&D teams in emerging technologies like AI. Prior to this, Amir was an NLP Product Lead at Royal Bank of Canada, and held a postdoctoral position at University of Oxford conducting research on experimental quantum computing. Amir holds a PhD in Physics from University of Toronto.
 
@@ -240,7 +240,7 @@ GPT-4 and similar LLMs, powered with the ability to interface with external syst
 35. In-house instruction tuning can be promising for domain-specific data sets.
 36. The prompt strategy for fine-tuning models can be promising, especially with prompt compression during instruction tuning.
 
-### Suhas Pai (CTO @ Bedrock AI)
+**Suhas Pai (CTO @ Bedrock AI)**
 
 [Suhas](https://www.linkedin.com/in/piesauce/) is the CTO & Co-founder of Bedrock AI, an NLP startup operating in the financial domain, where he conducts research on LLMs, domain adaptation, text ranking, and more. He was the co-chair of the Privacy WG at BigScience, the chair at TMLS 2022 and TMLS NLP 2022 conferences, and is currently writing a book on Large Language Models.
 
@@ -284,7 +284,7 @@ _Resources_
 - [Large Language Models Can Self-Improve](https://arxiv.org/abs/2210.11610)
 - [Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
 
-### Gordon Gibson (ML Lead @ Ada)
+**Gordon Gibson (ML Lead @ Ada)**
 
 [Gordon](https://www.linkedin.com/in/gordon-gibson-874b3130/) is the Senior Engineering Manager of the Applied Machine Learning team at Ada where he's helped lead the creation of Ada's ML engine and features. Gordon's background is in Engineering Physics and Operations Research, and he's passionate about building useful ML products.
 
@@ -333,7 +333,7 @@ _Resources_
 - [Canada Government Business Benefits Finder](https://innovation.ised-isde.canada.ca/innovation/s/?language=en_CA)
 - [Understanding UK Artificial Intelligence R&D commercialisation and the role of standards](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1079959/DCMS_and_OAI_-_Understanding_UK_Artificial_Intelligence_R_D_commercialisation__accessible.pdf)
 
-### Josh Seltzer (CTO @ Nexxt Intelligence)
+**Josh Seltzer (CTO @ Nexxt Intelligence)**
 
 [Josh](https://www.linkedin.com/in/josh-seltzer/) is the CTO at Nexxt Intelligence, where he leads R&D on LLMs and NLP to build innovative solutions for the market research industry. He also works in biodiversity and applications of AI for conservation.
 
@@ -388,7 +388,7 @@ LLMs alone generally struggle with complex mathematical tasks. This limitation i
 39. The solution to building trust is to involve humans in the loop, giving them control over the financial models and allowing them to make their own decisions.
 40. The positioning of the product as an analytics tool rather than financial advice gives users the expectations of being in control and making their own decisions.
 
-### Sina Shahandeh (Founder @ Plan with Flow)
+**Sina Shahandeh (Founder @ Plan with Flow)**
 
 [Sina](https://www.linkedin.com/in/sinashahandeh/) holds a PhD in scientific computing and has led data science teams at three startups in Toronto's ecosystem. Before founding Plan with Flow, Sina served as the Vice President of Data Science at ecobee Inc., leading to an exit valued at $770 million. Currently, Sina is based in Madrid.
 
@@ -439,7 +439,7 @@ ResearchGPT is a natural language statistics agent. Users provide the agent with
 - Different companies may have varying comfort levels with using open AI depending on their data retention policies.
 - The possibility of having different cloud solutions and open core solutions for LLMs is discussed, with companies selecting the ones that are right for them.
 
-### Wojciech Gryc (Founder @ Phase AI)
+**Wojciech Gryc (Founder @ Phase AI)**
 
 [Wojciech](https://www.linkedin.com/in/wojciechgryc) is the co-founder and CEO of Phase AI, where he helps startups and scaleups launch AI-driven products. He is the developer behind PhaseLLM and ResearchGPT. Wojciech started his career as an AI researcher at IBM Research, and completed his graduate studies at the Oxford Internet Institute. Prior to Phase AI, he was the founder and CEO of Canopy Labs, a customer data platform funded by Y Combinator and acquired by Drop.
 
@@ -487,7 +487,7 @@ _Resources_
 
 The availability of Large Language Models as a service (LLMaaS) has sparked a new wave of applications, use cases and companies. But what alternatives exist if you want to host your own LLMs? In this talk we’ll cover the landscape of LLMs and their deployment options. We’ll discuss the tradeoffs of hosting your own LLM vs using a commercial offering, including security, compliance, cost and delivery times. We’ll also cover a number of available open source options and how they can be hosted within your own environment whether a virtual private cloud or on prem.
 
-[SLIDES](#) | [RECORDING](https://youtu.be/REv-GgieWto)
+[SLIDES](https://pitch.com/public/9120173c-bb54-4806-9849-e2b6670b2bcd) | [RECORDING](https://youtu.be/REv-GgieWto)
 
 **SUMMARY**
 
@@ -537,7 +537,7 @@ The availability of Large Language Models as a service (LLMaaS) has sparked a ne
 - Hosting your own language model may not always be the best solution, as commercially available models often still perform better.
 - Entity GPUs may offer a potential solution to latency issues, but further exploration is needed.
 
-### Denys Linkov (ML Lead @ Voiceflow)
+**Denys Linkov (ML Lead @ Voiceflow)**
 
 [Denys](https://www.linkedin.com/in/denyslinkov/) is the ML lead at Voiceflow focused on building the ML platform and data science offerings. His focus is on realtime NLP systems that help Voiceflow’s 60+ enterprise customers build better conversational assistants. Previously he worked at large bank as a senior cloud architect.
 
@@ -587,7 +587,7 @@ _Resources_
 - [The CEO’s Guide to the Generative AI Revolution](https://www.bcg.com/publications/2023/ceo-guide-to-ai-revolution)
 - [A New Era of Creativity: Expert-in-the-loop Generative AI](https://multithreaded.stitchfix.com/blog/2023/03/06/expert-in-the-loop-generative-ai-at-stitch-fix/)
 
-### Rajiv Shah (MLE @ Huggingface)
+**Rajiv Shah (MLE @ Huggingface)**
 
 [Rajiv](https://www.linkedin.com/in/rajistics/) is a machine learning engineer at Hugging Face, whose primary focus is on enabling enterprise teams to succeed with AI. He is a widely recognized speaker on enterprise AI and was part of data science teams at Snorkel AI, Caterpillar, and State Farm.
 
@@ -628,7 +628,7 @@ Generative AI has made impressive advances in creating music, art, and even virt
   - 19/20: Evaluating risks and mitigating them in the solution is important. There are use cases for LLMs that are relatively easy to approach and mitigate risks, such as customer call centers and customer service ticketing. However, more rigor and discipline are required for projects using codex, which were trained on Github repos.
   - 20/20: Indemnification is important when using LLMs to protect against ownership challenges that may arise in the future. Enterprise level solutions provide more indemnification than research models like Dalle, especially if the model is not custom trained on your own art.
 
-### Noelle Russell (Global AI Solutions Lead @ Accenture)
+**Noelle Russell (Global AI Solutions Lead @ Accenture)**
 
 [Noelle Silver Russell](https://www.linkedin.com/in/noelleai/) is a multi-award-winning technologist and entrepreneur who specializes in advising companies on emerging technology, generative AI and LLMs. She is the Global AI Solutions Lead as well as the Global Industry Lead for Generative AI at Accenture. She has led teams at NPR, Microsoft, IBM, and Amazon Alexa, and is a consistent champion for AI literacy and the ethical use of AI based on her work building some of the largest AI models in the world. She is the founder of AI Leadership Institute and she was recently awarded the Microsoft Most Valuable Professional award for Artificial Intelligence as well as VentureBeat’s Women in AI Responsibility and Ethics award.
 
@@ -666,7 +666,10 @@ This workshop focuses on Large Language Models (LLMs) and their capabilities in 
 20. LangChain simplifies the process of using large language models by integrating various tools and databases into a single framework.
 21. Post-processing and checking are necessary to ensure that the model's output meets expectations, as it may still produce unexpected results.
 
-### Percy Chen (PhD Student @ McGill University)
+**Other Resources**
+- [LangChain Tutorials](https://github.com/gkamradt/langchain-tutorials)
+
+**Percy Chen (PhD Student @ McGill University)**
 
 [Percy](https://www.linkedin.com/in/boqi-chen/) is a PhD student at McGill University. His research interests include model-driven software engineering, trustworthy AI, verification for ML systems, Graph Neural Networks, and Large Language Models. Percy leads R&D collaboration between McGill University and Aggregate Intellect.
 
@@ -731,7 +734,7 @@ In this presentation, we will explore the latest breakthroughs in fine-tuning la
 **Resources**
 - Check out Ehsan's series on LLMs: [YouTube Playlist](https://www.youtube.com/watch?v=p7JYu65lDyY&list=PLb9xatikqn0fwsS-Le1mkyQ2uZzK8DeP1)
 
-### Ehsan Kamalinejad (ML Scientist @ Amazon)
+**Ehsan Kamalinejad (ML Scientist @ Amazon)**
 
 [Ehsan](https://www.linkedin.com/in/ehsan-kamalinejad/) is a machine learning scientist. He is currently a lead scientist working on NLP developments at Amazon. Previously he co-founded Visual One which was a YCombinator startup in computer vision. Before that he was working at Apple for several years as a tech-lead machine learning scientist working on projects such as Photos Memories. Ehsan is also an associate professor at California State University. He got his PhD from the University of Toronto in applied mathematics.
 
@@ -777,7 +780,7 @@ _Resources_
 - [Prompt Waywardness: The Curious Case of Discretized Interpretation of Continuous Prompts](https://arxiv.org/abs/2112.08348)
 - [A Recipe For Arbitrary Text Style Transfer with Large Language Models](https://arxiv.org/abs/2109.03910)
 
-### Mingkai Deng (PhD Student @ CMU)
+**Mingkai Deng (PhD Student @ CMU)**
 
 [Mingkai Deng](https://www.linkedin.com/in/mingkaideng/) is a PhD student at Carnegie Mellon University working at the intersection of machine learning, computer vision, and natural language processing. Prior to that, he was a data scientist who led award-winning projects and built analytics products that serve multiple Fortune 500 clients.
 
@@ -825,7 +828,7 @@ Large language Models (LLMs, e.g., GPT-3, OPT, TNLG,…) are shown to have a rem
 - The results of the method will be shown later in the talk.
 - The speaker acknowledges that there is a lot of math involved in the checking and correction steps, and that the method is similar to MCMC sampling.
 
-### Fatemehsadat Mireshghallah (PhD Student @ UC San Diego)
+**Fatemehsadat Mireshghallah (PhD Student @ UC San Diego)**
 
 [Fatemeh](https://twitter.com/limufar) received her Ph.D. from the CSE department of UC San Diego and will join UW as a post-doctoral fellow. Her research interests are Trustworthy Machine Learning and Natural Language Processing. She is a recipient of the National Center for Women & IT (NCWIT) Collegiate award in 2020 for her work on privacy-preserving inference, a finalist of the Qualcomm Innovation Fellowship in 2021 and a recipient of the 2022 Rising star in Adversarial ML award.
 
@@ -867,4 +870,3 @@ Our team will review the issue and either implement the suggested change or resp
 
 - [Aggregate Intellect Weekly Journal Club on NLP, GNN, etc](https://lu.ma/aisc-journal-club)
 - [Augmented Thinking - A.I. Youtube Channel](https://www.youtube.com/@ai-science)
-- [LangChain Tutorials](https://github.com/gkamradt/langchain-tutorials)
