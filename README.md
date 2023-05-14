@@ -1,3 +1,36 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [PRACTICAL LARGE LANGUAGE MODELS (LLMs): AN OPEN BOOK PROJECT - INTRODUCTION](#practical-large-language-models-llms-an-open-book-project---introduction)
+  - [What does "An Open Book Project" mean?](#what-does-an-open-book-project-mean)
+- [LARGE LANGUAGE MODEL AGENTS - ONSET AGI?](#large-language-model-agents---onset-agi)
+  - [Expanding the Capabilities of Language Models with External Tools](#expanding-the-capabilities-of-language-models-with-external-tools)
+  - [Exploring the agency limits of today's LLMs](#exploring-the-agency-limits-of-todays-llms)
+  - [Leveraging Language Models for Training Data Generation and Tool Learning](#leveraging-language-models-for-training-data-generation-and-tool-learning)
+- [USE CASES](#use-cases)
+  - [Commercializing LLMs: Lessons and Ideas for Agile Innovation](#commercializing-llms-lessons-and-ideas-for-agile-innovation)
+  - [ChatGPT-like application for construction of mathematical financial models](#chatgpt-like-application-for-construction-of-mathematical-financial-models)
+  - [Building ResearchLLM: automated statistical research and interpretation](#building-researchllm-automated-statistical-research-and-interpretation)
+- [LLM-OPS, ENGINEERING, AND ENTERPRISE CONSIDERATIONS](#llm-ops-engineering-and-enterprise-considerations)
+  - [Integrating LLMs into Your Product: Considerations and Best Practices](#integrating-llms-into-your-product-considerations-and-best-practices)
+  - [Running LLMs in Your Environment](#running-llms-in-your-environment)
+  - [Incorporating Large Language Models into Enterprise Analytics: Navigating the Landscape of In-Context Learning and Agents](#incorporating-large-language-models-into-enterprise-analytics-navigating-the-landscape-of-in-context-learning-and-agents)
+- [RISK MITIGATION OF LARGE LANGUAGE MODELS](#risk-mitigation-of-large-language-models)
+  - [Generative AI: Ethics, Accessibility, Legal Risk Mitigation](#generative-ai-ethics-accessibility-legal-risk-mitigation)
+- [LLM HANDS ON TUTORIALS AND RESOURCES](#llm-hands-on-tutorials-and-resources)
+  - [Building with LLMs Using LangChain - Hands-on](#building-with-llms-using-langchain---hands-on)
+- [THEORETICAL FOUNDATIONS OF LARGE LANGUAGE MDOELS](#theoretical-foundations-of-large-language-mdoels)
+  - [Modern Innovations in Fine-Tuning Large Language Models](#modern-innovations-in-fine-tuning-large-language-models)
+  - [Optimizing Large Language Models with Reinforcement Learning-Based Prompts](#optimizing-large-language-models-with-reinforcement-learning-based-prompts)
+  - [Learning-free Controllable Text Generation for Debiasing](#learning-free-controllable-text-generation-for-debiasing)
+- [Contributions Guideline](#contributions-guideline)
+  - [Making Changes through Pull Requests](#making-changes-through-pull-requests)
+  - [Suggesting Changes through Issues](#suggesting-changes-through-issues)
+- [Other Useful Resources](#other-useful-resources)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # PRACTICAL LARGE LANGUAGE MODELS (LLMs): AN OPEN BOOK PROJECT - INTRODUCTION
 
 This repo contains material and information from the workshops and journal club sessions run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). Our vision for this repo is to be an authoritive source of information for those who want to leverage generative AI in their work and build regardless of how small or big their projects are.
