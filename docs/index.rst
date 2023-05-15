@@ -1,3 +1,6 @@
+PRACTICAL LARGE LANGUAGE MODELS - OPEN BOOK
+===========================================
+
 .. image:: cover_image.png
   :width: 400
   :alt: Cover Image
