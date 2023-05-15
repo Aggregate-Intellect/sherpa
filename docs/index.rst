@@ -11,8 +11,8 @@ This is some text about this book!
    :maxdepth: 2
    :caption: KNOWLEDGE-OPS
 
-   docs/KnowledgeOps/rise_of_knowledgeops.rst
-   docs/KnowledgeOps/rise_of_agents.rst
+   KnowledgeOps/rise_of_knowledgeops.rst
+   KnowledgeOps/rise_of_agents.rst
 
 .. toctree::
    :maxdepth: 2
