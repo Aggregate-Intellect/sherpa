@@ -5,16 +5,18 @@ PRACTICAL LARGE LANGUAGE MODELS - OPEN BOOK
   :width: 400
   :alt: Cover Image
 
+This is some text about this book!
+
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: KNOWLEDGE-OPS
 
-   KnowledgeOps/rise_of_knowledgeops.rst
-   KnowledgeOps/rise_of_agents.rst
+   docs/KnowledgeOps/rise_of_knowledgeops.rst
+   docs/KnowledgeOps/rise_of_agents.rst
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: LARGE LANGUAGE MODEL AGENTS - ONSET AGI?
 
-   LLM Agents/llm_tools_use.rst
-   LLM Agents/llm_limitations.rst
+   docs/LLM Agents/llm_tools_use.rst
+   docs/LLM Agents/llm_limitations.rst
