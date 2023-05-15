@@ -4,6 +4,14 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: Install
+   :caption: KNOWLEDGE-OPS
 
-   installation/fsl_mac_install
+   KnowledgeOps/rise_of_knowledgeops.rst
+   KnowledgeOps/rise_of_agents.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: LARGE LANGUAGE MODEL AGENTS - ONSET AGI?
+
+   LLM Agents/llm_tools_use.rst
+   LLM Agents/llm_limitations.rst
