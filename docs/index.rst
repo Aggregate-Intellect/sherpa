@@ -9,6 +9,9 @@ This book contains notes, videos, slides, and resources from the workshops and j
 
 Our mission is to create an ecosystem of experts, ideas, tools, and a community that build together until we get to a point where no idea is too expensive to try.
 
+..note::
+   In order to contribute to this open book, visit: https://github.com/Aggregate-Intellect/practical-llms
+
 CONTENT
 ^^^^^^^
 
