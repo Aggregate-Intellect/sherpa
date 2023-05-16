@@ -1,6 +1,8 @@
 # PRACTICAL LARGE LANGUAGE MODELS (LLMs): AN OPEN BOOK PROJECT - INTRODUCTION
 
-To see the book, visit: https://llm-live-book.readthedocs.io/
+[<img src="docs/cover_image.png">](https://llm-live-book.readthedocs.io/)
+
+**To see the book, visit: https://llm-live-book.readthedocs.io/**
 
 This repo contains material and information from the workshops and journal club sessions run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). Our vision for this repo is to be an authoritive source of information for those who want to leverage generative AI in their work and build regardless of how small or big their projects are.
 
