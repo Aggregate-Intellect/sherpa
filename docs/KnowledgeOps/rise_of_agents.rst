@@ -114,5 +114,5 @@ experimental quantum computing. Amir holds a PhD in Physics from
 University of Toronto.
 
 .. image:: amirf.jpg
-  :width: 600
+  :width: 400
   :alt: Amir Feizpour Headshot

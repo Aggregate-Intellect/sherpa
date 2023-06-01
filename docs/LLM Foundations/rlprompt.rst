@@ -121,6 +121,6 @@ machine learning, computer vision, and natural language processing.
 Prior to that, he was a data scientist who led award-winning projects
 and built analytics products that serve multiple Fortune 500 clients.
 
-.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/mingkaid.jpeg
-  :width: 600
+.. image:: mingkaid.jpeg
+  :width: 400
   :alt: Mingkai Deng Headshot

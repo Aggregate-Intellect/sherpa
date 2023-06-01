@@ -111,6 +111,6 @@ where he’s helped lead the creation of Ada’s ML engine and features.
 Gordon’s background is in Engineering Physics and Operations Research,
 and he’s passionate about building useful ML products.
 
-.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/gordong.jpeg
-  :width: 600
+.. image:: gordong.jpeg
+  :width: 400
   :alt: Gordon Gibson Headshot

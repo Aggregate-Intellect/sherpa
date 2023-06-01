@@ -103,6 +103,6 @@ ranking, and more. He was the co-chair of the Privacy WG at BigScience,
 the chair at TMLS 2022 and TMLS NLP 2022 conferences, and is currently
 writing a book on Large Language Models.
 
-.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/SuhasP.jpg
-  :width: 600
+.. image:: SuhasP.jpg
+  :width: 400
   :alt: Suhas Pai Headshot
