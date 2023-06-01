@@ -104,3 +104,7 @@ Voiceflow focused on building the ML platform and data science
 offerings. His focus is on realtime NLP systems that help Voiceflow’s
 60+ enterprise customers build better conversational assistants.
 Previously he worked at large bank as a senior cloud architect.
+
+.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/denysl.jpeg
+  :width: 600
+  :alt: Denys Linkov Headshot

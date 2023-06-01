@@ -138,3 +138,7 @@ for Women & IT (NCWIT) Collegiate award in 2020 for her work on
 privacy-preserving inference, a finalist of the Qualcomm Innovation
 Fellowship in 2021 and a recipient of the 2022 Rising star in
 Adversarial ML award.
+
+.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/fatemeh.jpeg
+  :width: 600
+  :alt: Fatemehsadat Mireshghallah Headshot

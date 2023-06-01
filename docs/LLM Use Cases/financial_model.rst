@@ -115,3 +115,7 @@ scientific computing and has led data science teams at three startups in
 Toronto’s ecosystem. Before founding Plan with Flow, Sina served as the
 Vice President of Data Science at ecobee Inc., leading to an exit valued
 at $770 million. Currently, Sina is based in Madrid.
+
+.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/sinas.png
+  :width: 600
+  :alt: Sina Shahandeh Headshot
