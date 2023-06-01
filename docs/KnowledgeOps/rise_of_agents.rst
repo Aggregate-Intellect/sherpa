@@ -112,3 +112,7 @@ Amir was an NLP Product Lead at Royal Bank of Canada, and held a
 postdoctoral position at University of Oxford conducting research on
 experimental quantum computing. Amir holds a PhD in Physics from
 University of Toronto.
+
+.. image:: ../img/amirf.jpg
+  :width: 600
+  :alt: Cover Image
