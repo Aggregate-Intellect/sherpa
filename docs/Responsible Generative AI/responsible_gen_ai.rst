@@ -131,3 +131,7 @@ models in the world. She is the founder of AI Leadership Institute and
 she was recently awarded the Microsoft Most Valuable Professional award
 for Artificial Intelligence as well as VentureBeat’s Women in AI
 Responsibility and Ethics award.
+
+.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/noelles.jpeg
+  :width: 600
+  :alt: Noelle Silver Russell Headshot

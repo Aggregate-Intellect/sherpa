@@ -103,3 +103,7 @@ ResearchGPT. Wojciech started his career as an AI researcher at IBM
 Research, and completed his graduate studies at the Oxford Internet
 Institute. Prior to Phase AI, he was the founder and CEO of Canopy Labs,
 a customer data platform funded by Y Combinator and acquired by Drop.
+
+.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/wojciechg.jpeg
+  :width: 600
+  :alt: Wojciech Gryc Headshot

@@ -130,3 +130,7 @@ Apple for several years as a tech-lead machine learning scientist
 working on projects such as Photos Memories. Ehsan is also an associate
 professor at California State University. He got his PhD from the
 University of Toronto in applied mathematics.
+
+.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/ehsank.jpeg
+  :width: 600
+  :alt: Ehsan Kamalinejad Headshot
