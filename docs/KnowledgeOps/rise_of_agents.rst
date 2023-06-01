@@ -113,6 +113,6 @@ postdoctoral position at University of Oxford conducting research on
 experimental quantum computing. Amir holds a PhD in Physics from
 University of Toronto.
 
-.. image:: docs/img/amirf.jpg
+.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/amirf.jpg
   :width: 600
   :alt: Amir Feizpour Headshot
