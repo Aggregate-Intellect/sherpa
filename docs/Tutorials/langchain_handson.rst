@@ -82,3 +82,7 @@ McGill University. His research interests include model-driven software
 engineering, trustworthy AI, verification for ML systems, Graph Neural
 Networks, and Large Language Models. Percy leads R&D collaboration
 between McGill University and Aggregate Intellect.
+
+.. image:: percyc.jpeg
+  :width: 400
+  :alt: Noelle Silver Russell Headshot

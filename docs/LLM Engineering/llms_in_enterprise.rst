@@ -130,6 +130,6 @@ teams to succeed with AI. He is a widely recognized speaker on
 enterprise AI and was part of data science teams at Snorkel AI,
 Caterpillar, and State Farm.
 
-.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/rajivsh.jpeg
-  :width: 600
+.. image:: rajivsh.jpeg
+  :width: 400
   :alt: Rajiv Shah Headshot

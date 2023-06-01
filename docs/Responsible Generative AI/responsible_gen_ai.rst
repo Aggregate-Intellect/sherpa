@@ -132,6 +132,6 @@ she was recently awarded the Microsoft Most Valuable Professional award
 for Artificial Intelligence as well as VentureBeat’s Women in AI
 Responsibility and Ethics award.
 
-.. image:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/img/noelles.jpeg
-  :width: 600
+.. image:: noelles.jpeg
+  :width: 400
   :alt: Noelle Silver Russell Headshot
