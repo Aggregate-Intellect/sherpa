@@ -1,0 +1,11 @@
+Flask==2.3.2
+slackeventsapi==3.0.1
+slackclient==2.9.4
+langchain==0.0.205
+fastapi==0.97.0
+PyPDF2
+python-dotenv==0.19.1
+unstructured
+openai
+chromadb
+tiktoken
