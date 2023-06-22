@@ -3,6 +3,8 @@
 ##############################################
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from langchain.chat_models import ChatOpenAI
 from langchain import LLMChain
 from langchain.chains.question_answering import load_qa_chain
@@ -11,9 +13,8 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS 
 from langchain.llms import OpenAI
 from os import environ
-from dotenv import load_dotenv
-load_dotenv()
 from vectorstores import ConversationStore
+from prompt import SlackBotPrompt
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
@@ -53,14 +54,18 @@ def hello_command(ack, body):
     user_id = body["user_id"]
     ack(f"Hi, <@{user_id}>!")
 
+bot = app.client.auth_test()
+print(bot)
+
 @app.event("app_mention")
 def event_test(client, say, event):
     question = event['text']
-    question = question.replace('@Sherpa', '').strip()
-    results = get_response(question)
+    
     thread_ts = event.get("thread_ts", None) or event["ts"]
     replies = client.conversations_replies(channel=event['channel'], ts=thread_ts)
-    print(replies)
+    previous_messages = replies['messages'][:-1]
+
+    results = get_response(question, previous_messages)
 
     say(results, thread_ts=thread_ts)
 
@@ -114,18 +119,29 @@ def update_home_tab(client, event, logger):
   except Exception as e:
     logger.error(f"Error publishing home tab: {e}")
 
-def get_response(question):
+def get_response(question, previous_messages):
     llm = ChatOpenAI(
         openai_api_key=OPENAI_KEY, request_timeout=120
     )
-    retrieval = ConversationStore.from_index(
+
+    prompt = SlackBotPrompt(
+       ai_name='Sherpa',
+       ai_id=bot['user_id'],
+       token_counter=llm.get_num_tokens,
+       input_variables=['query', 'messages', 'retriever']
+    )
+    
+    retriever = ConversationStore.get_vector_retrieval(
        'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX")
     )
 
-    relevant_docs = retrieval.similarity_search(question, top_k=5)
+    chain = LLMChain(llm=llm, prompt=prompt)    
     
-    chain = load_qa_chain(llm, chain_type="stuff")
-    return chain.run(input_documents=relevant_docs, question=question)
+    return chain.run(
+        query=question,
+        messages=previous_messages,
+        retriever=retriever,
+    )
 
     
 
