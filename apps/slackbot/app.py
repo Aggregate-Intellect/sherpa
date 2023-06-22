@@ -2,27 +2,29 @@
 #       Importing necessary modules
 ##############################################
 
-from flask import Flask, Response
-from slackeventsapi import SlackEventAdapter
 import os
-from threading import Thread
-from slack import WebClient
+from langchain.chat_models import ChatOpenAI
+from langchain import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS 
 from langchain.llms import OpenAI
-from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from PyPDF2 import PdfReader
 from os import environ
 from dotenv import load_dotenv
 load_dotenv()
+from vectorstores import ConversationStore
+from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
+
 
 
 # This `app` represents your existing Flask app
-app = Flask(__name__)
+app = App(
+    token=os.environ.get("SLACK_OAUTH_TOKEN"),
+    signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
+)
+
 greetings = ["hi", "hello", "hello there", "hey"]
 
 
@@ -44,62 +46,124 @@ OPENAI_KEY=environ.get("OPENAI_KEY")
 ###########################################################################
 
 #instantiating slack client
-slack_client = WebClient(SLACK_OAUTH_TOKEN) 
 os.environ['OPENAI_API_KEY'] = OPENAI_KEY
 
-# An example of one of your Flask app's routes
-@app.route("/")
-def event_hook(request):
-    json_dict = json.loads(request.body.decode("utf-8"))
-    if json_dict["token"] != VERIFICATION_TOKEN:
-        return {"status": 403}
+@app.command("/hello-socket-mode")
+def hello_command(ack, body):
+    user_id = body["user_id"]
+    ack(f"Hi, <@{user_id}>!")
 
-    if "type" in json_dict:
-        if json_dict["type"] == "url_verification":
-            response_dict = {"challenge": json_dict["challenge"]}
-            return response_dict
-    return {"status": 500}
-    return
+@app.event("app_mention")
+def event_test(client, say, event):
+    question = event['text']
+    question = question.replace('@Sherpa', '').strip()
+    results = get_response(question)
+    thread_ts = event.get("thread_ts", None) or event["ts"]
+    replies = client.conversations_replies(channel=event['channel'], ts=thread_ts)
+    print(replies)
 
+    say(results, thread_ts=thread_ts)
 
-slack_events_adapter = SlackEventAdapter(
-    SLACK_SIGNING_SECRET, "/slack/events", app
-)  
+@app.event("app_home_opened")
+def update_home_tab(client, event, logger):
+  try:
+    # views.publish is the method that your app uses to push a view to the Home tab
+    client.views_publish(
+      # the user that opened your app's app home
+      user_id=event["user"],
+      # the view object that appears in the app home
+      view={
+        "type": "home",
+        "callback_id": "home_view",
 
-chat_history = []
-@slack_events_adapter.on("app_mention")
-def handle_message(event_data):
-    global chat_history
-    chat_history = []
-    def send_reply(value):
-        event_data = value
-        message = event_data["event"]
-        if message.get("subtype") is None:
-            command = message.get("text")
+        # body of the view
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*Welcome to your _App's Home_* :tada:"
+            }
+          },
+          {
+            "type": "divider"
+          },
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "This button won't do much for now but you can set up a listener for it using the `actions()` method and passing its unique `action_id`. See an example in the `examples` folder within your Bolt app."
+            }
+          },
+          {
+            "type": "actions",
+            "elements": [
+              {
+                "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "Click me!"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    )
+
+  except Exception as e:
+    logger.error(f"Error publishing home tab: {e}")
+
+def get_response(question):
+    llm = ChatOpenAI(
+        openai_api_key=OPENAI_KEY, request_timeout=120
+    )
+    retrieval = ConversationStore.from_index(
+       'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX")
+    )
+
+    relevant_docs = retrieval.similarity_search(question, top_k=5)
+    
+    chain = load_qa_chain(llm, chain_type="stuff")
+    return chain.run(input_documents=relevant_docs, question=question)
+
+    
+
+# chat_history = []
+# @slack_events_adapter.on("app_mention")
+# def handle_message(event_data):
+#     global chat_history
+#     chat_history = []
+#     def send_reply(value):
+#         event_data = value
+#         message = event_data["event"]
+#         if message.get("subtype") is None:
+#             command = message.get("text")
             
-            print('-------',command)
-            channel_id = message["channel"]
+#             print('-------',command)
+#             channel_id = message["channel"]
             
-            # C056RU8PEJ0 : llm live project
-            # C059L0UFLR4 : bottest
-            # allowed_channels = ["C056RU8PEJ0", "C059L0UFLR4"]  # Add the desired channel IDs
-            # if channel_id not in allowed_channels:
-            #     print("Not allowed to process")
-            #     return
-            #if any(item in command.lower() for item in greetings):
-            #result = qa({"question": command, "chat_history": []})
-            #message= (result["answer"])
-            message = ("Helloooooooo <@%s>! :tada: I am good how are you" % message["user"] )
+#             # C056RU8PEJ0 : llm live project
+#             # C059L0UFLR4 : bottest
+#             # allowed_channels = ["C056RU8PEJ0", "C059L0UFLR4"]  # Add the desired channel IDs
+#             # if channel_id not in allowed_channels:
+#             #     print("Not allowed to process")
+#             #     return
+#             #if any(item in command.lower() for item in greetings):
+#             #result = qa({"question": command, "chat_history": []})
+#             #message= (result["answer"])
+#             message = ("Helloooooooo <@%s>! :tada: I am good how are you" % message["user"] )
             
-            print(channel_id)
-            global chain
-            message = chain.run(command)
-            print(message)
-            slack_client.chat_postMessage(channel=channel_id, text=message)
-            command = ''
-    thread = Thread(target=send_reply, kwargs={"value": event_data})
-    thread.start()
-    return Response(status=200)
+#             print(message)
+#             print(channel_id)
+#             global chain
+#             message = chain.run(command)
+#             print(message)
+#             slack_client.chat_postMessage(channel=channel_id, text=message)
+#             command = ''
+#     thread = Thread(target=send_reply, kwargs={"value": event_data})
+#     thread.start()
+#     return Response(status=200)
 
 
 ############################################################################
@@ -264,19 +328,19 @@ index_created = 0
 ## Experiment Add John's code above to create Index
 ###################################################################
 
-import shutil
-import atexit
-def cleanup():
-    print("Cleaning up before exit...")
-    if index_created == 1:
-        vectorstore = vectorstore.vectorstore            
-        vectorstore.delete_collection()
-    if os.path.exists('.chroma'):        
-        directory = ".chroma"
-        shutil.rmtree(directory) 
-    # Add your code to be executed here
+# import shutil
+# import atexit
+# def cleanup():
+#     print("Cleaning up before exit...")
+#     if index_created == 1:
+#         vectorstore = vectorstore.vectorstore            
+#         vectorstore.delete_collection()
+#     if os.path.exists('.chroma'):        
+#         directory = ".chroma"
+#         shutil.rmtree(directory) 
+#     # Add your code to be executed here
 
-atexit.register(cleanup)
+# atexit.register(cleanup)
 
 
 
@@ -324,5 +388,7 @@ if __name__ == "__main__":
     # vectorstore = getVectoreStore(documents)
     # qa = createLangchainQA(vectorstore)
     
-    chain = createIndex("files")
-    app.run(port=3000)
+    # chain = createIndex("files")
+    print('Running the app')
+    app.start()
+    # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
