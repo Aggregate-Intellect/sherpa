@@ -29,9 +29,12 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
  . All these tokens should be added in .env file
  
     SLACK_SIGNING_SECRET: Slack apps signing secret.
-    SLACK_BOT_TOKEN: Slack bot token for authentication.
+    SLACK_OAUTH_TOKEN: Slack bot token for authentication.
     VERIFICATION_TOKEN: Slack verification token.
     OPENAI_API_KEY: OpenAI API key for language modeling.
+    PINECONE_INDEX: The Pinecone vector database index
+    PINECONE_API_KEY: The Pinecone vector database API key 
+    PINECONE_ENV: Region where the Pinecone index is deployed
 
     All these tokens should be added in .env file
 
