@@ -42,7 +42,7 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
 
         # retrieve relevant documents for the query
         relevant_docs = retriever.get_relevant_documents(query)
-        relevant_memory = [d.page_content for d in relevant_docs]
+        relevant_memory = ["Document: " + d.page_content + "\nLink" + d.metadata["source"] + "\n" for d in relevant_docs]
 
         # remove documents from memory until the token limit is reached
         relevant_memory_tokens = sum(
@@ -58,8 +58,11 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
             f"Here are some documents that may be relevant to the topic:"
             f"\n{relevant_memory}\n\n"
         )
+
         input_message = (
             f"Use the above information to respond to the user's message:\n{query}\n\n"
+            f"create inline citation by adding the source link of the reference document at the of the sentence."
+            f"Only use the link given in the reference document. DO NOT create link by yourself."
         )
 
         # print(content_format)
