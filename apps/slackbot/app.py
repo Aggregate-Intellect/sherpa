@@ -52,9 +52,13 @@ OPENAI_KEY = environ.get("OPENAI_KEY")
 ###########################################################################
 
 # instantiating slack client
-slack_client = WebClient(SLACK_OAUTH_TOKEN) 
+slack_client = WebClient(SLACK_OAUTH_TOKEN)
 os.environ['OPENAI_API_KEY'] = OPENAI_KEY
 
+
+@app.rout('/hello')
+def hello():
+    return "hello from slackbot app"
 
 # An example of one of your Flask app's routes
 @app.route("/")
