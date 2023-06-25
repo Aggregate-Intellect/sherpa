@@ -200,4 +200,4 @@ if __name__ == "__main__":
     # qa = createLangchainQA(vectorstore)
 
     chain = createIndex("files")
-    app.run(port=3000)
+    app.run(port=80)
