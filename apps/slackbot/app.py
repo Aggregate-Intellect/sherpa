@@ -56,7 +56,7 @@ slack_client = WebClient(SLACK_OAUTH_TOKEN)
 os.environ['OPENAI_API_KEY'] = OPENAI_KEY
 
 
-@app.rout('/hello')
+@app.route('/hello')
 def hello():
     return "hello from slackbot app"
 
