@@ -8,6 +8,10 @@ from typing import Any, Iterable, List, Optional, Type
 from langchain.docstore.document import Document
 import logging
 from langchain.vectorstores.base import VectorStoreRetriever
+from langchain.document_loaders import UnstructuredPDFLoader
+from langchain.indexes import VectorstoreIndexCreator
+from langchain.text_splitter import CharacterTextSplitter
+
 
 PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
 PINECONE_ENV = os.environ.get("PINECONE_ENV")
@@ -83,3 +87,17 @@ class ConversationStore(VectorStore):
     @classmethod
     def from_texts(cls, texts: List[str], embedding: Embeddings, metadatas: list[dict]):
         raise NotImplementedError("ConversationStore does not support from_texts")
+
+
+def get_local_db(pdf_folder_path, openai_api_key) -> VectorStoreRetriever:
+    loaders = [UnstructuredPDFLoader(os.path.join(pdf_folder_path, fn)) for fn in os.listdir(pdf_folder_path)]
+    # loaders
+    documents = []
+    for loader in loaders:
+        documents.extend(loader.load())
+
+    index = VectorstoreIndexCreator(
+        embedding=OpenAIEmbeddings(openai_api_key=openai_api_key),
+        text_splitter=CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)).from_loaders(loaders)
+    
+    return index.vectorstore.as_retriever()
