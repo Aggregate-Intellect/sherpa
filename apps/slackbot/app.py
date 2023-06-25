@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.chains import RetrievalQA
+from flask_cors import CORS
 
 import shutil
 import atexit
@@ -30,6 +31,8 @@ load_dotenv()
 
 # This `app` represents your existing Flask app
 app = Flask(__name__)
+CORS(app)
+
 greetings = ["hi", "hello", "hello there", "hey"]
 
 
