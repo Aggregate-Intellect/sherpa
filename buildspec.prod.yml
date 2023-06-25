@@ -9,12 +9,15 @@ phases:
       - REPOSITORY_URI=387065515315.dkr.ecr.us-east-1.amazonaws.com/ai/slackbot
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - aws s3 sync s3://ai-config-one/slackbot ./
+      - mv env-prod.properties production.env
+      - cp production.env .env
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker login --username aiscience --password 2E9nUhgCB5smmQsa
-      - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest .
+      - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest ./apps/slackbot
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
