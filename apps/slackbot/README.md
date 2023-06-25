@@ -50,6 +50,8 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
     2.  Expose the server to the internet using a tool like ngrok. Not required in hosted on public IP
 
     3.  Set up the Slack app's Event Subscriptions and provide the ngrok URL as the Request URL.
+        * **NOTE:** When add the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
+
 
     # Reference 
     
