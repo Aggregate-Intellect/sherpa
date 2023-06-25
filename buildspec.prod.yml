@@ -11,7 +11,7 @@ phases:
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
       - aws s3 sync s3://ai-config-one/slackbot ./
       - mv env-prod.properties production.env
-      - cp production.env ./apps/slackbot.env
+      - cp production.env ./apps/slackbot/.env
   build:
     commands:
       - echo Build started on `date`
