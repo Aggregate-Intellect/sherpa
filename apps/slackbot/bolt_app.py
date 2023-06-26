@@ -163,5 +163,5 @@ if __name__ == "__main__":
     
     # chain = createIndex("files")
     print('Running the app')
-    flask_app.run(port=SLACK_PORT)
+    flask_app.run(host="0.0.0.0", port=SLACK_PORT)
     # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
