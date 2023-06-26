@@ -29,9 +29,12 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
  . All these tokens should be added in .env file
  
     SLACK_SIGNING_SECRET: Slack apps signing secret.
-    SLACK_BOT_TOKEN: Slack bot token for authentication.
+    SLACK_OAUTH_TOKEN: Slack bot token for authentication.
     VERIFICATION_TOKEN: Slack verification token.
     OPENAI_API_KEY: OpenAI API key for language modeling.
+    PINECONE_INDEX: The Pinecone vector database index
+    PINECONE_API_KEY: The Pinecone vector database API key 
+    PINECONE_ENV: Region where the Pinecone index is deployed
 
     All these tokens should be added in .env file
 
@@ -47,6 +50,8 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
     2.  Expose the server to the internet using a tool like ngrok. Not required in hosted on public IP
 
     3.  Set up the Slack app's Event Subscriptions and provide the ngrok URL as the Request URL.
+        * **NOTE:** When add the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
+
 
     # Reference 
     

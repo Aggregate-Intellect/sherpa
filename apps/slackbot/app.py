@@ -28,6 +28,8 @@ import shutil
 import atexit
 load_dotenv()
 
+from vectorstores import get_local_db
+
 
 # This `app` represents your existing Flask app
 app = Flask(__name__)
@@ -176,20 +178,12 @@ def createIndex(pdf_folder_path):
     global loaders
     global chain
     global index
-    loaders = [UnstructuredPDFLoader(os.path.join(pdf_folder_path, fn)) for fn in os.listdir(pdf_folder_path)]
-    # loaders
-    documents = []
-    for loader in loaders:
-        documents.extend(loader.load())
-
-    index = VectorstoreIndexCreator(
-        embedding=OpenAIEmbeddings(openai_api_key=OPENAI_KEY),
-        text_splitter=CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)).from_loaders(loaders)
+    retrival = get_local_db(pdf_folder_path, OPENAI_KEY)
 
     llm = OpenAI(model_name="gpt-3.5-turbo", openai_api_key=OPENAI_KEY)
     chain = RetrievalQA.from_chain_type(llm=llm,
                                         chain_type="stuff",
-                                        retriever=index.vectorstore.as_retriever(),
+                                        retrieve=retrival,
                                         input_key="question")
 
     return chain
