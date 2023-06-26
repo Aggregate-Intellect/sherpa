@@ -9,4 +9,6 @@ unstructured
 openai
 chromadb
 tiktoken
+slack_bolt
+pinecone-client
 Flask-Cors==3.0.10
