@@ -5,6 +5,7 @@
 
 import os
 from dotenv import load_dotenv
+from flask import Flask, request
 load_dotenv()
 from langchain.chat_models import ChatOpenAI
 from langchain import LLMChain
@@ -17,6 +18,7 @@ from os import environ
 from vectorstores import ConversationStore
 from prompt import SlackBotPrompt
 from slack_bolt import App
+from slack_bolt.adapter.flask import SlackRequestHandler
 
 
 
@@ -37,7 +39,7 @@ SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
 SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
 VERIFICATION_TOKEN = environ.get("VERIFICATION_TOKEN")
 OPENAI_KEY=environ.get("OPENAI_KEY")
-
+SLACK_PORT = environ.get("SLACK_PORT", 3000)
 
 
 ###########################################################################
@@ -117,6 +119,17 @@ def update_home_tab(client, event, logger):
   except Exception as e:
     logger.error(f"Error publishing home tab: {e}")
 
+flask_app = Flask(__name__)
+handler = SlackRequestHandler(app)
+
+@flask_app.route("/slack/events", methods=["POST"])
+def slack_events():
+    return handler.handle(request)
+
+@flask_app.route("/hello", methods=["GET"])
+def hello():
+    return "OK"
+
 def get_response(question, previous_messages):
     llm = ChatOpenAI(
         openai_api_key=OPENAI_KEY, request_timeout=120
@@ -141,6 +154,7 @@ def get_response(question, previous_messages):
         retriever=retriever,
     )
 
+
 # Start the server on port 3000
 if __name__ == "__main__":
     # documents = getDocuments('files')
@@ -149,5 +163,5 @@ if __name__ == "__main__":
     
     # chain = createIndex("files")
     print('Running the app')
-    app.start()
+    flask_app.run(port=SLACK_PORT)
     # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
