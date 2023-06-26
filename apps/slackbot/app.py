@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.chains import RetrievalQA
+from flask_cors import CORS
 
 import shutil
 import atexit
@@ -32,6 +33,8 @@ from vectorstores import get_local_db
 
 # This `app` represents your existing Flask app
 app = Flask(__name__)
+CORS(app)
+
 greetings = ["hi", "hello", "hello there", "hey"]
 
 
@@ -54,9 +57,13 @@ OPENAI_KEY = environ.get("OPENAI_KEY")
 ###########################################################################
 
 # instantiating slack client
-slack_client = WebClient(SLACK_OAUTH_TOKEN) 
+slack_client = WebClient(SLACK_OAUTH_TOKEN)
 os.environ['OPENAI_API_KEY'] = OPENAI_KEY
 
+
+@app.route('/hello')
+def hello():
+    return "hello from slackbot app"
 
 # An example of one of your Flask app's routes
 @app.route("/")
@@ -190,4 +197,4 @@ if __name__ == "__main__":
     # qa = createLangchainQA(vectorstore)
 
     chain = createIndex("files")
-    app.run(port=3000)
+    app.run(host="0.0.0.0", port="80")
