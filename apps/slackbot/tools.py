@@ -20,10 +20,10 @@ def get_tools(memory):
     search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
     # llm_tool = LLMTool(llm_chain=llm_chain)
 
-    user_input_tool = UserInputTool()
+    # user_input_tool = UserInputTool()
     context_tool = ContextTool(memory=memory)
 
-    return [search_tool, context_tool, user_input_tool]
+    return [search_tool, context_tool]
 
 
 class ScrapeTool(BaseTool):
@@ -64,7 +64,7 @@ class SearchTool(BaseTool):
                 answer = answer_box.get("snippetHighlighted")
             title = search_results["organic"][0]['title']
             link = search_results["organic"][0]['link']
-            return "Answer: " + answer + "\nTitle:" + title + "\nLink:" + link
+            return "Answer: " + answer  + "\nLink:" + link
       
       # case 2: knowledgeGraph in the result dictionary
         snippets = []
@@ -131,7 +131,7 @@ class ContextTool(BaseTool):
         docs = self.memory.get_relevant_documents(query)
         result = ""
         for doc in docs:
-            result += doc.page_content + "\n"
+            result += "Document" + doc.page_content + "\nLink" + d.metadata.get("source", "")
 
         return result
 
