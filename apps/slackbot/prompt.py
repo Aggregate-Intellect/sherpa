@@ -9,12 +9,15 @@ from langchain.schema import (
 )
 import time
 from langchain.vectorstores.base import VectorStoreRetriever
+from tools import BaseTool
+from prompt_generator import get_prompt
 
 
 
 class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
     ai_name: str
-    ai_id: str
+    ai_role: str
+    tools:List[BaseTool]
     token_counter: Callable[[str], int]
     send_token_limit: int = 4196
 
@@ -22,6 +25,7 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
         full_prompt = (
             f"You are a friendly assistent bot called {self.ai_name}\n\n"
         )
+        full_prompt += f"\n\n{get_prompt(self.tools)}"
 
         return full_prompt
 
@@ -61,8 +65,8 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
 
         input_message = (
             f"Use the above information to respond to the user's message:\n{query}\n\n"
-            f"create inline citation by adding the source link of the reference document at the of the sentence."
-            f"Only use the link given in the reference document. DO NOT create link by yourself."
+            f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
+            f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
         )
 
         # print(content_format)
