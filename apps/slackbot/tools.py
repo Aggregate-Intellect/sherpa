@@ -64,6 +64,7 @@ class SearchTool(BaseTool):
                 answer = answer_box.get("snippetHighlighted")
             title = search_results["organic"][0]['title']
             link = search_results["organic"][0]['link']
+            
             return "Answer: " + answer  + "\nLink:" + link
       
       # case 2: knowledgeGraph in the result dictionary
@@ -96,10 +97,17 @@ class SearchTool(BaseTool):
             if len(snippets) == 0:
                 return ["No good Google Search Result was found"]
 
-        answer = " ".join(snippets)
-        title = search_results["organic"][0]['title']
-        link = search_results["organic"][0]['link']
-        return "Answer: " + answer + "\nTitle:" + title + "\nLink:" + link
+        result = []
+        for i in range(len(search_results['organic'][:10])):
+            r = search_results['organic'][i]
+            single_result = "Description: " + r['title'] + r['snippet'] + "\nLink" +r["link"]
+
+            result.append(single_result)
+        full_result = "\n".join(result)
+        
+        # answer = " ".join(snippets)
+        answer = "Description: " + search_results["knowledgeGraph"]['title'] + search_results["knowledgeGraph"]['description'] + "\nLink: " + search_results["knowledgeGraph"]['descriptionLink']
+        return answer + full_result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("SearchTool does not support async run")
