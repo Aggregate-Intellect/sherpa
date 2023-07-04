@@ -40,55 +40,59 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
             time_prompt.content
         )
 
-        query = kwargs["query"]
-        retriever: VectorStoreRetriever = kwargs["retriever"]
-        previous_messages = self.process_chat_history(kwargs["messages"])
+        query = kwargs["task"]
+        retriever: VectorStoreRetriever = kwargs["memory"]
+        previous_messages = kwargs["messages"]
 
         # retrieve relevant documents for the query
-        relevant_docs = retriever.get_relevant_documents(query)
-        relevant_memory = ["Document: " + d.page_content + "\nLink" + d.metadata["source"] + "\n" for d in relevant_docs]
+        # relevant_docs = retriever.get_relevant_documents(query)
+        
+        # relevant_memory = ["Document: " + d.page_content + "\nLink" + d.metadata.get("source", "") + "\n" for d in relevant_docs]
 
-        # remove documents from memory until the token limit is reached
-        relevant_memory_tokens = sum(
-            [self.token_counter(doc) for doc in relevant_memory]
-        )
-        while used_tokens + relevant_memory_tokens > 2500:
-            relevant_memory = relevant_memory[:-1]
-            relevant_memory_tokens = sum(
-                [self.token_counter(doc) for doc in relevant_memory]
-            )
+        # # remove documents from memory until the token limit is reached
+        # relevant_memory_tokens = sum(
+        #     [self.token_counter(doc) for doc in relevant_memory]
+        # )
+        # while used_tokens + relevant_memory_tokens > 2500:
+        #     relevant_memory = relevant_memory[:-1]
+        #     relevant_memory_tokens = sum(
+        #         [self.token_counter(doc) for doc in relevant_memory]
+        #     )
 
-        content_format = (
-            f"Here are some documents that may be relevant to the topic:"
-            f"\n{relevant_memory}\n\n"
-        )
+        # content_format = (
+        #     f"Here are some documents that may be relevant to the topic:"
+        #     f"\n{relevant_memory}\n\n"
+        # )
 
-        input_message = (
-            f"Use the above information to respond to the user's message:\n{query}\n\n"
-            f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
-            f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
-        )
+        # input_message = (
+        #     f"Use the above information to respond to the user's message:\n{query}\n\n"
+        #     f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
+        #     f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
+        # )
+        
+        input_message = f'Current task: {query} \n {kwargs["user_input"]}'
+
 
         # print(content_format)
 
-        memory_message = SystemMessage(content=content_format)
-        used_tokens += self.token_counter(memory_message.content)
+        # memory_message = SystemMessage(content=content_format)
+        # used_tokens += self.token_counter(memory_message.content)
         historical_messages: List[BaseMessage] = []
-        print(previous_messages)
+        # print(previous_messages)
         for message in previous_messages[-10:][::-1]:
             message_tokens = self.token_counter(message.content)
             if used_tokens + message_tokens > self.send_token_limit - 1000:
                 break
             historical_messages = [message] + historical_messages
             used_tokens += message_tokens
-        print(historical_messages)
+        # print(historical_messages)
 
         input_message = HumanMessage(content=input_message)
 
-        messages: List[BaseMessage] = [base_prompt, time_prompt, memory_message]
+        messages: List[BaseMessage] = [base_prompt, time_prompt]
         messages += historical_messages
         messages.append(input_message)
-
+        print("all_prompt:", previous_messages)
         return messages
     
     def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:

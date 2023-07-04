@@ -11,7 +11,13 @@ from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
 from tools import UserInputTool
-
+import json
+from langchain.schema import (
+    BaseMessage, 
+    HumanMessage, 
+    SystemMessage,
+    AIMessage
+)
 
 class TaskAgent:
     """Agent class for handling a single task"""
@@ -19,12 +25,15 @@ class TaskAgent:
     def __init__(
         self,
         ai_name: str,
+        ai_id: str,
         memory: VectorStoreRetriever,
         chain: LLMChain,
         output_parser: BaseTaskOutputParser,
         tools: List[BaseTool],
+        previous_messages,
         feedback_tool: Optional[HumanInputRun] = None,
         max_iterations: int = 5,
+        
     ):
         self.ai_name = ai_name
         self.memory = memory
@@ -35,17 +44,22 @@ class TaskAgent:
         self.tools = tools
         self.feedback_tool = feedback_tool
         self.max_iterations = max_iterations
-
-        print(self.full_message_history)
+        self.loop_count = 0
+        self.ai_id = ai_id
+        self.previous_message = self.process_chat_history(previous_messages)
+        # print(self.full_message_history) 
+        # print("message:", self.previous_message)
 
     @classmethod
     def from_llm_and_tools(
         cls,
         ai_name: str,
         ai_role: str,
+        ai_id: str,
         memory: VectorStoreRetriever,
         tools: List[BaseTool],
         llm: BaseChatModel,
+        previous_messages,
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseTaskOutputParser] = None,
         max_iterations: int = 5,
@@ -55,16 +69,19 @@ class TaskAgent:
             ai_role=ai_role,
             tools=tools,
             # input_variables=["memory", "messages", "user_input", "task"],
+            input_variables=["memory", "messages", "user_input", "task"],
             token_counter=llm.get_num_tokens,
         )
         human_feedback_tool = HumanInputRun() if human_in_the_loop else None
         chain = LLMChain(llm=llm, prompt=prompt)
         return cls(
             ai_name,
+            ai_id,
             memory,
             chain,
             output_parser or TaskOutputParser(),
             tools,
+            previous_messages,
             feedback_tool=human_feedback_tool,
             max_iterations=max_iterations,
         )
@@ -77,9 +94,13 @@ class TaskAgent:
         )
 
         # Interaction Loop
+        
+
+
+        
         while True:
             # Discontinue if continuous limit is reached
-            loop_count = self.logger.get_count()
+            loop_count = self.loop_count
             print(f"Step: {loop_count}/{self.max_iterations}")
 
             if loop_count >= self.max_iterations:
@@ -93,27 +114,34 @@ class TaskAgent:
             # Send message to AI, get response
             assistant_reply = self.chain.run(
                 task=task,
-                messages=self.full_message_history,
+                messages=self.previous_message,
                 memory=self.memory,
                 user_input=user_input,
             )
-
+            print("reply:", assistant_reply)
+            # return assistant_reply
             # return if maximum itertation limit is reached
             if loop_count >= self.max_iterations:
 
                 # TODO: this should be handled better, e.g. message for each task
-                self.logger.session.context["full_messages"] = []
-                self.logger.session.save()
+                # self.logger.session.context["full_messages"] = []
+                # self.logger.session.save()
 
-                self.logger.log(FinishLog(content=assistant_reply))
+                # self.logger.log(FinishLog(content=assistant_reply))
 
-                return assistant_reply
+                try:
+                    result = json.loads(assistant_reply)
+                except:
+                    return assistant_reply
+                return result["command"]["args"]["response"]
+            
 
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
+            print("action:", action)
             tools = {t.name: t for t in self.tools}
             if action.name == "finish":
-                self.logger.set_count(self.max_iterations)
+                self.loop_count = self.max_iterations
                 result = "Finished task. "
             elif action.name in tools:
                 tool = tools[action.name]
@@ -140,6 +168,8 @@ class TaskAgent:
                     f"Please refer to the 'COMMANDS' list for available "
                     f"commands and only respond in the specified JSON format."
                 )
+                
+            self.loop_count += 1
 
             memory_to_add = (
                 f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
@@ -151,7 +181,8 @@ class TaskAgent:
                     return "EXITING"
                 memory_to_add += feedback
 
-            self.memory.add_documents([Document(page_content=memory_to_add)])
+            # self.memory.add_documents([Document(page_content=memory_to_add)])
+            self.previous_message.append(HumanMessage(content=memory_to_add))
 
     def set_user_input(self, user_input: str):
         result = f"Command UserInput returned: {user_input}"
@@ -161,3 +192,18 @@ class TaskAgent:
         )
 
         self.memory.add_documents([Document(page_content=memory_to_add)])
+        
+    def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:
+        results = []
+
+        for message in messages:
+            print(message)
+            if message['type'] != 'message' and message['type'] != 'text':
+                continue
+        
+            message_cls = AIMessage if message['user'] == self.ai_id else HumanMessage
+            # replace the at in the message with the name of the bot
+            text = message['text'].replace(f'@{self.ai_id}', f'@{self.ai_name}')
+            results.append(message_cls(content=text))
+        
+        return results

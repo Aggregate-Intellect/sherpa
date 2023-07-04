@@ -127,20 +127,20 @@ def get_response(question, previous_messages):
         openai_api_key=OPENAI_KEY, request_timeout=120
     )
 
-    prompt = SlackBotPrompt(
-       ai_name='Sherpa',
-       ai_id=bot['user_id'],
-       token_counter=llm.get_num_tokens,
-       input_variables=['query', 'messages', 'retriever']
-    )
+    # prompt = SlackBotPrompt(
+    #    ai_name='Sherpa',
+    #    ai_id=bot['user_id'],
+    #    token_counter=llm.get_num_tokens,
+    #    input_variables=['query', 'messages', 'retriever']
+    # )
     
     memory = ConversationStore.get_vector_retrieval(
        'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX")
     )
 
     tools=get_tools(memory)
-
-    task_agent = TaskAgent.from_llm_and_tools(ai_name="Sherpa", memory=memory, tools=tools, llm=llm)
+   
+    task_agent = TaskAgent.from_llm_and_tools(ai_name="Sherpa", ai_role="assistant", ai_id=bot['user_id'], memory=memory, tools=tools, previous_messages = previous_messages, llm=llm)
     return task_agent.run(question)
 
 
