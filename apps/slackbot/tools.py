@@ -139,7 +139,7 @@ class ContextTool(BaseTool):
         docs = self.memory.get_relevant_documents(query)
         result = ""
         for doc in docs:
-            result += "Document" + doc.page_content + "\nLink" + d.metadata.get("source", "")
+            result += "Document" + doc.page_content + "\nLink" + doc.metadata.get("source", "")
 
         return result
 
