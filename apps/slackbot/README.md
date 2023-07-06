@@ -35,6 +35,7 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
     PINECONE_INDEX: The Pinecone vector database index
     PINECONE_API_KEY: The Pinecone vector database API key 
     PINECONE_ENV: Region where the Pinecone index is deployed
+    SERPER_API_KEY: API key for Serper that enables the google search tool
 
     All these tokens should be added in .env file
 
