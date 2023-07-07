@@ -8,21 +8,11 @@ from dotenv import load_dotenv
 from flask import Flask, request
 load_dotenv()
 from langchain.chat_models import ChatOpenAI
-from langchain import LLMChain
-from langchain.chains.question_answering import load_qa_chain
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import FAISS 
-from langchain.llms import OpenAI
 from os import environ
-from vectorstores import ConversationStore
-from prompt import SlackBotPrompt
+from vectorstores import ConversationStore, LocalChromaStore
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
-from langchain.agents import Tool
-from tools import SearchTool, get_tools
-from langchain.agents import initialize_agent
-from langchain.agents import AgentType
+from tools import get_tools
 from task_agent import TaskAgent
 
 
@@ -135,24 +125,31 @@ def slack_events():
 def hello():
     return "OK"
 
+if 'PINECONE_API_KEY'not in os.environ:
+    print("Warning: Pinecone API key not specified. Using local Chroma database.")
+    local_memory = LocalChromaStore.from_folder('files', OPENAI_KEY).as_retriever()
+
 def get_response(question, previous_messages):
     llm = ChatOpenAI(
         openai_api_key=OPENAI_KEY, request_timeout=120
     )
-
-    # prompt = SlackBotPrompt(
-    #    ai_name='Sherpa',
-    #    ai_id=bot['user_id'],
-    #    token_counter=llm.get_num_tokens,
-    #    input_variables=['query', 'messages', 'retriever']
-    # )
     
-    memory = ConversationStore.get_vector_retrieval(
-       'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX")
-    )
+    if os.environ.get("PINECONE_API_KEY", False):
+      # If pinecone API is specified, then use the Pinecone Database
+      memory = ConversationStore.get_vector_retrieval(
+        'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX"), search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
+      )
+    else:
+      # use the local Chroma database
+      memory = local_memory
+
 
     tools=get_tools(memory)
-   
+    ai_name='Sherpa'
+    
+    ai_id = bot['user_id']
+    question = question.replace(f'@{ai_id}', f'@{ai_name}')
+
     task_agent = TaskAgent.from_llm_and_tools(ai_name="Sherpa", ai_role="assistant", ai_id=bot['user_id'], memory=memory, tools=tools, previous_messages = previous_messages, llm=llm)
     return task_agent.run(question)
 

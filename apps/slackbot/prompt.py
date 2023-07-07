@@ -92,7 +92,7 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
         messages: List[BaseMessage] = [base_prompt, time_prompt]
         messages += historical_messages
         messages.append(input_message)
-        print("all_prompt:", previous_messages)
+        print("all_prompt:", messages)
         return messages
     
     def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:
