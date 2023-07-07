@@ -88,7 +88,7 @@ class TaskAgent:
 
     def run(self, task: str) -> str:
         user_input = (
-            "Determine which next command to use, "
+            "Determine which next command to use. "
             "and respond using the JSON format specified above without any extra text."
             "\n JSON Response: \n"
         )
@@ -105,9 +105,9 @@ class TaskAgent:
 
             if loop_count >= self.max_iterations:
                 user_input = (
-                    "Use information gathered above to finish the task."
-                    "if the tool used is Search Tool, create inline citation at the of the sentence that use the result of the Search Tool"
-                    "Give a number of citation and put the link from result of a search tool at each inline citation"
+                     f"Use the above information to respond to the user's message:\n{task}\n\n"
+                    f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
+                    f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
                     "only write text but not the JSON format specified above. \nResult:"
                 )
 
@@ -135,7 +135,7 @@ class TaskAgent:
                     return assistant_reply
                 return result["command"]["args"]["response"]
             
-
+            
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
             print("action:", action)
