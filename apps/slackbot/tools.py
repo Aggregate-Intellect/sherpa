@@ -4,10 +4,10 @@ from langchain.tools import BaseTool
 import requests
 from bs4 import BeautifulSoup
 from langchain.utilities import GoogleSerperAPIWrapper
-from langchain.docstore.document import Document
 from langchain.prompts import Prompt
 from langchain.vectorstores.base import VectorStoreRetriever
 from typing_extensions import Literal
+import os
 
 
 def get_tools(memory):
@@ -16,36 +16,24 @@ def get_tools(memory):
         "in the instruction.\nTask: {input}\nResult: "
     )
     prompt = Prompt.from_template(prompt)
-    # llm_chain = LLMChain(llm=llm, prompt=prompt)
-    search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
-    # llm_tool = LLMTool(llm_chain=llm_chain)
+    tools = []
 
-    # user_input_tool = UserInputTool()
-    context_tool = ContextTool(memory=memory)
+    tools.append(ContextTool(memory=memory))
 
-    return [search_tool, context_tool]
+    if os.environ.get("SERPER_API_KEY", False):
+        search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
+        tools.append(search_tool)
+    else:
+        print("No SERPER_API_KEY found in environment variables, skipping SearchTool")
 
-
-class ScrapeTool(BaseTool):
-    name = "Scrape"
-    description = "A tool for scraping a website for information."
-    chunk_size = 200
-
-    def _run(self, url: str) -> str:
-        response = requests.get(url)
-        soup = BeautifulSoup(response.content, "html.parser")
-        data = soup.get_text(strip=True)
-
-        return data
-
-    def _arun(self, *args: Any, **kwargs: Any):
-        raise NotImplementedError("ScrapeTool does not support async run")
+    return tools
 
 
 class SearchTool(BaseTool):
     name = "Search"
     description = (
-        "Access the internet to search for the information, the input is a search query"
+        "Access the internet to search for the information, only use this tool when "
+        "you cannot find the informaiton using internal search."
     )
     api_wrapper: GoogleSerperAPIWrapper
 
@@ -54,7 +42,7 @@ class SearchTool(BaseTool):
         search_results = google_serper._google_serper_api_results(query)
       
         # case 1: answerBox in the result dictionary
-        if search_results.get("answerBox"):
+        if search_results.get("answerBox", False):
             answer_box = search_results.get("answerBox", {})
             if answer_box.get("answer"):
                 answer = answer_box.get("answer")
@@ -69,7 +57,7 @@ class SearchTool(BaseTool):
       
       # case 2: knowledgeGraph in the result dictionary
         snippets = []
-        if search_results.get("knowledgeGraph"):
+        if search_results.get("knowledgeGraph", False):
             kg = search_results.get("knowledgeGraph", {})
             title = kg.get("title")
             entity_type = kg.get("type")
@@ -106,32 +94,19 @@ class SearchTool(BaseTool):
         full_result = "\n".join(result)
         
         # answer = " ".join(snippets)
-        answer = "Description: " + search_results["knowledgeGraph"]['title'] + search_results["knowledgeGraph"]['description'] + "\nLink: " + search_results["knowledgeGraph"]['descriptionLink']
-        return answer + full_result
+        if 'knowledgeGraph' in search_results:
+            answer = "Description: " + search_results["knowledgeGraph"]['title'] + search_results["knowledgeGraph"]['description'] + "\nLink: " + search_results["knowledgeGraph"]['descriptionLink']
+            full_result = answer + "\n" + full_result
+        return full_result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("SearchTool does not support async run")
 
 
-class LLMTool(BaseTool):
-    name = "LLM"
-    description = (
-        "Access the LLM to perform different tasks"
-    )
-    llm_chain: LLMChain
-
-    def _run(self, query: str) -> str:
-        return self.llm_chain.run(input=query)
-
-    def _arun(self, query: str) -> str:
-        raise NotImplementedError("LLMTool does not support async run")
-
-
 class ContextTool(BaseTool):
-    name = "Context"
+    name = "Context Search"
     description = (
-        "Access the read-only domain specific internal documents for the task."
-        "You use this tool if you need further clarification of the task."
+        "Access internal documents for various information."
     )
     memory: VectorStoreRetriever
 
@@ -140,7 +115,7 @@ class ContextTool(BaseTool):
         result = ""
         for doc in docs:
             result += "Document" + doc.page_content + "\nLink" + doc.metadata.get("source", "")
-
+        
         return result
 
     def _arun(self, query: str) -> str:
