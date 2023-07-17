@@ -105,10 +105,11 @@ class TaskAgent:
 
             if loop_count >= self.max_iterations:
                 user_input = (
-                    "Use information gathered above to finish the task."
-                    "if the tool used is Search Tool, create inline citation at the of the sentence that use the result of the Search Tool"
-                    "Give a number of citation and put the link from result of a search tool at each inline citation"
-                    "only write text but not the JSON format specified above. \nResult:"
+                    "Consider the historical messages. "
+                    "Use information gathered above to finish the task. "
+                    "if the tool used is Search Tool, create inline citation at the of the sentence that use the result of the Search Tool "
+                    "Give a number of citation and put the link from result of a search tool at each inline citation "
+                    "only write text but not the JSON format specified above. \nResult: "
                 )
 
             # Send message to AI, get response
@@ -117,6 +118,7 @@ class TaskAgent:
                 messages=self.previous_message,
                 memory=self.memory,
                 user_input=user_input,
+                # verbose = True 
             )
             print("reply:", assistant_reply)
             # return assistant_reply
@@ -138,11 +140,18 @@ class TaskAgent:
 
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
-            print("action:", action)
+            print("\naction:", action, "\n")
             tools = {t.name: t for t in self.tools}
             if action.name == "finish":
                 self.loop_count = self.max_iterations
                 result = "Finished task. "
+                
+                # try:
+                #     result = json.loads(assistant_reply)
+                # except:
+                #     return assistant_reply
+                # return result["command"]["args"]["response"]
+            
             elif action.name in tools:
                 tool = tools[action.name]
 
@@ -197,7 +206,7 @@ class TaskAgent:
         results = []
 
         for message in messages:
-            print(message)
+            # print(message)
             if message['type'] != 'message' and message['type'] != 'text':
                 continue
         

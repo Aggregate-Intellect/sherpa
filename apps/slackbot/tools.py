@@ -131,7 +131,7 @@ class ContextTool(BaseTool):
     name = "Context"
     description = (
         "Access the read-only domain specific internal documents for the task."
-        "You use this tool if you need further clarification of the task."
+       #  "You use this tool if you need further clarification of the task."
     )
     memory: VectorStoreRetriever
 
