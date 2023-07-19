@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from pydantic import ValidationError
-
+import openai
 from langchain.chains.llm import LLMChain
 from langchain.chat_models.base import BaseChatModel
 from output_parser import TaskOutputParser, BaseTaskOutputParser
@@ -107,6 +107,7 @@ class TaskAgent:
 
             if loop_count >= self.max_iterations:
                 user_input = (
+<<<<<<< HEAD
                     "Consider the historical messages. "
                     "Use information gathered above to finish the task. "
                     "if the tool used is Search Tool, create inline citation at the of the sentence that use the result of the Search Tool "
@@ -122,6 +123,42 @@ class TaskAgent:
                 user_input=user_input,
                 # verbose = True 
             )
+=======
+                    f"Use the above information to respond to the user's message:\n{task}\n\n"
+                    f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
+                    f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
+                    "only write text but NOT the JSON format specified above. \nResult:"
+                )
+
+            # Send message to AI, get response
+            try:
+                assistant_reply = self.chain.run(
+                    task=task,
+                    messages=self.previous_message,
+                    memory=self.memory,
+                    user_input=user_input,
+                )
+            except openai.error.APIError as e:
+                #Handle API error here, e.g. retry or log
+                return f"OpenAI API returned an API Error: {e}"  
+            except openai.error.APIConnectionError as e:
+                #Handle connection error here
+                return f"Failed to connect to OpenAI API: {e}"
+            except openai.error.RateLimitError as e:
+                #Handle rate limit error (we recommend using exponential backoff)
+                return f"OpenAI API request exceeded rate limit: {e}"
+            except openai.error.AuthenticationError as e:
+                #Handle rate limit error (we recommend using exponential backoff)
+                return f"OpenAI API failed authentication or incorrect token: {e}"
+            except openai.error.Timeout as e:
+                return f"OpenAI API Timeout error: {e}"
+            except openai.error.ServiceUnavailableError as e:
+                return f"OpenAI API Service unavailable: {e}"
+            except openai.error.InvalidRequestError as e:
+                return f"OpenAI API invalid request error: {e}"
+                
+
+>>>>>>> 320c160809b1b0ba52c68550f99d91da1f361675
             print("reply:", assistant_reply)
             # return assistant_reply
             # return if maximum itertation limit is reached
@@ -137,6 +174,9 @@ class TaskAgent:
                     result = json.loads(assistant_reply)
                 except:
                     return assistant_reply
+                # if the LLM does not propose command
+                if result["command"] == {}:
+                    return result["thoughts"]["speak"]
                 return result["command"]["args"]["response"]
             
             
