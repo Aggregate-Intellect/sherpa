@@ -19,6 +19,7 @@ def get_tools(memory):
     tools = []
 
     tools.append(ContextTool(memory=memory))
+    tools.append(UserInputTool())
 
     if os.environ.get("SERPER_API_KEY", False):
         search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())

@@ -107,23 +107,6 @@ class TaskAgent:
 
             if loop_count >= self.max_iterations:
                 user_input = (
-<<<<<<< HEAD
-                    "Consider the historical messages. "
-                    "Use information gathered above to finish the task. "
-                    "if the tool used is Search Tool, create inline citation at the of the sentence that use the result of the Search Tool "
-                    "Give a number of citation and put the link from result of a search tool at each inline citation "
-                    "only write text but not the JSON format specified above. \nResult: "
-                )
-
-            # Send message to AI, get response
-            assistant_reply = self.chain.run(
-                task=task,
-                messages=self.previous_message,
-                memory=self.memory,
-                user_input=user_input,
-                # verbose = True 
-            )
-=======
                     f"Use the above information to respond to the user's message:\n{task}\n\n"
                     f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
                     f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
@@ -158,7 +141,6 @@ class TaskAgent:
                 return f"OpenAI API invalid request error: {e}"
                 
 
->>>>>>> 320c160809b1b0ba52c68550f99d91da1f361675
             print("reply:", assistant_reply)
             # return assistant_reply
             # return if maximum itertation limit is reached
@@ -198,7 +180,8 @@ class TaskAgent:
                 tool = tools[action.name]
 
                 if tool.name == "UserInput":
-                    return {'type': 'user_input', 'query': action.args['query']}
+                    # return {'type': 'user_input', 'query': action.args['query']}  // must return text
+                    return str({'type': 'user_input', 'query': action.args['query']})
 
                 try:
                     observation = tool.run(action.args)
