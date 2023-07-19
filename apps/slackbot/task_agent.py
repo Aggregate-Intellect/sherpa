@@ -108,9 +108,9 @@ class TaskAgent:
             if loop_count >= self.max_iterations:
                 user_input = (
                     f"Use the above information to respond to the user's message:\n{task}\n\n"
-                    f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
+                    f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence. "
                     f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
-                    "only write text but NOT the JSON format specified above. \nResult:"
+                    "DO NOT use JSON format specified above but Only write text. \nResult:"
                 )
 
             # Send message to AI, get response
@@ -157,9 +157,14 @@ class TaskAgent:
                 except:
                     return assistant_reply
                 # if the LLM does not propose command
-                if result["command"] == {}:
+                
+                try:
+                    return result["command"]["args"]["response"]
+                except:
                     return result["thoughts"]["speak"]
-                return result["command"]["args"]["response"]
+                # if result["command"] == {}:
+                #     return result["thoughts"]["speak"]
+                # return result["command"]["args"]["response"]
             
             
             # Get command name and arguments

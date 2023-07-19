@@ -81,7 +81,7 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
         chat_message: List[BaseMessage] = []
         for message in previous_messages["chat_history"][-10:][::-1]:
             message_tokens = self.token_counter(message.content)
-            if used_tokens + message_tokens > self.send_token_limit - 1000:
+            if used_tokens + message_tokens > self.send_token_limit - 2000:
                 break
             chat_message = [message] + chat_message
             used_tokens += message_tokens
