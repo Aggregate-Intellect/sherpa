@@ -70,20 +70,29 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
         #     f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
         # )
         
-        input_message = f'Current task: {query} \n {kwargs["user_input"]}'
+        input_message = f'Consider the chat history messages. Current task: {query} \n {kwargs["user_input"]}'
 
 
         # print(content_format)
 
         # memory_message = SystemMessage(content=content_format)
         # used_tokens += self.token_counter(memory_message.content)
-        historical_messages: List[BaseMessage] = []
-        # print(previous_messages)
-        for message in previous_messages[-10:][::-1]:
+        
+        chat_message: List[BaseMessage] = []
+        for message in previous_messages["chat_history"][-10:][::-1]:
             message_tokens = self.token_counter(message.content)
             if used_tokens + message_tokens > self.send_token_limit - 1000:
                 break
-            historical_messages = [message] + historical_messages
+            chat_message = [message] + chat_message
+            used_tokens += message_tokens
+            
+        react_messages: List[BaseMessage] = []
+        # print(previous_messages)
+        for message in previous_messages["react_history"][-10:][::-1]:
+            message_tokens = self.token_counter(message.content)
+            if used_tokens + message_tokens > self.send_token_limit - 1000:
+                break
+            react_messages = [message] + react_messages
             used_tokens += message_tokens
         # print(historical_messages)
 
@@ -91,15 +100,17 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
 
         messages: List[BaseMessage] = [base_prompt, time_prompt]
 
-        intro_message = SystemMessage(content="Consider the following historical messages:")
+        messages += react_messages
+        
+        intro_message = SystemMessage(content="Consider the following chat history:")
         messages.append(intro_message)
-        messages += historical_messages
+        messages += chat_message
+        print("#"*50)
+        # print(messages)
+        messages.append(input_message)
         print("#"*50)
         print(messages)
-        messages.append(input_message)
-        # print("#"*50)
-        # print(messages)
-        # print("#"*50)
+        print("#"*50)
         
         return messages
     

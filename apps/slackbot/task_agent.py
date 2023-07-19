@@ -46,7 +46,9 @@ class TaskAgent:
         self.max_iterations = max_iterations
         self.loop_count = 0
         self.ai_id = ai_id
-        self.previous_message = self.process_chat_history(previous_messages)
+        self.previous_message = {}
+        self.previous_message["chat_history"] = self.process_chat_history(previous_messages)
+        self.previous_message["react_history"] = []
         # print(self.full_message_history) 
         # print("message:", self.previous_message)
 
@@ -88,7 +90,7 @@ class TaskAgent:
 
     def run(self, task: str) -> str:
         user_input = (
-            "Determine which next command to use, "
+            "Determine which next command to use. "
             "and respond using the JSON format specified above without any extra text."
             "\n JSON Response: \n"
         )
@@ -137,7 +139,7 @@ class TaskAgent:
                     return assistant_reply
                 return result["command"]["args"]["response"]
             
-
+            
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
             print("\naction:", action, "\n")
@@ -191,7 +193,8 @@ class TaskAgent:
                 memory_to_add += feedback
 
             # self.memory.add_documents([Document(page_content=memory_to_add)])
-            self.previous_message.append(HumanMessage(content=memory_to_add))
+            # print("result:: ", result)
+            self.previous_message["react_history"].append(HumanMessage(content=memory_to_add))
 
     def set_user_input(self, user_input: str):
         result = f"Command UserInput returned: {user_input}"
