@@ -99,7 +99,7 @@ class TaskAgent:
         
 
 
-        
+        previous_action = ""
         while True:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
@@ -169,8 +169,15 @@ class TaskAgent:
             
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
+            print("\nprevious action:", previous_action, "\n")
             print("\naction:", action, "\n")
+            
             tools = {t.name: t for t in self.tools}
+            if action == previous_action:
+                result = (
+                    f"The command and action are the same as the previous one."
+                    f"Change another command or another query."
+                )
             if action.name == "finish":
                 self.loop_count = self.max_iterations
                 result = "Finished task. "
@@ -223,6 +230,7 @@ class TaskAgent:
             # self.memory.add_documents([Document(page_content=memory_to_add)])
             # print("result:: ", result)
             self.previous_message["react_history"].append(HumanMessage(content=memory_to_add))
+            previous_action = action
 
     def set_user_input(self, user_input: str):
         result = f"Command UserInput returned: {user_input}"
