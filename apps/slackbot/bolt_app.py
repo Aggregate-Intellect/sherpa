@@ -60,8 +60,7 @@ def event_test(client, say, event):
     replies = client.conversations_replies(channel=event['channel'], ts=thread_ts)
     previous_messages = replies['messages'][:-1]
 
-    #results = get_response(question, previous_messages)
-    results = get_response_v2(question, previous_messages)
+    results = get_response(question, previous_messages)
     
     say(results, thread_ts=thread_ts)
 
@@ -129,30 +128,6 @@ def hello():
 if 'PINECONE_API_KEY'not in os.environ:
     print("Warning: Pinecone API key not specified. Using local Chroma database.")
     local_memory = LocalChromaStore.from_folder('files', OPENAI_KEY).as_retriever()
-
-def get_response(question, previous_messages):
-    llm = ChatOpenAI(
-        openai_api_key=OPENAI_KEY, request_timeout=120
-    )
-    
-    if os.environ.get("PINECONE_API_KEY", False):
-      # If pinecone API is specified, then use the Pinecone Database
-      memory = ConversationStore.get_vector_retrieval(
-        'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX"), search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
-      )
-    else:
-      # use the local Chroma database
-      memory = local_memory
-
-
-    tools=get_tools(memory)
-    ai_name='Sherpa'
-    
-    ai_id = bot['user_id']
-    question = question.replace(f'@{ai_id}', f'@{ai_name}')
-
-    task_agent = TaskAgent.from_llm_and_tools(ai_name="Sherpa", ai_role="assistant", ai_id=bot['user_id'], memory=memory, tools=tools, previous_messages = previous_messages, llm=llm)
-    return task_agent.run(question)
     
 # ---- add this for verbose output --- #
 def contains_verbose(query: str) -> bool:
@@ -160,16 +135,24 @@ def contains_verbose(query: str) -> bool:
     return "-verbose" in query.lower()
 
 def log_formatter(logger):
-    '''formats the log message'''
+    '''Formats the logger into readable string'''
     log_strings = []
     for log in logger:
+
         reply = log["reply"]
         if "thoughts" in reply:
-            formatted_reply = f"""-- Step: {log["Step"]} -- \nThoughts: \n {reply["thoughts"]["text"]} \nCommand: {reply["command"]}"""
+            # reply = json.loads(reply)
+            formatted_reply = f"""-- Step: {log["Step"]} -- \nThoughts: \n {reply["thoughts"]} """
+            
+            if "command" in reply: # add command if it exists
+                formatted_reply += f"""\nCommand: \n {reply["command"]}"""
+            
             log_strings.append(formatted_reply)
-        else:
+
+        else: # for final response
             formatted_reply = f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
             log_strings.append(formatted_reply)
+
     log_string = "\n".join(log_strings)
     return log_string
 
@@ -178,8 +161,7 @@ def remove_verbose(input_string):
     parts = input_string.split("#verbose", 1)
     return parts[0]
 
-def get_response_v2(question, previous_messages):
-    '''This function is used to get verbose output from the bot'''
+def get_response(question, previous_messages):
     llm = ChatOpenAI(
         openai_api_key=OPENAI_KEY, request_timeout=120
     )
@@ -212,7 +194,11 @@ def get_response_v2(question, previous_messages):
       question = question.replace('-verbose', '')
       response = task_agent.run(question)
       logger = task_agent.logger # logger is updated after running task_agent.run(question)
-      verbose_response = response + ' \n #verbose \n ' + log_formatter(logger)
+      try:  # in case log_formatter fails
+        verbose_response = response + ' \n #verbose \n ' + log_formatter(logger)
+      except:
+        verbose_response = response + ' \n #verbose \n ' + str(logger)
+        
       return verbose_response
     
     else:
