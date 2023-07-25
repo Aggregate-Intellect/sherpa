@@ -125,7 +125,7 @@ class TaskAgent:
             try:
                 reply_json = json.loads(assistant_reply)
                 logger_step['reply'] = reply_json
-            except:
+            except json.JSONDecodeError as e:
                 logger_step['reply'] = assistant_reply # last reply is a string
             self.logger.append(logger_step)
             
@@ -215,11 +215,8 @@ class TaskAgent:
             # replace the at in the message with the name of the bot
             text = message['text'].replace(f'@{self.ai_id}', f'@{self.ai_name}')
             # added by JF
-            try:
-                text = text.split("#verbose", 1)[0]  # remove everything after #verbose
-                text = text.replace('-verbose', '') # remove -verbose if it exists
-            except:
-                pass
+            text = text.split("#verbose", 1)[0]  # remove everything after #verbose
+            text = text.replace('-verbose', '') # remove -verbose if it exists
             results.append(message_cls(content=text))
         
         return results
