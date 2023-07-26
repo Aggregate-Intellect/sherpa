@@ -1,6 +1,6 @@
 
 ====================================================================
-TempLM: LM Distilling Language Models into Template-Based Generators 
+TempLM - LM Distilling Language Models into Template-Based Generators 
 ====================================================================
 *Kua Chen* 
 
