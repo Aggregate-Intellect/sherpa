@@ -174,48 +174,51 @@ class TaskAgent:
             
             tools = {t.name: t for t in self.tools}
             if action == previous_action:
+                print("!!!!! Same action !!!!!")
                 result = (
-                    f"The command and action are the same as the previous one."
-                    f"Change another command or another query."
+                    f"Determine which next command to use. Do not give the command '{action}''"
+                    f"If you do not need further information to answer the question, you can use the finish command"
                 )
-            if action.name == "finish":
-                self.loop_count = self.max_iterations
-                result = "Finished task. "
-                
-                # try:
-                #     result = json.loads(assistant_reply)
-                # except:
-                #     return assistant_reply
-                # return result["command"]["args"]["response"]
-            
-            elif action.name in tools:
-                tool = tools[action.name]
-
-                if tool.name == "UserInput":
-                    # return {'type': 'user_input', 'query': action.args['query']}  // must return text
-                    return str({'type': 'user_input', 'query': action.args['query']})
-
-                try:
-                    observation = tool.run(action.args)
-                except ValidationError as e:
-                    observation = (
-                        f"Validation Error in args: {str(e)}, args: {action.args}"
-                    )
-                except Exception as e:
-                    observation = (
-                        f"Error: {str(e)}, {type(e).__name__}, args: {action.args}"
-                    )
-                result = f"Command {tool.name} returned: {observation}"
-            elif action.name == "ERROR":
-                result = f"Error: {action.args}. "
+                self.loop_count += 1
             else:
-                result = (
-                    f"Unknown command '{action.name}'. "
-                    f"Please refer to the 'COMMANDS' list for available "
-                    f"commands and only respond in the specified JSON format."
-                )
+                if action.name == "finish":
+                    self.loop_count = self.max_iterations
+                    result = "Finished task. "
+                    
+                    # try:
+                    #     result = json.loads(assistant_reply)
+                    # except:
+                    #     return assistant_reply
+                    # return result["command"]["args"]["response"]
                 
-            self.loop_count += 1
+                elif action.name in tools:
+                    tool = tools[action.name]
+
+                    if tool.name == "UserInput":
+                        # return {'type': 'user_input', 'query': action.args['query']}  // must return text
+                        return str({'type': 'user_input', 'query': action.args['query']})
+
+                    try:
+                        observation = tool.run(action.args)
+                    except ValidationError as e:
+                        observation = (
+                            f"Validation Error in args: {str(e)}, args: {action.args}"
+                        )
+                    except Exception as e:
+                        observation = (
+                            f"Error: {str(e)}, {type(e).__name__}, args: {action.args}"
+                        )
+                    result = f"Command {tool.name} returned: {observation}"
+                elif action.name == "ERROR":
+                    result = f"Error: {action.args}. "
+                else:
+                    result = (
+                        f"Unknown command '{action.name}'. "
+                        f"Please refer to the 'COMMANDS' list for available "
+                        f"commands and only respond in the specified JSON format."
+                    )
+                    
+                self.loop_count += 1
 
             memory_to_add = (
                 f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
