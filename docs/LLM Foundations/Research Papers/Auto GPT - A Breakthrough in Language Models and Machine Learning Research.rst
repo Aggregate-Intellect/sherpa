@@ -23,7 +23,7 @@ Topics:
 		* Auto GPT provides internet access for information gathering, file storage, and summarization capabilities. 
 	Installation process and current status of Auto GPT 
 		* The installation process involves setting up the required environment and installing necessary dependencies. 
-		* Auto GPT is still in development with ongoing improvements and numerous ope	n issues. 
+		* Auto GPT is still in development with ongoing improvements and numerous open issues. 
 		* Available resources for Auto GPT are limited, and reliance on summarization and official documentation is necessary. 
 	Questions and discussions 
 		* Auto GPT's decision-making process involves deciding which tool to use for information retrieval. 
