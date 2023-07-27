@@ -1,6 +1,6 @@
 
 ======================================
-Reflexion: A Reflection-Based Approach 
+Reflexion - A Reflection-Based Approach 
 ======================================
 *Noah Shinn* 
 
