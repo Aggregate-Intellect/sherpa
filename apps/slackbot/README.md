@@ -12,7 +12,7 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
 - Integrates with OpenAI GPT-3.5 Turbo for language modeling.
 - Utilizes Flask and FastAPI frameworks for building the web server.
 
-## Installation
+## Preparation
 
 1. Clone the repository:
 
@@ -24,39 +24,56 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
     https://medium.com/developer-student-clubs-tiet/how-to-build-your-first-slack-bot-in-2020-with-python-flask-using-the-slack-events-api-4b20ae7b4f86
     
 3.   Configuration
-    Before running the code, you need to configure the following environment variables:
+    Before running the code, you need to configure the following environment    variables. All these tokens should be added in .env file: 
+        ```
+        SLACK_SIGNING_SECRET: Slack apps signing secret.
+        SLACK_OAUTH_TOKEN: Slack bot token for authentication.
+        VERIFICATION_TOKEN: Slack verification token.
+        OPENAI_API_KEY: OpenAI API key for language modeling.
+        PINECONE_INDEX: The Pinecone vector database index
+        PINECONE_API_KEY: The Pinecone vector database API key 
+        PINECONE_ENV: Region where the Pinecone index is deployed
+        SERPER_API_KEY: API key for Serper that enables the google search tool
+        ```
+4.  Add all the files which you want to build the Vectore Db index to thje `files` folder. Currently, it works with `PDFs` and `Markdown` files. (Ignore this step if you connect with your Pinecone database)
 
- . All these tokens should be added in .env file
- 
-    SLACK_SIGNING_SECRET: Slack apps signing secret.
-    SLACK_OAUTH_TOKEN: Slack bot token for authentication.
-    VERIFICATION_TOKEN: Slack verification token.
-    OPENAI_API_KEY: OpenAI API key for language modeling.
-    PINECONE_INDEX: The Pinecone vector database index
-    PINECONE_API_KEY: The Pinecone vector database API key 
-    PINECONE_ENV: Region where the Pinecone index is deployed
-    SERPER_API_KEY: API key for Serper that enables the google search tool
+## Usage
+### Run with Virtual Environment
+1. Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) or [miniconda](https://docs.conda.io/en/latest/miniconda.html)
+2. Create a new conda environment:
 
-    All these tokens should be added in .env file
+   ```bash
+   conda create -n slackbot python=3.9
+   ```
+3. Activate the environment:
 
-4.  Add all the files on which you want to build the Vectore Db index.
-    Right now its working only with PDF
+   ```bash
+    conda activate slackbot
+    ```
+4. Install the dependencies:
 
-5.  Usage
-    1.  Run the docker image:
+   ```bash
+   pip install -r requirements.txt
+   ```
+5. Run the server:
 
-        docker build -it slackbot .
-        docker run -p 3000:3000 slackbot
+   ```bash
+    python bolt_app.py
+    ```
 
-    2.  Expose the server to the internet using a tool like ngrok. Not required in hosted on public IP
+### Run with docker
+1.  Run the docker image:
+    ```
+    docker build -it slackbot .
+    docker run -p 3000:3000 slackbot
+    ```
+2.  Expose the server to the internet using a tool like ngrok. Not required in hosted on public IP
 
-    3.  Set up the Slack app's Event Subscriptions and provide the ngrok URL as the Request URL.
-        * **NOTE:** When add the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
+3.  Set up the Slack app's Event Subscriptions and provide the ngrok URL as the Request URL.
+    * **NOTE:** When add the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
 
 
-    # Reference 
-    
-  
-    4.  Start interacting with the chatbot by mentioning the app in a Slack channel.
+# Reference 
+4.  Start interacting with the chatbot by mentioning the app in a Slack channel.
 
 
