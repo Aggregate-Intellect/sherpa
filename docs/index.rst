@@ -57,6 +57,7 @@ CONTENT
    :caption: LLM HANDS ON TUTORIALS AND RESOURCES
 
    Tutorials/langchain_handson.rst
+   Tutorials/slackbot.rst
 
 .. toctree::
    :maxdepth: 1
