@@ -1,6 +1,6 @@
 
 =========================================================================
-Auto GPT: A Breakthrough in Language Models and Machine Learning Research 
+Auto GPT - A Breakthrough in Language Models and Machine Learning Research 
 =========================================================================
 *Yujing Yang* 
 
