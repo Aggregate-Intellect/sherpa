@@ -158,6 +158,9 @@ def log_formatter(logger):
         else: # for final response
             formatted_reply = f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
             log_strings.append(formatted_reply)
+    
+    log_string =  "\n".join(log_strings)
+    return log_string
 
 def show_commands_only(logger):
     '''Modified version of log_formatter that only shows commands'''
