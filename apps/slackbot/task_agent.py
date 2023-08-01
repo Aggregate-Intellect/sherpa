@@ -49,6 +49,7 @@ class TaskAgent:
         self.previous_message = {}
         self.previous_message["chat_history"] = self.process_chat_history(previous_messages)
         self.previous_message["react_history"] = []
+        self.logger = []  # added by JF
         # print(self.full_message_history) 
         # print("message:", self.previous_message)
 
@@ -104,6 +105,7 @@ class TaskAgent:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
             print(f"Step: {loop_count}/{self.max_iterations}")
+            logger_step = {"Step": f"{loop_count}/{self.max_iterations}"} # added by JF
 
             if loop_count >= self.max_iterations:
                 user_input = (
@@ -142,6 +144,14 @@ class TaskAgent:
                 
 
             print("reply:", assistant_reply)
+            # added by JF
+            try:
+                reply_json = json.loads(assistant_reply)
+                logger_step['reply'] = reply_json
+            except json.JSONDecodeError as e:
+                logger_step['reply'] = assistant_reply # last reply is a string
+            self.logger.append(logger_step)
+            
             # return assistant_reply
             # return if maximum itertation limit is reached
             if loop_count >= self.max_iterations:
@@ -250,6 +260,9 @@ class TaskAgent:
             message_cls = AIMessage if message['user'] == self.ai_id else HumanMessage
             # replace the at in the message with the name of the bot
             text = message['text'].replace(f'@{self.ai_id}', f'@{self.ai_name}')
+            # added by JF
+            text = text.split("#verbose", 1)[0]  # remove everything after #verbose
+            text = text.replace('-verbose', '') # remove -verbose if it exists
             results.append(message_cls(content=text))
         
         return results
