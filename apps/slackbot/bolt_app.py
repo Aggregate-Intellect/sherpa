@@ -15,6 +15,9 @@ from slack_bolt.adapter.flask import SlackRequestHandler
 from tools import get_tools
 from task_agent import TaskAgent
 
+from utils import chunk_and_summerize, get_links_from_string
+from utils import question_reconstructor, scarape
+
 
 
 # This `app` represents your existing Flask app
@@ -33,7 +36,7 @@ app = App(
 SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
 SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
 VERIFICATION_TOKEN = environ.get("VERIFICATION_TOKEN")
-OPENAI_KEY=environ.get("OPENAI_KEY")
+OPENAI_KEY = "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"
 SLACK_PORT = environ.get("SLACK_PORT", 3000)
 
 
@@ -67,6 +70,31 @@ def event_test(client, say, event):
     replies = client.conversations_replies(channel=event['channel'], ts=thread_ts)
     previous_messages = replies['messages'][:-1]
 
+    # try to get a set of links from a question
+    link_list = get_links_from_string(question)
+
+    # if there is a link inside the question scrape then summerize based
+    # on question and then aggregate to the question
+
+    if len(link_list) > 0:
+
+        # currently we are supporting single link
+        # TODO: manage multiple links
+
+        link = link_list[0]
+        scraped_data = scarape(link)
+
+        if (scraped_data['status'] == 200):
+
+            summarized_chunk = chunk_and_summerize(
+                link=link,
+                open_ai_key=OPENAI_KEY,
+                question=question,
+                text_data=scraped_data["data"])
+
+            final_summary = " ".join(summarized_chunk)
+            question = question_reconstructor(
+                question=question, data=final_summary, link=link)
     results, verbose_message = get_response(question, previous_messages)
     say(results, thread_ts=thread_ts)
 
