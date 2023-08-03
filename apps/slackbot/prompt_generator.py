@@ -148,7 +148,7 @@ def get_prompt(tools: List[BaseTool]) -> str:
         'Exclusively use the commands listed in double quotes e.g. "command name"'
     )
     prompt_generator.add_constraint(
-        'You must always choose a commend unless you want to "finish"'
+        'You must always choose a command unless you want to "finish"'
     )
 
     # Add commands to the PromptGenerator object
