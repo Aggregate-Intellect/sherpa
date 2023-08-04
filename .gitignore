@@ -1,2 +1,3 @@
 apps/slackbot/.env
 **/_build
+.env
