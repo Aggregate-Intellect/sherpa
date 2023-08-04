@@ -138,8 +138,6 @@ class TaskAgent:
             except openai.error.InvalidRequestError as e:
                 return f"OpenAI API invalid request error: {e}"
                 
-
-            print("reply:", assistant_reply)
             # return assistant_reply
             # return if maximum itertation limit is reached
             if loop_count >= self.max_iterations:
