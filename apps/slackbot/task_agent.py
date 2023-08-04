@@ -1,23 +1,17 @@
+import json
 from typing import List, Optional
-
-from pydantic import ValidationError
 
 from langchain.chains.llm import LLMChain
 from langchain.chat_models.base import BaseChatModel
-from output_parser import TaskOutputParser, BaseTaskOutputParser
-from prompt import SlackBotPrompt
-from langchain.schema import Document
+from langchain.schema import AIMessage, BaseMessage, Document, HumanMessage
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
-from tools import UserInputTool
-import json
-from langchain.schema import (
-    BaseMessage, 
-    HumanMessage, 
-    SystemMessage,
-    AIMessage
-)
+from output_parser import BaseTaskOutputParser, TaskOutputParser
+from post_processors import md_link_to_slack
+from prompt import SlackBotPrompt
+from pydantic import ValidationError
+
 
 class TaskAgent:
     """Agent class for handling a single task"""
@@ -33,7 +27,6 @@ class TaskAgent:
         previous_messages,
         feedback_tool: Optional[HumanInputRun] = None,
         max_iterations: int = 5,
-        
     ):
         self.ai_name = ai_name
         self.memory = memory
@@ -48,8 +41,8 @@ class TaskAgent:
         self.ai_id = ai_id
         self.previous_message = self.process_chat_history(previous_messages)
         self.logger = []  # added by JF
-        # print(self.full_message_history) 
-        # print("message:", self.previous_message)
+
+        self.output_processors = [md_link_to_slack]
 
     @classmethod
     def from_llm_and_tools(
@@ -95,19 +88,16 @@ class TaskAgent:
         )
 
         # Interaction Loop
-        
 
-
-        
         while True:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
             print(f"Step: {loop_count}/{self.max_iterations}")
-            logger_step = {"Step": f"{loop_count}/{self.max_iterations}"} # added by JF
+            logger_step = {"Step": f"{loop_count}/{self.max_iterations}"}  # added by JF
 
             if loop_count >= self.max_iterations:
                 user_input = (
-                     f"Use the above information to respond to the user's message:\n{task}\n\n"
+                    f"Use the above information to respond to the user's message:\n{task}\n\n"
                     f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
                     f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
                     "only write text but not the JSON format specified above. \nResult:"
@@ -124,15 +114,15 @@ class TaskAgent:
             # added by JF
             try:
                 reply_json = json.loads(assistant_reply)
-                logger_step['reply'] = reply_json
+                logger_step["reply"] = reply_json
             except json.JSONDecodeError as e:
-                logger_step['reply'] = assistant_reply # last reply is a string
+                logger_step["reply"] = assistant_reply  # last reply is a string
             self.logger.append(logger_step)
-            
+
             # return assistant_reply
             # return if maximum itertation limit is reached
+            result = ""
             if loop_count >= self.max_iterations:
-
                 # TODO: this should be handled better, e.g. message for each task
                 # self.logger.session.context["full_messages"] = []
                 # self.logger.session.save()
@@ -141,11 +131,11 @@ class TaskAgent:
 
                 try:
                     result = json.loads(assistant_reply)
+                    result = result["command"]["args"]["response"]
                 except:
-                    return assistant_reply
-                return result["command"]["args"]["response"]
-            
-            
+                    result = assistant_reply
+                return self.process_output(result)
+
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
             print("action:", action)
@@ -157,7 +147,7 @@ class TaskAgent:
                 tool = tools[action.name]
 
                 if tool.name == "UserInput":
-                    return {'type': 'user_input', 'query': action.args['query']}
+                    return {"type": "user_input", "query": action.args["query"]}
 
                 try:
                     observation = tool.run(action.args)
@@ -178,7 +168,7 @@ class TaskAgent:
                     f"Please refer to the 'COMMANDS' list for available "
                     f"commands and only respond in the specified JSON format."
                 )
-                
+
             self.loop_count += 1
 
             memory_to_add = (
@@ -197,26 +187,32 @@ class TaskAgent:
     def set_user_input(self, user_input: str):
         result = f"Command UserInput returned: {user_input}"
         assistant_reply = self.logger.get_full_messages()[-1].content
-        memory_to_add = (
-                f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
-        )
+        memory_to_add = f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
 
         self.memory.add_documents([Document(page_content=memory_to_add)])
-        
+
     def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:
         results = []
 
         for message in messages:
             print(message)
-            if message['type'] != 'message' and message['type'] != 'text':
+            if message["type"] != "message" and message["type"] != "text":
                 continue
-        
-            message_cls = AIMessage if message['user'] == self.ai_id else HumanMessage
+
+            message_cls = AIMessage if message["user"] == self.ai_id else HumanMessage
             # replace the at in the message with the name of the bot
-            text = message['text'].replace(f'@{self.ai_id}', f'@{self.ai_name}')
+            text = message["text"].replace(f"@{self.ai_id}", f"@{self.ai_name}")
             # added by JF
             text = text.split("#verbose", 1)[0]  # remove everything after #verbose
-            text = text.replace('-verbose', '') # remove -verbose if it exists
+            text = text.replace("-verbose", "")  # remove -verbose if it exists
             results.append(message_cls(content=text))
-        
+
         return results
+
+    def process_output(self, output: str) -> str:
+        """
+        Process the output of the AI to remove the bot's name and replace it with @bot
+        """
+        for processor in self.output_processors:
+            output = processor(output)
+        return output
