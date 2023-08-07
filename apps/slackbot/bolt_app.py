@@ -6,6 +6,8 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, request
+
+from scrape.prompt_reconstructor import PromptReconstructor
 load_dotenv()
 from langchain.chat_models import ChatOpenAI
 from os import environ
@@ -66,12 +68,18 @@ def event_test(client, say, event):
     thread_ts = event.get("thread_ts", None) or event["ts"]
     replies = client.conversations_replies(channel=event['channel'], ts=thread_ts)
     previous_messages = replies['messages'][:-1]
+    
+    # used to reconstruct the question. if the question contains a link recreate
+    # them so that they contain scraped and summerized content of the link
+    reconstructor = PromptReconstructor(question=question, 
+                                        slack_message=[replies['messages'][:-1]])
+    question = reconstructor.reconstruct_prompt()
 
     results, verbose_message = get_response(question, previous_messages)
     say(results, thread_ts=thread_ts)
 
     if contains_verbose(question):
-      say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
+        say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
 
 @app.event("app_home_opened")
 def update_home_tab(client, event, logger):
