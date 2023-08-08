@@ -52,14 +52,9 @@ def hello_command(ack, body):
 bot = app.client.auth_test()
 print(bot)
 
-def contains_verbose(query: str) -> bool:
-    '''looks for -verbose in the question and returns True or False'''
-    return "-verbose" in query.lower()
-
-def contains_verbosex(query: str) -> bool:
-    '''looks for -verbosex in the question and returns True or False'''
-    return "-verbosex" in query.lower()
-
+# Exported the helper functions to utils.py for better readability
+from utils import format_verbose, show_commands_only, contains_verbose, contains_verbosex
+      
 @app.event("app_mention")
 def event_test(client, say, event):
     question = event['text']
@@ -67,11 +62,26 @@ def event_test(client, say, event):
     replies = client.conversations_replies(channel=event['channel'], ts=thread_ts)
     previous_messages = replies['messages'][:-1]
 
-    results, verbose_message = get_response(question, previous_messages)
+    results, logger = get_response(question, previous_messages)
     say(results, thread_ts=thread_ts)
 
-    if contains_verbose(question):
-      say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
+    global stored_verbose_message  # initialize stored_verbose_message
+    
+    if contains_verbosex(question):
+      stored_verbose_message = format_verbose(logger)
+      say(f"#verbose message: \n```{stored_verbose_message}```", thread_ts=thread_ts)
+      
+    elif contains_verbose(question):
+      stored_verbose_message = show_commands_only(logger)
+      say(f"#verbose message: \n```{stored_verbose_message}```", thread_ts=thread_ts)
+      
+    else:
+      stored_verbose_message = "No verbose message available"
+
+@app.command("/verbose")
+def verbose_command(ack, say, command):
+  ack()
+  say(f"#verbose message: \n```{stored_verbose_message}```")
 
 @app.event("app_home_opened")
 def update_home_tab(client, event, logger):
@@ -137,45 +147,6 @@ def hello():
 if 'PINECONE_API_KEY'not in os.environ:
     print("Warning: Pinecone API key not specified. Using local Chroma database.")
     local_memory = LocalChromaStore.from_folder('files', OPENAI_KEY).as_retriever()
-    
-# ---- add this for verbose output --- #
-
-def log_formatter(logger):
-    '''Formats the logger into readable string'''
-    log_strings = []
-    for log in logger:
-
-        reply = log["reply"]
-        if "thoughts" in reply:
-            # reply = json.loads(reply)
-            formatted_reply = f"""-- Step: {log["Step"]} -- \nThoughts: \n {reply["thoughts"]} """
-            
-            if "command" in reply: # add command if it exists
-              formatted_reply += f"""\nCommand: \n {reply["command"]}"""
-            
-            log_strings.append(formatted_reply)
-
-        else: # for final response
-            formatted_reply = f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
-            log_strings.append(formatted_reply)
-    
-    log_string =  "\n".join(log_strings)
-    return log_string
-
-def show_commands_only(logger):
-    '''Modified version of log_formatter that only shows commands'''
-    log_strings = []
-    for log in logger:
-        reply = log["reply"]
-        if "command" in reply:
-          # reply = json.loads(reply)
-          formatted_reply = f"""-- Step: {log["Step"]} -- \nCommand: \n {reply["command"]}"""
-          log_strings.append(formatted_reply)
-        else: # for final response
-          formatted_reply = f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
-          log_strings.append(formatted_reply)
-    log_string =  "\n".join(log_strings)
-    return log_string
 
 def get_response(question, previous_messages):
     llm = ChatOpenAI(
@@ -204,35 +175,13 @@ def get_response(question, previous_messages):
                                               previous_messages = previous_messages, 
                                               llm=llm)
     
-    if contains_verbosex(query = question):
-      print("Verbose mode is on, show all")
-      question = question.replace(f'@{ai_id}', f'@{ai_name}')
-      question = question.replace('-verbose', '')
-      response = task_agent.run(question)
-      logger = task_agent.logger # logger is updated after running task_agent.run(question)
-      try:  # in case log_formatter fails
-        verbose_message = log_formatter(logger)
-      except:
-        verbose_message = str(logger)
-      return response, verbose_message
+    question = question.replace(f'@{ai_id}', f'@{ai_name}')
+    question = question.replace('-verbose', '')
+    question = question.replace('-verbosex', '')
+    response = task_agent.run(question)
+    logger = task_agent.logger # logger is updated after running task_agent.run(question)
     
-    elif contains_verbose(query = question):
-      print("Verbose mode is on, commands only")
-      question = question.replace(f'@{ai_id}', f'@{ai_name}')
-      question = question.replace('-verbose', '')
-      response = task_agent.run(question)
-      logger = task_agent.logger # logger is updated after running task_agent.run(question)
-      try:  # in case log_formatter fails
-        verbose_message = show_commands_only(logger)
-      except:
-        verbose_message = str(logger)
-      return response, verbose_message
-    
-    else:
-      print("Verbose mode is off")
-      question = question.replace(f'@{ai_id}', f'@{ai_name}')
-      response = task_agent.run(question)
-      return response, None
+    return response, logger
 
 # Start the server on port 3000
 if __name__ == "__main__":
