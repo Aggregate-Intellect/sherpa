@@ -143,8 +143,18 @@ class TaskAgent:
                     result = json.loads(assistant_reply)
                 except:
                     return assistant_reply
-                return result["command"]["args"]["response"]
-            
+                if 'command' in result:
+                    if 'args' in result['command']:
+                        if 'response' in result['command']['args']:
+                            return result["command"]["args"]["response"]
+                        else: 
+                            print(result)
+                            return result
+                    else:
+                        return result
+                else: 
+                    return result
+                
             
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
