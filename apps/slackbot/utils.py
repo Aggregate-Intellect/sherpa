@@ -33,18 +33,13 @@ def format_verbose(logger):
     for log in logger:
         reply = log["reply"]
         if "thoughts" in reply:
-            # reply = json.loads(reply)
             formatted_reply = f"""-- Step: {log["Step"]} -- \nThoughts: \n {reply["thoughts"]} """
-            
             if "command" in reply: # add command if it exists
               formatted_reply += f"""\nCommand: \n {reply["command"]}"""
-            
             log_strings.append(formatted_reply)
-
         else: # for final response
             formatted_reply = f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
             log_strings.append(formatted_reply)
-    
     log_string =  "\n".join(log_strings)
     return log_string
 
@@ -54,11 +49,7 @@ def show_commands_only(logger):
     for log in logger:
         reply = log["reply"]
         if "command" in reply:
-          # reply = json.loads(reply)
           formatted_reply = f"""-- Step: {log["Step"]} -- \nCommand: \n {reply["command"]}"""
           log_strings.append(formatted_reply)
-        # else: # for final response
-        #   formatted_reply = f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
-        #   log_strings.append(formatted_reply)
     log_string =  "\n".join(log_strings)
     return log_string
