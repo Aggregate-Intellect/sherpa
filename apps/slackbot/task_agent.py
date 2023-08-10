@@ -7,10 +7,11 @@ from langchain.schema import AIMessage, BaseMessage, Document, HumanMessage
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
+from pydantic import ValidationError
+
 from output_parser import BaseTaskOutputParser, TaskOutputParser
 from post_processors import md_link_to_slack
 from prompt import SlackBotPrompt
-from pydantic import ValidationError
 
 
 class TaskAgent:
@@ -115,7 +116,7 @@ class TaskAgent:
             try:
                 reply_json = json.loads(assistant_reply)
                 logger_step["reply"] = reply_json
-            except json.JSONDecodeError as e:
+            except json.JSONDecodeError:
                 logger_step["reply"] = assistant_reply  # last reply is a string
             self.logger.append(logger_step)
 
@@ -131,9 +132,18 @@ class TaskAgent:
 
                 try:
                     result = json.loads(assistant_reply)
-                    result = result["command"]["args"]["response"]
-                except:
+
+                    if (
+                        "command" in result
+                        and "args" in result["command"]
+                        and "response" in result["command"]["args"]
+                    ):
+                        result = result["command"]["args"]["response"]
+                    else:
+                        result = str(result)
+                except json.JSONDecodeError:
                     result = assistant_reply
+
                 return self.process_output(result)
 
             # Get command name and arguments

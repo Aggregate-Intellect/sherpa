@@ -24,19 +24,17 @@ CONTENT
 
 .. toctree::
    :maxdepth: 1
-   :caption: LARGE LANGUAGE MODEL AGENTS - ONSET AGI?
+   :caption: LARGE LANGUAGE MODEL AGENTS
 
    LLM Agents/llm_tools_use.rst
    LLM Agents/llm_limitations.rst
    LLM Agents/data generation.rst
 
-.. toctree::
+ .. toctree::
    :maxdepth: 1
-   :caption: LARGE LANGUAGE MODEL USE CASES
+   :caption: LARGE LANGUAGE MODEL COMMERCIALIZATION
 
-   LLM Use Cases/innovation.rst
-   LLM Use Cases/financial_model.rst
-   LLM Use Cases/research_llm.rst
+   LLM Commercialization/Large Language Models - To Build or Buy.rst
 
 .. toctree::
    :maxdepth: 1
@@ -45,6 +43,24 @@ CONTENT
    LLM Engineering/llms_in_prod.rst
    LLM Engineering/llms_in_your_env.rst
    LLM Engineering/llms_in_enterprise.rst
+   LLM Engineering/Performance Computing on Cloud for Gen AI.rst
+
+ .. toctree::
+   :maxdepth: 1
+   :caption: LARGE LANGUAGE MODEL USE CASES
+
+   LLM Use Cases/innovation.rst
+   LLM Use Cases/LLM Personal Assistant.rst
+
+ .. toctree::
+   :maxdepth: 1
+   :caption: LARGE LANGUAGE MODEL PROJECTS
+
+   LLM Projects/LLM Live Book.rst
+   LLM Projects/financial_model.rst
+   LLM Projects/Pandas AI.rst
+   LLM Projects/research_llm.rst
+   LLM Projects/ThinkGPT.rst
 
 .. toctree::
    :maxdepth: 1
@@ -54,15 +70,41 @@ CONTENT
 
 .. toctree::
    :maxdepth: 1
-   :caption: LLM HANDS ON TUTORIALS AND RESOURCES
+   :caption: THEORETICAL FOUNDATIONS OF LARGE LANGUAGE MDOELS
 
-   Tutorials/langchain_handson.rst
-   Tutorials/slackbot.rst
+   LLM Foundations/LLM Starter Pack.rst
+   LLM Foundations/Navigating LLM Landscape.rst
+   LLM Foundations/finetuning.rst
 
 .. toctree::
    :maxdepth: 1
-   :caption: THEORETICAL FOUNDATIONS OF LARGE LANGUAGE MDOELS
+   :caption: RESEARCH PAPERS
 
-   LLM Foundations/finetuning.rst
-   LLM Foundations/rlprompt.rst
-   LLM Foundations/controlable_text_gen.rst
+   Research Papers/Advancements in Large Language Models and Machine Learning Research.rst
+   Research Papers/Auto GPT - A Breakthrough in Language Models and Machine Learning Research.rst
+   Research Papers/controlable_text_gen.rst
+   Research Papers/Demonstrate, Search, Predict.rst
+   Research Papers/Economic Impact of Large-Language Models.rst
+   Research Papers/Generating Synthetic Data for Information Retrieval.rst
+   Research Papers/Incorporating External Knowledge into Large Language Models for Knowledge-Intensive Tasks.rst
+   Research Papers/Large Language Models and Model Compression Techniques.rst
+   Research Papers/Large-Language Model and Neurodiversity.rst
+   Research Papers/Low Rank Adaptation for Large-Language Models.rst
+   Research Papers/Reflexion - A Reflection-Based Approach.rst
+   Research Papers/rlprompt.rst
+   Research Papers/TempLM - LM Distilling Language Models into Template-Based Generators .rst
+   Research Papers/Understanding Compositionality in Language Models.rst
+   Research Papers/Use of Smaller Models as Plugins for Large Language Models.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: SUHAS BOOK REVIEW
+
+   Suhas LLM Book Reviews/Designing Large Language Model Applications - Intro.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: LLM HANDS ON TUTORIALS AND RESOURCES
+
+   Tutorials/langchain_handson.rst
+   Tutorials/slackbot.rst   
