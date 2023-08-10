@@ -72,7 +72,7 @@ def event_test(client, say, event):
     # used to reconstruct the question. if the question contains a link recreate
     # them so that they contain scraped and summerized content of the link
     reconstructor = PromptReconstructor(question=question, 
-                                        slack_message=[replies['messages'][:-1]])
+                                        slack_message=[replies['messages'][-1]])
     question = reconstructor.reconstruct_prompt()
 
     results, verbose_message = get_response(question, previous_messages)
