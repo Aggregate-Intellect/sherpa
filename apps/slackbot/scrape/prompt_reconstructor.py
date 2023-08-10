@@ -16,14 +16,15 @@ class PromptReconstructor:
         last_message = self.slack_message
         last_message_links = get_link_from_slack_client_conversation(
             last_message)
+        print('************************************************************************************ ', flush=True)
+        print(last_message, flush=True)
+        print(last_message_links, flush=True)
+        print('************************************************************************************ ', flush=True)
 
         # if there is a link inside the question scrape then summerize based
         # on question and then aggregate to the question
 
         if len(last_message_links) > 0:
-
-            # currently we are supporting single link
-            # TODO: manage multiple links
             available_token = 3000 - \
                 count_string_tokens(question, "gpt-3.5-turbo")
             per_scrape_token_size = available_token/len(last_message_links)

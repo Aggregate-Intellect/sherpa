@@ -84,7 +84,6 @@ def question_reconstructor(data: any, question: str):
     count = 1
     for chunk in data:
         chunk_link = f"<{chunk['link']}>"
-        print(f"chunk link {count}:{chunk_link}", flush=True)
         result = result.replace(f"{chunk_link}", f"[{count}]")
         result = result + \
             f""" [{count}] link: "{chunk['link']}" , link_data: {data}"""
@@ -125,7 +124,6 @@ def chunk_and_summerize(text_data: str,  question: str, open_ai_key: str, link: 
             f'LITERAL TEXT: {text}
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as""")
-
         chunk_summary.append(summerized)
 
     return " ".join(chunk_summary)
