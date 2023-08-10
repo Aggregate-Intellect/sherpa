@@ -16,6 +16,10 @@ class PromptReconstructor:
         last_message = self.slack_message
         last_message_links = get_link_from_slack_client_conversation(
             last_message)
+        print('************************************************************************************ ', flush=True)
+        print(last_message, flush=True)
+        print(last_message_links, flush=True)
+        print('************************************************************************************ ', flush=True)
 
         # if there is a link inside the question scrape then summerize based
         # on question and then aggregate to the question
