@@ -143,16 +143,12 @@ class TaskAgent:
                     result = json.loads(assistant_reply)
                 except:
                     return assistant_reply
-                if 'command' in result:
-                    if 'args' in result['command']:
-                        if 'response' in result['command']['args']:
-                            return result["command"]["args"]["response"]
-                        else: 
-                            print(result)
-                            return result
-                    else:
-                        return result
-                else: 
+                if 'command' in result and \
+                'args' in result['command'] and \
+                'response' in result['command']['args']:
+                    return result["command"]["args"]["response"]
+                else:
+                    print(result)
                     return result
                 
             
