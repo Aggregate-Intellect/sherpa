@@ -168,12 +168,17 @@ class TaskAgent:
                     result = json.loads(assistant_reply)
                 except:
                     return assistant_reply
-                # if the LLM does not propose command
-                if result["command"] == {}:
+
+                if 'command' in result and \
+                'args' in result['command'] and \
+                'response' in result['command']['args']:
+                    return result["command"]["args"]["response"]
+                elif 'thoughts' in result and 'speak' in result['thoughts']:
                     return result["thoughts"]["speak"]
-                return result["command"]["args"]["response"]
-            
-            
+                else:
+                    print(result)
+                    return result
+                            
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
             print("action:", action)

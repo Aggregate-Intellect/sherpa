@@ -70,6 +70,52 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
 3.  Set up the Slack app's Event Subscriptions and provide the ngrok URL as the Request URL.
     * **NOTE:** When add the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
 
+## Development
+### Linting and formating
+This project uses `flake8` for linting, `black` and `isort` for formatting, and `pytest` for testing. To install the dependencies, run:
+
+```bash
+pip install -r dev-requirements.txt
+```
+
+To format the project, run:
+
+```bash
+make format
+```
+
+if you don't have `make` installed, you can also run the following commands:
+
+```bash
+black .
+isort .
+```
+
+To lint the project, run:
+
+```bash
+make lint
+```
+
+if you don't have `make` installed, you can also run the following commands:
+
+```bash
+flake8 .
+```
+
+### Testing
+To run the tests, run:
+
+```bash
+make test
+```
+
+or 
+
+```bash
+pytest .
+```
+
 
 # Reference 
 4.  Start interacting with the chatbot by mentioning the app in a Slack channel.
