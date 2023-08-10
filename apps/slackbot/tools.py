@@ -95,7 +95,7 @@ class SearchTool(BaseTool):
         for i in range(len(search_results["organic"][:10])):
             r = search_results["organic"][i]
             single_result = (
-                "Description: " + r["title"] + r["snippet"] + "\nLink" + r["link"]
+                "Description: " + r["title"] + r["snippet"] + "\nLink:" + r["link"]
             )
 
             result.append(single_result)
@@ -129,8 +129,9 @@ class ContextTool(BaseTool):
             result += (
                 "Document"
                 + doc.page_content
-                + "\nLink"
+                + "\nLink:"
                 + doc.metadata.get("source", "")
+                + "\n"
             )
 
         return result
