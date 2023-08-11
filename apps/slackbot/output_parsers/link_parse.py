@@ -27,8 +27,10 @@ class LinkParser(BaseOutputParser):
 
         def replace_with_link(match: re.Match):
             print(match)
-            doc_id = match.group(1)
-            return f"[[{doc_id}]]({self.links[int(doc_id)]})"
+            doc_id = int(match.group(1))
+            if doc_id < 0 or doc_id >= len(self.links):
+                return ""
+            return f"<{self.links[doc_id]}|[{doc_id}]>"
 
         if re.search(self.url_pattern, text):
             modified_text = re.sub(self.url_pattern, replace_with_symbol, text)
