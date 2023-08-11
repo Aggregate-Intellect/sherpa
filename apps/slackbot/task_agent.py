@@ -22,7 +22,7 @@ from pydantic import ValidationError
 from action_planner import SelectiveActionPlanner
 from action_planner.base import BaseActionPlanner
 from output_parser import BaseTaskOutputParser, TaskOutputParser
-from output_parsers import LinkParser
+from output_parsers import LinkParser, MDToSlackParse
 from post_processors import md_link_to_slack
 from reflection import Reflection
 
@@ -60,8 +60,12 @@ class TaskAgent:
         self.logger = []  # added by JF
 
         link_parser = LinkParser()
+        slack_link_paerser = MDToSlackParse()
+
         self.tool_output_parsers = [link_parser]
-        self.output_parsers = [link_parser]
+        self.output_parsers = [link_parser, slack_link_paerser]
+        # print(self.full_message_history)
+        # print("message:", self.previous_message)
 
     @classmethod
     def from_llm_and_tools(
@@ -154,7 +158,7 @@ class TaskAgent:
             try:
                 reply_json = json.loads(assistant_reply)
                 logger_step["reply"] = reply_json
-            except json.JSONDecodeError as e:
+            except json.JSONDecodeError:
                 logger_step["reply"] = assistant_reply  # last reply is a string
             self.logger.append(logger_step)
 
@@ -234,7 +238,6 @@ class TaskAgent:
                 memory_to_add += feedback
 
             self.previous_message.append(HumanMessage(content=memory_to_add))
-            previous_action = action
 
     def set_user_input(self, user_input: str):
         result = f"Command UserInput returned: {user_input}"
