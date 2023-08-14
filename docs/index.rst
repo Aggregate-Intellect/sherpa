@@ -26,11 +26,11 @@ CONTENT
    :maxdepth: 1
    :caption: LARGE LANGUAGE MODEL AGENTS
 
-   LLM Agents/llm_tools_use.rst
-   LLM Agents/llm_limitations.rst
-   LLM Agents/data generation.rst
+   LLM_Agents/llm_tools_use.rst
+   LLM_Agents/llm_limitations.rst
+   LLM_Agents/data_generation.rst
 
- .. toctree::
+.. toctree::
    :maxdepth: 1
    :caption: LARGE LANGUAGE MODEL COMMERCIALIZATION
 
@@ -45,14 +45,14 @@ CONTENT
    LLM Engineering/llms_in_enterprise.rst
    LLM Engineering/Performance Computing on Cloud for Gen AI.rst
 
- .. toctree::
+.. toctree::
    :maxdepth: 1
    :caption: LARGE LANGUAGE MODEL USE CASES
 
    LLM Use Cases/innovation.rst
    LLM Use Cases/LLM Personal Assistant.rst
 
- .. toctree::
+.. toctree::
    :maxdepth: 1
    :caption: LARGE LANGUAGE MODEL PROJECTS
 
