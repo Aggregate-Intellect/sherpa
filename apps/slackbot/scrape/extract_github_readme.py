@@ -2,9 +2,11 @@ import requests
 import base64
 import re
 from dotenv import dotenv_values
-from apps.slackbot.vectorstores import ConversationStore
+
 import pinecone
 from langchain.embeddings.openai import OpenAIEmbeddings
+
+from vectorstores import ConversationStore
 
 env_vars = dotenv_values(".env")
 
@@ -63,6 +65,3 @@ def save_to_pine_cone(content,metadatas):
 
     vectorstore = ConversationStore("Github_data", index, embeddings, 'text')
     vectorstore.add_texts(content,metadatas)
-
-
-extract_github_readme('https://github.com/TowhidKashem/snapchat-clone')
