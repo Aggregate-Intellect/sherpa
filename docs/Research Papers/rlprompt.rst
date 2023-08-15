@@ -8,7 +8,7 @@ talk will introduce RLPrompt, an efficient algorithm that uses
 reinforcement learning to systematically search for the best prompts to
 improve LLM performance across diverse tasks.
 
-`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/RLPrompt%20Presentation.pdf>`__
+`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/Research%20Papers/RLPrompt%20Presentation.pdf>`__
 \| `RECORDING <https://youtu.be/SGInyKjzF7A>`__
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
