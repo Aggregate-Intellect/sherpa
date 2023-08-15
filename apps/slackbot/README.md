@@ -19,21 +19,12 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
    ```bash
    git clone <repository_url>
 
-2.  Create new app in slack workspace  following the [setup toturial](../../docs/Tutorials/slackbot.rst)
+2.  Create new app in slack workspace by following the [setup tutorial](../../docs/Tutorials/slackbot.rst)
     
-3.   Configuration
-    Before running the code, you need to configure the following environment    variables. All these tokens should be added in .env file: 
-        ```
-        SLACK_SIGNING_SECRET: Slack apps signing secret.
-        SLACK_OAUTH_TOKEN: Slack bot token for authentication.
-        SLACK_VERIFICATION_TOKEN: Slack verification token.
-        OPENAI_API_KEY: OpenAI API key for language modeling.
-        PINECONE_INDEX: The Pinecone vector database index
-        PINECONE_API_KEY: The Pinecone vector database API key 
-        PINECONE_ENV: Region where the Pinecone index is deployed
-        SERPER_API_KEY: API key for Serper that enables the google search tool
-        ```
-4.  Add all the files which you want to build the Vectore Db index to thje `files` folder. Currently, it works with `PDFs` and `Markdown` files. (Ignore this step if you connect with your Pinecone database)
+3.   Configuration: before running the code, make sure to configure all mandatory environment variables described in the 
+    [setup tutorial](../../docs/Tutorials/slackbot.rst). 
+
+4.  Add all the files which you want indexed to the `files` folder. Currently, this app can index `PDFs` and `Markdown` files. (Ignore this step if you connect with your Pinecone database instead.)
 
 ## Usage
 ### Run with Virtual Environment
@@ -65,10 +56,10 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
     docker build -it slackbot .
     docker run -p 3000:3000 slackbot
     ```
-2.  Expose the server to the internet using a tool like ngrok. Not required in hosted on public IP
+2.  Expose the server to the internet using a tool like ngrok. (This step is not required if you are hosting the app on a public IP address.)
 
 3.  Set up the Slack app's Event Subscriptions and provide the ngrok URL as the Request URL.
-    * **NOTE:** When add the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
+    * **NOTE:** When adding the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
 
 ## Development
 ### Linting and formating

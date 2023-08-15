@@ -54,27 +54,22 @@ After you clone the repository, you can find the slackbot project under `apps/sl
 
         pip install -r requirements.txt
 
-5. Before you can run the app, you will need to create a `.env` file with the following information
+5. Before running the app you must create a `.env` file to specify environment variables for your local development environment. Start by copying `.env-sample`, and then modify your `.env` to contain your own values.
    ::
 
-        SLACK_SIGNING_SECRET=<Slack APP signin secret>
-        SLACK_VERIFICATION_TOKEN=<Slack App verification token>
-        SLACK_OAUTH_TOKEN=<Slack app OAUTH token>
-        OPENAI_KEY=<OpenAI API>
-        SLACK_PORT=3000
-        SERPER_API_KEY=<Serper API>
+        cp .env-sample .env
 
-  * You can find the first two tokens in the `Basic Information` page of your Slack App.
+  * You can find the Slack signing secret and verification token in the `Basic Information` page of your Slack App.
 
     .. image:: slackbot_imgs/slackbot.png
         :width: 400
-  * The `SLACK_OAUTH_TOKEN` can be found in the `OAuth & Permissions` page of your Slack App.
+  * `SLACK_OAUTH_TOKEN` can be found in the `OAuth & Permissions` page of your Slack App.
  
     .. image:: slackbot_imgs/slackbot2.png
         :width: 400
-  * The `OPENAI_KEY` can be found in your OpenAI account page. If you you don't have one, create one at https://platform.openai.com/overview. Remember to upgrade to a paid account after using any free credits you're given by OpenAI, or you will encounter `openai.error.RateLimitError: You exceeded your current quota, please check your plan and billing details`.
-  * Serper is a search engine that we will use to search for relevant articles. You can find the API key in your Serper account page. If you don't have one, create one at https://serpapi.com/. You don't need it to run the app, but it will enable the Internet search function of the SlackBot. If you don't want to have this functionality, you can leave the `SERPER_API_KEY` empty.
-  * You may also find there are values in the `README` about *Pinecone* keys in the `.env` file. Pinecone is a cloud-based vector database, by default, the app runs with an in-memory vector database. However, if you want to build your own cloud vector database, you can learn more about Pinecone here: https://www.pinecone.io/.
+  * The `OPENAI_KEY` can be found in your OpenAI account page. If you don't have an account, create one at https://platform.openai.com/overview. Remember to upgrade to a paid account after using any free credits you're given by OpenAI, or you will encounter `openai.error.RateLimitError: You exceeded your current quota, please check your plan and billing details`.
+  * Serper is a search engine that we will use to search for relevant articles. You can find the API key in your Serper account page. If you don't have an account, create one at https://serpapi.com/. Serper is optional -- you don't need it to run the app -- but adding Serper will enable the Internet search function of the SlackBot. If you don't want to have this functionality, leave the `SERPER_API_KEY` empty.
+  * You may also find there are *PINECONE_xxx* key/value pairs in the `.env` file. Pinecone is a cloud-based vector database. By default, this app runs with an in-memory (local) vector database called Chroma. However, if you want to build your own cloud vector database with Pinecone, you can learn more about that here: https://www.pinecone.io/.
 
 6. We will need to have some files to load into the vector database and act as the long-term memory of the SlackBot. For the sake of this tutorial, copy the `README.md` file of this project to `apps/slackbot/file`. This file will be used as the long-term memory of the SlackBot.
 7. Now, run the app with the following command
