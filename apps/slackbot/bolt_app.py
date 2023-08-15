@@ -54,8 +54,15 @@ if PINECONE_API_KEY is None:
   print("App init: loading documents into Chroma:")
   local_memory = LocalChromaStore.from_folder('files', OPENAI_KEY).as_retriever()
 else:
-  print("App init: Pinecone environment variables are set")
-
+  PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
+  PINECONE_ENV=environ.get("PINECONE_ENV")
+  PINECONE_INDEX=environ.get("PINECONE_INDEX")
+  if None in [PINECONE_NAMESPACE, PINECONE_ENV, PINECONE_INDEX]:
+    print("App init: Pinecone environment variables not set, app is unable to run")
+    raise SystemExit(1)
+  else:
+    print("App init: Pinecone environment variables are set")
+    print(PINECONE_NAMESPACE)
 
 ###########################################################################
 # Define Slack client functionality:
@@ -218,7 +225,7 @@ def get_response(question, previous_messages):
     if PINECONE_API_KEY:
       # If pinecone API is specified, then use the Pinecone Database
       memory = ConversationStore.get_vector_retrieval(
-        'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX"), search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
+        PINECONE_NAMESPACE, OPENAI_KEY, index_name=PINECONE_INDEX, search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
       )
     else:
       # use the local Chroma database
