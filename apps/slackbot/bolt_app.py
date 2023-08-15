@@ -4,13 +4,11 @@
 ##############################################
 
 import os
+from os import environ
 from dotenv import load_dotenv
 from flask import Flask, request
-
 from scrape.prompt_reconstructor import PromptReconstructor
-load_dotenv()
 from langchain.chat_models import ChatOpenAI
-from os import environ
 from vectorstores import ConversationStore, LocalChromaStore
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
@@ -18,41 +16,55 @@ from tools import get_tools
 from task_agent import TaskAgent
 
 
-
-# This `app` represents your existing Flask app
-app = App(
-    token=os.environ.get("SLACK_OAUTH_TOKEN"),
-    signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
-)
-
-
 #####################################################################################################
-# Setting up environment variables and Slack configuration:
-# The code retrieves various environment variables using os.environ.get() method.
-# Environment variables include Slack signing secret, OAuth token, verification token, and OpenAI key.
+# Load environment variables and instantiate Slack client:
 #####################################################################################################
+load_dotenv()
 
 SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
 SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
 SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
-OPENAI_KEY=environ.get("OPENAI_KEY")
 SLACK_PORT = environ.get("SLACK_PORT", 3000)
 
+if None in [SLACK_VERIFICATION_TOKEN, SLACK_SIGNING_SECRET, SLACK_OAUTH_TOKEN, SLACK_PORT]:
+  print("App init: Slack environment variables not set, app is unable to run")
+  raise SystemExit(1)
+else:
+  print("App init: Slack environment variables are set")
+
+# Instantiate the app
+app = App(
+    token=SLACK_OAUTH_TOKEN,
+    signing_secret=SLACK_SIGNING_SECRET,
+)
+bot = app.client.auth_test()
+print("App init: bot auth_test results", bot)
+
+OPENAI_KEY=environ.get("OPENAI_KEY")
+if OPENAI_KEY is None:
+  print("App init: OpenAI environment variables not set, app is unable to run")
+  raise SystemExit(1)
+else:
+  print("App init: OpenAI environment variables are set")
+  os.environ['OPENAI_API_KEY'] = OPENAI_KEY
+
+PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
+if PINECONE_API_KEY is None:
+  print("App init: Pinecone environment variables not set. Using local Chroma database instead.")
+  print("App init: loading documents into Chroma:")
+  local_memory = LocalChromaStore.from_folder('files', OPENAI_KEY).as_retriever()
+else:
+  print("App init: Pinecone environment variables are set")
+
 
 ###########################################################################
-# Instantiating Slack client and Flask app:
+# Define Slack client functionality:
 ###########################################################################
-
-#instantiating slack client
-os.environ['OPENAI_API_KEY'] = OPENAI_KEY
 
 @app.command("/hello-socket-mode")
 def hello_command(ack, body):
     user_id = body["user_id"]
     ack(f"Hi, <@{user_id}>!")
-
-bot = app.client.auth_test()
-print(bot)
 
 def contains_verbose(query: str) -> bool:
     '''looks for -verbose in the question and returns True or False'''
@@ -131,8 +143,25 @@ def update_home_tab(client, event, logger):
   except Exception as e:
     logger.error(f"Error publishing home tab: {e}")
 
+
+###########################################################################
+# Setup Flask app:
+###########################################################################
+
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
+
+# Start the HTTP server 
+if __name__ == "__main__":
+    # documents = getDocuments('files')
+    # vectorstore = getVectoreStore(documents)
+    # qa = createLangchainQA(vectorstore)
+    
+    # chain = createIndex("files")
+    print("App init: starting HTTP server on port {port}".format(port=SLACK_PORT))
+    flask_app.run(host="0.0.0.0", port=SLACK_PORT)
+    # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+
 
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
@@ -142,10 +171,6 @@ def slack_events():
 def hello():
     return "OK"
 
-if 'PINECONE_API_KEY'not in os.environ:
-    print("Warning: Pinecone API key not specified. Using local Chroma database.")
-    local_memory = LocalChromaStore.from_folder('files', OPENAI_KEY).as_retriever()
-    
 # ---- add this for verbose output --- #
 
 def log_formatter(logger):
@@ -190,7 +215,7 @@ def get_response(question, previous_messages):
         openai_api_key=OPENAI_KEY, request_timeout=120
     )
     
-    if os.environ.get("PINECONE_API_KEY", False):
+    if PINECONE_API_KEY:
       # If pinecone API is specified, then use the Pinecone Database
       memory = ConversationStore.get_vector_retrieval(
         'ReadTheDocs', OPENAI_KEY, index_name=os.getenv("PINECONE_INDEX"), search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
@@ -241,14 +266,3 @@ def get_response(question, previous_messages):
       question = question.replace(f'@{ai_id}', f'@{ai_name}')
       response = task_agent.run(question)
       return response, None
-
-# Start the server on port 3000
-if __name__ == "__main__":
-    # documents = getDocuments('files')
-    # vectorstore = getVectoreStore(documents)
-    # qa = createLangchainQA(vectorstore)
-    
-    # chain = createIndex("files")
-    print('Running the app')
-    flask_app.run(host="0.0.0.0", port=SLACK_PORT)
-    # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
