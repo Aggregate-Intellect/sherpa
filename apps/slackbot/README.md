@@ -26,7 +26,7 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
         ```
         SLACK_SIGNING_SECRET: Slack apps signing secret.
         SLACK_OAUTH_TOKEN: Slack bot token for authentication.
-        VERIFICATION_TOKEN: Slack verification token.
+        SLACK_VERIFICATION_TOKEN: Slack verification token.
         OPENAI_API_KEY: OpenAI API key for language modeling.
         PINECONE_INDEX: The Pinecone vector database index
         PINECONE_API_KEY: The Pinecone vector database API key 

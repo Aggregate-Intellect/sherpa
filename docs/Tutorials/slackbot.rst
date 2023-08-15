@@ -58,7 +58,7 @@ After you clone the repository, you can find the slackbot project under `apps/sl
    ::
 
         SLACK_SIGNING_SECRET=<Slack APP signin secret>
-        VERIFICATION_TOKEN=<Slack App verification token>
+        SLACK_VERIFICATION_TOKEN=<Slack App verification token>
         SLACK_OAUTH_TOKEN=<Slack app OAUTH token>
         OPENAI_KEY=<OpenAI API>
         SLACK_PORT=3000
