@@ -10,7 +10,7 @@ effectiveness. KnowledgeOps promises to enhance our ability to
 experiment with a wider range of ideas and select the most impactful
 ones, similar to the benefits seen in DevOps and related methodologies.
 
-`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/KnowledgeOps/Knowledge-Ops.pdf>`__
+`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/dffaaf08ea7092561d66532c67d304fd79bab328/docs/KnowledgeOps/Knowledge-Ops.pdf>`__
 \| `RECORDING <https://youtu.be/H3jZfLWpOZc>`__
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
