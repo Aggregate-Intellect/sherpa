@@ -30,7 +30,7 @@ Next, we will create a new Slack app and add it to the Slack Workspace we just c
       .. image:: slackbot_imgs/slackapp6.png
         :width: 400
 
-**Congradulations! You have successfully created a Slack App and installed it in your Slack Workspace.**
+**Congratulations! You have successfully created a Slack App and installed it in your Slack Workspace.**
 
 Run the Slackbot Locally
 ************************
@@ -72,7 +72,7 @@ After you clone the repository, you can find the slackbot project under `apps/sl
  
     .. image:: slackbot_imgs/slackbot2.png
         :width: 400
-  * The `OPENAI_KEY` can be found in your OpenAI account page. If you you don't have one, create one at https://platform.openai.com/overview.
+  * The `OPENAI_KEY` can be found in your OpenAI account page. If you you don't have one, create one at https://platform.openai.com/overview. Remember to upgrade to a paid account after using any free credits you're given by OpenAI, or you will encounter `openai.error.RateLimitError: You exceeded your current quota, please check your plan and billing details`.
   * Serper is a search engine that we will use to search for relevant articles. You can find the API key in your Serper account page. If you don't have one, create one at https://serpapi.com/. You don't need it to run the app, but it will enable the Internet search function of the SlackBot. If you don't want to have this functionality, you can leave the `SERPER_API_KEY` empty.
   * You may also find there are values in the `README` about *Pinecone* keys in the `.env` file. Pinecone is a cloud-based vector database, by default, the app runs with an in-memory vector database. However, if you want to build your own cloud vector database, you can learn more about Pinecone here: https://www.pinecone.io/.
 
@@ -110,7 +110,7 @@ However, before we can do that, we will need to expose the local app to the Inte
 
 Now we have all the pieces ready, let's connect everything together.
 
-3. Go to the `Event Subscriptions` page of your Slack App, and enter the URL of the ngrok forwarding address in the `Request URL` field. In the above image, the URL is `https://efb0-2607-fea8-125e-d700-79b8-a450-f057-a944.ngrok-free.app/slack/events` (Yes! Sadly the URL is randomly generated and we will need to change the URL every time when we restart `ngrok` :(. Don't hisitate to let us know if there is a way to persist the URL :)). Note that the URL should end with `/slack/events`. If everything is working properly, you should see a green check mark next to the URL field as `Verified`.
+3. Go to the `Event Subscriptions` page of your Slack App, and enter the URL of the ngrok forwarding address in the `Request URL` field. In the above image, the URL is `https://efb0-2607-fea8-125e-d700-79b8-a450-f057-a944.ngrok-free.app/slack/events` (Yes! Sadly the URL is randomly generated and we will need to change the URL every time when we restart `ngrok` :(. Don't hesitate to let us know if there is a way to persist the URL :)). Note that the URL should end with `/slack/events`. If everything is working properly, you should see a green check mark next to the URL field as `Verified`.
 
   .. image:: slackbot_imgs/integration.png
         :width: 500
