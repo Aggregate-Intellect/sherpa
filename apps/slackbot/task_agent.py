@@ -1,6 +1,9 @@
 import json
 from typing import List, Optional
 
+from pydantic import ValidationError
+import openai
+
 from langchain.chains.llm import LLMChain
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import AIMessage, BaseMessage, Document, HumanMessage
@@ -101,10 +104,34 @@ class TaskAgent:
                     f"Use the above information to respond to the user's message:\n{task}\n\n"
                     f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
                     f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
-                    "only write text but not the JSON format specified above. \nResult:"
+                    "only write text but NOT the JSON format specified above. \nResult:"
                 )
 
             # Send message to AI, get response
+
+            try:
+                assistant_reply = self.chain.run(
+                    task=task,
+                    messages=self.previous_message,
+                    memory=self.memory,
+                    user_input=user_input,
+                )
+            except openai.error.APIError as e:
+                return f"OpenAI API returned an API Error: {e}"  
+            except openai.error.APIConnectionError as e:
+                return f"Failed to connect to OpenAI API: {e}"
+            except openai.error.RateLimitError as e:
+                return f"OpenAI API request exceeded rate limit: {e}"
+            except openai.error.AuthenticationError as e:
+                return f"OpenAI API failed authentication or incorrect token: {e}"
+            except openai.error.Timeout as e:
+                return f"OpenAI API Timeout error: {e}"
+            except openai.error.ServiceUnavailableError as e:
+                return f"OpenAI API Service unavailable: {e}"
+            except openai.error.InvalidRequestError as e:
+                return f"OpenAI API invalid request error: {e}"
+                
+
             assistant_reply = self.chain.run(
                 task=task,
                 messages=self.previous_message,
@@ -132,7 +159,6 @@ class TaskAgent:
 
                 try:
                     result = json.loads(assistant_reply)
-
                     if (
                         "command" in result
                         and "args" in result["command"]
@@ -140,6 +166,7 @@ class TaskAgent:
                     ):
                         result = result["command"]["args"]["response"]
                     else:
+                        print(result)
                         result = str(result)
                 except json.JSONDecodeError:
                     result = assistant_reply
