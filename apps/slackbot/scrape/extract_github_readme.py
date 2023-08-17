@@ -2,7 +2,7 @@ import requests
 import base64
 import re
 from dotenv import dotenv_values
-
+import config as cfg
 import pinecone
 from langchain.embeddings.openai import OpenAIEmbeddings
 
@@ -10,12 +10,9 @@ from vectorstores import ConversationStore
 
 env_vars = dotenv_values(".env")
 
-# Access the variables
-api_key = env_vars.get("API_KEY")
-PINECONE_INDEX=env_vars.get("PINECONE_INDEX")
-PINECONE_API_KEY=env_vars.get("PINECONE_API_KEY")
-PINECONE_ENV=env_vars.get("PINECONE_ENV")
-openai_api_key= env_vars.get("OPENAI_KEY")
+# TODO rename API_KEY to something like GITHUB_API_TOKEN and set in config.py
+# TODO remove dotenv_values usage and import
+api_key = env_vars.get("API_KEY") 
 
 def get_owner_and_repo(url):
     url_content_list = url.split('/')
@@ -59,9 +56,9 @@ def extract_github_readme(repo_url):
 
 
 def save_to_pine_cone(content,metadatas):
-    pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
+    pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
     index = pinecone.Index("langchain")
-    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    embeddings = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_KEY)
 
     vectorstore = ConversationStore("Github_data", index, embeddings, 'text')
     vectorstore.add_texts(content,metadatas)
