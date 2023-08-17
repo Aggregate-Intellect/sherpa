@@ -1,6 +1,5 @@
 import json
 import boto3
-import os
 destination_bucket = "transcriptslangchain"
 import tiktoken
 from langchain.chat_models import ChatOpenAI
@@ -217,13 +216,11 @@ def lambda_handler(event,context):
     source_key = event['Records'][0]['s3']['object']['key']
     
     
-    ACCESS_KEY	= os.environ['ACCESS_KEY'] 
-    SECRET_KEY	= os.environ['SECRET_KEY'] 
     #s3_client = boto3.client('s3')
     s3_client = boto3.client(
-    's3',
-    aws_access_key_id=ACCESS_KEY,
-    aws_secret_access_key=SECRET_KEY
+      's3',
+      aws_access_key_id=cfg.AWS_ACCESS_KEY,
+      aws_secret_access_key=cfg.AWS_SECRET_KEY
     )
     
     print(source_bucket)
@@ -285,13 +282,11 @@ def lambda_handler_bkp(event, context):
     source_key = event['Records'][0]['s3']['object']['key']
     
     
-    ACCESS_KEY	= os.environ['ACCESS_KEY'] 
-    SECRET_KEY	= os.environ['SECRET_KEY'] 
     #s3_client = boto3.client('s3')
     s3_client = boto3.client(
-    's3',
-    aws_access_key_id=ACCESS_KEY,
-    aws_secret_access_key=SECRET_KEY
+      's3',
+      aws_access_key_id=cfg.AWS_ACCESS_KEY,
+      aws_secret_access_key=cfg.AWS_SECRET_KEY
     )
     
     print(source_bucket)
