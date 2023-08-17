@@ -24,7 +24,7 @@ import json
 
 # instantiate chat model
 chat = ChatOpenAI(
-  openai_api_key=cfg.OPENAI_KEY,
+  openai_api_key=cfg.OPENAI_API_KEY,
   temperature=0,
   model='gpt-3.5-turbo')
 

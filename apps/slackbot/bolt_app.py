@@ -26,7 +26,7 @@ print("App init: bot auth_test results", bot)
 
 if cfg.PINECONE_API_KEY is None:
   print("Setting up local Chroma database")
-  local_memory = LocalChromaStore.from_folder('files', cfg.OPENAI_KEY).as_retriever()
+  local_memory = LocalChromaStore.from_folder('files', cfg.OPENAI_API_KEY).as_retriever()
 
 ###########################################################################
 # Define Slack client functionality:
@@ -183,13 +183,13 @@ def show_commands_only(logger):
 
 def get_response(question, previous_messages):
     llm = ChatOpenAI(
-        openai_api_key=cfg.OPENAI_KEY, request_timeout=120
+        openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120
     )
     
     if cfg.PINECONE_API_KEY:
       # If pinecone API is specified, then use the Pinecone Database
       memory = ConversationStore.get_vector_retrieval(
-        cfg.PINECONE_NAMESPACE, cfg.OPENAI_KEY, index_name=cfg.PINECONE_INDEX, search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
+        cfg.PINECONE_NAMESPACE, cfg.OPENAI_API_KEY, index_name=cfg.PINECONE_INDEX, search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
       )
     else:
       # use the local Chroma database

@@ -58,7 +58,7 @@ def extract_github_readme(repo_url):
 def save_to_pine_cone(content,metadatas):
     pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
     index = pinecone.Index("langchain")
-    embeddings = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_KEY)
+    embeddings = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY)
 
     vectorstore = ConversationStore("Github_data", index, embeddings, 'text')
     vectorstore.add_texts(content,metadatas)
