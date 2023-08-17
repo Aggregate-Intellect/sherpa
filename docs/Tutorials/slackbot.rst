@@ -67,7 +67,7 @@ After you clone the repository, you can find the slackbot project under `apps/sl
  
     .. image:: slackbot_imgs/slackbot2.png
         :width: 400
-  * The `OPENAI_KEY` can be found in your OpenAI account page. If you don't have an account, create one at https://platform.openai.com/overview. Remember to upgrade to a paid account after using any free credits you're given by OpenAI, or you will encounter `openai.error.RateLimitError: You exceeded your current quota, please check your plan and billing details`.
+  * The `OPENAI_API_KEY` can be found in your OpenAI account page. If you don't have an account, create one at https://platform.openai.com/overview. Remember to upgrade to a paid account after using any free credits you're given by OpenAI, or you will encounter `openai.error.RateLimitError: You exceeded your current quota, please check your plan and billing details`.
   * Serper is a search engine that we will use to search for relevant articles. You can find the API key in your Serper account page. If you don't have an account, create one at https://serpapi.com/. Serper is optional -- you don't need it to run the app -- but adding Serper will enable the Internet search function of the SlackBot. If you don't want to have this functionality, leave the `SERPER_API_KEY` empty.
   * You may also find there are *PINECONE_xxx* key/value pairs in the `.env` file. Pinecone is a cloud-based vector database. By default, this app runs with an in-memory (local) vector database called Chroma. However, if you want to build your own cloud vector database with Pinecone, you can learn more about that here: https://www.pinecone.io/.
 

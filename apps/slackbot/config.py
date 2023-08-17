@@ -24,7 +24,7 @@ SLACK_SIGNING_SECRET = environ.get('SLACK_SIGNING_SECRET')
 SLACK_OAUTH_TOKEN = environ.get('SLACK_OAUTH_TOKEN')
 SLACK_VERIFICATION_TOKEN = environ.get('SLACK_VERIFICATION_TOKEN')
 SLACK_PORT = environ.get('SLACK_PORT', 3000)
-OPENAI_KEY=environ.get('OPENAI_KEY')
+OPENAI_API_KEY=environ.get('OPENAI_API_KEY')
 PINECONE_API_KEY = environ.get('PINECONE_API_KEY')
 PINECONE_NAMESPACE = environ.get('PINECONE_NAMESPACE', 'ReadTheDocs')
 PINECONE_ENV = environ.get('PINECONE_ENV')
@@ -42,14 +42,11 @@ if None in [this.SLACK_VERIFICATION_TOKEN, this.SLACK_SIGNING_SECRET, this.SLACK
 else:
     print('Config: Slack environment variables are set')
 
-if this.OPENAI_KEY is None:
+if this.OPENAI_API_KEY is None:
     print('Config: OpenAI environment variables not set, unable to run')
     raise SystemExit(1)
 else:
     print('Config: OpenAI environment variables are set')
-
-# TODO verify we need OPENAI_API_KEY; can we just use OPENAI_KEY instead?
-os.environ['OPENAI_API_KEY'] = this.OPENAI_KEY
 
 if this.PINECONE_API_KEY is None:
     print('Config: Pinecone environment variables not set')

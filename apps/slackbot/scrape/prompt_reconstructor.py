@@ -38,7 +38,7 @@ class PromptReconstructor:
 
                     chunk_summary = chunk_and_summerize(
                         link=link,
-                        open_ai_key=cfg.OPENAI_KEY,
+                        open_ai_key=cfg.OPENAI_API_KEY,
                         question=question,
                         text_data=scraped_data["data"]
                     )
@@ -47,7 +47,7 @@ class PromptReconstructor:
 
                         chunk_summary = chunk_and_summerize(
                             link=link,
-                            open_ai_key=cfg.OPENAI_KEY,
+                            open_ai_key=cfg.OPENAI_API_KEY,
                             question=question,
                             text_data=chunk_summary
                         )
