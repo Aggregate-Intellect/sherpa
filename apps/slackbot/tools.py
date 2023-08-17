@@ -7,7 +7,7 @@ from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.prompts import Prompt
 from langchain.vectorstores.base import VectorStoreRetriever
 from typing_extensions import Literal
-import os
+import config as cfg
 
 
 def get_tools(memory):
@@ -20,7 +20,7 @@ def get_tools(memory):
 
     tools.append(ContextTool(memory=memory))
 
-    if os.environ.get("SERPER_API_KEY", False):
+    if cfg.SERPER_API_KEY is not None:
         search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
         tools.append(search_tool)
     else:
