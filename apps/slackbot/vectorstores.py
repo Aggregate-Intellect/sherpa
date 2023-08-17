@@ -12,10 +12,7 @@ from langchain.vectorstores import Chroma
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from utils import load_files
-
-
-PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
-PINECONE_ENV = os.environ.get("PINECONE_ENV")
+import config as cfg
 
 
 class ConversationStore(VectorStore):
@@ -27,7 +24,7 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def from_index(cls, namespace, openai_api_key, index_name, text_key="text"):
-        pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
+        pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         logging.info(f"Loading index {index_name} from Pinecone")
         index = pinecone.Index(index_name)
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
@@ -98,7 +95,7 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def delete(cls, namespace, index_name):
-        pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
+        pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         index = pinecone.Index(index_name)
         return index.delete(delete_all=True, namespace=namespace)
 

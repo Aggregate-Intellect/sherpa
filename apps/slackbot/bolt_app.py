@@ -3,9 +3,7 @@
 #  Importing necessary modules
 ##############################################
 
-import os
-from os import environ
-from dotenv import load_dotenv
+import config as cfg
 from flask import Flask, request
 from scrape.prompt_reconstructor import PromptReconstructor
 from langchain.chat_models import ChatOpenAI
@@ -15,54 +13,20 @@ from slack_bolt.adapter.flask import SlackRequestHandler
 from tools import get_tools
 from task_agent import TaskAgent
 
-
 #####################################################################################################
-# Load environment variables and instantiate Slack client:
+# Set up Slack client and Chroma database
 #####################################################################################################
-load_dotenv()
 
-SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
-SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
-SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
-SLACK_PORT = environ.get("SLACK_PORT", 3000)
-
-if None in [SLACK_VERIFICATION_TOKEN, SLACK_SIGNING_SECRET, SLACK_OAUTH_TOKEN, SLACK_PORT]:
-  print("App init: Slack environment variables not set, app is unable to run")
-  raise SystemExit(1)
-else:
-  print("App init: Slack environment variables are set")
-
-# Instantiate the app
 app = App(
-    token=SLACK_OAUTH_TOKEN,
-    signing_secret=SLACK_SIGNING_SECRET,
+    token=cfg.SLACK_OAUTH_TOKEN,
+    signing_secret=cfg.SLACK_SIGNING_SECRET,
 )
 bot = app.client.auth_test()
 print("App init: bot auth_test results", bot)
 
-OPENAI_KEY=environ.get("OPENAI_KEY")
-if OPENAI_KEY is None:
-  print("App init: OpenAI environment variables not set, app is unable to run")
-  raise SystemExit(1)
-else:
-  print("App init: OpenAI environment variables are set")
-  os.environ['OPENAI_API_KEY'] = OPENAI_KEY
-
-PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
-if PINECONE_API_KEY is None:
-  print("App init: Pinecone environment variables not set. Using local Chroma database instead.")
-  print("App init: loading documents into Chroma:")
-  local_memory = LocalChromaStore.from_folder('files', OPENAI_KEY).as_retriever()
-else:
-  PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
-  PINECONE_ENV=environ.get("PINECONE_ENV")
-  PINECONE_INDEX=environ.get("PINECONE_INDEX")
-  if None in [PINECONE_NAMESPACE, PINECONE_ENV, PINECONE_INDEX]:
-    print("App init: Pinecone environment variables not set, app is unable to run")
-    raise SystemExit(1)
-  else:
-    print("App init: Pinecone environment variables are set")
-    print(PINECONE_NAMESPACE)
+if cfg.PINECONE_API_KEY is None:
+  print("Setting up local Chroma database")
+  local_memory = LocalChromaStore.from_folder('files', cfg.OPENAI_KEY).as_retriever()
 
 ###########################################################################
 # Define Slack client functionality:
@@ -165,9 +129,9 @@ if __name__ == "__main__":
     # qa = createLangchainQA(vectorstore)
     
     # chain = createIndex("files")
-    print("App init: starting HTTP server on port {port}".format(port=SLACK_PORT))
-    flask_app.run(host="0.0.0.0", port=SLACK_PORT)
-    # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+    print("App init: starting HTTP server on port {port}".format(port=cfg.SLACK_PORT))
+    flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT)
+    # SocketModeHandler(app, cfg.SLACK_APP_TOKEN).start()
 
 
 @flask_app.route("/slack/events", methods=["POST"])
@@ -219,23 +183,21 @@ def show_commands_only(logger):
 
 def get_response(question, previous_messages):
     llm = ChatOpenAI(
-        openai_api_key=OPENAI_KEY, request_timeout=120
+        openai_api_key=cfg.OPENAI_KEY, request_timeout=120
     )
     
-    if PINECONE_API_KEY:
+    if cfg.PINECONE_API_KEY:
       # If pinecone API is specified, then use the Pinecone Database
       memory = ConversationStore.get_vector_retrieval(
-        PINECONE_NAMESPACE, OPENAI_KEY, index_name=PINECONE_INDEX, search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
+        cfg.PINECONE_NAMESPACE, cfg.OPENAI_KEY, index_name=cfg.PINECONE_INDEX, search_type='similarity_score_threshold', search_kwargs={'score_threshold': 0.0}
       )
     else:
       # use the local Chroma database
       memory = local_memory
 
-
     tools=get_tools(memory)
     ai_name='Sherpa'
     ai_id = bot['user_id']
-    
 
     task_agent = TaskAgent.from_llm_and_tools(ai_name="Sherpa", 
                                               ai_role="assistant", 

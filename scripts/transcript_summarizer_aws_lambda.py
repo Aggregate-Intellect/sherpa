@@ -18,14 +18,14 @@ from langchain.schema import (
     HumanMessage,
     SystemMessage
 )
-
+imoprt config as cfg
 import json
 
 #import api_keys
 
 # instantiate chat model
 chat = ChatOpenAI(
-  openai_api_key=os.environ['openaikey'] ,
+  openai_api_key=cfg.OPENAI_KEY,
   temperature=0,
   model='gpt-3.5-turbo')
 
