@@ -18,6 +18,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+AWS_ACCESS_KEY = environ.get('AWS_ACCESS_KEY')
+AWS_SECRET_KEY = environ.get('AWS_SECRET_KEY')
 SLACK_SIGNING_SECRET = environ.get('SLACK_SIGNING_SECRET')
 SLACK_OAUTH_TOKEN = environ.get('SLACK_OAUTH_TOKEN')
 SLACK_VERIFICATION_TOKEN = environ.get('SLACK_VERIFICATION_TOKEN')
