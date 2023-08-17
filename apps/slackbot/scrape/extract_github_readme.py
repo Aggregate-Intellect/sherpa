@@ -1,18 +1,11 @@
 import requests
 import base64
 import re
-from dotenv import dotenv_values
 import config as cfg
 import pinecone
 from langchain.embeddings.openai import OpenAIEmbeddings
 
 from vectorstores import ConversationStore
-
-env_vars = dotenv_values(".env")
-
-# TODO rename API_KEY to something like GITHUB_API_TOKEN and set in config.py
-# TODO remove dotenv_values usage and import
-api_key = env_vars.get("API_KEY") 
 
 def get_owner_and_repo(url):
     url_content_list = url.split('/')
@@ -24,7 +17,7 @@ def extract_github_readme(repo_url):
     if(match):
         owner, repo = get_owner_and_repo(repo_url)
         path = "README.md"
-        token = api_key
+        token = cfg.GITHUB_AUTH_TOKEN
         print(token)
         github_api_url = f"https://api.github.com/repos/{owner}/{repo}/contents"
         headers = {"Authorization": f"token {token}", 'X-GitHub-Api-Version': '2022-11-28'}
