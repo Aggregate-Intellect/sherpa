@@ -131,6 +131,6 @@ working on projects such as Photos Memories. Ehsan is also an associate
 professor at California State University. He got his PhD from the
 University of Toronto in applied mathematics.
 
-.. image:: ehsank.jpeg
+.. image:: ../_imgs/ehsank.jpeg
   :width: 400
   :alt: Ehsan Kamalinejad Headshot

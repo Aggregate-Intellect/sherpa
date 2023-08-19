@@ -105,6 +105,6 @@ offerings. His focus is on realtime NLP systems that help Voiceflow’s
 60+ enterprise customers build better conversational assistants.
 Previously he worked at large bank as a senior cloud architect.
 
-.. image:: denysl.jpeg
+.. image:: ../_imgs/denysl.jpeg
   :width: 400
   :alt: Denys Linkov Headshot
