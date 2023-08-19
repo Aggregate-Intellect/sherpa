@@ -10,8 +10,15 @@ agents. With these insights, he explains how LLMs will shape enterprise
 analytics. Along the way, he covers many practical factors, such as the
 different providers of LLMs, resource costs, and ethical issues.
 
-`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/dffaaf08ea7092561d66532c67d304fd79bab328/docs/LLM%20Engineering/Enterprise_LLMs_Shah.pdf>`__
-\| `RECORDING <https://youtu.be/GO6l7dbZIqY>`__
+.. button-link:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Use%20Cases/Enterprise_LLMs_Shah.pdf
+    :color: primary
+    :outline:
+
+    SLIDES   
+
+
+
+`RECORDING <https://youtu.be/GO6l7dbZIqY>`__
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
