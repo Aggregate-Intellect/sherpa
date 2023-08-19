@@ -8,7 +8,7 @@ We love your input! We want to make contributing to this project as easy and tra
 - Becoming a maintainer
 
 
-## Report bugs and suggest improvements using Github's [issues](https://github.com/Aggregate-Intellect/practical-llms/issues)
+## Report bugs and suggest improvements using Github's [issues](https://github.com/Aggregate-Intellect/sherpa/issues)
 We use GitHub issues to track public bugs and feature requests. Report a bug or suggest an improvement by [opening a new issue](); it's that easy!
 
 That said, we avoid keeping a massive backlog of "someday, maybe" ideas. We periodically review the issues list so that all issues are things we have a reasonably high likelihood of acting on.
@@ -34,9 +34,9 @@ People *love* thorough bug reports. I'm not even kidding.
 We use GitHub to host code and documentation, track issues and feature requests, and accept pull requests. Here's how it works:
 
 ### The origin/main branch on GitHub is "The Truth"
-The `practical-llms` git repository hosted at https://github.com/Aggregate-Intellect/practical-llms is the primary repository. In terms of git remotes we refer to this repository as **`origin`**.
+https://github.com/Aggregate-Intellect/sherpa is the primary repository. In terms of git remotes we refer to this repository as **`origin`**.
 
-The [`origin/main` branch](https://github.com/Aggregate-Intellect/practical-llms/tree/main) is the "one source of truth". This is what we run in production. Every other branch, including remote branches and forks, derives from
+The [`origin/main` branch](https://github.com/Aggregate-Intellect/sherpa/tree/main) is the "one source of truth". This is what we run in production. Every other branch, including remote branches and forks, derives from
 origin/main.
 
 ### We try to keep `origin/main` deployable at all times
@@ -97,7 +97,7 @@ When you create a branch to contain your changes, you start by forking the HEAD 
 
 If you have not yet created a Pull Request, you can rebase on your own by merging the latest commits from `origin/main` into your local repository's `main` branch and then using `git rebase main`. Rebase will "replay" your commits atop the HEAD of the `main` branch. Git rebase can be a bit tricky to use, so if you aren't familiar with it then start with a good primer like the [BitBucket rebase tutorial](https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase).
 
-If you have already submitted a Pull Request and you don't have permission to write to https://github.com/Aggregate-Intellect/practical-llms, one of the maintainers can rebase/update the PR on your behalf, e.g. via [GitHub's Update Branch feature](https://github.blog/changelog/2022-02-03-more-ways-to-keep-your-pull-request-branch-up-to-date/
+If you have already submitted a Pull Request and you don't have permission to write to https://github.com/Aggregate-Intellect/sherpa, one of the maintainers can rebase/update the PR on your behalf, e.g. via [GitHub's Update Branch feature](https://github.blog/changelog/2022-02-03-more-ways-to-keep-your-pull-request-branch-up-to-date/
 ) or by running `git rebase main` on their own clone of the repo.  
 
 
