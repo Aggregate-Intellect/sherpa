@@ -1,0 +1,45 @@
+
+
+======================================
+Building a Topic Modeling Model: Ernie 
+======================================
+*Richie Youm* 
+
+Summary 
+-------
+Richie Youm, a data scientist at WealthSimple, shared the experiences of building a topic modeling model called Ernie. The goal of the Ernie model was to provide a smoother experience for clients and improve service level agreements. They explored techniques like LDA and BERTopic but faced challenges with inconsistent results and noisy data. They rebuilt the taxonomy using GPT models and developed an efficient routing system for improved customer service. The presentation also discussed the potential for an automated customer service system and the importance of data privacy and security. 
+
+Topics: 
+-------
+	Exploring GPT Models 
+		* GPT models were considered for direct classification but faced challenges with hallucination and domain knowledge 
+		* Prompt engineering on the ChatGPT API showed promising results but was not sufficient 
+	Rebuilding the Taxonomy 
+		* GPT was used as a tool to assist in taxonomy development 
+		* The existing taxonomy had limitations and GPT was used to address them 
+	Efficient Routing and Data Labeling for Improved Customer Service 
+		* Challenges faced in handling sensitive customer data and the need for efficient routing and data labeling 
+		* Development of a PI remover using Presidio and Transformers to anonymize sensitive data 
+		* Alan used for topic and subtopic taxonomy extraction 
+		* Bernie, an efficient routing system, built using DistilBERT models for topic and subtopic predictions 
+	Output and Examples of a Topic Modeling Project 
+		* Examples of the output of the topic modeling project highlighting the accuracy of predictions 
+		* Importance of context in improving predictions 
+		* High accuracy of subtopic predictions 
+	Potential for Automated Customer Service System 
+		* Discussion on the potential for the project to lead to an automated customer service system 
+		* Other projects being worked on, including a research AI project for trading 
+		* Possibility of adding knowledge base into a chatbot for better customer service 
+	Follow-up Questions and Formal Formats 
+		* Discussion on creating a tool that asks follow-up questions based on user input and system analysis 
+		* Interest in formal formats like ontologies and knowledge graphs 
+		* Discussions with the builder of tax GPT 
+	Data Privacy and Security 
+		* Importance of data privacy and measures taken to ensure it 
+		* Open-source library for LM Gateway and different levels of PII removal 
+		* Plan to open-source a PII remover 
+	Conclusion 
+		* Importance of improving the taxonomy and incorporating domain knowledge 
+		* Potential for automated customer service systems 
+		* Importance of data privacy and security 
+		* User feedback and potential use of formal formats in the future 

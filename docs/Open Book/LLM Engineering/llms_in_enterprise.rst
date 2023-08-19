@@ -10,8 +10,15 @@ agents. With these insights, he explains how LLMs will shape enterprise
 analytics. Along the way, he covers many practical factors, such as the
 different providers of LLMs, resource costs, and ethical issues.
 
-`SLIDES <https://github.com/Aggregate-Intellect/sherpa/blob/dffaaf08ea7092561d66532c67d304fd79bab328/docs/LLM%20Engineering/Enterprise_LLMs_Shah.pdf>`__
-\| `RECORDING <https://youtu.be/GO6l7dbZIqY>`__
+.. button-link:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Use%20Cases/Enterprise_LLMs_Shah.pdf
+    :color: primary
+    :outline:
+
+    SLIDES   
+
+
+
+`RECORDING <https://youtu.be/GO6l7dbZIqY>`__
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -93,7 +100,7 @@ different providers of LLMs, resource costs, and ethical issues.
 *Resources*
 
 -  `Talk
-   Slides <https://github.com/Aggregate-Intellect/sherpa/blob/main/Enterprise_LLMs_Shah.pdf>`__
+   Slides <https://github.com/Aggregate-Intellect/practical-llms/blob/main/Enterprise_LLMs_Shah.pdf>`__
 -  `Sentiment Spin: Attacking Financial Sentiment with
    GPT-3 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4337182>`__
 -  `Is ChatGPT a General-Purpose Natural Language Processing Task
