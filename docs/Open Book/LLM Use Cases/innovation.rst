@@ -138,6 +138,6 @@ Intelligence, where he leads R&D on LLMs and NLP to build innovative
 solutions for the market research industry. He also works in
 biodiversity and applications of AI for conservation.
 
-.. image:: joshs.png
+.. image:: ../_imgs/joshs.png
   :width: 400
   :alt: Josh Seltzer Headshot

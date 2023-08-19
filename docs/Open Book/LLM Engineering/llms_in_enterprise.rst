@@ -10,15 +10,8 @@ agents. With these insights, he explains how LLMs will shape enterprise
 analytics. Along the way, he covers many practical factors, such as the
 different providers of LLMs, resource costs, and ethical issues.
 
-.. button-link:: https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Use%20Cases/Enterprise_LLMs_Shah.pdf
-    :color: primary
-    :outline:
-
-    SLIDES   
-
-
-
-`RECORDING <https://youtu.be/GO6l7dbZIqY>`__
+`SLIDES <slides/Enterprise_LLMs_Shah.pdf>`__
+\| `RECORDING <https://youtu.be/GO6l7dbZIqY>`__
 
 **TWITTER THREAD SUMMARY OF THE TALK:**
 
@@ -137,6 +130,6 @@ teams to succeed with AI. He is a widely recognized speaker on
 enterprise AI and was part of data science teams at Snorkel AI,
 Caterpillar, and State Farm.
 
-.. image:: rajivsh.jpeg
+.. image:: ../_imgs/rajivsh.jpeg
   :width: 400
   :alt: Rajiv Shah Headshot
