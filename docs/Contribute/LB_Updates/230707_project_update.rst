@@ -1,7 +1,6 @@
 
-===============================================
-Creating a Live Book with Large Language Models 
-===============================================
+SHERPA UPDATE - 7 JULY 2023 
+===========================
 *Amir Feizpour* 
 
 Summary 
