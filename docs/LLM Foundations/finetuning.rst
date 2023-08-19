@@ -9,7 +9,7 @@ Additionally, we will delve into computational aspects like scaling
 laws, parameter-efficient fine-tuning (PEFT), and the zero redundancy
 optimizer (ZeRO).
 
-`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/main/docs/LLM%20Foundations/FT_LLMs_EK.pdf>`__
+`SLIDES <https://github.com/Aggregate-Intellect/sherpa/blob/main/docs/LLM%20Foundations/FT_LLMs_EK.pdf>`__
 \| `RECORDING <https://youtu.be/Bn2ZK_ctPbo>`__
 
 **SUMMARY**
