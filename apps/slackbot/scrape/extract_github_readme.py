@@ -19,7 +19,7 @@ openai_api_key= env_vars.get("OPENAI_KEY")
 
 def get_owner_and_repo(url):
     url_content_list = url.split('/')
-    return url_content_list[-2], url_content_list[-1]
+    return url_content_list[3], url_content_list[4].split('#')[0]
 
 def extract_github_readme(repo_url):
     pattern = r"(?:https?://)?(?:www\.)?github\.com/.*"
