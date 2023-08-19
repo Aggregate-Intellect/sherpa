@@ -34,7 +34,7 @@ Next, we will create a new Slack app and add it to the Slack Workspace we just c
 
 Run the Slackbot Locally
 ************************
-Next, we will run the slack app project locally. The slackapp project is part of this livebook's repository. If you haven't done so, clone the repository for this livebook at https://github.com/Aggregate-Intellect/practical-llms. 
+Next, we will run the slack app project locally. The slackapp project is part of this livebook's repository. If you haven't done so, clone the repository for this livebook at https://github.com/Aggregate-Intellect/sherpa. 
 
 After you clone the repository, you can find the slackbot project under `apps/slackbot`. The `README` of the slackbot contains instruction to run the app with docker or a virtual environment, we will repeat the instruction with a local virual environment.
 
@@ -144,4 +144,4 @@ Have fun! And please join our `slack channel <https://aisc-to.slack.com/ssb/redi
 Further Reading
 ****************************
 * `Slack API <https://api.slack.com/>`__
-* `SlackBot <https://github.com/Aggregate-Intellect/practical-llms/tree/main/apps/slackbot>`__
+* `SlackBot <https://github.com/Aggregate-Intellect/sherpa/tree/main/apps/slackbot>`__
