@@ -94,6 +94,8 @@ LLM-powered apps.
    solutions for LLMs is discussed, with companies selecting the ones
    that are right for them.
 
+----
+
 **Wojciech Gryc (Founder @ Phase AI)**
 
 `Wojciech <https://www.linkedin.com/in/wojciechgryc>`__ is the

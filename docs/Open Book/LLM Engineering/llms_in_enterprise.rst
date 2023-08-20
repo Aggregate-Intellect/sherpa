@@ -122,6 +122,8 @@ different providers of LLMs, resource costs, and ethical issues.
 -  `A New Era of Creativity: Expert-in-the-loop Generative
    AI <https://multithreaded.stitchfix.com/blog/2023/03/06/expert-in-the-loop-generative-ai-at-stitch-fix/>`__
 
+----
+
 **Rajiv Shah (MLE @ Huggingface)**
 
 `Rajiv <https://www.linkedin.com/in/rajistics/>`__ is a machine learning

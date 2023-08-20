@@ -9,6 +9,9 @@ Summary
 -------
 Daniel Kur provides an overview of the open source project called Council, a framework for developing generative AI applications using collaborative agents. He discusses the key concepts of control flow and evaluation, as well as the importance of constraints and integration with existing tools. Kur also addresses audience questions regarding parallel execution, hallucination, and the role of the controller. Overall, Council offers advanced control and predictability for creating reliable and accurate generative AI applications. 
 
+`SLIDES <#>`__
+\| `RECORDING <https://youtu.be/AYtsUqA5Cu0>`__
+
 Topics: 
 -------
 Control Flow and Evaluation 
@@ -30,3 +33,13 @@ Parallel Execution and Agent-to-Agent Work Allocation
 Addressing Hallucination 
 	* Council provides mechanisms to address hallucination through the evaluator 
 	* Fact tracking and real-time information retrieval skills help avoid providing inaccurate responses 
+
+----
+
+**Daniel Kur (ML Scientist @ ChainML)**
+
+`Daniel Kur <https://www.linkedin.com/in/daniel-kur-9379b257/>`__ in an ML Scientist at ChainML.
+
+.. image:: ../_imgs/DanielK.jpeg
+  :width: 400
+  :alt: Daniel Kur Headshot

@@ -131,6 +131,8 @@ commercialized effectively.
    the role of
    standards <https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1079959/DCMS_and_OAI_-_Understanding_UK_Artificial_Intelligence_R_D_commercialisation__accessible.pdf>`__
 
+----
+
 **Josh Seltzer (CTO @ Nexxt Intelligence)**
 
 `Josh <https://www.linkedin.com/in/josh-seltzer/>`__ is the CTO at Nexxt
