@@ -1,12 +1,17 @@
 
-=======================================
-Large Language Models: To Build or Buy? 
-=======================================
+==========================================
+Large Language Models: To Build or To Buy? 
+==========================================
 *Abi Aryan* 
 
 Summary 
 -------
+When deploying machine learning models in production, there are three properties that are commonly desired: generalization, evaluation, and cost-optimality. We conjecture that for machine learning models, it is impossible to optimize all three. I will talk about our framework for cost modeling and evaluation for large language models (LLMs) and present our LLMOps production pipeline.
+
 Abi Aryan, a machine learning engineer, discusses the decision-making process of whether to build or buy large language models (LLMs). He emphasizes the importance of aligning business use cases with model performance metrics and considering factors like generalizability, evaluability, and cost optimality. 
+
+`SLIDES <#>`__
+\| `RECORDING <https://youtu.be/Hne95kH5hxk>`__
 
 Topics: 
 -------
@@ -43,3 +48,14 @@ Conclusion
 	* Factors like generalizability, evaluability, and cost optimality should be carefully evaluated. 
 	* Informed decisions can be made to build reliable products using LLMs. 
 
+----
+
+**Abi Aryan (MLE @ Freelance)**
+
+`Abi Aryan <https://www.linkedin.com/in/goabiaryan/>`__ is a machine learning engineer with over 7 years of experience using ML research and adapting it to solve real-world engineering challenges working in machine learning infrastructure design and building production-level applications at scale. Before that, she was a visiting research scholar at UCLA working at the Cognitive Sciences Lab with Dr. Judea Pearl working on developing autonomous agents.
+
+​She is also currently writing a book titled LLMOps: Managing Large Language Models in Production for O'Reilly Publications and has authored an MLOps course. In her free time, she can be found tweeting at her Twitter handle - @goabiaryan
+
+.. image:: ../_imgs/abia.jpeg
+  :width: 400
+  :alt: Abi Aryan Headshot

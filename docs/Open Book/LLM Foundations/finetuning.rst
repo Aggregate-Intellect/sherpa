@@ -120,6 +120,8 @@ optimizer (ZeRO).
 -  Check out Ehsan’s series on LLMs: `YouTube
    Playlist <https://www.youtube.com/watch?v=p7JYu65lDyY&list=PLb9xatikqn0fwsS-Le1mkyQ2uZzK8DeP1>`__
 
+----
+
 **Ehsan Kamalinejad (ML Scientist @ Amazon)**
 
 `Ehsan <https://www.linkedin.com/in/ehsan-kamalinejad/>`__ is a machine

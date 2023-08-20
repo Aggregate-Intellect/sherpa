@@ -108,6 +108,8 @@ background.
     financial advice gives users the expectations of being in control
     and making their own decisions.
 
+----
+
 **Sina Shahandeh (Founder @ Plan with Flow)**
 
 `Sina <https://www.linkedin.com/in/sinashahandeh/>`__ holds a PhD in

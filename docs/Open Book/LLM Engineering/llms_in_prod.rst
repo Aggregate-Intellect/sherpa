@@ -97,6 +97,8 @@ success.
    Animations <https://jalammar.github.io/how-gpt3-works-visualizations-animations/>`__
 -  `Open AI Product <https://openai.com/product>`__
 
+----
+
 **Denys Linkov (ML Lead @ Voiceflow)**
 
 `Denys <https://www.linkedin.com/in/denyslinkov/>`__ is the ML lead at

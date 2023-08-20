@@ -134,6 +134,8 @@ prem.
 -  Entity GPUs may offer a potential solution to latency issues, but
    further exploration is needed.
 
+----
+
 **Denys Linkov (ML Lead @ Voiceflow)**
 
 `Denys <https://www.linkedin.com/in/denyslinkov/>`__ is the ML lead at
