@@ -103,6 +103,8 @@ close look at the Toolformer paper and other related research.
 -  `Self-Consistency Improves Chain of Thought Reasoning in Language
    Models <https://arxiv.org/abs/2203.11171>`__
 
+----
+
 **Gordon Gibson (ML Lead @ Ada)**
 
 `Gordon <https://www.linkedin.com/in/gordon-gibson-874b3130/>`__ is the

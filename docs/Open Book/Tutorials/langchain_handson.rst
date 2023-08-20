@@ -75,6 +75,8 @@ itself LangChain itself.
 -  `LangChain
    Tutorials <https://github.com/gkamradt/langchain-tutorials>`__
 
+----
+
 **Percy Chen (PhD Student @ McGill University)**
 
 `Percy <https://www.linkedin.com/in/boqi-chen/>`__ is a PhD student at

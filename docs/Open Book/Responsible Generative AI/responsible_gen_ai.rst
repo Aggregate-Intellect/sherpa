@@ -118,6 +118,8 @@ underrepresented communities.
       research models like Dalle, especially if the model is not custom
       trained on your own art.
 
+----
+
 **Noelle Russell (Global AI Solutions Lead @ Accenture)**
 
 `Noelle Silver Russell <https://www.linkedin.com/in/noelleai/>`__ is a
