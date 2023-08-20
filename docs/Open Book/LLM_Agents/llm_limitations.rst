@@ -94,6 +94,8 @@ cutting-edge use cases that make the most of current capabilities.
 36. The prompt strategy for fine-tuning models can be promising,
     especially with prompt compression during instruction tuning.
 
+----
+
 **Suhas Pai (CTO @ Bedrock AI)**
 
 `Suhas <https://www.linkedin.com/in/piesauce/>`__ is the CTO &

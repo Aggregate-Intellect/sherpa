@@ -116,6 +116,8 @@ price was at its lowest point in the last 10 years?”
 -  `LlamaIndex (formerly
    GPT-Index <https://gpt-index.readthedocs.io/en/latest/index.html>`__
 
+----
+
 **Suhas Pai (CTO @ Bedrock AI)**
 
 `Suhas <https://www.linkedin.com/in/piesauce/>`__ is the CTO &
