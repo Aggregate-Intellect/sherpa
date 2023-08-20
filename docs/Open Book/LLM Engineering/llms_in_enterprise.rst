@@ -93,7 +93,7 @@ different providers of LLMs, resource costs, and ethical issues.
 *Resources*
 
 -  `Talk
-   Slides <https://github.com/Aggregate-Intellect/practical-llms/blob/main/Enterprise_LLMs_Shah.pdf>`__
+   Slides <https://github.com/Aggregate-Intellect/sherpa/blob/main/Enterprise_LLMs_Shah.pdf>`__
 -  `Sentiment Spin: Attacking Financial Sentiment with
    GPT-3 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4337182>`__
 -  `Is ChatGPT a General-Purpose Natural Language Processing Task

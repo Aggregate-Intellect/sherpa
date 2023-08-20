@@ -8,7 +8,7 @@ which LLMs generate fine-tuning data that helps them learn how to use
 tools at run-time. In this talk, we’ll examine this trend by taking a
 close look at the Toolformer paper and other related research.
 
-`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/main/LLM%20Foundations/Self-Improving%20LLMs.pdf>`__
+`SLIDES <https://github.com/Aggregate-Intellect/sherpa/blob/main/LLM%20Foundations/Self-Improving%20LLMs.pdf>`__
 \| `RECORDING <https://youtu.be/Zk_UcqvTTAA>`__
 
 **SUMMARY**

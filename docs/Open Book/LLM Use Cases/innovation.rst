@@ -8,7 +8,7 @@ organizational processes. He will share lessons learned from his work
 with a bootstrapped startup and provide insights on how LLMs can be
 commercialized effectively.
 
-`SLIDES <https://github.com/Aggregate-Intellect/practical-llms/blob/main/KnowledgeOps/Commercialization%20Strategy%20with%20LLMs.pdf>`__
+`SLIDES <https://github.com/Aggregate-Intellect/sherpa/blob/main/KnowledgeOps/Commercialization%20Strategy%20with%20LLMs.pdf>`__
 \| `RECORDING <https://youtu.be/QfX648IZg3U>`__
 
 **SUMMARY**

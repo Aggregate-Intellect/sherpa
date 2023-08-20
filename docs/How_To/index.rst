@@ -1,27 +1,44 @@
-WHAT YOU NEED TO KNOW
-=====================
+GET STARTED
+===========
 
 Hello, Friend!
 
-Welcome to the `AISC community <https://join.slack.com/t/aisc-to/shared_invite/zt-f5zq5l35-PSIJTFk4v60FML177PgsPg>`! We are excited to have you on board and contributing to our project. This page outlines the onboarding process to help you get started and become an active member of our open-source community.
+Welcome to the `AISC community <https://join.slack.com/t/aisc-to/shared_invite/zt-f5zq5l35-PSIJTFk4v60FML177PgsPg>`__! We are excited to have you on board and contributing to our project. This page outlines the onboarding process to help you get started and become an active member of our open-source community.
 
-Contribution Guidelines:
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-- Direct them to the project's contribution guidelines and code of conduct.
-- Emphasize the importance of following these guidelines to maintain a healthy and inclusive community.
-
-Communication Channels:
+Contribution Guidelines
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-- Provide a list of communication channels (e.g., Slack, Discord, mailing lists, forums) used by the community.
-- Explain the purpose of each channel and how to join them.
+Check out the link below for project contribution guidelines. Following these guidelines ensure that we maintain a healthy and inclusive community. If you have any feedback on how these guidelines can be modified to improve our effciency and inclusiviy, please reach out through the communication channel outlines below.
+
+.. toctree::
+    :maxdepth: 1
+
+    Contribute/contribute.rst
+
+
+Communication Channels
+^^^^^^^^^^^^^^^^^^^^^^
+
+We use the AISC community slack workspace to communicate and coordiante. 
+
+- `Join Slack <https://join.slack.com/t/aisc-to/shared_invite/zt-f5zq5l35-PSIJTFk4v60FML177PgsPg>`__
+- `Open #llm-live-book-project <https://aisc-to.slack.com/archives/C056RU8PEJ0>`__
+
+If you run into any issues with the links above, please reach out to sherpa@ai.science
 
 Development Environment Setup:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Provide detailed instructions on how to set up the development environment.
 - Include links to any relevant tools, dependencies, or style guides.
+
+Check out the following links to set up the Slack Bot:
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    Slack Bot/*
 
 Codebase Overview:
 ^^^^^^^^^^^^^^^^^^
@@ -66,5 +83,5 @@ Best regards,
 Amir Feizpour
 
 LLM Live Book Project
-`Repo <https://github.com/Aggregate-Intellect/practical-llms>`
+`Repo <https://github.com/Aggregate-Intellect/sherpa>`
 livebook@ai.science
