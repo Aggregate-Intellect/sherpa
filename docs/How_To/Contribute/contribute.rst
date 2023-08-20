@@ -1,5 +1,5 @@
-Contribution Guide
-==================
+Contribute
+==========
 
 We love your input! We want to make contributing to this project as easy
 and transparent as possible, whether it’s:
@@ -14,7 +14,7 @@ Report bugs and suggest improvements using Github’s `issues <https://github.co
 ---------------------------------------------------------------------------------------------------------------------
 
 We use GitHub issues to track public bugs and feature requests. Report a
-bug or suggest an improvement by `opening a new issue <>`__; it’s that
+bug or suggest an improvement by `opening a new issue <https://github.com/Aggregate-Intellect/sherpa/issues>`__; it’s that
 easy!
 
 That said, we avoid keeping a massive backlog of “someday, maybe” ideas.

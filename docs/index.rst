@@ -16,6 +16,6 @@ Project Overview:
    :caption: EXPLORE
    :maxdepth: 2
 
-   Contribute <Contribute/index>
-   Project Documentation <Project Docs/index>
+   About Sherpa <About_Sherpa/index>
+   How To <How_To/index>
    LLM Open Book <Open Book/index>

@@ -49,7 +49,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_permalinks_icon = '<span>#</span>'
 html_theme = "sphinx_book_theme"
 html_theme_options = {
-    "repository_url": "https://github.com/Aggregate-Intellect/practical-llms",
+    "repository_url": "https://github.com/Aggregate-Intellect/sherpa",
     "use_repository_button": True,
     "use_download_button": False,
     "use_issues_button": True,
