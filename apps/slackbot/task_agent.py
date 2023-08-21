@@ -130,12 +130,6 @@ class TaskAgent:
             except openai.error.InvalidRequestError as e:
                 return f"OpenAI API invalid request error: {e}"
 
-            assistant_reply = self.chain.run(
-                task=task,
-                messages=self.previous_message,
-                memory=self.memory,
-                user_input=user_input,
-            )
             print("reply:", assistant_reply)
             # added by JF
             try:
