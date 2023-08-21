@@ -122,6 +122,15 @@ def update_home_tab(client, event, logger):
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
 
+@flask_app.route("/hello", methods=["GET"])
+def hello():
+    return "OK"
+
+
+@flask_app.route("/slack/events", methods=["POST"])
+def slack_events():
+    return handler.handle(request)
+
 # Start the HTTP server 
 if __name__ == "__main__":
     # documents = getDocuments('files')
@@ -133,14 +142,6 @@ if __name__ == "__main__":
     flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT)
     # SocketModeHandler(app, cfg.SLACK_APP_TOKEN).start()
 
-
-@flask_app.route("/slack/events", methods=["POST"])
-def slack_events():
-    return handler.handle(request)
-
-@flask_app.route("/hello", methods=["GET"])
-def hello():
-    return "OK"
 
 # ---- add this for verbose output --- #
 
