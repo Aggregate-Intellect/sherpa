@@ -62,6 +62,7 @@ This repository contains a chatbot implementation using Flask and Slack. The cha
     * **NOTE:** When adding the url to the Slack app, make sure to append `/slack/events` at the end as this is the default path used by Slack Bolt.
 
 ## Development
+
 ### Linting and formating
 This project uses `flake8` for linting, `black` and `isort` for formatting, and `pytest` for testing. To install the dependencies, run:
 
@@ -107,8 +108,33 @@ or
 pytest .
 ```
 
+### Debugging
+The Slackbot is built with Flask, which provides a built-in web server and debugger suitable for development use.
 
-# Reference 
+When Flask debug mode is enabled, ...
+- the server automatically reloads when code is changed
+- http://localhost:3000/ serves a web-based debugger which displays an interactive stack trace when an exception is raised
+- http://localhost:3000/crash invokes the debugger so you can try it out
+- http://localhost:3000/console displays a web-based console where you can execute Python expressions in the context of the application
+- stack traces are also displayed in your terminal console
+
+When Flask debug mode is disabled, ...
+- you must manually restart the server to pick up code changes
+- the web-based debugger and console are not available
+- stack traces are only displayed in your terminal console
+
+To enable debug mode, set `FLASK_DEBUG` to `True` in your `.env` file.
+To disable debug mode, comment out `FLASK_DEBUG` or set it to any value other than `True`.
+
+**Warning:**
+Never use the development server or enable the debugger when deploying to production.
+These tools are intended for use only during local development, and are not designed to
+be particularly efficient, stable, or secure.
+
+For more info on the debugger see [Werkzeug: Debugging Applications](https://werkzeug.palletsprojects.com/en/2.3.x/debug/#)
+and [Flask: Debugging Application Errors](https://flask.palletsprojects.com/en/2.3.x/debugging/).
+
+# Reference
 4.  Start interacting with the chatbot by mentioning the app in a Slack channel.
 
 

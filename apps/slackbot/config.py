@@ -20,6 +20,7 @@ load_dotenv()
 
 AWS_ACCESS_KEY = environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = environ.get('AWS_SECRET_KEY')
+FLASK_DEBUG = environ.get('FLASK_DEBUG', False) == 'True'
 GITHUB_AUTH_TOKEN = environ.get('GITHUB_AUTH_TOKEN')
 SLACK_SIGNING_SECRET = environ.get('SLACK_SIGNING_SECRET')
 SLACK_OAUTH_TOKEN = environ.get('SLACK_OAUTH_TOKEN')

@@ -118,7 +118,6 @@ def update_home_tab(client, event, logger):
 ###########################################################################
 # Setup Flask app:
 ###########################################################################
-
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
 
@@ -126,6 +125,10 @@ handler = SlackRequestHandler(app)
 def hello():
     return "OK"
 
+if cfg.FLASK_DEBUG:
+  @flask_app.route("/crash", methods=["GET"])
+  def crash():
+      raise
 
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
@@ -139,7 +142,7 @@ if __name__ == "__main__":
     
     # chain = createIndex("files")
     print("App init: starting HTTP server on port {port}".format(port=cfg.SLACK_PORT))
-    flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT)
+    flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT, debug=cfg.FLASK_DEBUG)
     # SocketModeHandler(app, cfg.SLACK_APP_TOKEN).start()
 
 
