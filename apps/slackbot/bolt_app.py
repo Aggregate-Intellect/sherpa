@@ -52,6 +52,71 @@ def contains_verbosex(query: str) -> bool:
     return "-verbosex" in query.lower()
 
 
+def get_response(question, previous_messages):
+    llm = ChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120)
+
+    if cfg.PINECONE_API_KEY:
+        # If pinecone API is specified, then use the Pinecone Database
+        memory = ConversationStore.get_vector_retrieval(
+            cfg.PINECONE_NAMESPACE,
+            cfg.OPENAI_API_KEY,
+            index_name=cfg.PINECONE_INDEX,
+            search_type="similarity_score_threshold",
+            search_kwargs={"score_threshold": 0.0},
+        )
+    else:
+        # use the local Chroma database
+        memory = local_memory
+
+    tools = get_tools(memory)
+    ai_name = "Sherpa"
+    ai_id = bot["user_id"]
+
+    task_agent = TaskAgent.from_llm_and_tools(
+        ai_name="Sherpa",
+        ai_role="assistant",
+        ai_id=bot["user_id"],
+        memory=memory,
+        tools=tools,
+        previous_messages=previous_messages,
+        llm=llm,
+    )
+
+    if contains_verbosex(query=question):
+        print("Verbose mode is on, show all")
+        question = question.replace(f"@{ai_id}", f"@{ai_name}")
+        question = question.replace("-verbose", "")
+        response = task_agent.run(question)
+        logger = (
+            task_agent.logger
+        )  # logger is updated after running task_agent.run(question)
+        try:  # in case log_formatter fails
+            verbose_message = log_formatter(logger)
+        except:
+            verbose_message = str(logger)
+        return response, verbose_message
+
+    elif contains_verbose(query=question):
+        print("Verbose mode is on, commands only")
+        question = question.replace(f"@{ai_id}", f"@{ai_name}")
+        question = question.replace("-verbose", "")
+        response = task_agent.run(question)
+        logger = (
+            task_agent.logger
+        )  # logger is updated after running task_agent.run(question)
+        try:  # in case log_formatter fails
+            verbose_message = show_commands_only(logger)
+        except:
+            verbose_message = str(logger)
+        return response, verbose_message
+
+    else:
+        print("Verbose mode is off")
+        question = question.replace(f"@{ai_id}", f"@{ai_name}")
+        response = task_agent.run(question)
+        return response, None
+
+
 @app.event("app_mention")
 def event_test(client, say, event):
     question = event["text"]
@@ -196,67 +261,3 @@ def show_commands_only(logger):
     log_string = "\n".join(log_strings)
     return log_string
 
-
-def get_response(question, previous_messages):
-    llm = ChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120)
-
-    if cfg.PINECONE_API_KEY:
-        # If pinecone API is specified, then use the Pinecone Database
-        memory = ConversationStore.get_vector_retrieval(
-            cfg.PINECONE_NAMESPACE,
-            cfg.OPENAI_API_KEY,
-            index_name=cfg.PINECONE_INDEX,
-            search_type="similarity_score_threshold",
-            search_kwargs={"score_threshold": 0.0},
-        )
-    else:
-        # use the local Chroma database
-        memory = local_memory
-
-    tools = get_tools(memory)
-    ai_name = "Sherpa"
-    ai_id = bot["user_id"]
-
-    task_agent = TaskAgent.from_llm_and_tools(
-        ai_name="Sherpa",
-        ai_role="assistant",
-        ai_id=bot["user_id"],
-        memory=memory,
-        tools=tools,
-        previous_messages=previous_messages,
-        llm=llm,
-    )
-
-    if contains_verbosex(query=question):
-        print("Verbose mode is on, show all")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
-        question = question.replace("-verbose", "")
-        response = task_agent.run(question)
-        logger = (
-            task_agent.logger
-        )  # logger is updated after running task_agent.run(question)
-        try:  # in case log_formatter fails
-            verbose_message = log_formatter(logger)
-        except:
-            verbose_message = str(logger)
-        return response, verbose_message
-
-    elif contains_verbose(query=question):
-        print("Verbose mode is on, commands only")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
-        question = question.replace("-verbose", "")
-        response = task_agent.run(question)
-        logger = (
-            task_agent.logger
-        )  # logger is updated after running task_agent.run(question)
-        try:  # in case log_formatter fails
-            verbose_message = show_commands_only(logger)
-        except:
-            verbose_message = str(logger)
-        return response, verbose_message
-
-    else:
-        print("Verbose mode is off")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
-        response = task_agent.run(question)
-        return response, None
