@@ -32,6 +32,7 @@ PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
 PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
 PINECONE_ENV = environ.get("PINECONE_ENV")
 PINECONE_INDEX = environ.get("PINECONE_INDEX")
+SERPER_API_KEY = environ.get("SERPER_API_KEY")
 
 
 # `this` is a pointer to the module object instance itself.
