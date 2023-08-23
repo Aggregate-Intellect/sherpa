@@ -1,5 +1,7 @@
 import re
 
+from loguru import logger
+
 from output_parsers.base import BaseOutputParser
 
 
@@ -26,7 +28,7 @@ class LinkParser(BaseOutputParser):
             return "DocID:" + self.link_to_id[link] + "\n\n"
 
         def replace_with_link(match: re.Match):
-            print(match)
+            logger.debug(match)
             doc_id = int(match.group(1))
             if doc_id < 0 or doc_id >= len(self.links):
                 return ""
@@ -36,7 +38,6 @@ class LinkParser(BaseOutputParser):
             modified_text = re.sub(self.url_pattern, replace_with_symbol, text)
         else:
             modified_text = re.sub(self.doc_id_pattern, replace_with_link, text)
-        print(modified_text)
-        # print(modified_text)
+        logger.debug(modified_text)
 
         return modified_text
