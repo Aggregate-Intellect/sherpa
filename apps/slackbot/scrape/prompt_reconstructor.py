@@ -1,7 +1,7 @@
 import config as cfg
 from scrape.extract_github_readme import extract_github_readme
 from utils import (
-    chunk_and_summerize,
+    chunk_and_summarize,
     count_string_tokens,
     get_link_from_slack_client_conversation,
     question_reconstructor,
@@ -19,7 +19,7 @@ class PromptReconstructor:
         last_message = self.slack_message
         last_message_links = get_link_from_slack_client_conversation(last_message)
 
-        # if there is a link inside the question scrape then summerize based
+        # if there is a link inside the question scrape then summarize based
         # on question and then aggregate to the question
 
         if len(last_message_links) > 0:
@@ -41,7 +41,7 @@ class PromptReconstructor:
                 else:
                     scraped_data = scarape_with_url(link)
                 if scraped_data["status"] == 200:
-                    chunk_summary = chunk_and_summerize(
+                    chunk_summary = chunk_and_summarize(
                         link=link,
                         open_ai_key=cfg.OPENAI_API_KEY,
                         question=question,
@@ -52,7 +52,7 @@ class PromptReconstructor:
                         count_string_tokens(chunk_summary, "gpt-3.5-turbo")
                         > per_scrape_token_size
                     ):
-                        chunk_summary = chunk_and_summerize(
+                        chunk_summary = chunk_and_summarize(
                             link=link,
                             open_ai_key=cfg.OPENAI_API_KEY,
                             question=question,

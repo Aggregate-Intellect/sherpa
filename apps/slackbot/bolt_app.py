@@ -128,7 +128,7 @@ def event_test(client, say, event):
     previous_messages = replies["messages"][:-1]
 
     # used to reconstruct the question. if the question contains a link recreate
-    # them so that they contain scraped and summerized content of the link
+    # them so that they contain scraped and summarized content of the link
     reconstructor = PromptReconstructor(
         question=question, slack_message=[replies["messages"][-1]]
     )
