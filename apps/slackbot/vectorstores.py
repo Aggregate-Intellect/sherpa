@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
@@ -15,7 +15,6 @@ from langchain.vectorstores.base import VectorStore, VectorStoreRetriever
 import config as cfg
 from utils import load_files
 
-logger = logging.getLogger(__name__)
 
 
 class ConversationStore(VectorStore):
@@ -28,7 +27,7 @@ class ConversationStore(VectorStore):
     @classmethod
     def from_index(cls, namespace, openai_api_key, index_name, text_key="text"):
         pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
-        logging.info(f"Loading index {index_name} from Pinecone")
+        logger.info(f"Loading index {index_name} from Pinecone")
         index = pinecone.Index(index_name)
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         return cls(namespace, index, embeddings, text_key)
