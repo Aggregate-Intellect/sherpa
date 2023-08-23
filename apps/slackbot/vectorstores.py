@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
@@ -15,7 +15,6 @@ from langchain.vectorstores.base import VectorStore, VectorStoreRetriever
 import config as cfg
 from utils import load_files
 
-logger = logging.getLogger(__name__)
 
 
 class ConversationStore(VectorStore):

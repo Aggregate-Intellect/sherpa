@@ -3,7 +3,7 @@
 #  Importing necessary modules
 ##############################################
 
-import logging
+from loguru import logger
 
 from flask import Flask, request
 from langchain.chat_models import ChatOpenAI
@@ -16,7 +16,6 @@ from task_agent import TaskAgent
 from tools import get_tools
 from vectorstores import ConversationStore, LocalChromaStore
 
-logger = logging.getLogger(__name__)
 #######################################################################################
 # Set up Slack client and Chroma database
 #######################################################################################
@@ -133,8 +132,8 @@ def event_test(client, say, event):
         question=question, slack_message=[replies["messages"][-1]]
     )
     question = reconstructor.reconstruct_prompt()
-
     results, verbose_message = get_response(question, previous_messages)
+   
     say(results, thread_ts=thread_ts)
 
     if contains_verbose(question):

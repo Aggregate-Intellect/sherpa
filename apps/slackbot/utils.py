@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 import re
 from typing import List
 from urllib.parse import urlparse
@@ -11,7 +11,6 @@ from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredP
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 
-logger = logging.getLogger(__name__)
 
 
 def load_files(files: List[str]) -> List[Document]:
