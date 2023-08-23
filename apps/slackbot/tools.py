@@ -1,13 +1,19 @@
+import logging
+import os
 from typing import Any
-from langchain import LLMChain
-from langchain.tools import BaseTool
+
 import requests
 from bs4 import BeautifulSoup
-from langchain.utilities import GoogleSerperAPIWrapper
+from langchain import LLMChain
 from langchain.prompts import Prompt
+from langchain.tools import BaseTool
+from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.vectorstores.base import VectorStoreRetriever
 from typing_extensions import Literal
+
 import config as cfg
+
+logger = logging.getLogger(__name__)
 
 
 def get_tools(memory):
@@ -24,7 +30,9 @@ def get_tools(memory):
         search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
         tools.append(search_tool)
     else:
-        print("No SERPER_API_KEY found in environment variables, skipping SearchTool")
+        logger.warning(
+            "No SERPER_API_KEY found in environment variables, skipping SearchTool"
+        )
 
     return tools
 
@@ -40,7 +48,7 @@ class SearchTool(BaseTool):
     def _run(self, query: str) -> str:
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
-      
+
         # case 1: answerBox in the result dictionary
         if search_results.get("answerBox", False):
             answer_box = search_results.get("answerBox", {})
@@ -50,12 +58,12 @@ class SearchTool(BaseTool):
                 answer = answer_box.get("snippet").replace("\n", " ")
             elif answer_box.get("snippetHighlighted"):
                 answer = answer_box.get("snippetHighlighted")
-            title = search_results["organic"][0]['title']
-            link = search_results["organic"][0]['link']
-            
-            return "Answer: " + answer  + "\nLink:" + link
-      
-      # case 2: knowledgeGraph in the result dictionary
+            title = search_results["organic"][0]["title"]
+            link = search_results["organic"][0]["link"]
+
+            return "Answer: " + answer + "\nLink:" + link
+
+        # case 2: knowledgeGraph in the result dictionary
         snippets = []
         if search_results.get("knowledgeGraph", False):
             kg = search_results.get("knowledgeGraph", {})
@@ -71,10 +79,10 @@ class SearchTool(BaseTool):
         k = 10
         search_type: Literal["news", "search", "places", "images"] = "search"
         result_key_for_type = {
-        "news": "news",
-        "places": "places",
-        "images": "images",
-        "search": "organic",
+            "news": "news",
+            "places": "places",
+            "images": "images",
+            "search": "organic",
         }
         for result in search_results[result_key_for_type[search_type]][:k]:
             if "snippet" in result:
@@ -86,16 +94,24 @@ class SearchTool(BaseTool):
                 return ["No good Google Search Result was found"]
 
         result = []
-        for i in range(len(search_results['organic'][:10])):
-            r = search_results['organic'][i]
-            single_result = "Description: " + r['title'] + r['snippet'] + "\nLink" +r["link"]
+        for i in range(len(search_results["organic"][:10])):
+            r = search_results["organic"][i]
+            single_result = (
+                "Description: " + r["title"] + r["snippet"] + "\nLink" + r["link"]
+            )
 
             result.append(single_result)
         full_result = "\n".join(result)
-        
+
         # answer = " ".join(snippets)
-        if 'knowledgeGraph' in search_results:
-            answer = "Description: " + search_results["knowledgeGraph"]['title'] + search_results["knowledgeGraph"]['description'] + "\nLink: " + search_results["knowledgeGraph"]['descriptionLink']
+        if "knowledgeGraph" in search_results:
+            answer = (
+                "Description: "
+                + search_results["knowledgeGraph"]["title"]
+                + search_results["knowledgeGraph"]["description"]
+                + "\nLink: "
+                + search_results["knowledgeGraph"]["descriptionLink"]
+            )
             full_result = answer + "\n" + full_result
         return full_result
 
@@ -105,17 +121,20 @@ class SearchTool(BaseTool):
 
 class ContextTool(BaseTool):
     name = "Context Search"
-    description = (
-        "Access internal documents for various information."
-    )
+    description = "Access internal documents for various information."
     memory: VectorStoreRetriever
 
     def _run(self, query: str) -> str:
         docs = self.memory.get_relevant_documents(query)
         result = ""
         for doc in docs:
-            result += "Document" + doc.page_content + "\nLink" + doc.metadata.get("source", "")
-        
+            result += (
+                "Document"
+                + doc.page_content
+                + "\nLink"
+                + doc.metadata.get("source", "")
+            )
+
         return result
 
     def _arun(self, query: str) -> str:
