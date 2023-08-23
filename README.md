@@ -31,10 +31,3 @@ If you would like to suggest changes to the book without making direct changes, 
 5. Submit the issue.
 
 Our team will review the issue and either implement the suggested change or respond with feedback.
-
----
-
-# Other Useful Resources
-
-- [Aggregate Intellect Weekly Journal Club on NLP, GNN, etc](https://lu.ma/aisc-journal-club)
-- [Augmented Thinking - A.I. Youtube Channel](https://www.youtube.com/@ai-science)
