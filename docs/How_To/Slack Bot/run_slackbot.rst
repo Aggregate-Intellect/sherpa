@@ -1,5 +1,5 @@
-Chatbot with Flask and Slack
-============================
+Run and Develop SHERPA Slackbot
+===============================
 
 This repository contains a chatbot implementation using Flask and Slack.
 The chatbot leverages the Langchain library for question-answering and
@@ -22,7 +22,7 @@ Preparation
    \```bash git clone
 
 2. Create new app in slack workspace following the `setup
-   toturial <../../docs/Tutorials/slackbot.rst>`__
+   toturial <slackbot_workspace.rst>`__
 
 3. Configuration Before running the code, you need to configure the
    following environment variables. All these tokens should be added in

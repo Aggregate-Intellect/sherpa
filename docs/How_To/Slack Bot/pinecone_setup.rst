@@ -1,5 +1,5 @@
-Guide for quick setup of Pinecone
-=================================
+Set up Pinecone
+===============
 
 First go to `pinecone.io <https://www.pinecone.io/>`__ and create a free
 account.
