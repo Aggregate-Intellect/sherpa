@@ -1,10 +1,7 @@
 
 from scrape.extract_github_readme import extract_github_readme
 from utils import chunk_and_summerize, count_string_tokens, get_link_from_slack_client_conversation, question_reconstructor, scarape_with_url
-from os import environ
-
-OPENAI_KEY = environ.get("OPENAI_KEY")
-
+import config as cfg
 
 class PromptReconstructor:
     def __init__(self, question, slack_message):
@@ -41,7 +38,7 @@ class PromptReconstructor:
 
                     chunk_summary = chunk_and_summerize(
                         link=link,
-                        open_ai_key=OPENAI_KEY,
+                        open_ai_key=cfg.OPENAI_API_KEY,
                         question=question,
                         text_data=scraped_data["data"]
                     )
@@ -50,7 +47,7 @@ class PromptReconstructor:
 
                         chunk_summary = chunk_and_summerize(
                             link=link,
-                            open_ai_key=OPENAI_KEY,
+                            open_ai_key=cfg.OPENAI_API_KEY,
                             question=question,
                             text_data=chunk_summary
                         )
