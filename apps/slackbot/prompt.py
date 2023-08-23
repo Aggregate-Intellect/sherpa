@@ -21,7 +21,7 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
     def construct_base_prompt(self):
         full_prompt = f"You are a friendly assistent bot called {self.ai_name}\n\n"
         full_prompt += f"\n\n{get_prompt(self.tools)}"
-
+        logger.debug(full_prompt)
         return full_prompt
 
     def format_messages(self, **kwargs: Any) -> List[BaseMessage]:
@@ -46,12 +46,15 @@ class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
             historical_messages = [message] + historical_messages
             used_tokens += message_tokens
 
+        logger.debug(input_message)
         input_message = HumanMessage(content=input_message)
 
         messages: List[BaseMessage] = [base_prompt, time_prompt]
         messages += historical_messages
         messages.append(input_message)
-        logger.debug("all_prompt:", messages)
+        logger.debug(f"Base prompt: {base_prompt}")
+        logger.debug(f"Time prompt: {time_prompt}")
+        logger.debug(f"Historical messages: {historical_messages}")
         return messages
 
     def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:
