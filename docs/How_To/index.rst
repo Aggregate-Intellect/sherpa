@@ -28,6 +28,7 @@ If you run into any issues with the links above, please reach out to sherpa@ai.s
 
 Development Environment Setup:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[] TO DO
 
 - Provide detailed instructions on how to set up the development environment.
 - Include links to any relevant tools, dependencies, or style guides.
@@ -42,18 +43,21 @@ Check out the following links to set up the Slack Bot:
 
 Codebase Overview:
 ^^^^^^^^^^^^^^^^^^
+[] TO DO
 
 - Offer a high-level tour of the codebase to familiarize the new developer with the project's structure.
 - Point out essential directories, modules, and key components.
 
 Starter Tasks:
 ^^^^^^^^^^^^^^
+[] TO DO
 
 - Suggest beginner-friendly tasks that new developers can work on to get started.
 - Provide links to any "good first issues" or "beginner-friendly" labels in the issue tracker.
 
 Mentoring/Buddy System:
 ^^^^^^^^^^^^^^^^^^^^^^^
+[] TO DO
 
 - Offer to pair the new developer with an experienced contributor (mentor/buddy) who can guide them through their first contributions.
 - Explain how they can reach out to a mentor if interested.
@@ -61,19 +65,23 @@ Mentoring/Buddy System:
 Community Events:
 ^^^^^^^^^^^^^^^^^
 
-- Inform the new developer about any upcoming community events, such as meetings, workshops, or hackathons.
-- Encourage participation in these events to build connections and share knowledge.
+- `SHERPA Dev Weekly Meeting <https://lu.ma/livebook-aug-sept>`__
+- `Aggregate Intellect Weekly Journal Club on NLP, GNN, etc <https://lu.ma/aisc-journal-club>`__
+- `Augmented Thinking - A.I. Youtube Channel <https://www.youtube.com/@ai-science>`__
 
 Recognition and Attribution:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[] TO DO
 
 - Explain how the project recognizes and attributes contributions, such as through contributor badges, hall of fame, etc.
 
 Feedback and Questions:
 ^^^^^^^^^^^^^^^^^^^^^^^
+[] TO DO
 
 - Encourage the new developer to ask questions and seek help whenever needed.
 - Provide contact details of community managers or project leaders for further assistance.
+
 
 Thank you for joining our open-source community! We believe that your contributions will make a valuable impact on our LLM Live Book Project. If you have any questions or need assistance during the onboarding process, please don't hesitate to reach out to me.
 
@@ -82,6 +90,6 @@ Happy coding!
 Best regards,
 Amir Feizpour
 
-LLM Live Book Project
+SHERPA Project
 `Repo <https://github.com/Aggregate-Intellect/sherpa>`
-livebook@ai.science
+sherpa@ai.science
