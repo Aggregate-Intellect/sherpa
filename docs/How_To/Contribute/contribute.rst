@@ -198,10 +198,6 @@ License
 By contributing, you agree that your contributions will be licensed
 under the repository’s License.
 
-When you submit code (software) changes, … #TODO
-
-When you submit book (non-software) changes, … #TODO
-
 References
 ----------
 

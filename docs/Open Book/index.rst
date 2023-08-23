@@ -1,7 +1,7 @@
 PRACTICAL LARGE LANGUAGE MODELS - OPEN BOOK
 ===========================================
 
-This section contains material and information from the workshops and journal club sessions run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). Our vision for this repo is to be an authoritive source of information for those who want to leverage generative AI in their work and build regardless of how small or big their projects are.
+This section contains material and information from the workshops and journal club sessions run by [Aggregate Intellect](https://ai.science) to update and educate our community about the explosive progress in language models (and generally generative models). Our vision for this repo is to be an authoritative source of information for those who want to leverage generative AI in their work and build regardless of how small or big their projects are.
 
 What does "An Open Book Project" mean?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

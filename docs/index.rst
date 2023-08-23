@@ -1,6 +1,6 @@
 :tocdepth: 2
 
-SHERPA: AI-AUGMENTED THINKING COMPANION
+Sherpa: AI-AUGMENTED THINKING COMPANION
 ========================================
 
 Project Overview:

@@ -1,4 +1,4 @@
-Why SHERPA?
+Why Sherpa?
 ===========
 
 .. toctree::
