@@ -1,5 +1,5 @@
 
-SHERPA UPDATE - 11 AUGUST 2023 
+Sherpa UPDATE - 11 AUGUST 2023 
 ==============================
 *Amir Feizpour* 
 
@@ -42,6 +42,6 @@ Topics:
 		* Planning to install SharePoint in other communities and make it available on the marketplace 
 	LLM Light: A Journey into Large Language Models 
 		* Introduction of LLM Light project for exploring large language models 
-		* Utilization of Collab for finding and working with a relatively large dataset 
+		* Utilization of Colab for finding and working with a relatively large dataset 
 		* Fine-tuning the dataset involves an auto-regressive approach 
 		* Options for hosting the model include Hugging Face and Sagemaker Jumpstart 

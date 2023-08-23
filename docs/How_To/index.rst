@@ -8,7 +8,7 @@ Welcome to the `AISC community <https://join.slack.com/t/aisc-to/shared_invite/z
 Contribution Guidelines
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Check out the link below for project contribution guidelines. Following these guidelines ensure that we maintain a healthy and inclusive community. If you have any feedback on how these guidelines can be modified to improve our effciency and inclusiviy, please reach out through the communication channel outlines below.
+Check out the link below for project contribution guidelines. Following these guidelines ensure that we maintain a healthy and inclusive community. If you have any feedback on how these guidelines can be modified to improve our efficiency and inclusivity, please reach out through the communication channel outlines below.
 
 .. toctree::
     :maxdepth: 1
@@ -19,7 +19,7 @@ Check out the link below for project contribution guidelines. Following these gu
 Communication Channels
 ^^^^^^^^^^^^^^^^^^^^^^
 
-We use the AISC community slack workspace to communicate and coordiante. 
+We use the AISC community slack workspace to communicate and coordinate. 
 
 - `Join Slack <https://join.slack.com/t/aisc-to/shared_invite/zt-f5zq5l35-PSIJTFk4v60FML177PgsPg>`__
 - `Open #llm-live-book-project <https://aisc-to.slack.com/archives/C056RU8PEJ0>`__
@@ -65,7 +65,7 @@ Mentoring/Buddy System:
 Community Events:
 ^^^^^^^^^^^^^^^^^
 
-- `SHERPA Dev Weekly Meeting <https://lu.ma/livebook-aug-sept>`__
+- `Sherpa Dev Weekly Meeting <https://lu.ma/livebook-aug-sept>`__
 - `Aggregate Intellect Weekly Journal Club on NLP, GNN, etc <https://lu.ma/aisc-journal-club>`__
 - `Augmented Thinking - A.I. Youtube Channel <https://www.youtube.com/@ai-science>`__
 
@@ -90,6 +90,6 @@ Happy coding!
 Best regards,
 Amir Feizpour
 
-SHERPA Project
+Sherpa Project
 `Repo <https://github.com/Aggregate-Intellect/sherpa>`
 sherpa@ai.science

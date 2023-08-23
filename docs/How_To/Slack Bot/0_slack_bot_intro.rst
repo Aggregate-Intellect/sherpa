@@ -1,7 +1,7 @@
-Talk to SHERPA
+Talk to Sherpa
 ==============
 
-SHERPA is installed as a bot in AISC community slack workspace.
+Sherpa is installed as a bot in AISC community slack workspace.
 
 - `Join Slack <https://join.slack.com/t/aisc-to/shared_invite/zt-f5zq5l35-PSIJTFk4v60FML177PgsPg>`__
 - `Open #technical_questions <https://aisc-to.slack.com/archives/C015UB6NV7D>`__

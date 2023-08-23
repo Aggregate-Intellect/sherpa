@@ -3,10 +3,10 @@ Rise of Autonomous Information Seeking Companions
 
 We continue observing a rapid movement towards creation of agents that
 can *reason* about the objectives they are given, *use tools* to carry
-out related tasks using formal languages, and use *natural anguage
+out related tasks using formal languages, and use *natural language
 skills* to communicate with their operators. This trend might (and most
 probably will) lead into *thinking companions* that can interact with
-us, seek information and insight on our behald, and synthesize artifacts
+us, seek information and insight on our behalf, and synthesize artifacts
 towards objectives we have. The ease of interaction with these
 companions could (and most probably will) get to a point where we can
 learn / plan / build on our own terms as we commute / run / cook.
@@ -93,7 +93,7 @@ learn / plan / build on our own terms as we commute / run / cook.
     can be integrated into the system to further streamline processes.
 33. The AI agent can be used for a variety of applications, such as
     teaching assistants or project management tools.
-34. The process of brainstorming with Sharepa and generating an action
+34. The process of brainstorming with Sherpa and generating an action
     plan is iterative and can be refined based on new information or
     feedback.
 35. Collaboration and communication with the AI agent is important to

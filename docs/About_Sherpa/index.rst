@@ -1,4 +1,4 @@
-ABOUT SHERPA
+ABOUT Sherpa
 ============
 
 .. image:: imgs/what_if.png
@@ -8,11 +8,11 @@ ABOUT SHERPA
 What If...
 ^^^^^^^^^^
 
-Has it happened to you that while you're doing something that is physically involved, say jogging or cooking or driving, a briliant idea hits you! What do you do?
+Has it happened to you that while you're doing something that is physically involved, say jogging or cooking or driving, a brilliant idea hits you! What do you do?
 
-Most of us, and given the current technological limtiations, as best take a note to look into the idea later.
+Most of us, and given the current technological limitations, as best take a note to look into the idea later.
 
-But... **what if you could try that idea out as you are doing other activites by delegating it to machines?**
+But... **what if you could try that idea out as you are doing other activities by delegating it to machines?**
 
 The idea of building machines that can genuinely replicate expert decision making process has been around for a few decades, from rule-based expert systems a few decades ago to the few waves of AI in the past two decades, to the newest and fanciest algorithms we have nowadays! 
 
@@ -20,7 +20,7 @@ The remarkable performance of large language models on linguistic tasks (includi
 
 1. Reason through the process of completing a complex cognitive task
 2. Explore potential approaches to decompose the task into subtasks and tools necessary to tackle those subtasks
-3. Evaluate different approaches and priortize potentially high performing ones 
+3. Evaluate different approaches and prioritize potentially high performing ones 
 4. Continuously carry out the subtasks and integrate the outcome in the broader task handling strategy
 5. Continuously synthesize everything and deliver to the end user or operator for feedback on further necessary explorations 
 
@@ -35,10 +35,10 @@ Continuous Exploration / Continuous Integration / Continuous Delivery
 If we were to look into the history to find success stories in similar contexts in the past, we don't have to go too far! 
 The concept of CI/CD is one of the corner stones of DevOps that empowers our knowledge workers, in this case developers, to focus on what they're good at: developing, and leave the process of testing, deploying, integrating, more testing, ... to automated or at least streamlined systems. 
 
-The consequence of the shift in mindset and tooling that DevOps provided significantly reduced the cost of failiure. 
+The consequence of the shift in mindset and tooling that DevOps provided significantly reduced the cost of failure. 
 They could "ship" code faster and more frequently without having to spend time on everything that comes after putting their code out on a central repository, get feedback from the change, and iterate.
 
-This immediate feedback loop, although still manual where you had to interprate the feedback and design the next step, remarkably reduced the cost of software development and among other factors led into numorus successful software businesses.
+This immediate feedback loop, although still manual where you had to interpret the feedback and design the next step, remarkably reduced the cost of software development and among other factors led into numerous successful software businesses.
 
 KnowledgeOps
 ^^^^^^^^^^^^
@@ -51,7 +51,7 @@ Although DevOps made a big difference in how software was developed, it still su
 
 - We still had to manually *inspect and interpret* the outcome of our latest effort.
 - We still needed to manually *explore and research* our options to get closer to our objective.
-- And we will needed to manuall *negotiate and converge* to the few approaches that we could realistically try next.
+- And we will needed to manually *negotiate and converge* to the few approaches that we could realistically try next.
 
 *KnowledgeOps enters the room...*
 
@@ -65,8 +65,8 @@ Until very recently, yes!
 However, With the remarkable progress we have seen in the past few years where text based generative models started to perform on par with humans on language and tool use skills as well simpler reasoning abilities, all of a sudden there could be a way forward!
 Large Language Models (LLMs), specifically, showed a great deal of competence in a few areas that are critical in handling knowledge more effectively:
 
-- Language Skills: LLMs are very good at understanding and syntheszing language (at least for high resource languages like English, and common programming languages)
-- Tool Use: Given that LLMs are good at understanding and generating formal language (read code), they have remarkable ability to use other tools to expand their capablities by calling appropriate APIs.
+- Language Skills: LLMs are very good at understanding and synthesizing language (at least for high resource languages like English, and common programming languages)
+- Tool Use: Given that LLMs are good at understanding and generating formal language (read code), they have remarkable ability to use other tools to expand their capabilities by calling appropriate APIs.
 - Reasoning Skills: Although still relatively primitive, but LLMs demonstrate the ability to reason (mostly the types of reasoning that are more likely to appear in the text of their training data)  
 
 LLM Agents
@@ -78,50 +78,50 @@ LLM Agents
 
 One of the most interesting trends of 2023 has been the "LLM Agents".
 These are systems that use various LLM skills to create workflows that mimic an information / data intensive one that is usually manual but can be "automated" with collaborating "agents".
-In other words, these systems devise the steps of the workflow you go through as you work towards an objective like decomposition of the main task into subtasks, planning and organization, reflection and reptition, and more to work iteratively towards a desired objective.
-This could be writing the litariture review section of a research paper, or drafting a blog post, or even carrying out a bunch of steps for creating and scheduling social media posts.
+In other words, these systems devise the steps of the workflow you go through as you work towards an objective like decomposition of the main task into subtasks, planning and organization, reflection and repetition, and more to work iteratively towards a desired objective.
+This could be writing the literature review section of a research paper, or drafting a blog post, or even carrying out a bunch of steps for creating and scheduling social media posts.
 
-Introducing SHERPA
+Introducing Sherpa
 ^^^^^^^^^^^^^^^^^^
 
 .. image:: imgs/sherpa_thinking_companion.png
   :width: 800
-  :alt: SHERPA thinking companion
+  :alt: Sherpa thinking companion
 
 In the past few years at aggregate intellect we have been focused on using AI to make interactions with documented "knowledge" more efficient and effective.
 
-Some of the pricinples we have been following in designing and building our software systems are:
+Some of the principles we have been following in designing and building our software systems are:
 
 - These systems have to augment humans' ability to do complex tasks, rather than replacing them
 - These systems have to facilitate multiplayer interactions like human-machine-human collaborations
 - These systems have to be integrated into the typical workflows as an organic player
 
-This has led us to `SHERPA`, our LLM Agent Management Library and set of Companion Apps. 
+This has led us to `Sherpa`, our LLM Agent Management Library and set of Companion Apps. 
 
-SHERPA - The Slack App
+Sherpa - The Slack App
 ^^^^^^^^^^^^^^^^^^^^^^
 
-We have released SHERPA, the agent management library and its corresponding slack app (so far), as an open source project supported by AISC community.
-This projects aims to aggregate the intellect of our community, as well as the knowledge and expertise of the broader tech and entrepneurship communities and enable the members of these communities to build better and bigger.
+We have released Sherpa, the agent management library and its corresponding slack app (so far), as an open source project supported by AISC community.
+This projects aims to aggregate the intellect of our community, as well as the knowledge and expertise of the broader tech and entrepreneurship communities and enable the members of these communities to build better and bigger.
 
-`This repository <https://github.com/Aggregate-Intellect/sherpa>`__ containes the source code for this project, and you are more than welcome to contribute.
+`This repository <https://github.com/Aggregate-Intellect/sherpa>`__ contains the source code for this project, and you are more than welcome to contribute.
 
 .. image:: imgs/sherpa_opensource.png
   :width: 800
-  :alt: SHERPA Open Source
+  :alt: Sherpa Open Source
 
-SHERPA for Business
+Sherpa for Business
 ^^^^^^^^^^^^^^^^^^^
 
 .. image:: imgs/sherpa_biz.png
   :width: 800
-  :alt: SHERPA Open Source
+  :alt: Sherpa Open Source
 
-We do want to support entrepneurship, both to build SHERPA and to build *using* SHERPA, through our open source project.
+We do want to support entrepreneurship, both to build Sherpa and to build *using* Sherpa, through our open source project.
 But we haven't forgotten about existing businesses.
-We are creating managed and operationalized versions of SHERPA for businessses to use.
+We are creating managed and operationalized versions of Sherpa for businesses to use.
 
-If you want to know more about *SHERPA for Business* reach out to sherpa@ai.science
+If you want to know more about *Sherpa for Business* reach out to sherpa@ai.science
 
 .. toctree::
     :maxdepth: 1

@@ -1,5 +1,5 @@
 
-SHERPA UPDATE - 7 JULY 2023 
+Sherpa UPDATE - 7 JULY 2023 
 ===========================
 *Amir Feizpour* 
 

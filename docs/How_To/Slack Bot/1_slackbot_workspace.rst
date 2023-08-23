@@ -1,4 +1,4 @@
-Set up SHERPA SlackBot in your Workspace
+Set up Sherpa SlackBot in your Workspace
 ========================================
 In this tutorial, we will start by installing the dependencies necessary for the SlackBot. Then we will create a slack APP by in a new workspace. Finally, we will connect the SlackBot to the backend in this repository so that you can talk to the SlackBot. 
 
