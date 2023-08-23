@@ -3,6 +3,8 @@
 #  Importing necessary modules
 ##############################################
 
+import logging
+
 from flask import Flask, request
 from langchain.chat_models import ChatOpenAI
 from slack_bolt import App
@@ -14,19 +16,20 @@ from task_agent import TaskAgent
 from tools import get_tools
 from vectorstores import ConversationStore, LocalChromaStore
 
-#####################################################################################################
+logger = logging.getLogger(__name__)
+#######################################################################################
 # Set up Slack client and Chroma database
-#####################################################################################################
+#######################################################################################
 
 app = App(
     token=cfg.SLACK_OAUTH_TOKEN,
     signing_secret=cfg.SLACK_SIGNING_SECRET,
 )
 bot = app.client.auth_test()
-print("App init: bot auth_test results", bot)
+logger.info(f"App init: bot auth_test results {bot}")
 
 if cfg.PINECONE_API_KEY is None:
-    print("Setting up local Chroma database")
+    logger.info("Setting up local Chroma database")
     local_memory = LocalChromaStore.from_folder(
         "files", cfg.OPENAI_API_KEY
     ).as_retriever()
@@ -83,35 +86,35 @@ def get_response(question, previous_messages):
     )
 
     if contains_verbosex(query=question):
-        print("Verbose mode is on, show all")
+        logger.info("Verbose mode is on, show all")
         question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
         response = task_agent.run(question)
-        logger = (
+        agent_log = (
             task_agent.logger
         )  # logger is updated after running task_agent.run(question)
         try:  # in case log_formatter fails
-            verbose_message = log_formatter(logger)
+            verbose_message = log_formatter(agent_log)
         except:
-            verbose_message = str(logger)
+            verbose_message = str(agent_log)
         return response, verbose_message
 
     elif contains_verbose(query=question):
-        print("Verbose mode is on, commands only")
+        logger.info("Verbose mode is on, commands only")
         question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
         response = task_agent.run(question)
-        logger = (
+        agent_log = (
             task_agent.logger
         )  # logger is updated after running task_agent.run(question)
         try:  # in case log_formatter fails
-            verbose_message = show_commands_only(logger)
+            verbose_message = show_commands_only(agent_log)
         except:
-            verbose_message = str(logger)
+            verbose_message = str(agent_log)
         return response, verbose_message
 
     else:
-        print("Verbose mode is off")
+        logger.info("Verbose mode is off")
         question = question.replace(f"@{ai_id}", f"@{ai_name}")
         response = task_agent.run(question)
         return response, None
@@ -139,7 +142,7 @@ def event_test(client, say, event):
 
 
 @app.event("app_home_opened")
-def update_home_tab(client, event, logger):
+def update_home_tab(client, event):
     try:
         # views.publish is the method that your app uses to push a view to the Home tab
         client.views_publish(
@@ -190,13 +193,16 @@ flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
 
 if cfg.FLASK_DEBUG:
-  @flask_app.route("/test_debug", methods=["GET"])
-  def test_debug():
-      raise
+
+    @flask_app.route("/test_debug", methods=["GET"])
+    def test_debug():
+        raise
+
 
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
     return handler.handle(request)
+
 
 @flask_app.route("/hello", methods=["GET"])
 def hello():
@@ -210,7 +216,9 @@ if __name__ == "__main__":
     # qa = createLangchainQA(vectorstore)
 
     # chain = createIndex("files")
-    print("App init: starting HTTP server on port {port}".format(port=cfg.SLACK_PORT))
+    logger.info(
+        "App init: starting HTTP server on port {port}".format(port=cfg.SLACK_PORT)
+    )
     flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT, debug=cfg.FLASK_DEBUG)
     # SocketModeHandler(app, cfg.SLACK_APP_TOKEN).start()
 
@@ -218,10 +226,10 @@ if __name__ == "__main__":
 # ---- add this for verbose output --- #
 
 
-def log_formatter(logger):
+def log_formatter(logs):
     """Formats the logger into readable string"""
     log_strings = []
-    for log in logger:
+    for log in logs:
         reply = log["reply"]
         if "thoughts" in reply:
             # reply = json.loads(reply)
@@ -244,10 +252,10 @@ def log_formatter(logger):
     return log_string
 
 
-def show_commands_only(logger):
+def show_commands_only(logs):
     """Modified version of log_formatter that only shows commands"""
     log_strings = []
-    for log in logger:
+    for log in logs:
         reply = log["reply"]
         if "command" in reply:
             # reply = json.loads(reply)
@@ -262,4 +270,3 @@ def show_commands_only(logger):
             log_strings.append(formatted_reply)
     log_string = "\n".join(log_strings)
     return log_string
-

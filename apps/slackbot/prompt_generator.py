@@ -30,8 +30,10 @@ class PromptGenerator:
                 # "criticism": "constructive self-criticism",
                 "speak": "thoughts summary to say to user",
             },
-            "command": {"name": "tool/command name you choose",
-                        "args": {"arg name": "value"}},
+            "command": {
+                "name": "tool/command name you choose",
+                "args": {"arg name": "value"},
+            },
         }
 
     def add_constraint(self, constraint: str) -> None:
@@ -143,7 +145,7 @@ def get_prompt(tools: List[BaseTool]) -> str:
     )
     prompt_generator.add_constraint(
         "You can seek for user assistance only by using the corresponding tool"
-        )
+    )
     prompt_generator.add_constraint(
         'Exclusively use the commands listed in double quotes e.g. "command name"'
     )

@@ -11,7 +11,7 @@ Usage:
     another_variable = cfg.ANOTHER_ENVIRONMENT_VARIABLE
 """
 
-import os
+import logging
 import sys
 from os import environ
 
@@ -33,10 +33,14 @@ PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
 PINECONE_ENV = environ.get("PINECONE_ENV")
 PINECONE_INDEX = environ.get("PINECONE_INDEX")
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
-
+LOGLEVEL = environ.get("LOG_LEVEL", "INFO").upper()
 
 # `this` is a pointer to the module object instance itself.
 this = sys.modules[__name__]
+
+# configure logger
+logging.basicConfig(level=LOGLEVEL)
+logger = logging.getLogger(__name__)
 
 
 # Ensure all mandatory environment variables are set, otherwise exit
@@ -46,22 +50,22 @@ if None in [
     this.SLACK_OAUTH_TOKEN,
     this.SLACK_PORT,
 ]:
-    print("Config: Slack environment variables not set, unable to run")
+    logger.info("Config: Slack environment variables not set, unable to run")
     raise SystemExit(1)
 else:
-    print("Config: Slack environment variables are set")
+    logger.info("Config: Slack environment variables are set")
 
 if this.OPENAI_API_KEY is None:
-    print("Config: OpenAI environment variables not set, unable to run")
+    logger.info("Config: OpenAI environment variables not set, unable to run")
     raise SystemExit(1)
 else:
-    print("Config: OpenAI environment variables are set")
+    logger.info("Config: OpenAI environment variables are set")
 
 if this.PINECONE_API_KEY is None:
-    print("Config: Pinecone environment variables not set")
+    logger.info("Config: Pinecone environment variables not set")
 else:
     if None in [this.PINECONE_NAMESPACE, this.PINECONE_ENV, this.PINECONE_INDEX]:
-        print("Config: Pinecone environment variables not set, unable to run")
+        logger.info("Config: Pinecone environment variables not set, unable to run")
         raise SystemExit(1)
     else:
-        print("Config: Pinecone environment variables are set")
+        logger.info("Config: Pinecone environment variables are set")

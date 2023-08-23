@@ -1,18 +1,24 @@
 import json
+import logging
 from os import environ
 from typing import List, Optional
 
 import openai
 from langchain.chains.llm import LLMChain
 from langchain.chat_models.base import BaseChatModel
+from langchain.llms.base import BaseLLM
 from langchain.schema import AIMessage, BaseMessage, Document, HumanMessage
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
+from pydantic import ValidationError
+
+from action_planner import SelectiveActionPlanner
+from action_planner.base import BaseActionPlanner
 from output_parser import BaseTaskOutputParser, TaskOutputParser
 from post_processors import md_link_to_slack
-from prompt import SlackBotPrompt
-from pydantic import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 class TaskAgent:
@@ -23,7 +29,8 @@ class TaskAgent:
         ai_name: str,
         ai_id: str,
         memory: VectorStoreRetriever,
-        chain: LLMChain,
+        llm: BaseLLM,
+        action_planner: BaseActionPlanner,
         output_parser: BaseTaskOutputParser,
         tools: List[BaseTool],
         previous_messages,
@@ -34,9 +41,11 @@ class TaskAgent:
         self.memory = memory
         # self.full_message_history: List[BaseMessage] = []
         self.next_action_count = 0
-        self.chain = chain
+        self.llm = llm
         self.output_parser = output_parser
         self.tools = tools
+
+        self.action_planner = action_planner
         self.feedback_tool = feedback_tool
         self.max_iterations = max_iterations
         self.loop_count = 0
@@ -56,25 +65,23 @@ class TaskAgent:
         tools: List[BaseTool],
         llm: BaseChatModel,
         previous_messages,
+        action_planner: BaseActionPlanner = None,
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseTaskOutputParser] = None,
         max_iterations: int = 5,
     ):
-        prompt = SlackBotPrompt(
-            ai_name=ai_name,
-            ai_role=ai_role,
-            tools=tools,
-            # input_variables=["memory", "messages", "user_input", "task"],
-            input_variables=["memory", "messages", "user_input", "task"],
-            token_counter=llm.get_num_tokens,
-        )
+        if action_planner is None:
+            action_planner = SelectiveActionPlanner(
+                llm, tools, ai_name=ai_name, ai_role=ai_role
+            )
         human_feedback_tool = HumanInputRun() if human_in_the_loop else None
-        chain = LLMChain(llm=llm, prompt=prompt)
+
         return cls(
             ai_name,
             ai_id,
             memory,
-            chain,
+            llm,
+            action_planner,
             output_parser or TaskOutputParser(),
             tools,
             previous_messages,
@@ -95,25 +102,26 @@ class TaskAgent:
         while True:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
-            print(f"Step: {loop_count}/{self.max_iterations}")
+            logger.info(f"Step: {loop_count}/{self.max_iterations}")
             logger_step = {"Step": f"{loop_count}/{self.max_iterations}"}  # added by JF
 
             if loop_count >= self.max_iterations:
                 user_input = (
-                    f"Use the above information to respond to the user's message:\n{task}\n\n"
-                    f"If you use any resource, then create inline citation by adding the source link of the reference document at the of the sentence."
-                    f"Only use the link given in the reference document. DO NOT create link by yourself. DO NOT include citation if the resource is not necessary. "
-                    "only write text but NOT the JSON format specified above. \nResult:"
+                    "Use the above information to respond to the user's message: "
+                    f"\n{task}\n\n"
+                    f"If you use any resource, then create inline citation by "
+                    "adding the source link of the reference document at the of the "
+                    "sentence. Only use the link given in the reference document. "
+                    "DO NOT create link by yourself. DO NOT include citation if the "
+                    " resource is not necessary. only write text but NOT the JSON "
+                    "format specified above. \nResult:"
                 )
 
             # Send message to AI, get response
 
             try:
-                assistant_reply = self.chain.run(
-                    task=task,
-                    messages=self.previous_message,
-                    memory=self.memory,
-                    user_input=user_input,
+                assistant_reply = self.action_planner.select_action(
+                    self.previous_message, self.memory, task=task, user_input=user_input
                 )
             except openai.error.APIError as e:
                 return f"OpenAI API returned an API Error: {e}"
@@ -130,7 +138,7 @@ class TaskAgent:
             except openai.error.InvalidRequestError as e:
                 return f"OpenAI API invalid request error: {e}"
 
-            print("reply:", assistant_reply)
+            logger.info(f"reply: {assistant_reply}")
             # added by JF
             try:
                 reply_json = json.loads(assistant_reply)
@@ -138,17 +146,10 @@ class TaskAgent:
             except json.JSONDecodeError:
                 logger_step["reply"] = assistant_reply  # last reply is a string
             self.logger.append(logger_step)
-
-            # return assistant_reply
             # return if maximum itertation limit is reached
             result = ""
             if loop_count >= self.max_iterations:
                 # TODO: this should be handled better, e.g. message for each task
-                # self.logger.session.context["full_messages"] = []
-                # self.logger.session.save()
-
-                # self.logger.log(FinishLog(content=assistant_reply))
-
                 try:
                     result = json.loads(assistant_reply)
                     if (
@@ -167,7 +168,7 @@ class TaskAgent:
 
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
-            print("action:", action)
+            logger.debug("action:", action)
             tools = {t.name: t for t in self.tools}
             if action == previous_action:
                 if action.name == "Search" or action.name == "Context Search":
@@ -181,7 +182,6 @@ class TaskAgent:
                         f"Only return one query instead of multiple queries."
                         f"Reformulated query:\n\n"
                     )
-                    openai.api_key = environ.get("OPENAI_KEY")
                     response = openai.Completion.create(
                         engine="text-davinci-003",
                         prompt=" ".join(str(i) for i in self.previous_message)
@@ -233,7 +233,7 @@ class TaskAgent:
             if self.feedback_tool is not None:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
                 if feedback in {"q", "stop"}:
-                    print("EXITING")
+                    logger.info("EXITING")
                     return "EXITING"
                 memory_to_add += feedback
 
@@ -252,7 +252,7 @@ class TaskAgent:
         results = []
 
         for message in messages:
-            print(message)
+            logger.info(message)
             if message["type"] != "message" and message["type"] != "text":
                 continue
 
