@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 import time
 from typing import Any, Callable, List
 
@@ -9,8 +9,6 @@ from pydantic import BaseModel
 
 from prompt_generator import get_prompt
 from tools import BaseTool
-
-logger = logging.getLogger(__name__)
 
 
 class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):

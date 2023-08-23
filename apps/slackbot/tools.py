@@ -1,5 +1,5 @@
-import logging
 import os
+from loguru import logger
 from typing import Any
 
 import requests
@@ -12,8 +12,6 @@ from langchain.vectorstores.base import VectorStoreRetriever
 from typing_extensions import Literal
 
 import config as cfg
-
-logger = logging.getLogger(__name__)
 
 
 def get_tools(memory):

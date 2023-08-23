@@ -1,5 +1,5 @@
 import base64
-import logging
+from loguru import logger
 import re
 
 import pinecone
@@ -10,7 +10,6 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 import config as cfg
 from vectorstores import ConversationStore
 
-logger = logging.getLogger(__name__)
 
 
 def get_owner_and_repo(url):
