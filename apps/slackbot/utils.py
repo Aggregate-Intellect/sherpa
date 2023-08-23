@@ -7,7 +7,8 @@ import requests
 import tiktoken
 from bs4 import BeautifulSoup
 from langchain.docstore.document import Document
-from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader
+from langchain.document_loaders import (UnstructuredMarkdownLoader,
+                                        UnstructuredPDFLoader)
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 

@@ -3,7 +3,8 @@ import time
 from typing import Any, Callable, List
 
 from langchain.prompts.chat import BaseChatPromptTemplate
-from langchain.schema import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain.schema import (AIMessage, BaseMessage, HumanMessage,
+                              SystemMessage)
 from langchain.vectorstores.base import VectorStoreRetriever
 from pydantic import BaseModel
 
