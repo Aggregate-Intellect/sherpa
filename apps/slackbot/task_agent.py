@@ -106,19 +106,34 @@ class TaskAgent:
                 self.previous_message, self.memory, task=task, user_input=user_input
             )
         except openai.error.APIError as e:
-            return f"OpenAI API returned an API Error: {e}"
+            error_msg = f"OpenAI API returned an API Error: {e}"
+            logger.error(error_msg)
+            return error_msg
         except openai.error.APIConnectionError as e:
-            return f"Failed to connect to OpenAI API: {e}"
+            error_msg = f"Failed to connect to OpenAI API: {e}"
+            logger.error(error_msg)
+            return error_msg
         except openai.error.RateLimitError as e:
-            return f"OpenAI API request exceeded rate limit: {e}"
+            error_msg = f"OpenAI API returned an API Error: {e}"
+            logger.error(error_msg)
+            return error_msg
         except openai.error.AuthenticationError as e:
-            return f"OpenAI API failed authentication or incorrect token: {e}"
+            error_msg = f"OpenAI API returned an API Error: {e}"
+            logger.error(error_msg)
+            return error_msg
         except openai.error.Timeout as e:
-            return f"OpenAI API Timeout error: {e}"
+            error_msg = f"OpenAI API returned an API Error: {e}"
+            logger.error(error_msg)
+            return error_msg
         except openai.error.ServiceUnavailableError as e:
-            return f"OpenAI API Service unavailable: {e}"
+            error_msg = f"OpenAI API returned an API Error: {e}"
+            logger.error(error_msg)
+            return error_msg
         except openai.error.InvalidRequestError as e:
-            return f"OpenAI API invalid request error: {e}"
+            error_msg = f"OpenAI API returned an API Error: {e}"
+            logger.error(error_msg)
+            return error_msg
+
         
         return assistant_reply
 
@@ -175,6 +190,7 @@ class TaskAgent:
                 # print(result)
                 result = str(result)
         except json.JSONDecodeError:
+            logger.error(f"JSONDecoderError")
             result = assistant_reply
 
         return self.process_output(result)
@@ -262,10 +278,12 @@ class TaskAgent:
             try:
                 observation = tool.run(action.args)
             except ValidationError as e:
+                logger.error(f"Validation Error: {e}")
                 observation = (
                     f"Validation Error in args: {str(e)}, args: {action.args}"
                 )
             except Exception as e:
+                logger.error(f"Error: {e}")
                 observation = (
                     f"Error: {str(e)}, {type(e).__name__}, args: {action.args}"
                 )
