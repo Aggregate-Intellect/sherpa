@@ -1,5 +1,4 @@
 import json
-from loguru import logger
 from os import environ
 from typing import List, Optional
 
@@ -11,6 +10,7 @@ from langchain.schema import AIMessage, BaseMessage, Document, HumanMessage
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
+from loguru import logger
 from pydantic import ValidationError
 
 from action_planner import SelectiveActionPlanner
@@ -97,7 +97,7 @@ class TaskAgent:
 
         # Interaction Loop
 
-        reflection = Reflection(self.tools, [])
+        reflection = Reflection(self.llm, self.tools, [])
         while True:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
@@ -169,7 +169,9 @@ class TaskAgent:
             action = self.output_parser.parse(assistant_reply)
             logger.debug("action:", action)
             tools = {t.name: t for t in self.tools}
-            new_reply = reflection.evaluate_action(action, assistant_reply, task, self.previous_message)
+            new_reply = reflection.evaluate_action(
+                action, assistant_reply, task, self.previous_message
+            )
             action = self.output_parser.parse(new_reply)
             logger.debug("action after reflection: ", action)
 
