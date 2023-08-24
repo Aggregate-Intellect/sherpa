@@ -17,6 +17,7 @@ from action_planner import SelectiveActionPlanner
 from action_planner.base import BaseActionPlanner
 from output_parser import BaseTaskOutputParser, TaskOutputParser
 from post_processors import md_link_to_slack
+from reflection import Reflection
 
 
 class TaskAgent:
@@ -96,7 +97,7 @@ class TaskAgent:
 
         # Interaction Loop
 
-        previous_action = ""
+        reflection = Reflection(self.tools, [])
         while True:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
@@ -168,31 +169,9 @@ class TaskAgent:
             action = self.output_parser.parse(assistant_reply)
             logger.debug("action:", action)
             tools = {t.name: t for t in self.tools}
-            if action == previous_action:
-                if action.name == "Search" or action.name == "Context Search":
-                    print(
-                        "Action name: ", action.name, "\nStart reformulating the query"
-                    )
-                    instruction = (
-                        f"You want to search for useful information to answer the query: {task}."
-                        f"The original query is: {action.args['query']}"
-                        f"Reformulate the query so that it can be used to search for relevant information."
-                        f"Only return one query instead of multiple queries."
-                        f"Reformulated query:\n\n"
-                    )
-                    response = openai.Completion.create(
-                        engine="text-davinci-003",
-                        prompt=" ".join(str(i) for i in self.previous_message)
-                        + "\n"
-                        + instruction,
-                        temperature=0.7,
-                        max_tokens=1024,
-                        top_p=1,
-                        frequency_penalty=0,
-                        presence_penalty=0,
-                    )
-                    reformulated_query = response["choices"][0]["text"]
-                    action.args["query"] = reformulated_query
+            new_reply = reflection.evaluate_action(action, assistant_reply, task, self.previous_message)
+            action = self.output_parser.parse(new_reply)
+            logger.debug("action after reflection: ", action)
 
             if action.name == "finish":
                 self.loop_count = self.max_iterations
