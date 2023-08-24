@@ -151,7 +151,7 @@ def initialize_task_agent(question, previous_messages):
 
     return task_agent
 
-def question_reformat(question):
+def question_without_noise_words(question):
     # removes unnecessary words from question, like "-verbose" or "@Sherpa"
     ai_name = "Sherpa"
     ai_id = bot["user_id"]
@@ -174,7 +174,7 @@ def event_test(client, say, event):
     )
     question = reconstructor.reconstruct_prompt()
 
-    question_cleaned = question_reformat(question)
+    question_cleaned = question_without_noise_words(question)
     task_agent = initialize_task_agent(question, previous_messages)
 
     if VERBOSE_DEFAULT: # Change this to false to revert back
