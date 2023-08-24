@@ -59,7 +59,6 @@ class Reflection:
                     f"Ensure the response can be parsed by Python json.loads"
                     f"New reply:\n\n"
                 )
-                logger.warning(f"tokens used: {self.token_counter(instruction)}")
                 return self.llm.predict(instruction)
             else:
                 return assistant_reply
