@@ -1,6 +1,10 @@
 Set up Pinecone
 ===============
 
+By default, Sherpa represents its documents within an in-memory vector 
+database. However, if you want to use a cloud vector database instead, 
+`Pinecone <https://www.pinecone.io>`__ is available as an option.
+ 
 First go to `pinecone.io <https://www.pinecone.io/>`__ and create a free
 account.
 

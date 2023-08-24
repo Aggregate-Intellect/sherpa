@@ -1,6 +1,9 @@
-Set up Sherpa SlackBot in your Workspace
+Set up Sherpa SlackBot in your Own Workspace
 ========================================
-In this tutorial, we will start by installing the dependencies necessary for the SlackBot. Then we will create a slack APP by in a new workspace. Finally, we will connect the SlackBot to the backend in this repository so that you can talk to the SlackBot. 
+This tutorial describes how to run the Sherpa SlackBot in your own Slack Workspace. 
+We will start by installing the dependencies necessary for the SlackBot. Then we will create a 
+Slack APP by in a new workspace. Finally, we will connect the SlackBot to the Sherpa backend
+so that you can talk to the SlackBot. 
 
 Install Slack App
 **********************
@@ -54,27 +57,28 @@ After you clone the repository, you can find the slackbot project under `apps/sl
 
         pip install -r requirements.txt
 
-5. Before you can run the app, you will need to create a `.env` file with the following information
-   ::
+5. Configuration: Copy the contents of ``slackbot/.env-sample``
+   into your own ``slackbot/.env`` file, and then modify your configuration as needed.
+   Remember not to share your private keys with anyone else.
 
-        SLACK_SIGNING_SECRET=<Slack APP signin secret>
-        VERIFICATION_TOKEN=<Slack App verification token>
-        SLACK_OAUTH_TOKEN=<Slack app OAUTH token>
-        OPENAI_KEY=<OpenAI API>
-        SLACK_PORT=3000
-        SERPER_API_KEY=<Serper API>
-
-  * You can find the first two tokens in the `Basic Information` page of your Slack App.
+  * You can find ``SLACK_SIGNING_SECRET`` and ``SLACK_VERIFICATION_TOKEN`` values in the `Basic Information` page of your Slack App.
 
     .. image:: slackbot_imgs/slackbot.png
         :width: 400
-  * The `SLACK_OAUTH_TOKEN` can be found in the `OAuth & Permissions` page of your Slack App.
+  * The ``SLACK_OAUTH_TOKEN`` can be found in the `OAuth & Permissions` page of your Slack App.
  
     .. image:: slackbot_imgs/slackbot2.png
         :width: 400
-  * The `OPENAI_KEY` can be found in your OpenAI account page. If you you don't have one, create one at https://platform.openai.com/overview.
-  * Serper is a search engine that we will use to search for relevant articles. You can find the API key in your Serper account page. If you don't have one, create one at https://serpapi.com/. You don't need it to run the app, but it will enable the Internet search function of the SlackBot. If you don't want to have this functionality, you can leave the `SERPER_API_KEY` empty.
-  * You may also find there are values in the `README` about *Pinecone* keys in the `.env` file. Pinecone is a cloud-based vector database, by default, the app runs with an in-memory vector database. However, if you want to build your own cloud vector database, you can learn more about Pinecone here: https://www.pinecone.io/.
+  * The ``OPENAI_API_KEY`` can be found in your OpenAI account page. If you you don't have one, create one at https://platform.openai.com/overview.
+
+  * Serper is a search engine that we use to search for relevant articles. You can find the API key 
+    in your Serper account page. If you don't have one, create one at https://serper.dev/. 
+    You don't need it to run the app, but it will enable the Internet search function of the SlackBot. If you don't want to have this functionality, you can leave the `SERPER_API_KEY` empty.
+
+  * You may also find there are optional *Pinecone* keys in the `.env` file. 
+    Pinecone is a cloud-based vector database, by default, the app runs with an in-memory vector 
+    database. However, if you want to build your own cloud vector database, you can learn more 
+    about Pinecone here: https://www.pinecone.io/ and on the :doc:`Pinecone setup <3_pinecone_setup>` page.
 
 6. We will need to have some files to load into the vector database and act as the long-term memory of the SlackBot. For the sake of this tutorial, copy the `README.md` file of this project to `apps/slackbot/file`. This file will be used as the long-term memory of the SlackBot.
 7. Now, run the app with the following command
@@ -110,7 +114,7 @@ However, before we can do that, we will need to expose the local app to the Inte
 
 Now we have all the pieces ready, let's connect everything together.
 
-3. Go to the `Event Subscriptions` page of your Slack App, and enter the URL of the ngrok forwarding address in the `Request URL` field. In the above image, the URL is `https://efb0-2607-fea8-125e-d700-79b8-a450-f057-a944.ngrok-free.app/slack/events` (Yes! Sadly the URL is randomly generated and we will need to change the URL every time when we restart `ngrok` :(. Don't hisitate to let us know if there is a way to persist the URL :)). Note that the URL should end with `/slack/events`. If everything is working properly, you should see a green check mark next to the URL field as `Verified`.
+3. Go to the `Event Subscriptions` page of your Slack App, and enter the URL of the ngrok forwarding address in the `Request URL` field. In the above image, the URL is `https://efb0-2607-fea8-125e-d700-79b8-a450-f057-a944.ngrok-free.app/slack/events` (Yes! Sadly the URL is randomly generated and we will need to change the URL every time when we restart `ngrok` :(. Don't hesitate to let us know if there is a way to persist the URL :)). Note that the URL should end with `/slack/events`. If everything is working properly, you should see a green check mark next to the URL field as `Verified`.
 
   .. image:: slackbot_imgs/integration.png
         :width: 500
