@@ -1,12 +1,15 @@
 Run and Develop Sherpa Slackbot
 ===============================
 
-This repository contains a chatbot implementation using Flask and Slack.
+The `Sherpa repository <https://github.com/Aggregate-Intellect/sherpa>`__ contains the Sherpa  code,
+including a chatbot built using Flask and Slack.
 The chatbot leverages the Langchain library for question-answering and
-text processing tasks.
+text processing tasks. While you can :doc:`talk to Sherpa in the AISC Slack workspace<0_slack_bot_intro>`,
+if you want to go deeper and contribute to code or run Sherpa in your own Slack workspace then 
+this section is for you.
 
-Features
---------
+Slackbot Features
+-----------------
 
 -  Receives events from Slack using SlackEventAdapter.
 -  Handles app mentions and responds with a message.
@@ -19,15 +22,16 @@ Preparation
 
 1. Clone the repository:
 
-   \```bash git clone
+   .. code:: bash
+   
+      git clone
 
-2. Create new app in slack workspace following the `setup
-   toturial <slackbot_workspace.rst>`__
+2. Create new app in slack workspace following the :doc:`setup
+   tutorial <1_slackbot_workspace>`
 
-3. Configuration Before running the code, you need to configure the
-   following environment variables. All these tokens should be added in
-   .env file:
-   ``SLACK_SIGNING_SECRET: Slack apps signing secret.         SLACK_OAUTH_TOKEN: Slack bot token for authentication.         VERIFICATION_TOKEN: Slack verification token.         OPENAI_API_KEY: OpenAI API key for language modeling.         PINECONE_INDEX: The Pinecone vector database index         PINECONE_API_KEY: The Pinecone vector database API key          PINECONE_ENV: Region where the Pinecone index is deployed         SERPER_API_KEY: API key for Serper that enables the google search tool``
+3. Configuration: Copy the contents of ``slackbot/.env-sample``
+   into your own ``slackbot/.env`` file, and then modify your configuration as needed.
+   Remember not to share your private keys with anyone else.
 
 4. Add all the files which you want to build the Vector Db index to
    the ``files`` folder. Currently, it works with ``PDFs`` and
@@ -72,15 +76,19 @@ Run with docker
 ~~~~~~~~~~~~~~~
 
 1. Run the docker image:
-   ``docker build -it slackbot .     docker run -p 3000:3000 slackbot``
 
-2. Expose the server to the internet using a tool like ngrok. Not
-   required in hosted on public IP
+   .. code:: bash
+
+      docker build -it slackbot .
+      docker run -p 3000:3000 slackbot
+
+2. Expose the server to the internet using a tool like ngrok. This is not
+   required if your server is hosted on a public IP address.
 
 3. Set up the Slack app’s Event Subscriptions and provide the ngrok URL
    as the Request URL.
 
-   -  **NOTE:** When add the url to the Slack app, make sure to append
+   -  **NOTE:** When adding the url to the Slack app, make sure to append
       ``/slack/events`` at the end as this is the default path used by
       Slack Bolt.
 
@@ -141,11 +149,12 @@ or
    pytest .
 
 Debugging
-=========
+~~~~~~~~~
 
 The Slackbot is built with Flask, which provides a built-in web server and debugger suitable for development use.
 
 When Flask debug mode is enabled, ...
+
 - the server automatically reloads when code is changed
 - http://localhost:3000/ serves a web-based debugger which displays an interactive stack trace when an exception is raised
 - http://localhost:3000/test_debug raises an exception so you can try out the debugger
@@ -153,11 +162,13 @@ When Flask debug mode is enabled, ...
 - stack traces are also displayed in your terminal console
 
 When Flask debug mode is disabled, ...
+
 - you must manually restart the server to pick up code changes
 - the web-based debugger and console are not available
 - stack traces are only displayed in your terminal console
-To enable debug mode, set `FLASK_DEBUG` to `True` in your `.env` file.
-To disable debug mode, comment out `FLASK_DEBUG` or set it to any value other than `True`.
+
+To enable debug mode, set ``FLASK_DEBUG=True`` in your ``.env`` file.
+To disable debug mode, comment out ``FLASK_DEBUG`` or set it to any value other than ``True``.
 
 **Warning:**
 Never use the development server or enable the debugger when deploying to production.
@@ -170,5 +181,5 @@ and `Flask: Debugging Application Errors <https://flask.palletsprojects.com/en/2
 Reference
 =========
 
-4. Start interacting with the chatbot by mentioning the app in a Slack
-   channel.
+Once you have the chatbot running you can start interacting with it by mentioning the app in a Slack 
+channel. See :doc:`Talk to Sherpa <0_slack_bot_intro>` for how to do this.

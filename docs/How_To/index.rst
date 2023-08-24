@@ -8,7 +8,11 @@ Welcome to the `AISC community <https://join.slack.com/t/aisc-to/shared_invite/z
 Contribution Guidelines
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Check out the link below for project contribution guidelines. Following these guidelines ensure that we maintain a healthy and inclusive community. If you have any feedback on how these guidelines can be modified to improve our efficiency and inclusivity, please reach out through the communication channel outlines below.
+There are many ways you can contribute to the Sherpa project. 
+Check out the contribution guidelines link below to learn more. Following these guidelines ensure that we maintain a 
+healthy and inclusive community. If you have any feedback on how these guidelines can be modified 
+to improve our efficiency and inclusivity, please reach out through the communication channel 
+outlines below.
 
 .. toctree::
     :maxdepth: 1
@@ -28,12 +32,9 @@ If you run into any issues with the links above, please reach out to sherpa@ai.s
 
 Development Environment Setup:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[] TO DO
-
-- Provide detailed instructions on how to set up the development environment.
-- Include links to any relevant tools, dependencies, or style guides.
-
-Check out the following links to set up the Slack Bot:
+These pages provide detailed instructions on how to set up the development environment
+so that you can follow along with the code, run Sherpa in your own Slack workspace, and 
+contribute changes to Sherpa and the LLM Live Book.
 
 .. toctree::
     :maxdepth: 1
@@ -52,15 +53,15 @@ Starter Tasks:
 ^^^^^^^^^^^^^^
 [] TO DO
 
-- Suggest beginner-friendly tasks that new developers can work on to get started.
+- Suggest beginner-friendly tasks that new contributors can work on to get started.
 - Provide links to any "good first issues" or "beginner-friendly" labels in the issue tracker.
 
 Mentoring/Buddy System:
 ^^^^^^^^^^^^^^^^^^^^^^^
 [] TO DO
 
-- Offer to pair the new developer with an experienced contributor (mentor/buddy) who can guide them through their first contributions.
-- Explain how they can reach out to a mentor if interested.
+- Offer to pair new contributors with an experienced contributor (mentor/buddy) who can guide them through their first contributions.
+- Explain how newcomers can reach out to a mentor if interested.
 
 Community Events:
 ^^^^^^^^^^^^^^^^^
@@ -91,5 +92,6 @@ Best regards,
 Amir Feizpour
 
 Sherpa Project
-`Repo <https://github.com/Aggregate-Intellect/sherpa>`
-sherpa@ai.science
+
+- `Repo <https://github.com/Aggregate-Intellect/sherpa>`__
+- email: sherpa@ai.science
