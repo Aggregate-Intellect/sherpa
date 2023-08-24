@@ -1,1 +1,3 @@
-sphinxawesome-theme
+sphinx
+sphinx-book-theme
+sphinx-design
