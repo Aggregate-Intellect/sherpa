@@ -2,6 +2,7 @@ import json
 import logging
 from os import environ
 from typing import List, Optional
+import config as cfg
 
 import openai
 from langchain.chains.llm import LLMChain
@@ -51,7 +52,8 @@ class TaskAgent:
         self.loop_count = 0
         self.ai_id = ai_id
         self.previous_message = self.process_chat_history(previous_messages)
-        self.logger = []  # added by JF
+        self.logger = []  
+        self.previous_action = ""
 
         self.output_processors = [md_link_to_slack]
 
@@ -88,6 +90,169 @@ class TaskAgent:
             feedback_tool=human_feedback_tool,
             max_iterations=max_iterations,
         )
+
+    def chain_run(self, task, user_input):
+        try:
+            assistant_reply = self.action_planner.select_action(
+                self.previous_message, self.memory, task=task, user_input=user_input
+            )
+        except openai.error.APIError as e:
+            return f"OpenAI API returned an API Error: {e}"
+        except openai.error.APIConnectionError as e:
+            return f"Failed to connect to OpenAI API: {e}"
+        except openai.error.RateLimitError as e:
+            return f"OpenAI API request exceeded rate limit: {e}"
+        except openai.error.AuthenticationError as e:
+            return f"OpenAI API failed authentication or incorrect token: {e}"
+        except openai.error.Timeout as e:
+            return f"OpenAI API Timeout error: {e}"
+        except openai.error.ServiceUnavailableError as e:
+            return f"OpenAI API Service unavailable: {e}"
+        except openai.error.InvalidRequestError as e:
+            return f"OpenAI API invalid request error: {e}"
+        
+        return assistant_reply
+
+    def loop_chain_run(self, task): 
+        user_input = (
+            "Determine which next command to use. "
+            "and respond using the JSON format specified above without any extra text."
+            "\n JSON Response: \n"
+        )
+        
+        assistant_reply = self.chain_run(task, user_input)
+        return assistant_reply
+        
+    def last_chain_run(self, task):
+        user_input = (
+            "Use the above information to respond to the user's message: "
+            f"\n{task}\n\n"
+            f"If you use any resource, then create inline citation by "
+            "adding the source link of the reference document at the of the "
+            "sentence. Only use the link given in the reference document. "
+            "DO NOT create link by yourself. DO NOT include citation if the "
+            " resource is not necessary. only write text but NOT the JSON "
+            "format specified above. \nResult:"
+        )
+        
+        assistant_reply = self.chain_run(task, user_input)
+        try:
+            result = json.loads(assistant_reply)
+            if (
+                "command" in result
+                and "args" in result["command"]
+                and "response" in result["command"]["args"]
+            ):
+                result = result["command"]["args"]["response"]
+            else:
+                # print(result)
+                result = str(result)
+        except json.JSONDecodeError:
+            result = assistant_reply
+
+        return self.process_output(result)
+        
+    def update_logger(self, assistant_reply):
+        logger_step = {"Step": f"{self.loop_count}/{self.max_iterations}"} 
+        try:
+            reply_json = json.loads(assistant_reply)
+            logger_step["reply"] = reply_json
+        except json.JSONDecodeError:
+            logger_step["reply"] = assistant_reply  # last reply is a string
+        self.logger.append(logger_step)
+        return None 
+        
+    def reformulate_action(self, task, assistant_reply):
+        
+        action = self.output_parser.parse(assistant_reply)
+        print("action:", action)
+        if action == self.previous_action:
+            if action.name == "Search" or action.name == "Context Search":
+                print(
+                    "Action name: ", action.name, "\nStart reformulating the query"
+                )
+                instruction = (
+                    f"You want to search for useful information to answer the query: {task}."
+                    f"The original query is: {action.args['query']}"
+                    f"Reformulate the query so that it can be used to search for relevant information."
+                    f"Only return one query instead of multiple queries."
+                    f"Reformulated query:\n\n"
+                )
+                openai.api_key = cfg.OPENAI_API_KEY
+                response = openai.Completion.create(
+                    engine="text-davinci-003",
+                    prompt=" ".join(str(i) for i in self.previous_message)
+                    + "\n"
+                    + instruction,
+                    temperature=0,  # make this low for predictable outcome
+                    max_tokens=1024,
+                    top_p=1,
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                )
+                reformulated_query = response["choices"][0]["text"]
+                action.args["query"] = reformulated_query
+                
+        return action
+
+    def observations_from_actions(self, action):
+        """_summary_
+
+        Args:
+            action (_type_): _description_
+
+        Returns:
+            Result: Formatted return message
+        """
+        tools = {t.name: t for t in self.tools}
+        if action.name == "finish":
+            self.loop_count = self.max_iterations
+            result = "Finished task. "
+        elif action.name in tools:
+            tool = tools[action.name]
+
+            if tool.name == "UserInput":
+                return {"type": "user_input", "query": action.args["query"]}
+
+            try:
+                observation = tool.run(action.args)
+            except ValidationError as e:
+                observation = (
+                    f"Validation Error in args: {str(e)}, args: {action.args}"
+                )
+            except Exception as e:
+                observation = (
+                    f"Error: {str(e)}, {type(e).__name__}, args: {action.args}"
+                )
+            result = f"Command {tool.name} returned: {observation}"
+            
+        elif action.name == "ERROR":
+            result = f"Error: {action.args}. "
+        else:
+            result = (
+                f"Unknown command '{action.name}'. "
+                f"Please refer to the 'COMMANDS' list for available "
+                f"commands and only respond in the specified JSON format."
+            )
+        self.previous_action = action  # update previous_action
+        
+        return result 
+        
+    def save_previous_messages(self, assistant_reply, result):
+        memory_to_add = (
+            f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
+        )
+        
+        if self.feedback_tool is not None: # are we actually using this?
+            feedback = f"\n{self.feedback_tool.run('Input: ')}"
+            if feedback in {"q", "stop"}:
+                print("EXITING")
+                return "EXITING"
+            memory_to_add += feedback
+
+        # self.memory.add_documents([Document(page_content=memory_to_add)])
+        self.previous_message.append(HumanMessage(content=memory_to_add))
+        return None
 
     def run(self, task: str) -> str:
         user_input = (
