@@ -50,7 +50,7 @@ class TaskAgent:
         self.loop_count = 0
         self.ai_id = ai_id
         self.previous_message = self.process_chat_history(previous_messages)
-        self.logger = []  
+        self.command_log = []  
         self.previous_action = ""
 
         self.output_processors = [md_link_to_slack]
@@ -157,7 +157,7 @@ class TaskAgent:
             logger_step["reply"] = reply_json
         except json.JSONDecodeError:
             logger_step["reply"] = assistant_reply  # last reply is a string
-        self.logger.append(logger_step)
+        self.command_log.append(logger_step)
         return None 
         
     def reformulate_action(self, task, assistant_reply):
@@ -308,7 +308,7 @@ class TaskAgent:
                 logger_step["reply"] = reply_json
             except json.JSONDecodeError:
                 logger_step["reply"] = assistant_reply  # last reply is a string
-            self.logger.append(logger_step)
+            self.command_log.append(logger_step)
             # return if maximum itertation limit is reached
             result = ""
             if loop_count >= self.max_iterations:
@@ -406,7 +406,7 @@ class TaskAgent:
 
     def set_user_input(self, user_input: str):
         result = f"Command UserInput returned: {user_input}"
-        assistant_reply = self.logger.get_full_messages()[-1].content
+        assistant_reply = self.command_log.get_full_messages()[-1].content
         memory_to_add = f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
 
         self.memory.add_documents([Document(page_content=memory_to_add)])
