@@ -92,8 +92,8 @@ def get_response(question, previous_messages):
         question = question.replace("-verbose", "")
         response = task_agent.run(question)
         agent_log = (
-            task_agent.logger
-        )  # logger is updated after running task_agent.run(question)
+            task_agent.command_log
+        )  # command_log is updated after running task_agent.run(question)
         try:  # in case log_formatter fails
             verbose_message = log_formatter(agent_log)
         except:
@@ -106,8 +106,8 @@ def get_response(question, previous_messages):
         question = question.replace("-verbose", "")
         response = task_agent.run(question)
         agent_log = (
-            task_agent.logger
-        )  # logger is updated after running task_agent.run(question)
+            task_agent.command_log
+        )  # command_log is updated after running task_agent.run(question)
         try:  # in case log_formatter fails
             verbose_message = show_commands_only(agent_log)
         except:
@@ -180,21 +180,21 @@ def event_test(client, say, event):
     if VERBOSE_DEFAULT: # Change this to false to revert back
         say("💡Sherpa is thinking... ", thread_ts= thread_ts)
         while True: 
-            logging.info(f"Loop_count ==> {task_agent.loop_count}")
-            logging.info("Calling --> loop_chain_run")
+            logger.info(f"Loop_count ==> {task_agent.loop_count}")
+            logger.info("Calling --> loop_chain_run")
 
             assistant_reply = task_agent.loop_chain_run(question_cleaned)
 
             task_agent.update_logger(assistant_reply)
 
-            log = task_agent.logger[task_agent.loop_count]
+            log = task_agent.command_log[task_agent.loop_count]
 
             if isinstance(log, dict):  # check if log is dictionary
                 try:
                     command_json = log["reply"]["command"]
                 except Exception as e:
                     print(f"Error in parsing log: {e}")
-                    logging.error(
+                    logger.error(
                         f"Try parsing log with `log['reply']['command']` \n Error: {e}"
                     )
             else:
@@ -202,8 +202,8 @@ def event_test(client, say, event):
 
             # triggered when agent finished thought process before reaching max iterations
             if command_json["name"] == "finish" or "response" in command_json["args"]:
-                logging.info("Thought Process Finished!")
-                logging.debug(f"{command_json = }") # set logging level to DEBUG to see
+                logger.info("Thought Process Finished!")
+                logger.debug(f"{command_json = }") # set logger level to debug to print this
                 say("```Thought process finished```", thread_ts=thread_ts)
                 task_agent.loop_count = task_agent.max_iterations
             else:
@@ -218,24 +218,24 @@ def event_test(client, say, event):
                     verbose_message = (
                         f"```Step: {str(step_counter)} {str(command_message)}```"
                     )
-                    logging.debug(verbose_message) # set logging level to DEBUG to see
+                    logger.debug(verbose_message) # set logger level to debug to print this
                     say(verbose_message, thread_ts=thread_ts)
                 except Exception as e:
                     # I find this exception never gets triggered
                     print(f"\nError in parsing log: {e}")
-                    logging.error(f"Error in parsing log: {e}")
+                    logger.error(f"Error in parsing log: {e}")
 
             result = ""  # This line is necessary, but I don't understand why >.<
             
             # this is triggered if the loop reaches max iteration
             if task_agent.loop_count >= task_agent.max_iterations:
-                logging.debug("Calling --> Last Chain run")
+                logger.debug("Calling --> Last Chain run")
                 say(task_agent.last_chain_run(question_cleaned), thread_ts=thread_ts)
                 break
 
-            logging.info("Calling --> reformulate_actions")
+            logger.info("Calling --> reformulate_actions")
             action = task_agent.reformulate_action(question_cleaned, assistant_reply)
-            logging.info("Calling --> observations_from_actions")
+            logger.info("Calling --> observations_from_actions")
             result = task_agent.observations_from_actions(action)
             task_agent.save_previous_messages(assistant_reply, result)
 
@@ -330,10 +330,10 @@ if __name__ == "__main__":
 # ---- add this for verbose output --- #
 
 
-def log_formatter(logs):
-    """Formats the logger into readable string"""
+def log_formatter(command_logs):
+    """Formats the command_log into readable string"""
     log_strings = []
-    for log in logs:
+    for log in command_logs:
         reply = log["reply"]
         if "thoughts" in reply:
             # reply = json.loads(reply)
@@ -356,10 +356,10 @@ def log_formatter(logs):
     return log_string
 
 
-def show_commands_only(logs):
+def show_commands_only(command_logs):
     """Modified version of log_formatter that only shows commands"""
     log_strings = []
-    for log in logs:
+    for log in command_logs:
         reply = log["reply"]
         if "command" in reply:
             # reply = json.loads(reply)
