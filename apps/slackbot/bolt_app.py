@@ -246,27 +246,6 @@ def event_test(client, say, event):
         response = task_agent.run(question_cleaned)
         say(response, thread_ts=thread_ts)
 
-# @app.event("app_mention")
-# def event_test(client, say, event):
-#     question = event["text"]
-#     thread_ts = event.get("thread_ts", None) or event["ts"]
-#     replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
-#     previous_messages = replies["messages"][:-1]
-
-#     # used to reconstruct the question. if the question contains a link recreate
-#     # them so that they contain scraped and summerized content of the link
-#     reconstructor = PromptReconstructor(
-#         question=question, slack_message=[replies["messages"][-1]]
-#     )
-#     question = reconstructor.reconstruct_prompt()
-
-#     results, verbose_message = get_response(question, previous_messages)
-#     say(results, thread_ts=thread_ts)
-
-#     if contains_verbose(question):
-#         say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
-
-
 @app.event("app_home_opened")
 def update_home_tab(client, event):
     try:
