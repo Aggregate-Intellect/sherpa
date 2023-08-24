@@ -90,6 +90,17 @@ class TaskAgent:
         )
 
     def chain_run(self, task, user_input):
+        """This method is used in self.loop_chain_run
+        and self.last_chain_run. Implements action planning
+        LLM chain.
+
+        Args:
+            task (str): question or query from user
+            user_input (str): added prompt for steering LLM
+
+        Returns:
+            JSON string: response from action_planner
+        """
         try:
             assistant_reply = self.action_planner.select_action(
                 self.previous_message, self.memory, task=task, user_input=user_input
@@ -112,6 +123,15 @@ class TaskAgent:
         return assistant_reply
 
     def loop_chain_run(self, task): 
+        """Calls self.chain_run with specified user_input.
+        Used for intermediate steps in the thought process loop.
+        
+        Args:
+            task (str): question or query from user
+
+        Returns:
+            JSON string: result from self.chain_run
+        """
         user_input = (
             "Determine which next command to use. "
             "and respond using the JSON format specified above without any extra text."
@@ -122,6 +142,15 @@ class TaskAgent:
         return assistant_reply
         
     def last_chain_run(self, task):
+        """Calls self.chain_run with specified user_input.
+        Used for last step in the thought process loop.
+        
+        Args:
+            task (str): question or query from user
+
+        Returns:
+            JSON string: result from self.chain_run
+        """
         user_input = (
             "Use the above information to respond to the user's message: "
             f"\n{task}\n\n"
@@ -151,6 +180,14 @@ class TaskAgent:
         return self.process_output(result)
         
     def update_logger(self, assistant_reply):
+        """Updates the command_log attribute.
+
+        Args:
+            assistant_reply (dict or str): output from self.loop_chain_run
+
+        Returns:
+            None
+        """
         logger_step = {"Step": f"{self.loop_count}/{self.max_iterations}"} 
         try:
             reply_json = json.loads(assistant_reply)
@@ -161,7 +198,16 @@ class TaskAgent:
         return None 
         
     def reformulate_action(self, task, assistant_reply):
-        
+        """Detects if command is repeated, then reformulate the 
+        prompt to steer it towards a different action that's productive
+
+        Args:
+            task (str): question or query from user
+            assistant_reply (dict or str): output from self.loop_chain_run
+
+        Returns:
+            str: reformulated query 
+        """
         action = self.output_parser.parse(assistant_reply)
         print("action:", action)
         if action == self.previous_action:
@@ -194,13 +240,14 @@ class TaskAgent:
         return action
 
     def observations_from_actions(self, action):
-        """_summary_
+        """Writes an observation based on the last action performed by
+        agent, then saves this observation to previous messages.
 
         Args:
-            action (_type_): _description_
+            action (str): output from self.reformulate_action
 
         Returns:
-            Result: Formatted return message
+            str: observation string
         """
         tools = {t.name: t for t in self.tools}
         if action.name == "finish":
@@ -237,6 +284,15 @@ class TaskAgent:
         return result 
         
     def save_previous_messages(self, assistant_reply, result):
+        """_summary_
+
+        Args:
+            assistant_reply (dict or str): output from self.loop_chain_run
+            result (str): observation output from self.observations_from_actions
+
+        Returns:
+            None
+        """
         memory_to_add = (
             f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
         )
@@ -253,6 +309,15 @@ class TaskAgent:
         return None
 
     def run(self, task: str) -> str:
+        """Runs entire thought loop process of agent.
+
+        Args:
+            task (str): question or query from user
+
+        Returns:
+            str: final response from agent
+        """
+        
         user_input = (
             "Determine which next command to use. "
             "and respond using the JSON format specified above without any extra text."
@@ -405,6 +470,12 @@ class TaskAgent:
             previous_action = action
 
     def set_user_input(self, user_input: str):
+        """Not sure what this does, and I've never seen it used...
+        @Percy can comment on this.
+
+        Args:
+            user_input (str): _description_
+        """
         result = f"Command UserInput returned: {user_input}"
         assistant_reply = self.command_log.get_full_messages()[-1].content
         memory_to_add = f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
@@ -412,6 +483,14 @@ class TaskAgent:
         self.memory.add_documents([Document(page_content=memory_to_add)])
 
     def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:
+        """Cleans the chat history from certain strings
+
+        Args:
+            messages (List[dict])
+
+        Returns:
+            List[BaseMessage]
+        """
         results = []
 
         for message in messages:
@@ -422,7 +501,6 @@ class TaskAgent:
             message_cls = AIMessage if message["user"] == self.ai_id else HumanMessage
             # replace the at in the message with the name of the bot
             text = message["text"].replace(f"@{self.ai_id}", f"@{self.ai_name}")
-            # added by JF
             text = text.split("#verbose", 1)[0]  # remove everything after #verbose
             text = text.replace("-verbose", "")  # remove -verbose if it exists
             results.append(message_cls(content=text))
