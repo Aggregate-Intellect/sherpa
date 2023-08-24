@@ -8,7 +8,6 @@ class Reflection():
         self.action_list = action_list
         prompt = PromptGenerator()
         self.format = prompt.response_format
-        self.commands = prompt._generate_command_string
         self.commands = [
                 f"{i + 1}. {prompt._generate_command_string(item)}"
                 for i, item in enumerate(tools)
