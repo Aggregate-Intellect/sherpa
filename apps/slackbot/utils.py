@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 import re
 from typing import List
 from urllib.parse import urlparse
@@ -11,7 +11,6 @@ from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredP
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 
-logger = logging.getLogger(__name__)
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -111,7 +110,7 @@ def count_string_tokens(string: str, model_name: str) -> int:
     return len(encoding.encode(string))
 
 
-def chunk_and_summerize(text_data: str, question: str, open_ai_key: str, link: str):
+def chunk_and_summarize(text_data: str, question: str, open_ai_key: str, link: str):
     llm = OpenAI(temperature=0.9, openai_api_key=open_ai_key)
     instruction = (
         "include any information that can be used to answer the "
@@ -123,7 +122,7 @@ def chunk_and_summerize(text_data: str, question: str, open_ai_key: str, link: s
     chunked_text = text_splitter.split_text(text_data)
     chunk_summary = []
     for text in chunked_text:
-        summerized = llm.predict(
+        summarized = llm.predict(
             f"""Write a concise summary of the following text
             {instruction}:
             "\n\n\n
@@ -131,6 +130,6 @@ def chunk_and_summerize(text_data: str, question: str, open_ai_key: str, link: s
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as"""
         )
-        chunk_summary.append(summerized)
+        chunk_summary.append(summarized)
 
     return " ".join(chunk_summary)

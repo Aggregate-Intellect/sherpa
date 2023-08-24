@@ -11,7 +11,7 @@ Usage:
     another_variable = cfg.ANOTHER_ENVIRONMENT_VARIABLE
 """
 
-import logging
+from loguru import logger
 import sys
 from os import environ
 
@@ -33,15 +33,16 @@ PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
 PINECONE_ENV = environ.get("PINECONE_ENV")
 PINECONE_INDEX = environ.get("PINECONE_INDEX")
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
-LOGLEVEL = environ.get("LOG_LEVEL", "INFO").upper()
+LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
+
+# Configure logger. To get JSON serialization, set serialize=True.
+# See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
+logger.remove(0) # remove the default handler configuration
+logger.add(sys.stderr, level=LOG_LEVEL, serialize=False)
+
 
 # `this` is a pointer to the module object instance itself.
 this = sys.modules[__name__]
-
-# configure logger
-logging.basicConfig(level=LOGLEVEL)
-logger = logging.getLogger(__name__)
-
 
 # Ensure all mandatory environment variables are set, otherwise exit
 if None in [

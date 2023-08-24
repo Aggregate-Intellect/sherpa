@@ -3,7 +3,7 @@
 #  Importing necessary modules
 ##############################################
 
-import logging
+from loguru import logger
 
 from flask import Flask, request
 from langchain.chat_models import ChatOpenAI
@@ -18,7 +18,6 @@ from vectorstores import ConversationStore, LocalChromaStore
 
 VERBOSE_DEFAULT = True  # set the verbose default behaviour
 
-logger = logging.getLogger(__name__)
 #######################################################################################
 # Set up Slack client and Chroma database
 #######################################################################################
@@ -169,7 +168,7 @@ def event_test(client, say, event):
     previous_messages = replies["messages"][:-1]
 
     # used to reconstruct the question. if the question contains a link recreate
-    # them so that they contain scraped and summerized content of the link
+    # them so that they contain scraped and summarized content of the link
     reconstructor = PromptReconstructor(
         question=question, slack_message=[replies["messages"][-1]]
     )

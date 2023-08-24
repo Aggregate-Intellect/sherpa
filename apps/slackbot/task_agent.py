@@ -1,5 +1,5 @@
 import json
-import logging
+from loguru import logger
 from os import environ
 from typing import List, Optional
 import config as cfg
@@ -18,8 +18,6 @@ from action_planner import SelectiveActionPlanner
 from action_planner.base import BaseActionPlanner
 from output_parser import BaseTaskOutputParser, TaskOutputParser
 from post_processors import md_link_to_slack
-
-logger = logging.getLogger(__name__)
 
 
 class TaskAgent:

@@ -1,5 +1,5 @@
-import logging
 import os
+from loguru import logger
 from typing import Any
 
 import requests
@@ -12,8 +12,6 @@ from langchain.vectorstores.base import VectorStoreRetriever
 from typing_extensions import Literal
 
 import config as cfg
-
-logger = logging.getLogger(__name__)
 
 
 def get_tools(memory):
@@ -40,8 +38,8 @@ def get_tools(memory):
 class SearchTool(BaseTool):
     name = "Search"
     description = (
-        "Access the internet to search for the information, only use this tool when "
-        "you cannot find the informaiton using internal search."
+        "Access the internet to search for the information. Only use this tool when "
+        "you cannot find the information using internal search."
     )
     api_wrapper: GoogleSerperAPIWrapper
 
