@@ -5,15 +5,18 @@
 
 from loguru import logger
 
-from flask import Flask, request
+from flask import Flask, jsonify, request
 from langchain.chat_models import ChatOpenAI
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 
 import config as cfg
 from scrape.prompt_reconstructor import PromptReconstructor
+from sherpa_base_chat_model import SherpaChatOpenAI
 from task_agent import TaskAgent
 from tools import get_tools
+from user.user_usage_tracker import UserUsageTracker
+from utils import count_string_tokens
 from vectorstores import ConversationStore, LocalChromaStore
 
 #######################################################################################
@@ -54,8 +57,8 @@ def contains_verbosex(query: str) -> bool:
     return "-verbosex" in query.lower()
 
 
-def get_response(question, previous_messages):
-    llm = ChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120)
+def get_response(question, previous_messages, user_id, team_id):
+    llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120 , user_id=user_id , team_id=team_id)
 
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database
@@ -123,21 +126,43 @@ def get_response(question, previous_messages):
 def event_test(client, say, event):
     question = event["text"]
     thread_ts = event.get("thread_ts", None) or event["ts"]
-    replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
+    replies = client.conversations_replies(
+        channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
 
-    # used to reconstruct the question. if the question contains a link recreate
-    # them so that they contain scraped and summarized content of the link
-    reconstructor = PromptReconstructor(
-        question=question, slack_message=[replies["messages"][-1]]
-    )
-    question = reconstructor.reconstruct_prompt()
-    results, verbose_message = get_response(question, previous_messages)
-   
-    say(results, thread_ts=thread_ts)
+    input_message = replies['messages'][-1]
+    user_id = input_message['user']
+    team_id = input_message['team']
+    combined_id = user_id+"_"+team_id
 
-    if contains_verbose(question):
-        say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
+    user_db = UserUsageTracker(max_daily_token=20000)
+
+    usage_cheker = user_db.check_usage(
+        user_id=user_id, combined_id=combined_id, token_ammount=count_string_tokens(question, "gpt-3.5-turbo"))
+    can_excute = usage_cheker['can_excute']
+
+    user_db.close_connection()
+    # only will be excuted if the user don't pass the daily limit
+    # the daily limit is calculated based on the user's usage in a workspace 
+    # users with a daily limitation can be allowed to use in a different workspace
+    if can_excute:
+        # used to reconstruct the question. if the question contains a link recreate
+        # them so that they contain scraped and summerized content of the link
+        reconstructor = PromptReconstructor(
+            question=question, slack_message=[replies["messages"][-1]]
+        )
+        question = reconstructor.reconstruct_prompt(
+            user_id=user_id, team_id=team_id)
+
+        results, verbose_message = get_response(question=question, previous_messages=previous_messages,
+                                                team_id=team_id, user_id=user_id)
+        say(results, thread_ts=thread_ts)
+
+        if contains_verbose(question):
+            say(f"#verbose message: \n```{verbose_message}```",
+                thread_ts=thread_ts)
+    else:
+        say("I apologize for the inconvenience, but it seems that you have exceeded your daily token limit. As a result, you will need to try again after 24 hours. Thank you for your understanding.",thread_ts=thread_ts)
 
 
 @app.event("app_home_opened")
@@ -203,6 +228,27 @@ def slack_events():
     return handler.handle(request)
 
 
+@flask_app.route('/whitelist/add', methods=['POST'])
+def add_to_whitelist():
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    db = UserUsageTracker()
+    if user_id:
+        db.add_to_whitelist(user_id)
+        return jsonify({'message': f'User {user_id} added to whitelist.'}), 201
+    else:
+        return jsonify({'error': 'User ID not provided.'}), 400
+
+
+@flask_app.route('/whitelists', methods=['GET'])
+def get_all_whitelists():
+    db = UserUsageTracker()
+
+    data = db.get_all_whitelisted_ids()
+    return jsonify({'whitelisted_ids': data})
+
+
 @flask_app.route("/hello", methods=["GET"])
 def hello():
     return "OK"
@@ -216,7 +262,8 @@ if __name__ == "__main__":
 
     # chain = createIndex("files")
     logger.info(
-        "App init: starting HTTP server on port {port}".format(port=cfg.SLACK_PORT)
+        "App init: starting HTTP server on port {port}".format(
+            port=cfg.SLACK_PORT)
     )
     flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT, debug=cfg.FLASK_DEBUG)
     # SocketModeHandler(app, cfg.SLACK_APP_TOKEN).start()

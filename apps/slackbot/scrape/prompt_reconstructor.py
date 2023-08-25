@@ -14,7 +14,7 @@ class PromptReconstructor:
         self.question = question
         self.slack_message = slack_message
 
-    def reconstruct_prompt(self):
+    def reconstruct_prompt(self, user_id=None,  team_id=None):
         question = self.question
         last_message = self.slack_message
         last_message_links = get_link_from_slack_client_conversation(last_message)
@@ -43,6 +43,8 @@ class PromptReconstructor:
                 if scraped_data["status"] == 200:
                     chunk_summary = chunk_and_summarize(
                         link=link,
+                        user_id=user_id,
+                        team_id=team_id,
                         open_ai_key=cfg.OPENAI_API_KEY,
                         question=question,
                         text_data=scraped_data["data"],
@@ -55,6 +57,8 @@ class PromptReconstructor:
                         chunk_summary = chunk_and_summarize(
                             link=link,
                             open_ai_key=cfg.OPENAI_API_KEY,
+                            user_id=user_id,
+                            team_id=team_id,
                             question=question,
                             text_data=chunk_summary,
                         )
