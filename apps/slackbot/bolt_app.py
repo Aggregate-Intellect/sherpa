@@ -16,10 +16,10 @@ from database.user_usage_tracker import UserUsageTracker
 from models.sherpa_base_chat_model import SherpaChatOpenAI
 from routes.whitelist import whitelist_blueprint
 from scrape.prompt_reconstructor import PromptReconstructor
-
+from sherpa_base_chat_model import SherpaChatOpenAI
 from task_agent import TaskAgent
 from tools import get_tools
-
+from user.user_usage_tracker import UserUsageTracker
 from utils import count_string_tokens
 from vectorstores import ConversationStore, LocalChromaStore
 from verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
@@ -72,6 +72,8 @@ def get_response(
 ):
     llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120,
                            user_id=user_id, team_id=team_id, temperature=cfg.TEMPRATURE)
+    
+
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database
         memory = ConversationStore.get_vector_retrieval(
@@ -143,22 +145,24 @@ def event_test(client, say, event):
         channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
 
-   # check if the verbose is on
+
+    # check if the verbose is on
     verbose_on = contains_verbose(question)
     verbose_logger = (
-        SlackVerboseLogger(say, thread_ts) if verbose_on else DummyVerboseLogger()
+    SlackVerboseLogger(
+        say, thread_ts) if verbose_on else DummyVerboseLogger()
     )
-
     input_message = replies['messages'][-1]
     user_id = input_message['user']
     team_id = input_message['team']
     combined_id = user_id+"_"+team_id
 
-    user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
+    user_db = UserUsageTracker(max_daily_token=20000)
 
     usage_cheker = user_db.check_usage(
         user_id=user_id, combined_id=combined_id, token_ammount=count_string_tokens(question, "gpt-3.5-turbo"))
     can_excute = usage_cheker['can_excute']
+
     user_db.close_connection()
     # only will be excuted if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
@@ -170,14 +174,15 @@ def event_test(client, say, event):
             question=question, slack_message=[replies["messages"][-1]]
         )
         question = reconstructor.reconstruct_prompt(
-            user_id=user_id, team_id=team_id ,verbose_logger=verbose_logger)
+            user_id=user_id, team_id=team_id)
 
         results, verbose_message = get_response(question=question, previous_messages=previous_messages,
-                                                team_id=team_id, user_id=user_id)
+                                                team_id=team_id, user_id=user_id , verbose_logger=verbose_logger)
         say(results, thread_ts=thread_ts)
 
         if verbose_on:
-            say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
+            say(f"#verbose message: \n```{verbose_message}```",
+            thread_ts=thread_ts)
     else:
         say(cfg.DAILY_LIMIT_REACHED_MESSAGE, thread_ts=thread_ts)
 
@@ -244,6 +249,27 @@ if cfg.FLASK_DEBUG:
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
     return handler.handle(request)
+
+
+@flask_app.route('/whitelist/add', methods=['POST'])
+def add_to_whitelist():
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    db = UserUsageTracker()
+    if user_id:
+        db.add_to_whitelist(user_id)
+        return jsonify({'message': f'User {user_id} added to whitelist.'}), 201
+    else:
+        return jsonify({'error': 'User ID not provided.'}), 400
+
+
+@flask_app.route('/whitelists', methods=['GET'])
+def get_all_whitelists():
+    db = UserUsageTracker()
+
+    data = db.get_all_whitelisted_ids()
+    return jsonify({'whitelisted_ids': data})
 
 
 @flask_app.route("/hello", methods=["GET"])
