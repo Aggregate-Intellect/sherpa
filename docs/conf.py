@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'LLM Live Book'
+project = 'Sherpa - Thinking Companion'
 copyright = '2023, Amir Feizpour et al'
 author = 'Amir Feizpour et al'
 
@@ -58,7 +58,7 @@ html_theme_options = {
     "show_toc_level": 3,
     "toc_title": "In This Page:",
 }
-html_title = "LLM Live Book"
+html_title = "Sherpa - Thinking Companion"
 html_logo = "Open Book/cover_image.png"
 html_favicon = ""
 
