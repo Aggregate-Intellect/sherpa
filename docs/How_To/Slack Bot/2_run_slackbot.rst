@@ -179,7 +179,7 @@ and `Flask: Debugging Application Errors <https://flask.palletsprojects.com/en/2
 
 
 Reference
-=========
+~~~~~~~~~
 
 Once you have the chatbot running you can start interacting with it by mentioning the app in a Slack 
 channel. See :doc:`Talk to Sherpa <0_slack_bot_intro>` for how to do this.

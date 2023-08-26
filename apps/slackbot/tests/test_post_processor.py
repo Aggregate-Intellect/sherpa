@@ -16,22 +16,22 @@ def test_slack_link() -> None:
         "even exhibit a rudimentary understanding of language. The emergent behavior"
         " of large language models is a result of the complex dynamics and rich "
         "interactions within the model architecture. "
-        "[source](https://llm-live-book.readthedocs.io/en/latest/KnowledgeOps/rise_of_agents.html)"
+        "[source](https://sherpa-ai.readthedocs.io/en/latest/KnowledgeOps/rise_of_agents.html)"
     )
 
     result = md_link_to_slack(test)
     assert (
-        "<https://llm-live-book.readthedocs.io/en/latest/KnowledgeOps/rise_of_agents.html|source>"
+        "<https://sherpa-ai.readthedocs.io/en/latest/KnowledgeOps/rise_of_agents.html|source>"
         in result
     )
 
 
 def test_slack_link_nested() -> None:
     """Test that the Slack links are converted correctly."""
-    test = "[^1^]: [LLamaIndex Documentation](https://llm-live-book.readthedocs.io/en/latest/LLM%20Agents/llm_tools_use.html)"
+    test = "[^1^]: [LLamaIndex Documentation](https://sherpa-ai.readthedocs.io/en/latest/LLM%20Agents/llm_tools_use.html)"
 
     result = md_link_to_slack(test)
     assert (
         result
-        == "[^1^]: <https://llm-live-book.readthedocs.io/en/latest/LLM%20Agents/llm_tools_use.html|LLamaIndex Documentation>"
+        == "[^1^]: <https://sherpa-ai.readthedocs.io/en/latest/LLM%20Agents/llm_tools_use.html|LLamaIndex Documentation>"
     )

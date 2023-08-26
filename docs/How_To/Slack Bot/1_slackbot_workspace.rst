@@ -1,12 +1,13 @@
-Set up Sherpa SlackBot in your Own Workspace
-========================================
+Set up Sherpa Slackbot in your Own Workspace
+============================================
+
 This tutorial describes how to run the Sherpa SlackBot in your own Slack Workspace. 
 We will start by installing the dependencies necessary for the SlackBot. Then we will create a 
 Slack APP by in a new workspace. Finally, we will connect the SlackBot to the Sherpa backend
 so that you can talk to the SlackBot. 
 
 Install Slack App
-**********************
+*****************
 
 In order to make it easier to test the Slack APP, we will create a test Slack Workspace. Skip this step if you already have a Slack Workspace that you can play with. 
 
@@ -146,6 +147,7 @@ Now we are all set! You can type any message and add `@Sherpa` (or the name of y
 Have fun! And please join our `slack channel <https://aisc-to.slack.com/ssb/redirect>`__ if you are interested in contributing to this project!
 
 Further Reading
-****************************
+***************
+
 * `Slack API <https://api.slack.com/>`__
 * `SlackBot <https://github.com/Aggregate-Intellect/sherpa/tree/main/apps/slackbot>`__
