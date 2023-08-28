@@ -206,7 +206,9 @@ class TaskAgent:
                     observation = tool.run(action.args)
 
                     for tool_output_parser in self.tool_output_parsers:
-                        observation = tool_output_parser.parse_output(observation)
+                        observation = tool_output_parser.parse_output(
+                            observation, tool_output=True
+                        )
                 except ValidationError as e:
                     observation = (
                         f"Validation Error in args: {str(e)}, args: {action.args}"
