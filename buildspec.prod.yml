@@ -18,6 +18,8 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
+      - echo $dockerusername
+      - echo $password
       - docker login --username $dockerusername --password $password
       - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest ./apps/slackbot
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
