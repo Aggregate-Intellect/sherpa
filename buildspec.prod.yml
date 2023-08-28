@@ -6,6 +6,8 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - dockerusername=$(aws secretsmanager get-secret-value --secret-id docker_creds --query 'docker_username' --output text)
+      - password=$(aws secretsmanager get-secret-value --secret-id docker_creds --query 'password' --output text)
       - REPOSITORY_URI=387065515315.dkr.ecr.us-east-1.amazonaws.com/ai/slackbot
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
@@ -16,7 +18,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker login --username aiscience --password 2E9nUhgCB5smmQsa
+      - docker login --username $dockerusername --password $password
       - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest ./apps/slackbot
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
