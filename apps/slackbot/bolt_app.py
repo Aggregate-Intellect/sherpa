@@ -57,8 +57,9 @@ def contains_verbosex(query: str) -> bool:
     return "-verbosex" in query.lower()
 
 
+
 def get_response(question, previous_messages, user_id, team_id):
-    llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120 , user_id=user_id , team_id=team_id)
+    llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120 , user_id=user_id , team_id=team_id ,temperature=0)
 
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database

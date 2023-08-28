@@ -1,1 +1,1 @@
-**To see the documentation, visit: https://llm-live-book.readthedocs.io/**
+**To see the documentation, visit: https://sherpa-ai.readthedocs.io/**
