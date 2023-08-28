@@ -55,7 +55,7 @@ def contains_verbosex(query: str) -> bool:
 
 
 def get_response(question, previous_messages):
-    llm = ChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120)
+    llm = ChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120 , temperature=0)
 
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database
