@@ -3,10 +3,11 @@
 #  Importing necessary modules
 ##############################################
 
-from loguru import logger
+from typing import Dict, List
 
 from flask import Flask, request
 from langchain.chat_models import ChatOpenAI
+from loguru import logger
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 
@@ -15,6 +16,8 @@ from scrape.prompt_reconstructor import PromptReconstructor
 from task_agent import TaskAgent
 from tools import get_tools
 from vectorstores import ConversationStore, LocalChromaStore
+from verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
+from verbose_loggers.base import BaseVerboseLogger
 
 #######################################################################################
 # Set up Slack client and Chroma database
@@ -54,8 +57,12 @@ def contains_verbosex(query: str) -> bool:
     return "-verbosex" in query.lower()
 
 
-def get_response(question, previous_messages):
-    llm = ChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120 , temperature=0)
+def get_response(
+    question: str, previous_messages: List[Dict], verbose_logger: BaseVerboseLogger
+):
+    llm = ChatOpenAI(
+        openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120, temperature=0
+    )
 
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database
@@ -82,6 +89,7 @@ def get_response(question, previous_messages):
         tools=tools,
         previous_messages=previous_messages,
         llm=llm,
+        verbose_logger=verbose_logger,
     )
 
     if contains_verbosex(query=question):
@@ -126,17 +134,23 @@ def event_test(client, say, event):
     replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
 
+    # check if the verbose is on
+    verbose_on = contains_verbose(question)
+    verbose_logger = (
+        SlackVerboseLogger(say, thread_ts) if verbose_on else DummyVerboseLogger()
+    )
+
     # used to reconstruct the question. if the question contains a link recreate
     # them so that they contain scraped and summarized content of the link
     reconstructor = PromptReconstructor(
         question=question, slack_message=[replies["messages"][-1]]
     )
     question = reconstructor.reconstruct_prompt()
-    results, verbose_message = get_response(question, previous_messages)
-   
+    results, verbose_message = get_response(question, previous_messages, verbose_logger)
+
     say(results, thread_ts=thread_ts)
 
-    if contains_verbose(question):
+    if verbose_on:
         say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
 
 
