@@ -3,10 +3,11 @@
 #  Importing necessary modules
 ##############################################
 
-from loguru import logger
+from typing import Dict, List
 
 from flask import Flask, jsonify, request
 from langchain.chat_models import ChatOpenAI
+from loguru import logger
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 
@@ -21,6 +22,8 @@ from tools import get_tools
 
 from utils import count_string_tokens
 from vectorstores import ConversationStore, LocalChromaStore
+from verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
+from verbose_loggers.base import BaseVerboseLogger
 
 
 #######################################################################################
@@ -64,10 +67,11 @@ def contains_verbosex(query: str) -> bool:
     return "-verbosex" in query.lower()
 
 
-def get_response(question, previous_messages, user_id, team_id):
+def get_response(
+    question: str, previous_messages: List[Dict], verbose_logger: BaseVerboseLogger, user_id:str , team_id:str
+):
     llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120,
                            user_id=user_id, team_id=team_id, temperature=cfg.TEMPRATURE)
-
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database
         memory = ConversationStore.get_vector_retrieval(
@@ -93,6 +97,7 @@ def get_response(question, previous_messages, user_id, team_id):
         tools=tools,
         previous_messages=previous_messages,
         llm=llm,
+        verbose_logger=verbose_logger,
     )
 
     if contains_verbosex(query=question):
@@ -138,6 +143,12 @@ def event_test(client, say, event):
         channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
 
+   # check if the verbose is on
+    verbose_on = contains_verbose(question)
+    verbose_logger = (
+        SlackVerboseLogger(say, thread_ts) if verbose_on else DummyVerboseLogger()
+    )
+
     input_message = replies['messages'][-1]
     user_id = input_message['user']
     team_id = input_message['team']
@@ -148,9 +159,6 @@ def event_test(client, say, event):
     usage_cheker = user_db.check_usage(
         user_id=user_id, combined_id=combined_id, token_ammount=count_string_tokens(question, "gpt-3.5-turbo"))
     can_excute = usage_cheker['can_excute']
-    print('####  # # # # # # # # # # #  # # #  #', flush=True)
-    print(usage_cheker)
-    print('####  # # # # # # # # # # #  # # #  #', flush=True)
     user_db.close_connection()
     # only will be excuted if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
@@ -162,15 +170,14 @@ def event_test(client, say, event):
             question=question, slack_message=[replies["messages"][-1]]
         )
         question = reconstructor.reconstruct_prompt(
-            user_id=user_id, team_id=team_id)
+            user_id=user_id, team_id=team_id ,verbose_logger=verbose_logger)
 
         results, verbose_message = get_response(question=question, previous_messages=previous_messages,
                                                 team_id=team_id, user_id=user_id)
         say(results, thread_ts=thread_ts)
 
-        if contains_verbose(question):
-            say(f"#verbose message: \n```{verbose_message}```",
-                thread_ts=thread_ts)
+        if verbose_on:
+            say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
     else:
         say(cfg.DAILY_LIMIT_REACHED_MESSAGE, thread_ts=thread_ts)
 
