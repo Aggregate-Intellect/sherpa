@@ -25,6 +25,8 @@ from output_parser import BaseTaskOutputParser, TaskOutputParser
 from output_parsers import LinkParser, MDToSlackParse
 from post_processors import md_link_to_slack
 from reflection import Reflection
+from verbose_loggers import DummyVerboseLogger
+from verbose_loggers.base import BaseVerboseLogger
 
 
 class TaskAgent:
@@ -39,7 +41,8 @@ class TaskAgent:
         action_planner: BaseActionPlanner,
         output_parser: BaseTaskOutputParser,
         tools: List[BaseTool],
-        previous_messages,
+        previous_messages: List[dict],
+        verbose_logger: BaseVerboseLogger,
         feedback_tool: Optional[HumanInputRun] = None,
         max_iterations: int = 5,
     ):
@@ -50,6 +53,7 @@ class TaskAgent:
         self.llm = llm
         self.output_parser = output_parser
         self.tools = tools
+        self.verbose_logger = verbose_logger
 
         self.action_planner = action_planner
         self.feedback_tool = feedback_tool
@@ -81,6 +85,7 @@ class TaskAgent:
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseTaskOutputParser] = None,
         max_iterations: int = 5,
+        verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         if action_planner is None:
             action_planner = SelectiveActionPlanner(
@@ -97,6 +102,7 @@ class TaskAgent:
             output_parser or TaskOutputParser(),
             tools,
             previous_messages,
+            verbose_logger,
             feedback_tool=human_feedback_tool,
             max_iterations=max_iterations,
         )
@@ -109,6 +115,7 @@ class TaskAgent:
         )
 
         # Interaction Loop
+        self.verbose_logger.log(f"{self.ai_name} is thinking...")
 
         reflection = Reflection(self.llm, self.tools, [])
         while True:
