@@ -1,4 +1,3 @@
-from loguru import logger
 import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
@@ -11,10 +10,10 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.vectorstores.base import VectorStore, VectorStoreRetriever
+from loguru import logger
 
 import config as cfg
 from utils import load_files
-
 
 
 class ConversationStore(VectorStore):
