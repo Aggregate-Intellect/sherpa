@@ -183,3 +183,5 @@ Reference
 
 Once you have the chatbot running you can start interacting with it by mentioning the app in a Slack 
 channel. See :doc:`Talk to Sherpa <0_slack_bot_intro>` for how to do this.
+
+You can also configure a local vector database for the chatbot to use as a context search tool. See :doc:`Setup Local VectorDB with Production Data <4_local_vectordb>`
