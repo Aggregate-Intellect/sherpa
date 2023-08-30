@@ -1,10 +1,10 @@
-from loguru import logger
 import time
 from typing import Any, Callable, List
 
 from langchain.prompts.chat import BaseChatPromptTemplate
 from langchain.schema import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain.vectorstores.base import VectorStoreRetriever
+from loguru import logger
 from pydantic import BaseModel
 
 from prompt_generator import get_prompt

@@ -1,15 +1,14 @@
 import base64
-from loguru import logger
 import re
 
 import pinecone
 import requests
 from dotenv import dotenv_values
 from langchain.embeddings.openai import OpenAIEmbeddings
+from loguru import logger
 
 import config as cfg
-from vectorstores import ConversationStore
-
+from connectors.vectorstores import ConversationStore
 
 
 def get_owner_and_repo(url):
