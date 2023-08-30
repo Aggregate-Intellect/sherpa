@@ -46,7 +46,6 @@ class SearchTool(BaseTool):
     def _run(self, query: str) -> str:
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
-
         # case 1: answerBox in the result dictionary
         if search_results.get("answerBox", False):
             answer_box = search_results.get("answerBox", {})
@@ -95,19 +94,23 @@ class SearchTool(BaseTool):
         for i in range(len(search_results["organic"][:10])):
             r = search_results["organic"][i]
             single_result = (
-                "Description: " + r["title"] + r["snippet"] + "\nLink" + r["link"]
+                "Description: " + r["title"] + r["snippet"] + "\nLink:" + r["link"]
             )
 
             result.append(single_result)
         full_result = "\n".join(result)
 
         # answer = " ".join(snippets)
-        if "knowledgeGraph" in search_results:
+        if (
+            "knowledgeGraph" in search_results
+            and "description" in search_results["knowledgeGraph"]
+            and "descriptionLink" in search_results["knowledgeGraph"]
+        ):
             answer = (
                 "Description: "
                 + search_results["knowledgeGraph"]["title"]
                 + search_results["knowledgeGraph"]["description"]
-                + "\nLink: "
+                + "\nLink:"
                 + search_results["knowledgeGraph"]["descriptionLink"]
             )
             full_result = answer + "\n" + full_result
@@ -129,8 +132,9 @@ class ContextTool(BaseTool):
             result += (
                 "Document"
                 + doc.page_content
-                + "\nLink"
+                + "\nLink:"
                 + doc.metadata.get("source", "")
+                + "\n"
             )
 
         return result
