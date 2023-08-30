@@ -6,7 +6,13 @@ import openai
 from langchain.chains.llm import LLMChain
 from langchain.chat_models.base import BaseChatModel
 from langchain.llms.base import BaseLLM
-from langchain.schema import AIMessage, BaseMessage, Document, HumanMessage
+from langchain.schema import (
+    AIMessage,
+    BaseMessage,
+    Document,
+    HumanMessage,
+    SystemMessage,
+)
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
@@ -16,6 +22,7 @@ from pydantic import ValidationError
 from action_planner import SelectiveActionPlanner
 from action_planner.base import BaseActionPlanner
 from output_parser import BaseTaskOutputParser, TaskOutputParser
+from output_parsers import LinkParser, MDToSlackParse
 from post_processors import md_link_to_slack
 from reflection import Reflection
 from verbose_loggers import DummyVerboseLogger
@@ -56,7 +63,13 @@ class TaskAgent:
         self.previous_message = self.process_chat_history(previous_messages)
         self.logger = []  # added by JF
 
-        self.output_processors = [md_link_to_slack]
+        link_parser = LinkParser()
+        slack_link_paerser = MDToSlackParse()
+
+        self.tool_output_parsers = [link_parser]
+        self.output_parsers = [link_parser, slack_link_paerser]
+        # print(self.full_message_history)
+        # print("message:", self.previous_message)
 
     @classmethod
     def from_llm_and_tools(
@@ -113,14 +126,17 @@ class TaskAgent:
 
             if loop_count >= self.max_iterations:
                 user_input = (
-                    "Use the above information to respond to the user's message: "
+                    "Use the above information to respond to the user's message:"
                     f"\n{task}\n\n"
-                    f"If you use any resource, then create inline citation by "
-                    "adding the source link of the reference document at the of the "
-                    "sentence. Only use the link given in the reference document. "
-                    "DO NOT create link by yourself. DO NOT include citation if the "
-                    " resource is not necessary. only write text but NOT the JSON "
-                    "format specified above. \nResult:"
+                    "If you use any resource, then create inline citation by adding "
+                    " of the reference document at the of the sentence in the format "
+                    "of 'Sentence [DocID]'\n"
+                    "Example:\n"
+                    "Sentence1 [1]. Sentence2. Sentence3 [2].\n"
+                    "Only use the the reference document. DO NOT use any links"
+                    " DO NOT include citation if the resource is not"
+                    "necessary. only write text but not the JSON format specified "
+                    "above. \nResult:"
                 )
 
             # Send message to AI, get response
@@ -152,6 +168,8 @@ class TaskAgent:
             except json.JSONDecodeError:
                 logger_step["reply"] = assistant_reply  # last reply is a string
             self.logger.append(logger_step)
+
+            # return assistant_reply
             # return if maximum itertation limit is reached
             result = ""
             if loop_count >= self.max_iterations:
@@ -164,13 +182,13 @@ class TaskAgent:
                         and "response" in result["command"]["args"]
                     ):
                         result = result["command"]["args"]["response"]
-                    else:
-                        print(result)
-                        result = str(result)
                 except json.JSONDecodeError:
                     result = assistant_reply
 
-                return self.process_output(result)
+                for output_parser in self.output_parsers:
+                    result = output_parser.parse_output(result)
+
+                return result
 
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
@@ -193,6 +211,11 @@ class TaskAgent:
 
                 try:
                     observation = tool.run(action.args)
+
+                    for tool_output_parser in self.tool_output_parsers:
+                        observation = tool_output_parser.parse_output(
+                            observation, tool_output=True
+                        )
                 except ValidationError as e:
                     observation = (
                         f"Validation Error in args: {str(e)}, args: {action.args}"
@@ -223,7 +246,6 @@ class TaskAgent:
                     return "EXITING"
                 memory_to_add += feedback
 
-            # self.memory.add_documents([Document(page_content=memory_to_add)])
             self.previous_message.append(HumanMessage(content=memory_to_add))
 
     def set_user_input(self, user_input: str):
