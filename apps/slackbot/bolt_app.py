@@ -43,9 +43,6 @@ if cfg.PINECONE_API_KEY is None:
         "files", cfg.OPENAI_API_KEY
     ).as_retriever()
 
-print('!!)!)!))!)!)!))!)!)!)', flush=True)
-print(cfg.TEMPRATURE, flush=True)
-print('!!)!)!))!)!)!))!)!)!)', flush=True)
 ###########################################################################
 # Define Slack client functionality:
 ###########################################################################
@@ -159,9 +156,6 @@ def event_test(client, say, event):
     usage_cheker = user_db.check_usage(
         user_id=user_id, combined_id=combined_id, token_ammount=count_string_tokens(question, "gpt-3.5-turbo"))
     can_excute = usage_cheker['can_excute']
-    print('####  # # # # # # # # # # #  # # #  #', flush=True)
-    print(usage_cheker)
-    print('####  # # # # # # # # # # #  # # #  #', flush=True)
     user_db.close_connection()
     # only will be excuted if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
