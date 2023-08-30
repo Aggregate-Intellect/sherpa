@@ -11,13 +11,17 @@ from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 
 import config as cfg
+from database.user_usage_tracker import UserUsageTracker
+from models.sherpa_base_chat_model import SherpaChatOpenAI
+from routes.whitelist import whitelist_blueprint
 from scrape.prompt_reconstructor import PromptReconstructor
-from sherpa_base_chat_model import SherpaChatOpenAI
+
 from task_agent import TaskAgent
 from tools import get_tools
-from user.user_usage_tracker import UserUsageTracker
+
 from utils import count_string_tokens
 from vectorstores import ConversationStore, LocalChromaStore
+
 
 #######################################################################################
 # Set up Slack client and Chroma database
@@ -36,6 +40,9 @@ if cfg.PINECONE_API_KEY is None:
         "files", cfg.OPENAI_API_KEY
     ).as_retriever()
 
+print('!!)!)!))!)!)!))!)!)!)', flush=True)
+print(cfg.TEMPRATURE, flush=True)
+print('!!)!)!))!)!)!))!)!)!)', flush=True)
 ###########################################################################
 # Define Slack client functionality:
 ###########################################################################
@@ -57,9 +64,9 @@ def contains_verbosex(query: str) -> bool:
     return "-verbosex" in query.lower()
 
 
-
 def get_response(question, previous_messages, user_id, team_id):
-    llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120 , user_id=user_id , team_id=team_id ,temperature=0)
+    llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120,
+                           user_id=user_id, team_id=team_id, temperature=cfg.TEMPRATURE)
 
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database
@@ -136,15 +143,17 @@ def event_test(client, say, event):
     team_id = input_message['team']
     combined_id = user_id+"_"+team_id
 
-    user_db = UserUsageTracker(max_daily_token=20000)
+    user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
 
     usage_cheker = user_db.check_usage(
         user_id=user_id, combined_id=combined_id, token_ammount=count_string_tokens(question, "gpt-3.5-turbo"))
     can_excute = usage_cheker['can_excute']
-
+    print('####  # # # # # # # # # # #  # # #  #', flush=True)
+    print(usage_cheker)
+    print('####  # # # # # # # # # # #  # # #  #', flush=True)
     user_db.close_connection()
     # only will be excuted if the user don't pass the daily limit
-    # the daily limit is calculated based on the user's usage in a workspace 
+    # the daily limit is calculated based on the user's usage in a workspace
     # users with a daily limitation can be allowed to use in a different workspace
     if can_excute:
         # used to reconstruct the question. if the question contains a link recreate
@@ -163,7 +172,7 @@ def event_test(client, say, event):
             say(f"#verbose message: \n```{verbose_message}```",
                 thread_ts=thread_ts)
     else:
-        say("I apologize for the inconvenience, but it seems that you have exceeded your daily token limit. As a result, you will need to try again after 24 hours. Thank you for your understanding.",thread_ts=thread_ts)
+        say(cfg.DAILY_LIMIT_REACHED_MESSAGE, thread_ts=thread_ts)
 
 
 @app.event("app_home_opened")
@@ -216,6 +225,7 @@ def update_home_tab(client, event):
 ###########################################################################
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
+flask_app.register_blueprint(whitelist_blueprint, url_prefix='/whitelist')
 
 if cfg.FLASK_DEBUG:
 
@@ -227,27 +237,6 @@ if cfg.FLASK_DEBUG:
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
     return handler.handle(request)
-
-
-@flask_app.route('/whitelist/add', methods=['POST'])
-def add_to_whitelist():
-    data = request.get_json()
-    user_id = data.get('user_id')
-
-    db = UserUsageTracker()
-    if user_id:
-        db.add_to_whitelist(user_id)
-        return jsonify({'message': f'User {user_id} added to whitelist.'}), 201
-    else:
-        return jsonify({'error': 'User ID not provided.'}), 400
-
-
-@flask_app.route('/whitelists', methods=['GET'])
-def get_all_whitelists():
-    db = UserUsageTracker()
-
-    data = db.get_all_whitelisted_ids()
-    return jsonify({'whitelisted_ids': data})
 
 
 @flask_app.route("/hello", methods=["GET"])

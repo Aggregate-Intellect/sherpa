@@ -11,7 +11,8 @@ from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredP
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 
-from sherpa_base_model import SherpaOpenAI
+from models.sherpa_base_model import SherpaOpenAI
+
 
 
 

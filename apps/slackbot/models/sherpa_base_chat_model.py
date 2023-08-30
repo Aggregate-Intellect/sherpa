@@ -9,7 +9,7 @@ from typing import (
     Optional,
 )
 
-from user.user_usage_tracker import UserUsageTracker
+from database.user_usage_tracker import UserUsageTracker
 
 
 class SherpaBaseChatModel(BaseChatModel):

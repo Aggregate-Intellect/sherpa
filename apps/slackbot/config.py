@@ -34,10 +34,12 @@ PINECONE_ENV = environ.get("PINECONE_ENV")
 PINECONE_INDEX = environ.get("PINECONE_INDEX")
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
-
+DAILY_TOKEN_LIMIT = environ.get("DAILY_TOKEN_LIMIT")
+TEMPRATURE = environ.get("TEMPRATURE") or 0
+DAILY_LIMIT_REACHED_MESSAGE = environ.get("DAILY_LIMIT_REACHED_MESSAGE") or "I  for the inconvenience, but it seems that you have exceeded your daily token limit. As a result, you will need to try again after 24 hours. Thank you for your understanding."
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
-logger.remove(0) # remove the default handler configuration
+logger.remove(0)  # remove the default handler configuration
 logger.add(sys.stderr, level=LOG_LEVEL, serialize=False)
 
 
@@ -66,7 +68,8 @@ if this.PINECONE_API_KEY is None:
     logger.info("Config: Pinecone environment variables not set")
 else:
     if None in [this.PINECONE_NAMESPACE, this.PINECONE_ENV, this.PINECONE_INDEX]:
-        logger.info("Config: Pinecone environment variables not set, unable to run")
+        logger.info(
+            "Config: Pinecone environment variables not set, unable to run")
         raise SystemExit(1)
     else:
         logger.info("Config: Pinecone environment variables are set")

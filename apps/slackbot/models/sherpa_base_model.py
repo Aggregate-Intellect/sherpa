@@ -10,7 +10,9 @@ from typing import (
 )
 from pydantic import BaseModel
 
-from user.user_usage_tracker import UserUsageTracker
+from database.user_usage_tracker import UserUsageTracker
+
+
 
 
 class SherpaOpenAI (OpenAI):

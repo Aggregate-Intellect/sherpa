@@ -6,7 +6,7 @@ class UserUsageTracker:
     def __init__(self, db_name='token_countersaa.db', current_time=int(time.time()), max_daily_token=20000):
         self.conn = sqlite3.connect(db_name)
         self.create_table()
-        self.max_daily_token = max_daily_token
+        self.max_daily_token = int(max_daily_token)
         self.current_time = current_time
 
     def create_table(self):

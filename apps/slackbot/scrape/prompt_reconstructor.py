@@ -1,7 +1,7 @@
 import config as cfg
 from scrape.extract_github_readme import extract_github_readme
 from utils import (
-    chunk_and_summarize,
+    chunk_and_summerize,
     count_string_tokens,
     get_link_from_slack_client_conversation,
     question_reconstructor,
@@ -41,7 +41,7 @@ class PromptReconstructor:
                 else:
                     scraped_data = scarape_with_url(link)
                 if scraped_data["status"] == 200:
-                    chunk_summary = chunk_and_summarize(
+                    chunk_summary = chunk_and_summerize(
                         link=link,
                         user_id=user_id,
                         team_id=team_id,
@@ -54,7 +54,7 @@ class PromptReconstructor:
                         count_string_tokens(chunk_summary, "gpt-3.5-turbo")
                         > per_scrape_token_size
                     ):
-                        chunk_summary = chunk_and_summarize(
+                        chunk_summary = chunk_and_summerize(
                             link=link,
                             open_ai_key=cfg.OPENAI_API_KEY,
                             user_id=user_id,
