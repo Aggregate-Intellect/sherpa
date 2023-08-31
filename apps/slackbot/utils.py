@@ -1,4 +1,3 @@
-from loguru import logger
 import re
 from typing import List
 from urllib.parse import urlparse
@@ -10,7 +9,7 @@ from langchain.docstore.document import Document
 from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
-
+from loguru import logger
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -133,3 +132,52 @@ def chunk_and_summarize(text_data: str, question: str, open_ai_key: str, link: s
         chunk_summary.append(summarized)
 
     return " ".join(chunk_summary)
+
+
+# ---- add this for verbose output --- #
+
+
+def log_formatter(logs):
+    """Formats the logger into readable string"""
+    log_strings = []
+    for log in logs:
+        reply = log["reply"]
+        if "thoughts" in reply:
+            # reply = json.loads(reply)
+            formatted_reply = (
+                f"""-- Step: {log["Step"]} -- \nThoughts: \n {reply["thoughts"]} """
+            )
+
+            if "command" in reply:  # add command if it exists
+                formatted_reply += f"""\nCommand: \n {reply["command"]}"""
+
+            log_strings.append(formatted_reply)
+
+        else:  # for final response
+            formatted_reply = (
+                f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
+            )
+            log_strings.append(formatted_reply)
+
+    log_string = "\n".join(log_strings)
+    return log_string
+
+
+def show_commands_only(logs):
+    """Modified version of log_formatter that only shows commands"""
+    log_strings = []
+    for log in logs:
+        reply = log["reply"]
+        if "command" in reply:
+            # reply = json.loads(reply)
+            formatted_reply = (
+                f"""-- Step: {log["Step"]} -- \nCommand: \n {reply["command"]}"""
+            )
+            log_strings.append(formatted_reply)
+        else:  # for final response
+            formatted_reply = (
+                f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
+            )
+            log_strings.append(formatted_reply)
+    log_string = "\n".join(log_strings)
+    return log_string

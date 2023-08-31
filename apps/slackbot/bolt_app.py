@@ -12,9 +12,11 @@ from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 
 import config as cfg
+from error_hanlding import AgentErrorHandler
 from scrape.prompt_reconstructor import PromptReconstructor
 from task_agent import TaskAgent
 from tools import get_tools
+from utils import log_formatter, show_commands_only
 from vectorstores import ConversationStore, LocalChromaStore
 from verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
 from verbose_loggers.base import BaseVerboseLogger
@@ -91,18 +93,17 @@ def get_response(
         llm=llm,
         verbose_logger=verbose_logger,
     )
+    error_handler = AgentErrorHandler()
 
     if contains_verbosex(query=question):
         logger.info("Verbose mode is on, show all")
         question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
-        response = task_agent.run(question)
-        agent_log = (
-            task_agent.logger
-        )  # logger is updated after running task_agent.run(question)
+        response = error_handler.run_with_error_handling(task_agent.run, task=question)
+        agent_log = task_agent.logger  # logger is updated after running task_agent.run
         try:  # in case log_formatter fails
             verbose_message = log_formatter(agent_log)
-        except:
+        except KeyError:
             verbose_message = str(agent_log)
         return response, verbose_message
 
@@ -110,20 +111,19 @@ def get_response(
         logger.info("Verbose mode is on, commands only")
         question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
-        response = task_agent.run(question)
-        agent_log = (
-            task_agent.logger
-        )  # logger is updated after running task_agent.run(question)
+        response = error_handler.run_with_error_handling(task_agent.run, task=question)
+
+        agent_log = task_agent.logger  # logger is updated after running task_agent.run
         try:  # in case log_formatter fails
             verbose_message = show_commands_only(agent_log)
-        except:
+        except KeyError:
             verbose_message = str(agent_log)
         return response, verbose_message
 
     else:
         logger.info("Verbose mode is off")
         question = question.replace(f"@{ai_id}", f"@{ai_name}")
-        response = task_agent.run(question)
+        response = error_handler.run_with_error_handling(task_agent.run, task=question)
         return response, None
 
 
@@ -179,7 +179,7 @@ def update_home_tab(client, event):
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "This button won't do much for now but you can set up a listener for it using the `actions()` method and passing its unique `action_id`. See an example in the `examples` folder within your Bolt app.",
+                            "text": "Example button.",
                         },
                     },
                     {
@@ -234,52 +234,3 @@ if __name__ == "__main__":
     )
     flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT, debug=cfg.FLASK_DEBUG)
     # SocketModeHandler(app, cfg.SLACK_APP_TOKEN).start()
-
-
-# ---- add this for verbose output --- #
-
-
-def log_formatter(logs):
-    """Formats the logger into readable string"""
-    log_strings = []
-    for log in logs:
-        reply = log["reply"]
-        if "thoughts" in reply:
-            # reply = json.loads(reply)
-            formatted_reply = (
-                f"""-- Step: {log["Step"]} -- \nThoughts: \n {reply["thoughts"]} """
-            )
-
-            if "command" in reply:  # add command if it exists
-                formatted_reply += f"""\nCommand: \n {reply["command"]}"""
-
-            log_strings.append(formatted_reply)
-
-        else:  # for final response
-            formatted_reply = (
-                f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
-            )
-            log_strings.append(formatted_reply)
-
-    log_string = "\n".join(log_strings)
-    return log_string
-
-
-def show_commands_only(logs):
-    """Modified version of log_formatter that only shows commands"""
-    log_strings = []
-    for log in logs:
-        reply = log["reply"]
-        if "command" in reply:
-            # reply = json.loads(reply)
-            formatted_reply = (
-                f"""-- Step: {log["Step"]} -- \nCommand: \n {reply["command"]}"""
-            )
-            log_strings.append(formatted_reply)
-        else:  # for final response
-            formatted_reply = (
-                f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
-            )
-            log_strings.append(formatted_reply)
-    log_string = "\n".join(log_strings)
-    return log_string
