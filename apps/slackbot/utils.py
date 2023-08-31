@@ -113,7 +113,7 @@ def count_string_tokens(string: str, model_name: str) -> int:
 
 def chunk_and_summarize(text_data: str,  question: str, open_ai_key: str, link: str, team_id: str = None, user_id: str = None):
     llm = SherpaOpenAI(
-        temperature=0.9, openai_api_key=open_ai_key, user_id=user_id, team_id=team_id)
+        temperature=cfg.TEMPRATURE, openai_api_key=open_ai_key, user_id=user_id, team_id=team_id)
    
     instruction = (
         "include any information that can be used to answer the "
