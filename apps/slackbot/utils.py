@@ -133,7 +133,7 @@ def chunk_and_summarize(text_data: str, question: str, open_ai_key: str, link: s
 
     return " ".join(chunk_summary)
 
-
+  
 # ---- add this for verbose output --- #
 
 
@@ -166,17 +166,18 @@ def log_formatter(logs):
 def show_commands_only(logs):
     """Modified version of log_formatter that only shows commands"""
     log_strings = []
+    if not isinstance(logs, list): # for single log, turn it into a list
+        logs = [logs]
     for log in logs:
         reply = log["reply"]
         if "command" in reply:
-            # reply = json.loads(reply)
             formatted_reply = (
-                f"""-- Step: {log["Step"]} -- \nCommand: \n {reply["command"]}"""
+                f"""-- Step: {log["Step"]} -- \n🔊Command: \n {reply["command"]}"""
             )
             log_strings.append(formatted_reply)
         else:  # for final response
             formatted_reply = (
-                f"""-- Step: {log["Step"]} -- \nFinal Response: \n {reply}"""
+                f"""-- Step: {log["Step"]} -- \n💡Final Response: \n {reply}"""
             )
             log_strings.append(formatted_reply)
     log_string = "\n".join(log_strings)
