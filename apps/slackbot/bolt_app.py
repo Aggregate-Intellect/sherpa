@@ -95,9 +95,9 @@ def get_response(
     )
     error_handler = AgentErrorHandler()
 
+    question = question.replace(f"@{ai_id}", f"@{ai_name}")
     if contains_verbosex(query=question):
         logger.info("Verbose mode is on, show all")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
         agent_log = task_agent.logger  # logger is updated after running task_agent.run
@@ -109,7 +109,6 @@ def get_response(
 
     elif contains_verbose(query=question):
         logger.info("Verbose mode is on, commands only")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
 
@@ -122,7 +121,6 @@ def get_response(
 
     else:
         logger.info("Verbose mode is off")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
         return response, None
 
@@ -146,12 +144,9 @@ def event_test(client, say, event):
         question=question, slack_message=[replies["messages"][-1]]
     )
     question = reconstructor.reconstruct_prompt()
-    results, verbose_message = get_response(question, previous_messages, verbose_logger)
+    results, _ = get_response(question, previous_messages, verbose_logger)
 
     say(results, thread_ts=thread_ts)
-
-    if verbose_on:
-        say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
 
 
 @app.event("app_home_opened")
