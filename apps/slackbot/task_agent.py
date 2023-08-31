@@ -140,25 +140,9 @@ class TaskAgent:
                 )
 
             # Send message to AI, get response
-
-            try:
-                assistant_reply = self.action_planner.select_action(
-                    self.previous_message, self.memory, task=task, user_input=user_input
-                )
-            except openai.error.APIError as e:
-                return f"OpenAI API returned an API Error: {e}"
-            except openai.error.APIConnectionError as e:
-                return f"Failed to connect to OpenAI API: {e}"
-            except openai.error.RateLimitError as e:
-                return f"OpenAI API request exceeded rate limit: {e}"
-            except openai.error.AuthenticationError as e:
-                return f"OpenAI API failed authentication or incorrect token: {e}"
-            except openai.error.Timeout as e:
-                return f"OpenAI API Timeout error: {e}"
-            except openai.error.ServiceUnavailableError as e:
-                return f"OpenAI API Service unavailable: {e}"
-            except openai.error.InvalidRequestError as e:
-                return f"OpenAI API invalid request error: {e}"
+            assistant_reply = self.action_planner.select_action(
+                self.previous_message, self.memory, task=task, user_input=user_input
+            )
 
             logger.info(f"reply: {assistant_reply}")
             # added by JF
