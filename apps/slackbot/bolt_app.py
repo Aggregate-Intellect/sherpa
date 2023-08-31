@@ -97,9 +97,9 @@ def get_response(
     )
     error_handler = AgentErrorHandler()
 
+    question = question.replace(f"@{ai_id}", f"@{ai_name}")
     if contains_verbosex(query=question):
         logger.info("Verbose mode is on, show all")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
         agent_log = task_agent.logger  # logger is updated after running task_agent.run
@@ -111,7 +111,6 @@ def get_response(
 
     elif contains_verbose(query=question):
         logger.info("Verbose mode is on, commands only")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
         question = question.replace("-verbose", "")
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
 
@@ -124,7 +123,6 @@ def get_response(
 
     else:
         logger.info("Verbose mode is off")
-        question = question.replace(f"@{ai_id}", f"@{ai_name}")
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
         return response, None
 
@@ -157,22 +155,20 @@ def event_test(client, say, event):
     # only will be excuted if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
     # users with a daily limitation can be allowed to use in a different workspace
+    
     if can_excute:
-    # used to reconstruct the question. if the question contains a link recreate
-    # them so that they contain scraped and summarized content of the link
+      
+        # used to reconstruct the question. if the question contains a link recreate
+        # them so that they contain scraped and summarized content of the link
         reconstructor = PromptReconstructor(
             question=question, slack_message=[replies["messages"][-1]]
         )
         question = reconstructor.reconstruct_prompt()
-        results, verbose_message = get_response(question, previous_messages, verbose_logger , user_id ,team_id)
+        results, _ = get_response(question, previous_messages, verbose_logger, user_id ,team_id)
 
         say(results, thread_ts=thread_ts)
-
-        if verbose_on:
-            say(f"#verbose message: \n```{verbose_message}```", thread_ts=thread_ts)
     else:
         say(cfg.DAILY_LIMIT_REACHED_MESSAGE, thread_ts=thread_ts)
-
 
 @app.event("app_home_opened")
 def update_home_tab(client, event):

@@ -27,7 +27,7 @@ from post_processors import md_link_to_slack
 from reflection import Reflection
 from verbose_loggers import DummyVerboseLogger
 from verbose_loggers.base import BaseVerboseLogger
-
+from utils import show_commands_only
 
 class TaskAgent:
     """Agent class for handling a single task"""
@@ -115,14 +115,14 @@ class TaskAgent:
         )
 
         # Interaction Loop
-        self.verbose_logger.log(f"{self.ai_name} is thinking...")
+        self.verbose_logger.log(f"⏳{self.ai_name} is thinking...")
+        logger.info(f"⏳{self.ai_name} is thinking...")
 
         reflection = Reflection(self.llm, self.tools, [])
         while True:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
-            logger.info(f"Step: {loop_count}/{self.max_iterations}")
-            logger_step = {"Step": f"{loop_count}/{self.max_iterations}"}  # added by JF
+            logger_step = {"Step": f"{loop_count}/{self.max_iterations}"}  
 
             if loop_count >= self.max_iterations:
                 user_input = (
@@ -152,6 +152,17 @@ class TaskAgent:
             except json.JSONDecodeError:
                 logger_step["reply"] = assistant_reply  # last reply is a string
             self.logger.append(logger_step)
+            
+            ########## Serial Verbose Feature #######
+            try:
+                formatted_logger_step = show_commands_only(logger_step)
+            except Exception as e:
+                logger.error(e)
+                formatted_logger_step = logger_step
+            
+            logger.info(f"```{formatted_logger_step}```")
+            self.verbose_logger.log(f"```{formatted_logger_step}```")  
+            #######################################
 
             # return assistant_reply
             # return if maximum itertation limit is reached
