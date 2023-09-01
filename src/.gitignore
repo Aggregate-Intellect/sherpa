@@ -1,0 +1,4 @@
+__pycache__
+**/.env
+sherpa/files/*
+sherpa/testing*
