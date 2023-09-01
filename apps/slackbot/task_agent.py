@@ -116,7 +116,7 @@ class TaskAgent:
 
         # Interaction Loop
         self.verbose_logger.log(f"⏳{self.ai_name} is thinking...")
-        logger.info(f"⏳{self.ai_name} is thinking...")
+        logger.info(f"```⏳{self.ai_name} is thinking...```")
 
         reflection = Reflection(self.llm, self.tools, [])
         while True:
