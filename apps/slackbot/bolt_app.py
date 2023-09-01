@@ -12,11 +12,13 @@ from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 
 import config as cfg
-from error_hanlding import AgentErrorHandler
+from database.user_usage_tracker import UserUsageTracker
+from models.sherpa_base_chat_model import SherpaChatOpenAI
 from scrape.prompt_reconstructor import PromptReconstructor
+from error_hanlding import AgentErrorHandler
 from task_agent import TaskAgent
 from tools import get_tools
-from utils import log_formatter, show_commands_only
+from utils import log_formatter, show_commands_only,count_string_tokens
 from vectorstores import ConversationStore, LocalChromaStore
 from verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
 from verbose_loggers.base import BaseVerboseLogger
@@ -60,11 +62,11 @@ def contains_verbosex(query: str) -> bool:
 
 
 def get_response(
-    question: str, previous_messages: List[Dict], verbose_logger: BaseVerboseLogger
+    question: str, previous_messages: List[Dict], verbose_logger: BaseVerboseLogger, user_id:str , team_id:str
 ):
-    llm = ChatOpenAI(
-        openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120, temperature=0
-    )
+    llm = SherpaChatOpenAI(openai_api_key=cfg.OPENAI_API_KEY, request_timeout=120,
+                           user_id=user_id, team_id=team_id, temperature=cfg.TEMPRATURE)
+    
 
     if cfg.PINECONE_API_KEY:
         # If pinecone API is specified, then use the Pinecone Database
@@ -138,16 +140,35 @@ def event_test(client, say, event):
         SlackVerboseLogger(say, thread_ts) if verbose_on else DummyVerboseLogger()
     )
 
-    # used to reconstruct the question. if the question contains a link recreate
-    # them so that they contain scraped and summarized content of the link
-    reconstructor = PromptReconstructor(
-        question=question, slack_message=[replies["messages"][-1]]
-    )
-    question = reconstructor.reconstruct_prompt()
-    results, _ = get_response(question, previous_messages, verbose_logger)
+    input_message = replies['messages'][-1]
+    user_id = input_message['user']
+    team_id = input_message['team']
+    combined_id = user_id+"_"+team_id
 
-    say(results, thread_ts=thread_ts)
+    user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
 
+    usage_cheker = user_db.check_usage(
+        user_id=user_id, combined_id=combined_id, token_ammount=count_string_tokens(question, "gpt-3.5-turbo"))
+    can_excute = usage_cheker['can_excute']
+    user_db.close_connection()
+
+    # only will be excuted if the user don't pass the daily limit
+    # the daily limit is calculated based on the user's usage in a workspace
+    # users with a daily limitation can be allowed to use in a different workspace
+    
+    if can_excute:
+      
+        # used to reconstruct the question. if the question contains a link recreate
+        # them so that they contain scraped and summarized content of the link
+        reconstructor = PromptReconstructor(
+            question=question, slack_message=[replies["messages"][-1]]
+        )
+        question = reconstructor.reconstruct_prompt()
+        results, _ = get_response(question, previous_messages, verbose_logger, user_id ,team_id)
+
+        say(results, thread_ts=thread_ts)
+    else:
+        say(cfg.DAILY_LIMIT_REACHED_MESSAGE, thread_ts=thread_ts)
 
 @app.event("app_home_opened")
 def update_home_tab(client, event):
