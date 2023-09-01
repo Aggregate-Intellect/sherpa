@@ -181,7 +181,7 @@ def show_commands_only(logs):
             log_strings.append(formatted_reply)
         else:  # for final response
             formatted_reply = (
-                f"""-- Step: {log["Step"]} -- \n💡Final Response: \n {reply}"""
+                f"""💡Thought process finished!"""
             )
             log_strings.append(formatted_reply)
     log_string = "\n".join(log_strings)
