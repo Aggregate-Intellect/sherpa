@@ -1,7 +1,7 @@
 """A unit test to test the post processor for LLM responses."""
 import os
 
-from post_processors import md_link_to_slack
+from sherpa.post_processors import md_link_to_slack
 
 
 def test_slack_link() -> None:

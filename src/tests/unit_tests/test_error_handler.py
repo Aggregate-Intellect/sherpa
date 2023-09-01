@@ -5,7 +5,7 @@ from typing import Dict, List
 import pytest
 from loguru import logger
 
-from error_hanlding import AgentErrorHandler
+from sherpa.error_hanlding import AgentErrorHandler
 
 
 class DummyLogger:
