@@ -11,13 +11,14 @@ Usage:
     another_variable = cfg.ANOTHER_ENVIRONMENT_VARIABLE
 """
 
-from loguru import logger
 import sys
 from os import environ
 
 from dotenv import load_dotenv
+from loguru import logger
 
 load_dotenv()
+
 
 AWS_ACCESS_KEY = environ.get("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = environ.get("AWS_SECRET_KEY")
@@ -28,10 +29,18 @@ SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
 SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
 SLACK_PORT = environ.get("SLACK_PORT", 3000)
 OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
+
+# Pinecone settings
 PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
 PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
 PINECONE_ENV = environ.get("PINECONE_ENV")
 PINECONE_INDEX = environ.get("PINECONE_INDEX")
+
+# Chroma settings
+CHROMA_HOST = environ.get("CHROMA_HOST")
+CHROMA_PORT = environ.get("CHROMA_PORT")
+CHROMA_INDEX = environ.get("CHROMA_INDEX")
+
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
 DAILY_TOKEN_LIMIT = environ.get("DAILY_TOKEN_LIMIT") or 20000
@@ -42,12 +51,37 @@ DAILY_LIMIT_REACHED_MESSAGE = environ.get("DAILY_LIMIT_REACHED_MESSAGE") or "I  
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
-logger.remove(0) # remove the default handler configuration
+logger.remove(0)  # remove the default handler configuration
 logger.add(sys.stderr, level=LOG_LEVEL, serialize=False)
 
 
 # `this` is a pointer to the module object instance itself.
 this = sys.modules[__name__]
+
+
+def check_vectordb_setting():
+    if (
+        this.PINECONE_API_KEY
+        and this.PINECONE_NAMESPACE
+        and this.PINECONE_ENV
+        and this.PINECONE_INDEX
+    ):
+        logger.info(
+            "Config: Pinecone environment variables are set. Using Pinecone database."
+        )
+        this.VECTORDB = "pinecone"
+    elif this.CHROMA_HOST and this.CHROMA_PORT and this.CHROMA_INDEX:
+        logger.info(
+            "Config: Chroma environment variables are set. Using Chroma database."
+        )
+        this.VECTORDB = "chroma"
+    else:
+        logger.warning(
+            "Config: No vector database environment variables are set. "
+            "Using in-memory Chroma database. This may not be what you intended."
+        )
+        this.VECTORDB = "in-memory"
+
 
 # Ensure all mandatory environment variables are set, otherwise exit
 if None in [
@@ -67,11 +101,4 @@ if this.OPENAI_API_KEY is None:
 else:
     logger.info("Config: OpenAI environment variables are set")
 
-if this.PINECONE_API_KEY is None:
-    logger.info("Config: Pinecone environment variables not set")
-else:
-    if None in [this.PINECONE_NAMESPACE, this.PINECONE_ENV, this.PINECONE_INDEX]:
-        logger.info("Config: Pinecone environment variables not set, unable to run")
-        raise SystemExit(1)
-    else:
-        logger.info("Config: Pinecone environment variables are set")
+check_vectordb_setting()

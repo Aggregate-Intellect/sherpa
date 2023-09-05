@@ -1,8 +1,8 @@
-from loguru import logger
 import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
 
+import chromadb
 import pinecone
 from langchain.docstore.document import Document
 from langchain.embeddings import OpenAIEmbeddings
@@ -11,10 +11,10 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.vectorstores.base import VectorStore, VectorStoreRetriever
+from loguru import logger
 
 import config as cfg
 from utils import load_files
-
 
 
 class ConversationStore(VectorStore):
@@ -144,3 +144,29 @@ class LocalChromaStore(Chroma):
         logger.info("adding documents")
         chroma.add_documents(documents)
         return chroma
+
+
+def configure_chroma(host: str, port: int, index_name: str, openai_api_key: str):
+    client = chromadb.HttpClient(host=cfg.CHROMA_HOST, port=cfg.CHROMA_PORT)
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    chroma = Chroma(
+        client=client, collection_name=cfg.CHROMA_INDEX, embedding_function=embeddings
+    )
+    return chroma
+
+
+def get_vectordb():
+    if cfg.VECTORDB == "pinecone":
+        return ConversationStore.get_vector_retrieval(
+            cfg.PINECONE_NAMESPACE,
+            cfg.OPENAI_API_KEY,
+            index_name=cfg.PINECONE_INDEX,
+            search_type="similarity_score_threshold",
+            search_kwargs={"score_threshold": 0.0},
+        )
+    elif cfg.VECTORDB == "chroma":
+        return configure_chroma(
+            cfg.CHROMA_HOST, cfg.CHROMA_PORT, cfg.CHROMA_INDEX, cfg.OPENAI_API_KEY
+        ).as_retriever()
+    else:
+        return LocalChromaStore.from_folder("files", cfg.OPENAI_API_KEY).as_retriever()
