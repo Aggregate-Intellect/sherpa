@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  sherpa:
+    build:
+      context: .
+      dockerfile: apps/slackapp/Dockerfile
+    volumes:
+      - .:/app  # Mount the local code directory to the container's /app directory
+    environment:
+      CHROMA_HOST: chroma-db
+      CHROMA_PORT: 8000
+      CHROMA_INDEX: langchain
+    ports:
+      - "3000:3000"
+    networks:
+      - main-network
+    depends_on:
+      - chroma-db
+
+  chroma-db:
+    image: dogdaysss/sherpa_chroma:latest  # Use the latest Postgres image
+    networks:
+      - main-network
+
+networks:
+  main-network:
+    driver: bridge
