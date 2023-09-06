@@ -7,8 +7,13 @@ from dotenv import dotenv_values
 from langchain.embeddings.openai import OpenAIEmbeddings
 from loguru import logger
 
+<<<<<<< HEAD:src/sherpa_ai/scrape/extract_github_readme.py
 import sherpa_ai.config as cfg
 from sherpa_ai.vectorstores import ConversationStore
+=======
+import config as cfg
+from connectors.vectorstores import ConversationStore
+>>>>>>> main:apps/slackbot/scrape/extract_github_readme.py
 
 
 def get_owner_and_repo(url):

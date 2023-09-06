@@ -34,7 +34,7 @@ Next, we will create a new Slack app and add it to the Slack Workspace we just c
       .. image:: slackbot_imgs/slackapp6.png
         :width: 400
 
-**Congradulations! You have successfully created a Slack App and installed it in your Slack Workspace.**
+**Congratulations! You have successfully created a Slack App and installed it in your Slack Workspace.**
 
 Run the Slackbot Locally
 ************************
@@ -59,8 +59,12 @@ After you clone the repository, you can find the slackbot project under `apps/sl
         pip install -r requirements.txt
 
 5. Configuration: Copy the contents of ``slackbot/.env-sample``
-   into your own ``slackbot/.env`` file, and then modify your configuration as needed.
-   Remember not to share your private keys with anyone else.
+   into your own ``slackbot/.env`` file.
+    :: 
+
+        cp .env-sample .env
+   * Then, modify your configuration as needed. You need to add the environment variables in ``.env`` following the format of ``.env_sample``. The following parts describe how to access the configuration values that you will add to ``.env``:
+
 
   * You can find ``SLACK_SIGNING_SECRET`` and ``SLACK_VERIFICATION_TOKEN`` values in the `Basic Information` page of your Slack App.
 

@@ -110,14 +110,14 @@ class TaskAgent:
 
     def run(self, task: str) -> str:
         user_input = (
-            "Determine which next command to use. "
+            "Determine which next command to use. Select the finish command if you "
             "and respond using the JSON format specified above without any extra text."
             "\n JSON Response: \n"
         )
 
         # Interaction Loop
         self.verbose_logger.log(f"⏳{self.ai_name} is thinking...")
-        logger.info(f"⏳{self.ai_name} is thinking...")
+        logger.info(f"```⏳{self.ai_name} is thinking...```")
 
         reflection = Reflection(self.llm, self.tools, [])
         while True:

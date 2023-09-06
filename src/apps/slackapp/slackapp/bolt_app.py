@@ -11,6 +11,7 @@ from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 
 import sherpa_ai.config as cfg
+from sherpa_ai.connectors.vectorstores import ConversationStore, LocalChromaStore
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.error_hanlding import AgentErrorHandler
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
@@ -18,7 +19,6 @@ from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 from sherpa_ai.task_agent import TaskAgent
 from sherpa_ai.tools import get_tools
 from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_only
-from sherpa_ai.vectorstores import ConversationStore, LocalChromaStore
 from sherpa_ai.verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 
@@ -32,12 +32,6 @@ app = App(
 )
 bot = app.client.auth_test()
 logger.info(f"App init: bot auth_test results {bot}")
-
-if cfg.PINECONE_API_KEY is None:
-    logger.info("Setting up local Chroma database")
-    local_memory = LocalChromaStore.from_folder(
-        "files", cfg.OPENAI_API_KEY
-    ).as_retriever()
 
 ###########################################################################
 # Define Slack client functionality:
@@ -75,18 +69,7 @@ def get_response(
         temperature=cfg.TEMPRATURE,
     )
 
-    if cfg.PINECONE_API_KEY:
-        # If pinecone API is specified, then use the Pinecone Database
-        memory = ConversationStore.get_vector_retrieval(
-            cfg.PINECONE_NAMESPACE,
-            cfg.OPENAI_API_KEY,
-            index_name=cfg.PINECONE_INDEX,
-            search_type="similarity_score_threshold",
-            search_kwargs={"score_threshold": 0.0},
-        )
-    else:
-        # use the local Chroma database
-        memory = local_memory
+    memory = get_vectordb()
 
     tools = get_tools(memory)
     ai_name = "Sherpa"
