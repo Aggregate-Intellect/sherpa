@@ -38,66 +38,8 @@ Next, we will create a new Slack app and add it to the Slack Workspace we just c
 
 Run the Slackbot Locally
 ************************
-Next, we will run the slack app project locally. The slackapp project is part of this livebook's repository. If you haven't done so, clone the repository for this livebook at https://github.com/Aggregate-Intellect/sherpa. 
+Next, we will run the slack app project locally. The slackapp project is part of this livebook's repository. If you haven't done so, follow this guide: :doc:`Run and Develop Sherpa Slackbot <2_run_slackbot>` to set up the livebook repository.
 
-After you clone the repository, you can find the slackbot project under `apps/slackbot`. The `README` of the slackbot contains instruction to run the app with docker or a virtual environment, we will repeat the instruction with a local virual environment.
-
-1. Install `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html?>`__ or `miniconda <https://docs.conda.io/en/latest/miniconda.html>`__ if you don't have it already.
-2. Create a new conda environment with python 3.9. 
-    :: 
-
-        conda create -n slackbot python=3.9
-
-3. Activate the environment
-    :: 
-
-        conda activate slackbot
-
-4. Install the dependencies
-    :: 
-
-        pip install -r requirements.txt
-
-5. Configuration: Copy the contents of ``slackbot/.env-sample``
-   into your own ``slackbot/.env`` file.
-    :: 
-
-        cp .env-sample .env
-   * Then, modify your configuration as needed. You need to add the environment variables in ``.env`` following the format of ``.env_sample``. The following parts describe how to access the configuration values that you will add to ``.env``:
-
-
-  * You can find ``SLACK_SIGNING_SECRET`` and ``SLACK_VERIFICATION_TOKEN`` values in the `Basic Information` page of your Slack App.
-
-    .. image:: slackbot_imgs/slackbot.png
-        :width: 400
-  * The ``SLACK_OAUTH_TOKEN`` can be found in the `OAuth & Permissions` page of your Slack App.
- 
-    .. image:: slackbot_imgs/slackbot2.png
-        :width: 400
-  * The ``OPENAI_API_KEY`` can be found in your OpenAI account page. If you you don't have one, create one at https://platform.openai.com/overview.
-
-  * Serper is a search engine that we use to search for relevant articles. You can find the API key 
-    in your Serper account page. If you don't have one, create one at https://serper.dev/. 
-    You don't need it to run the app, but it will enable the Internet search function of the SlackBot. If you don't want to have this functionality, you can leave the `SERPER_API_KEY` empty.
-
-  * You may also find there are optional *Pinecone* keys in the `.env` file. 
-    Pinecone is a cloud-based vector database, by default, the app runs with an in-memory vector 
-    database. However, if you want to build your own cloud vector database, you can learn more 
-    about Pinecone here: https://www.pinecone.io/ and on the :doc:`Pinecone setup <3_pinecone_setup>` page.
-
-6. We will need to have some files to load into the vector database and act as the long-term memory of the SlackBot. For the sake of this tutorial, copy the `README.md` file of this project to `apps/slackbot/file`. This file will be used as the long-term memory of the SlackBot.
-7. Now, run the app with the following command
-
-  ::
-
-      python bolt_app.py
-
-8. You should see something like below if everything is working properly. 
-    
-      .. image:: slackbot_imgs/slackbot3.png
-        :width: 400
-
-Great! We are almost there to let you communicate with your SlackBot.
 
 Connect Slack Bot to the App
 ****************************
