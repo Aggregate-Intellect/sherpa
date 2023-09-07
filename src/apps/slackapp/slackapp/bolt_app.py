@@ -13,7 +13,7 @@ from slack_bolt.adapter.flask import SlackRequestHandler
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
-from sherpa_ai.error_hanlding import AgentErrorHandler
+from sherpa_ai.error_handling import AgentErrorHandler
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 from sherpa_ai.task_agent import TaskAgent
