@@ -29,58 +29,27 @@ Preparation
 2. Create new app in slack workspace following the :doc:`setup
    tutorial <1_slackbot_workspace>`
 
-3. Configuration: Copy the contents of ``slackbot/.env-sample``
-   into your own ``slackbot/.env`` file, and then modify your configuration as needed.
+3. Configuration: Copy the contents of ``src/.env-sample``
+   into your own ``src/.env`` file, and then modify your configuration as needed.
    Remember not to share your private keys with anyone else.
 
-4. Add all the files which you want to build the Vector Db index to
-   the ``files`` folder. Currently, it works with ``PDFs`` and
-   ``Markdown`` files. (Ignore this step if you connect with your
-   Pinecone database)
+.. 4. Add all the files which you want to build the Vector Db index to
+..    the ``files`` folder. Currently, it works with ``PDFs`` and
+..    ``Markdown`` files. (Ignore this step if you connect with your
+..    Pinecone database)
 
 Usage
 -----
 
-Run with Virtual Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-1. Install
-   `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`__
-   or `miniconda <https://docs.conda.io/en/latest/miniconda.html>`__
-
-2. Create a new conda environment:
-
-   .. code:: bash
-
-      conda create -n slackbot python=3.9
-
-3. Activate the environment:
-
-   .. code:: bash
-
-       conda activate slackbot
-
-4. Install the dependencies:
-
-   .. code:: bash
-
-      pip install -r requirements.txt
-
-5. Run the server:
-
-   .. code:: bash
-
-       python bolt_app.py
-
 Run with docker
 ~~~~~~~~~~~~~~~
 
-1. Run the docker image:
+1. Run the docker-compose the setup the sherpa-ai package and the local vector database prefilled with the production data.
 
    .. code:: bash
 
-      docker build -it slackbot .
-      docker run -p 3000:3000 slackbot
+      cd src/
+      docker-compose up -d
 
 2. Expose the server to the internet using a tool like ngrok. This is not
    required if your server is hosted on a public IP address.
@@ -92,6 +61,57 @@ Run with docker
       ``/slack/events`` at the end as this is the default path used by
       Slack Bolt.
 
+Run with Virtual Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. If you want to use the local vector database, you need to build the vector database with Docker. See :doc:`Setup Local VectorDB with Production Data <4_local_vectordb>` for how to do this.
+
+2. Install
+   `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`__
+   or `miniconda <https://docs.conda.io/en/latest/miniconda.html>`__
+
+3. Create a new conda environment:
+
+   .. code:: bash
+
+      conda create -n slackbot python=3.9
+
+4. Activate the environment:
+
+   .. code:: bash
+
+       conda activate slackbot
+
+5. Install the dependencies of the slackbote: 
+   
+   * Install dependency with `Poetry <https://python-poetry.org/>`__ (recommended, this will give you the ability to edit the code in `sherpa_ai` without rebuild) 
+
+      .. code:: bash
+
+         cd app/slackapp
+         poetry install
+      
+   * Install dependency with `pip <https://pip.pypa.io/en/stable/>`__
+
+      .. code:: bash
+
+         cd app/slackapp
+         pip install -e .
+
+6. Run the server:
+
+   * Run with `Poetry <https://python-poetry.org/>`__
+
+      .. code:: bash
+
+         poetry run sherpa_slack
+
+   * Run the script directly
+
+      .. code:: bash
+
+         python apps/slackapp/slackapp/bolt_app.py
+
 Development
 -----------
 
@@ -99,12 +119,7 @@ Linting and formating
 ~~~~~~~~~~~~~~~~~~~~~
 
 This project uses ``flake8`` for linting, ``black`` and ``isort`` for
-formatting, and ``pytest`` for testing. To install the dependencies,
-run:
-
-.. code:: bash
-
-   pip install -r dev-requirements.txt
+formatting, and ``pytest`` for testing.
 
 To format the project, run:
 
