@@ -11,6 +11,7 @@ from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 from loguru import logger
 
+import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
 
 
@@ -185,21 +186,17 @@ def show_commands_only(logs):
         logs = [logs]
     for log in logs:
         reply = log["reply"]
-        
+
         if "command" in reply:
             command = reply["command"]
-            
-            if command['name'] != 'finish':
-                formatted_reply = (
-                    f"""Step: {log["Step"]} \n🛠️{command['name']} \n❓query: {command['args']['query']}"""
-                )
+
+            if command["name"] != "finish":
+                formatted_reply = f"""Step: {log["Step"]} \n🛠️{command['name']} \n❓query: {command['args']['query']}"""
                 log_strings.append(formatted_reply)
-            
+
             else:  # for final response
-                formatted_reply = (
-                    f"""💡Thought process finished!"""
-                )
+                formatted_reply = f"""💡Thought process finished!"""
                 log_strings.append(formatted_reply)
-                
+
     log_string = "\n".join(log_strings)
     return log_string
