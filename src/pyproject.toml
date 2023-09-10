@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "sherpa-ai"
+version = "0.1.0"
+description = "Sherpa: AI-augmented thinking companion"
+authors = []
+readme = "README.md"
+repository = "https://github.com/Aggregate-Intellect/sherpa"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+langchain = "0.0.205"
+python-dotenv = "^1.0.0"
+unstructured = "^0.10.11"
+openai = "^0.28.0"
+chromadb = "^0.4.8"
+tiktoken = "^0.4.0"
+pinecone-client = "^2.2.2"
+beautifulsoup4 = "4.12.2"
+markdown = ">=3.4.4,<3.5.0"
+loguru = ">=0.7.0,<0.8.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "7.4.0"
+
+
+[tool.poetry.group.lint.dependencies]
+black = "23.7.0"
+flake8 = "6.1.0"
+isort = "5.12.0"
+flake8-pyproject = "1.2.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+
+[tool.black]
+line-length = 88
+
+[tool.flake8]
+max-line-length = 88
+ignore  = ['F401', 'W503']
+per-file-ignores = [
+    'bolt_app.py:E402',
+]
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true

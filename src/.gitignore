@@ -1,0 +1,5 @@
+__pycache__
+**/.env
+**/files/*
+**/testing*
+**/dist/
