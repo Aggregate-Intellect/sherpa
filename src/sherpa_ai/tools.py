@@ -18,6 +18,7 @@ def get_tools(memory):
     tools = []
 
     tools.append(ContextTool(memory=memory))
+    tools.append(UserInputTool())
 
     if cfg.SERPER_API_KEY is not None:
         search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
@@ -142,7 +143,7 @@ class UserInputTool(BaseTool):
     name = "UserInput"
     description = (
         "Access the user input for the task."
-        "You use this tool if you need further clarification of the task from the user."
+        "You use this tool if you need more context and would like to ask clarifying questions to solve the task"
     )
 
     def _run(self, query: str) -> str:
