@@ -15,11 +15,6 @@ import sherpa_ai.config as cfg
 
 
 def get_tools(memory):
-    prompt = (
-        "You are an assistant helping user solve the task. Perform the task as writen"
-        "in the instruction.\nTask: {input}\nResult: "
-    )
-    prompt = Prompt.from_template(prompt)
     tools = []
 
     tools.append(ContextTool(memory=memory))
