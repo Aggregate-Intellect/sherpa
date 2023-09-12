@@ -88,14 +88,14 @@ Run with Virtual Environment
 
       .. code:: bash
 
-         cd app/slackapp
+         cd src/app/slackapp
          poetry install
       
    * Install dependency with `pip <https://pip.pypa.io/en/stable/>`__
 
       .. code:: bash
 
-         cd app/slackapp
+         cd src/app/slackapp
          pip install -e .
 
 6. Run the server:
@@ -109,7 +109,8 @@ Run with Virtual Environment
    * Run the script directly
 
       .. code:: bash
-
+         
+         cd src/
          python apps/slackapp/slackapp/bolt_app.py
 
 Development
