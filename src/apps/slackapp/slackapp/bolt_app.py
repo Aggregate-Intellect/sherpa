@@ -21,6 +21,7 @@ from sherpa_ai.tools import get_tools
 from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_only
 from sherpa_ai.verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
+from slackapp.routes.whitelist import whitelist_blueprint
 
 #######################################################################################
 # Set up Slack client and Chroma database
@@ -215,6 +216,8 @@ def update_home_tab(client, event):
 ###########################################################################
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
+flask_app.register_blueprint(whitelist_blueprint, url_prefix='/auth')
+
 
 if cfg.FLASK_DEBUG:
 
