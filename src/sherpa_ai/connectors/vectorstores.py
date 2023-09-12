@@ -169,4 +169,15 @@ def get_vectordb():
             cfg.CHROMA_HOST, cfg.CHROMA_PORT, cfg.CHROMA_INDEX, cfg.OPENAI_API_KEY
         ).as_retriever()
     else:
-        return LocalChromaStore.from_folder("files", cfg.OPENAI_API_KEY).as_retriever()
+        if os.path.exists("files"):
+            return LocalChromaStore.from_folder(
+                "files", cfg.OPENAI_API_KEY
+            ).as_retriever()
+        else:
+            logger.warning(
+                "No files folder found, initialize an empty vectorstore instead"
+            )
+            embedding_func = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY)
+            return LocalChromaStore(
+                "memory", embedding_function=embedding_func
+            ).as_retriever()
