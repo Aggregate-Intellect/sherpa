@@ -44,7 +44,7 @@ Usage
 Run with docker
 ~~~~~~~~~~~~~~~
 
-1. Run the docker-compose the setup the sherpa-ai package and the local vector database prefilled with the production data.
+1. Install Docker and docker-compose locally. Then, run the docker-compose, the setup, the sherpa-ai package, and the local vector database prefilled with the production data.
 
    .. code:: bash
 
@@ -88,14 +88,14 @@ Run with Virtual Environment
 
       .. code:: bash
 
-         cd app/slackapp
+         cd src/apps/slackapp
          poetry install
       
    * Install dependency with `pip <https://pip.pypa.io/en/stable/>`__
 
       .. code:: bash
 
-         cd app/slackapp
+         cd src/apps/slackapp
          pip install -e .
 
 6. Run the server:
@@ -110,6 +110,7 @@ Run with Virtual Environment
 
       .. code:: bash
 
+         cd src/
          python apps/slackapp/slackapp/bolt_app.py
 
 Development
