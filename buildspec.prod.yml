@@ -20,7 +20,7 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker login --username $USERNAME --password $PASSWORD
-      - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest ./src/apps/slackbot
+      - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest ./src/apps/slackapp
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
