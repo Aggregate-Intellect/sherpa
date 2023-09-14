@@ -44,7 +44,7 @@ Usage
 Run with docker
 ~~~~~~~~~~~~~~~
 
-1. Run the docker-compose the setup the sherpa-ai package and the local vector database prefilled with the production data.
+1. Install Docker and docker-compose locally. Then, run the docker-compose, the setup, the sherpa-ai package, and the local vector database prefilled with the production data.
 
    .. code:: bash
 
