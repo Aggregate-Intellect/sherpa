@@ -17,7 +17,7 @@ RUN pip install poetry
 COPY . .
 
 # Install the Python dependencies for slackapp
-RUN cd apps/slackapp && poetry install
+RUN cd src/apps/slackapp && poetry install
 
 # Expose the port that the Flask app will listen on
 EXPOSE 80
