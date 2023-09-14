@@ -24,6 +24,6 @@ EXPOSE 80
 
 
 # Set the working directory in the container
-WORKDIR /app/apps/slackapp
+WORKDIR /app/src/apps/slackapp
 # Run the Flask app
 CMD ["poetry", "run", "python", "-m", "slackapp.bolt_app"]
