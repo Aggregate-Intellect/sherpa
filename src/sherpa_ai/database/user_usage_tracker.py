@@ -132,6 +132,14 @@ class UserUsageTracker:
             return {"id": last_reset_id, "timestamp": last_reset_timestamp}
         else:
             return None
+    def seconds_to_hms(self,seconds):
+        remaining_seconds = 24 * 3600 - seconds  # Calculate the remaining seconds to reach 24 hours
+        hours = remaining_seconds // 3600
+        minutes = (remaining_seconds % 3600) // 60
+        seconds = remaining_seconds % 60
+
+        return f"""{hours}hours : {minutes}min : {seconds}sec"""
+
 
     def check_usage(self, user_id, combined_id, token_ammount):
         user_is_whitelisted = self.is_in_whitelist(user_id)
@@ -141,6 +149,7 @@ class UserUsageTracker:
                 "token-left": self.max_daily_token,
                 "can_excute": True,
                 "message": "",
+                "time_left":""
             }
         else:
             last_reset_info = self.get_last_reset_info(combined_id=combined_id)
@@ -148,7 +157,6 @@ class UserUsageTracker:
 
             if last_reset_info is not None and last_reset_info["timestamp"] is not None:
                 time_since_last_reset = self.current_time - last_reset_info["timestamp"]
-
             # If more than 24 hours have passed since last reset
             if time_since_last_reset != 0 and time_since_last_reset > 86400:
                 print(f"TIMESTAMP DIFFERENT: {time_since_last_reset}")
@@ -157,6 +165,7 @@ class UserUsageTracker:
                     "token-left": self.max_daily_token,
                     "can_excute": True,
                     "message": "",
+                    "time_left":self.seconds_to_hms(time_since_last_reset)
                 }
             else:
                 total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
@@ -169,6 +178,7 @@ class UserUsageTracker:
                         - total_token_since_last_reset,
                         "can_excute": False,
                         "message": "daily usage limit exceeded. you can try after 24 hours",
+                        "time_left":self.seconds_to_hms(time_since_last_reset)
                     }
                 else:
                     self.add_data(combined_id=combined_id, token=token_ammount)
@@ -178,6 +188,7 @@ class UserUsageTracker:
                         "current_token": token_ammount,
                         "can_excute": True,
                         "message": "",
+                        "time_left":self.seconds_to_hms(time_since_last_reset)
                     }
 
     def get_all_data(self):
