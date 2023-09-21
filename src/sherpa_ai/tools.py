@@ -118,7 +118,11 @@ class SearchTool(BaseTool):
 
 class ContextTool(BaseTool):
     name = "Context Search"
-    description = "Access internal documents for various information."
+    description = (
+        "Access internal technical documentation for AI related projects, including"
+        + "Fixie, LangChain, GPT index, GPTCache, GPT4ALL, autoGPT, db-GPT, AgentGPT, sherpa."
+        + "Only use this tool if you need information for these projects specifically."
+    )
     memory: VectorStoreRetriever
 
     def _run(self, query: str) -> str:
