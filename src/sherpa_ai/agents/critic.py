@@ -20,3 +20,6 @@ class Critic(BaseAgent):
     ):
         # TODO: Define agent actions (critic), create necessary helper methods
         raise NotImplementedError
+
+    def criticize():
+        pass
