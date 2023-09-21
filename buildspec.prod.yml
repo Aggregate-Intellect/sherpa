@@ -14,13 +14,13 @@ phases:
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
       - aws s3 sync s3://ai-config-one/slackbot ./
       - mv env-prod.properties production.env
-      - cp production.env ./apps/slackbot/.env
+      - cp production.env ./src/.env
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker login --username $USERNAME --password $PASSWORD
-      - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest ./apps/slackbot
+      - docker build --cache-from $REPOSITORY_URI:latest -t $REPOSITORY_URI:latest -f ./src/apps/slackapp/Dockerfile ./src
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
