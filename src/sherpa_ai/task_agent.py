@@ -203,7 +203,7 @@ class TaskAgent:
                 tool = tools[action.name]
 
                 if tool.name == "UserInput":
-                    return {"type": "user_input", "query": action.args["query"]}
+                    return action.args["query"]
 
                 try:
                     observation = tool.run(action.args)
