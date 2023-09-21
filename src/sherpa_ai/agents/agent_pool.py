@@ -1,20 +1,44 @@
-from typing import List
+from typing import Dict, List, Optional
 
 from sherpa_ai.agents.base import BaseAgent
 
 
 class AgentPool:
-    def __init__(self, agents: List[BaseAgent]):
-        self.agents = {agent.name for agent in agents}
+    def __init__(self):
+        self.agents: Dict[str, BaseAgent] = {}
 
-    def get_agent(self, agent_name: str) -> BaseAgent:
+    def get_agent(self, agent_name: str) -> Optional[BaseAgent]:
         """
         Get agent by name
         """
-        raise NotImplementedError
+        return self.agents.get(agent_name, None)
+
+    def __contains__(self, agent_name: str) -> bool:
+        """
+        Check if agent pool contains agent
+        """
+        return agent_name in self.agents
+
+    def add_agent(self, agent: BaseAgent):
+        """
+        Add agent to agent pool
+        """
+        self.agents[agent.name] = agent
+
+    def add_agents(self, agents: List[BaseAgent]):
+        """
+        Add agents to agent pool
+        """
+        for agent in agents:
+            self.add_agent(agent)
 
     def get_agent_pool_description(self) -> str:
         """
         Create a description (prompt) of the AgentPool for agent planning
         """
-        raise NotImplementedError
+        result = ""
+
+        for name, agent in self.agents.items():
+            result += f"* {name}: {agent.description}\n"
+
+        return result
