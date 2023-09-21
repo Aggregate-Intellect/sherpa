@@ -3,6 +3,7 @@
 #  Importing necessary modules
 ##############################################
 
+import time
 from typing import Dict, List
 
 from flask import Flask, request
@@ -166,7 +167,7 @@ def event_test(client, say, event):
 
         say(results, thread_ts=thread_ts)
     else:
-        say(cfg.DAILY_LIMIT_REACHED_MESSAGE, thread_ts=thread_ts)
+        say(f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_cheker['time_left']}.Thank you for your patience and understanding.""", thread_ts=thread_ts)
 
 
 @app.event("app_home_opened")
