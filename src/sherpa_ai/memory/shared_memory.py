@@ -20,4 +20,8 @@ class SharedMemory:
         self.add_event(event)
 
     def observe(self, belief):
-        pass
+        for event in self.events:
+            belief.update(event)
+
+    def get_by_type(self, event_type):
+        return [event for event in self.events if event.event_type == event_type]
