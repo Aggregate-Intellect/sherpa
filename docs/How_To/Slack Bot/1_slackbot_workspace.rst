@@ -6,6 +6,11 @@ We will start by installing the dependencies necessary for the SlackBot. Then we
 Slack APP by in a new workspace. Finally, we will connect the SlackBot to the Sherpa backend
 so that you can talk to the SlackBot. 
 
+Video tutorial
+***************
+https://youtu.be/HX4lxzBkEoQ?si=6NlQupyZPrM3MHr1
+
+
 Install Slack App
 *****************
 
