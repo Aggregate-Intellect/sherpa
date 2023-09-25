@@ -18,7 +18,6 @@ class Planner(BaseAgent):
         num_runs=1,
         llm=LLM,
     ):
-        # TODO: Define agent actions (planning), create necessary helper methods
         self.name = name
         self.description = description
         self.agent_pool = agent_pool
@@ -33,19 +32,10 @@ class Planner(BaseAgent):
         """
         Plan the next action for the agent pool
         """
-        # TODO: save task and agent pool description to shared memory
-
         self.shared_memory.add(
             event_type=EventType.planning, agent=self.name, content=task
         )
         agent_pool_description = self.agent_pool.get_agent_pool_description()
-
-        # TODO: why do we need to add this? This seems to be a belief or observation
-        self.shared_memory.add(
-            event_type=EventType.planning,
-            agent="Agent pool description",
-            content=agent_pool_description,
-        )
 
         # run the planning
         plan = self.planning.execute(task, agent_pool_description)
