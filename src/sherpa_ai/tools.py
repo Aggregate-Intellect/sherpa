@@ -17,7 +17,7 @@ import sherpa_ai.config as cfg
 def get_tools(memory):
     tools = []
 
-    tools.append(ContextTool(memory=memory))
+    # tools.append(ContextTool(memory=memory))
     tools.append(UserInputTool())
 
     if cfg.SERPER_API_KEY is not None:
