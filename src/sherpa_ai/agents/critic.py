@@ -4,7 +4,7 @@ from langchain.chat_models.base import BaseChatModel
 
 DESCRIPTION_PROMPT = """
 You are a Critic agent that receive a plan from the planner to execuate a task from user.
-Your goal is to output the 10 most necessary feedback given the corrent plan to solve the task.
+Your goal is to output the {} most necessary feedback given the corrent plan to solve the task.
 """
 IMPORTANCE_PROMPT = """The plan you should be necessary and important to complete the task.
 Evaluate if the content of plan and selected actions/ tools are important and necessary.
@@ -28,7 +28,7 @@ Only output insights with high confidence.
 Insight: 
 """
 FEEDBACK_PROMPT = """
-What are the 10 most important feedback for the plan received from the planner, using the\
+What are the {} most important feedback for the plan received from the planner, using the\
 insight you have from current observation, evaluation using the importance matrices and detail matrices.
 Feedback: 
 """
@@ -48,13 +48,15 @@ class Critic(BaseAgent):
         belief=None,
         action_selector=None,
         num_runs=1,
-        ratio: float=1.0,
+        ratio: float=0.9,
+        num_feedback: int=3,
     ):
         self.llm=llm
         self.description = description
         self.shared_memory = shared_memory
         self.belief = belief
         self.ratio = ratio
+        self.num_feedback = num_feedback
 
     def get_importance_evaluation(self, task: str, plan: str):
         # return score in int and evaluation in string for importance matrix
@@ -84,7 +86,6 @@ class Critic(BaseAgent):
         return [i for i in feedback.split("\n") if i]
     
     def get_feedback(self, task: str, plan: str):
-        # take plan, result of evaluation (importance, detail), insight, belief, observation, and generate top 10 feedback
         # observation = self.observe(self.belief)
         i_score, i_evaluation = self.get_importance_evaluation(task, plan)
         d_score, d_evaluation = self.get_detail_evaluation(task, plan)
@@ -94,10 +95,11 @@ class Critic(BaseAgent):
             prompt = (
                 # f"\nCurrent observation you have is: {observation}"
                 # f"Insight you have from current observation: {insights}"
+                f"Task: {task}"
                 f"Evaluation in the importance matrices: {i_evaluation}"
-                f"Evaluation in the detail matrices: {d_evaluation}" + FEEDBACK_PROMPT
+                f"Evaluation in the detail matrices: {d_evaluation}" + FEEDBACK_PROMPT.format(self.num_feedback)
             )
-            feedback = self.llm.predict(self.description + FEEDBACK_PROMPT + prompt)
+            feedback = self.llm.predict(self.description + prompt)
             return self.post_process(feedback)
         else:
             return ""
