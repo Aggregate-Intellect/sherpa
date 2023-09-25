@@ -52,7 +52,8 @@ class Plan:
     def __str__(self) -> str:
         result = ""
         for i, step in enumerate(self.steps):
-            result += f"Step {i + 1}:\n{step}"
+            result += f"Step {i + 1}:\n{str(step)}"
+        return result
 
 
 class TaskPlanning(BaseAction):
@@ -67,7 +68,9 @@ class TaskPlanning(BaseAction):
         """
         Execute the action
         """
-        action_output = self.llm(self.prompt.format(task, agent_pool_description))
+        prompt = self.prompt.format(task = task, agent_pool_description = agent_pool_description)
+        # print(prompt)
+        action_output = self.llm(prompt)
 
         return self.post_process(action_output)
 
@@ -75,12 +78,17 @@ class TaskPlanning(BaseAction):
         """
         Post process the action output into a plan with steps
         """
+        # print(action_output)
         steps = [step for step in action_output.split("Step") if step]
         plan = Plan()
 
         for step_str in steps:
-            lines = step_str.strip().split("\n")
-
+            lines = step_str.strip() 
+            if len(lines) == 0: continue
+            
+            lines = lines.split("\n")
+            
+            # print(lines)
             agent_name = lines[1].split("Agent:")[1].strip()
             task_description = lines[2].split("Task:")[1].strip()
 
