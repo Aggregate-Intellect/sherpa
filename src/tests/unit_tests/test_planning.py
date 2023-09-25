@@ -1,15 +1,14 @@
-from sherpa_ai.actions.planning import TaskPlanning
-import sherpa_ai.config as cfg
-from langchain.llms.base import LLM
 from langchain.llms import OpenAI
+from langchain.llms.base import LLM
 
+import sherpa_ai.config as cfg
+from sherpa_ai.actions.planning import TaskPlanning
 
-llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY,temperature=0)
-
+llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
 
 
 def test_planning():
-    llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY,temperature=0)
+    llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
 
     task_planning = TaskPlanning(llm)
 
@@ -26,5 +25,5 @@ def test_planning():
     plan = task_planning.execute(task, agent_pool_description)
 
     print(str(plan))
-    
-    assert(len(plan.steps)>0)
+
+    assert len(plan.steps) > 0

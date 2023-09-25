@@ -1,6 +1,7 @@
+from langchain.chat_models.base import BaseChatModel
+
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.base import BaseAgent
-from langchain.chat_models.base import BaseChatModel
 
 DESCRIPTION_PROMPT = """
 You are a Critic agent that receive a plan from the planner to execuate a task from user.
@@ -33,6 +34,7 @@ insight you have from current observation, evaluation using the importance matri
 Feedback: 
 """
 
+
 class Critic(BaseAgent):
     """
     The critic agent receives a plan from the planner and evaluate the plan based on
@@ -48,9 +50,9 @@ class Critic(BaseAgent):
         belief=None,
         action_selector=None,
         num_runs=1,
-        ratio: float=1.0,
+        ratio: float = 1.0,
     ):
-        self.llm=llm
+        self.llm = llm
         self.description = description
         self.shared_memory = shared_memory
         self.belief = belief
@@ -63,7 +65,7 @@ class Critic(BaseAgent):
         score = int(output.split("Score:")[1].split("Evaluation")[0])
         evaluation = output.split("Evaluation: ")[1]
         return score, evaluation
-    
+
     def get_detail_evaluation(self, task: str, plan: str):
         # return score in int and evaluation in string for detail matrix
         prompt = "Task: " + task + "\nPlan: " + plan + DETAIL_PROMPT
@@ -79,10 +81,10 @@ class Critic(BaseAgent):
         result = self.llm.predict(prompt)
         insights = [i for i in result.split("\n") if len(i.strip()) > 0][:5]
         return insights
-    
+
     def post_process(self, feedback: str):
         return [i for i in feedback.split("\n") if i]
-    
+
     def get_feedback(self, task: str, plan: str):
         # take plan, result of evaluation (importance, detail), insight, belief, observation, and generate top 10 feedback
         # observation = self.observe(self.belief)
@@ -101,9 +103,3 @@ class Critic(BaseAgent):
             return self.post_process(feedback)
         else:
             return ""
-        
-    
-
-
-    
-
