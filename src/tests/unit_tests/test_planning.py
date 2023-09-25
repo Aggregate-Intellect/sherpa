@@ -4,6 +4,10 @@ from langchain.llms.base import LLM
 from langchain.llms import OpenAI
 
 
+llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY,temperature=0)
+
+
+
 def test_planning():
     llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY,temperature=0)
 
