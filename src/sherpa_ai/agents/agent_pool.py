@@ -39,6 +39,6 @@ class AgentPool:
         result = ""
 
         for name, agent in self.agents.items():
-            result += f"* {name}: {agent.description}\n"
+            result += f"Agent: {name}.\n Description: {agent.description}\n\n"
 
         return result

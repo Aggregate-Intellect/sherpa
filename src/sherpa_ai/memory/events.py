@@ -1,14 +1,15 @@
-class EventType:
-    def __init__(self, name: str):
-        self.name = name
+from enum import Enum
 
+class EventType (Enum):
+    planning = 1
+    task = 2
+    result = 3
 
-event_types = {
-    "planning": EventType("planning"),
-    "task": EventType("task"),
-    "task_result": EventType("task result")
-}
-
+# event_types = {
+#     "planning": EventType("planning"),
+#     "task": EventType("task"),
+#     "task_result": EventType("task result")
+# }
 
 class Event:
     def __init__(self, event_type: EventType, agent: str, content: str) -> None:
