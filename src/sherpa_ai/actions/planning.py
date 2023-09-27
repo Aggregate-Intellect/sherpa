@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from langchain.llms.base import LLM
 
@@ -8,13 +8,44 @@ PLANNING_PROMPT = """You are a **task decomposition assisstant** who simplifies 
 By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
 Your adaptability ensures customized solutions for diverse needs.
 
+A good plan is concise, detailed, feasible and efficient.
 
 Task: **{task}**
 
 Agents:
 {agent_pool_description}
 
-Please break down the task into individual, detailed steps and designate an appropriate agent for each step. The result should be in the following format:
+Please break down the task into maximum {num_steps} individual, detailed steps and designate an appropriate agent for each step. The result should be in the following format:
+Step 1:
+    Agent: <AgentName>
+    Task: <detailed task description>
+...
+Step N:
+    Agent: <AgentName>
+    Task: <detailed task description>
+
+Do not answer anything else, and do not add any other information in your answer.
+"""  # noqa: E501
+
+
+REVISION_PROMPT = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
+By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
+Your adaptability ensures customized solutions for diverse needs.
+
+A good plan is concise, detailed, feasible and efficient. It should be broken down into individual steps, with each step assigned to an appropriate agent.
+
+Task: **{task}**
+
+Agents:
+{agent_pool_description}
+
+Here is your previous plan:
+{previous_plan}
+
+Here is the feedback from the last run:
+{feedback}
+
+Please revise the plan based on the feedback to maximum {num_steps} steps. The result should be in the following format:
 Step 1:
     Agent: <AgentName>
     Task: <detailed task description>
@@ -57,20 +88,42 @@ class Plan:
 
 
 class TaskPlanning(BaseAction):
-    def __init__(self, llm: LLM):
+    def __init__(self, llm: LLM, num_steps: int = 5):
         self.llm = llm
+        self.num_steps = num_steps
 
         # TODO: define the prompt for planning, it take one arg (task,
         #  agent_pool_description)
         self.prompt = PLANNING_PROMPT
+        self.revision_prompt = REVISION_PROMPT
 
-    def execute(self, task: str, agent_pool_description: str) -> Plan:
+    def execute(
+        self,
+        task: str,
+        agent_pool_description: str,
+        last_plan: Optional[str],
+        feedback: Optional[str],
+    ) -> Plan:
         """
         Execute the action
         """
-        prompt = self.prompt.format(task = task, agent_pool_description = agent_pool_description)
-        # print(prompt)
-        action_output = self.llm(prompt)
+
+        if last_plan is not None or feedback is not None:
+            prompt = self.prompt.format(
+                task=task,
+                agent_pool_description=agent_pool_description,
+                num_steps=self.num_steps,
+            )
+        else:
+            prompt = self.revision_prompt.format(
+                task=task,
+                agent_pool_description=agent_pool_description,
+                previous_plan=last_plan,
+                feedback=feedback,
+                num_steps=self.num_steps,
+            )
+
+        action_output = self.llm.predict(prompt)
 
         return self.post_process(action_output)
 
@@ -83,11 +136,12 @@ class TaskPlanning(BaseAction):
         plan = Plan()
 
         for step_str in steps:
-            lines = step_str.strip() 
-            if len(lines) == 0: continue
-            
+            lines = step_str.strip()
+            if len(lines) == 0:
+                continue
+
             lines = lines.split("\n")
-            
+
             # print(lines)
             agent_name = lines[1].split("Agent:")[1].strip()
             task_description = lines[2].split("Task:")[1].strip()
