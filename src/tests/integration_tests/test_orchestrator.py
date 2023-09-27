@@ -42,7 +42,7 @@ def test_planning():
         num_steps=6
     )
 
-    critic_agent = Critic(llm=orchestrator.llm, ratio=0.9, shared_memory=shared_memeory)
+    critic_agent = Critic(llm=orchestrator.llm, ratio=9, shared_memory=shared_memeory)
 
     plan = orchestrator.plan(objective, planner, critic_agent)
 
