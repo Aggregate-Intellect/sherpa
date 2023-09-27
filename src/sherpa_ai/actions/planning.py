@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from langchain.llms.base import LLM
+from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 
@@ -108,7 +109,7 @@ class TaskPlanning(BaseAction):
         Execute the action
         """
 
-        if last_plan is not None or feedback is not None:
+        if last_plan is None or feedback is None:
             prompt = self.prompt.format(
                 task=task,
                 agent_pool_description=agent_pool_description,
@@ -122,6 +123,8 @@ class TaskPlanning(BaseAction):
                 feedback=feedback,
                 num_steps=self.num_steps,
             )
+
+        logger.debug(f"Prompt: {prompt}")
 
         action_output = self.llm.predict(prompt)
 
