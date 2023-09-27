@@ -45,6 +45,10 @@ def test_planner():
     task = """We need to render a highly complex 3D image on the solar system. We can use any publicly avaliable
     resources to achieve this task."""
 
-    plan = planner.plan(task=task)
+    # shared_memory=None,
+    # belief=None,
+    # action_selector=None,
+    # num_runs=1,
 
-    assert plan is not None
+    p = planner.plan(task=task)
+    assert len(p.steps) > 0
