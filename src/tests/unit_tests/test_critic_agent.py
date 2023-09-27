@@ -16,14 +16,10 @@ Install any necessary tools or development environments for your chosen programm
 Open your chosen code editor or IDE.
 Create a new project or file for your "Hello, World!" program.
 Write the code to display the "Hello, World!" message on the screen. The code will vary depending on the programming language. Here are some examples:
-"""
+"""  # noqa: E501
 
 
 def test_evaluation_matrices():
-    description = """
-    You are a Critic agent that receive a plan from the planner to execuate a task from user.
-    Your goal is to output the 10 most necessary feedback given the corrent plan to solve the task.
-    """
     llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
     critic_agent = Critic(name="CriticAgent", llm=llm, ratio=1)
 

@@ -1,5 +1,4 @@
 from langchain.llms import OpenAI
-from langchain.llms.base import LLM
 
 import sherpa_ai.config as cfg
 from sherpa_ai.agents.agent_pool import AgentPool
@@ -30,20 +29,15 @@ def test_planner():
 
     llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
 
-    planner_description = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
-    By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
-    Your adaptability ensures customized solutions for diverse needs."""
-
     planner = Planner(
         name="planner",
-        description=planner_description,
         agent_pool=agent_pool,
         shared_memory=shared_memeory,
         llm=llm,
     )
 
     task = """We need to render a highly complex 3D image on the solar system. We can use any publicly avaliable
-    resources to achieve this task."""
+    resources to achieve this task."""  # noqa: E501
 
     # shared_memory=None,
     # belief=None,

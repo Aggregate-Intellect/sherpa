@@ -25,5 +25,4 @@ class SharedMemory:
 
     def get_by_type(self, event_type):
         return [event for event in self.events if event.event_type == event_type]
-    
-        
+
