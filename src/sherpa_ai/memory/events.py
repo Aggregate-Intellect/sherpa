@@ -6,6 +6,8 @@ class EventType(Enum):
     task = 2
     result = 3
     feedback = 4
+    action = 5
+    action_output = 6
 
 
 class Event:
