@@ -23,7 +23,7 @@ def test_planning():
         name="Amir",
         description="Amir is an expert in quantum computing and quantum physics",
     )
-    user_agent2 = UserAgent(name="Kepler", description="Amir is an expert in astronomy")
+    user_agent2 = UserAgent(name="Kepler", description="Kepler is an expert in astronomy")
 
     config = OrchestratorConfig()
     orchestrator = Orchestrator(config=config)
