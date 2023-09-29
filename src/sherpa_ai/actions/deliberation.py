@@ -23,16 +23,19 @@ class Deliberation(BaseAction):
         llm: BaseLanguageModel,
         description: str = DELIBERATION_DESCRIPTION,
     ):
+        self.name = "Deliberation"
         self.role_description = role_description
         self.description = description
         self.llm = llm
 
     def execute(self, task: str) -> str:
-        prompt = self.format(task=task)
+        prompt = self.description.format(
+            task=task, role_description=self.role_description
+        )
 
         result = self.llm.predict(prompt)
 
         return result
 
     def __str__(self):
-        return "Deliberation: task(string)"
+        return self.name + ": task(string)"

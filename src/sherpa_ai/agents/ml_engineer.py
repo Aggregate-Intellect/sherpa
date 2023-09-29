@@ -23,20 +23,26 @@ class MLEngineer(BaseAgent):
     ):
         self.name = name
         self.description = description
-    
 
     def search_arxiv(self, query: str, top_k: int):
-        url = 'http://export.arxiv.org/api/query?search_query=all:' + query + "&start=0&max_results=" + str(top_k)
+        url = (
+            "http://export.arxiv.org/api/query?search_query=all:"
+            + query
+            + "&start=0&max_results="
+            + str(top_k)
+        )
         data = urllib.request.urlopen(url)
-        xml_content = data.read().decode('utf-8')
+        xml_content = data.read().decode("utf-8")
 
-        summary_pattern = r'<summary>(.*?)</summary>'
+        summary_pattern = r"<summary>(.*?)</summary>"
         summaries = re.findall(summary_pattern, xml_content, re.DOTALL)
-        title_pattern = r'<title>(.*?)</title>'
+        title_pattern = r"<title>(.*?)</title>"
         titles = re.findall(title_pattern, xml_content, re.DOTALL)
 
         result_list = []
         for i in range(len(titles)):
-            result_list.append("Title: " + titles[i] + "\n" + "Summary: " + summaries[i])
-        
+            result_list.append(
+                "Title: " + titles[i] + "\n" + "Summary: " + summaries[i]
+            )
+
         return result_list
