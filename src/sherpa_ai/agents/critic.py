@@ -4,7 +4,8 @@ from langchain.chat_models.base import BaseChatModel
 from loguru import logger
 
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.memory import Belief, EventType, SharedMemory
+from sherpa_ai.events import EventType
+from sherpa_ai.memory import Belief, SharedMemory
 
 DESCRIPTION_PROMPT = """
 You are a Critic agent that receive a plan from the planner to execuate a task from user.

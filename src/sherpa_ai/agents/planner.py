@@ -6,8 +6,8 @@ from loguru import logger
 from sherpa_ai.actions.planning import TaskPlanning
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.base import BaseAgent
+from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory import Belief, SharedMemory
-from sherpa_ai.memory.events import Event, EventType
 
 PLANNER_DESCRIPTION = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
 By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.

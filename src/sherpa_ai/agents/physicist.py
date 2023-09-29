@@ -1,10 +1,13 @@
+from typing import List
+
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
 from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
+from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.memory import Belief, EventType, SharedMemory
+from sherpa_ai.memory import Belief, SharedMemory
 
 PHYSICIST_DESCRIPTION = "You are a physicist with a deep-rooted expertise in understanding and analyzing the fundamental principles of the universe, spanning from the tiniest subatomic particles to vast cosmic phenomena. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex physics-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."  # noqa: E501
 
@@ -32,50 +35,18 @@ class Physicist(BaseAgent):
         self.num_runs = num_runs
         self.belief = Belief()
 
-    def run(self):
-        self.shared_memory.observe(self.belief)
-
-        actions = [
+    def create_actions(self) -> List[BaseAction]:
+        return [
             Deliberation(self.description, self.llm),
             GoogleSearch(self.description, self.belief.current_task, self.llm),
         ]
 
-        self.belief.set_actions(actions)
-
-        for _ in range(self.num_runs):
-            result = self.action_planner.select_action(self.belief)
-            logger.debug(f"Action selected: {result}")
-
-            if result is None:
-                # this means the action selector choose to finish
-                break
-
-            action_name, inputs = result
-            action = self.belief.get_action(action_name)
-
-            self.belief.update_internal(
-                EventType.action, self.name, action_name + str(inputs)
-            )
-
-            if action is None:
-                logger.error(f"Action {action_name} not found")
-                continue
-
-            action_output = self.act(action, inputs)
-            logger.debug(f"Action output: {action_output}")
-
-            self.belief.update_internal(
-                EventType.action_output, self.name, action_output
-            )
-
-        synthesize_action = SynthesizeOutput(
-            self.description, self.llm
-        )
+    def synthesize_output(self) -> str:
+        synthesize_action = SynthesizeOutput(self.description, self.llm)
         result = synthesize_action.execute(
             self.belief.current_task.content,
             self.belief.get_context(self.llm.get_num_tokens),
             self.belief.get_internal_history(self.llm.get_num_tokens),
         )
 
-        self.shared_memory.add(EventType.result, self.name, result)
         return result

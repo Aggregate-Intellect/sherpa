@@ -1,4 +1,13 @@
-class BaseAgent:
+from abc import ABC, abstractmethod
+from typing import List
+
+from loguru import logger
+
+from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.events import EventType
+
+
+class BaseAgent(ABC):
     def __init__(
         self,
         name: str,
@@ -25,25 +34,50 @@ class BaseAgent:
     def add_reflection(self, reflection):
         self.reflections.append(reflection)
 
+    @abstractmethod
+    def create_actions(self) -> List[BaseAction]:
+        pass
+
+    @abstractmethod
+    def synthesize_output(self) -> str:
+        pass
+
     def run(self):
-        finished = False
-        runs = 0
-        observation = self.observe()
+        self.shared_memory.observe(self.belief)
 
-        while not finished and runs < self.num_runs:
-            self.belief.update(observation)
-            action, inputs = self.action_selector.select_action(self.belief)
+        actions = self.create_actions()
+        self.belief.set_actions(actions)
+
+        for _ in range(self.num_runs):
+            result = self.action_planner.select_action(self.belief)
+            logger.debug(f"Action selected: {result}")
+
+            if result is None:
+                # this means the action selector choose to finish
+                break
+
+            action_name, inputs = result
+            action = self.belief.get_action(action_name)
+
+            self.belief.update_internal(
+                EventType.action, self.name, action_name + str(inputs)
+            )
+
+            if action is None:
+                logger.error(f"Action {action_name} not found")
+                continue
+
             action_output = self.act(action, inputs)
-            observation = action_output
-            finished = False
-            for reflection in self.reflections:
-                finished, observation = reflection.reflect(self.belief, observation)
-                if finished:
-                    break
+            logger.debug(f"Action output: {action_output}")
 
-            runs += 1
+            self.belief.update_internal(
+                EventType.action_output, self.name, action_output
+            )
 
-        return observation
+        result = self.synthesize_output()
+
+        self.shared_memory.add(EventType.result, self.name, result)
+        return result
 
     def observe(self):
         return self.shared_memory.observe(self.belief)

@@ -5,7 +5,7 @@ from langchain.chat_models import ChatOpenAI
 from loguru import logger
 
 import sherpa_ai.config
-from sherpa_ai.agents import Physicist
+from sherpa_ai.agents import MLEngineer
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 
@@ -17,21 +17,21 @@ def config_logger():
 
 
 def test_physicist(config_logger):
-    llm = ChatOpenAI(model_name='gpt-4')
+    llm = ChatOpenAI(model_name="gpt-4")
 
     shared_memory = SharedMemory(
         objective="Develop an deep Learning-Based approach for estimating the maximum wind speed of a tropical cyclone using satellite imagery",
         agent_pool=None,
     )
-    physicist = Physicist(llm=llm, shared_memory=shared_memory)
+    ml_engineer = MLEngineer(llm=llm, shared_memory=shared_memory)
 
     shared_memory.add(
         EventType.task,
         "Planner",
-        "Conduct in-depth research to understand the meteorological aspects of tropical cyclones. Focus on understanding how specific features visible in satellite imagery, such as cloud patterns, temperature gradients, and precipitation patterns, can be related to the cyclone's maximum wind speed.",
+        "Develop a machine learning algorithm based on the refined theoretical model. Specifically, use a Neural Network algorithm with parameters set to optimally process the identified variables. The objective is to estimate maximum wind speed of a tropical cyclone from satellite imagery.",
     )
 
-    physicist.run()
+    ml_engineer.run()
 
     results = shared_memory.get_by_type(EventType.result)
     assert len(results) == 1
