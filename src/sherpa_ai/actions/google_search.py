@@ -1,4 +1,5 @@
 from langchain.base_language import BaseLanguageModel
+from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.tools import SearchTool
@@ -24,6 +25,7 @@ class GoogleSearch(BaseAction):
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         n: int = 5,
     ):
+        self.name = "GoogleSearch"
         self.role_description = role_description
         self.task = task
 
@@ -36,11 +38,18 @@ class GoogleSearch(BaseAction):
     def execute(self, query) -> str:
         result = self.search_tool._run(query)
 
-        prompt = self.format(task=self.task, documents=result, n=self.n)
+        logger.debug("Search Result: {}", result)
+
+        prompt = self.description.format(
+            task=self.task,
+            documents=result,
+            n=self.n,
+            role_description=self.role_description,
+        )
 
         result = self.llm.predict(prompt)
 
         return result
 
     def __str__(self):
-        return "GoogleSearch: query(strig)"
+        return self.name + ": query(strig)"

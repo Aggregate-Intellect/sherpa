@@ -1,6 +1,7 @@
 from typing import Optional, Tuple
 
 from langchain.base_language import BaseLanguageModel
+from loguru import logger
 
 from sherpa_ai.action_planner.base import BaseActionPlanner
 from sherpa_ai.memory.belief import Belief
@@ -9,7 +10,8 @@ SELECTION_DESCRIPTION = """{role_description}
 
 **Task Description**: {task_description}
 
-**Possible Actions**: {possible_actions}
+**Possible Actions**:
+{possible_actions}
 
 **Task Context**:
 {task_context}
@@ -17,12 +19,14 @@ SELECTION_DESCRIPTION = """{role_description}
 **History of Previous Actions**:
 {history_of_previous_actions}
 
-{output_instruction}
-
-Please respond in the following format:
-"[Action Name] : [Argument1(Input Value), Argument2(Input Value), ...]"
+Please respond in the following format strictly, do not Reformat the text:
+"Action Name : ArgumentName1(Input Value); ArgumentName2(Input Value); ..."
 
 If you believe the task is complete and no further actions are necessary, respond with "Finished".
+
+{output_instruction}
+
+Follow the described fromat strictly. Select only one action and use one argument exactly once.
 
 """  # noqa: E501
 
@@ -40,7 +44,7 @@ class ActionPlanner(BaseActionPlanner):
         self.output_instruction = output_instruction
         self.llm = llm
 
-    def transform_output(output_str: str) -> Tuple[str, dict]:
+    def transform_output(self, output_str: str) -> Tuple[str, dict]:
         """
         Transform the output string into an action and arguments
 
@@ -56,11 +60,14 @@ class ActionPlanner(BaseActionPlanner):
         action, args_str = output_str.split(":")
 
         # Extracting individual arguments
-        args_list = args_str.split(",")
+        args_list = args_str.split(";")
 
+        logger.debug(f"Args: {args_list}")
         # Parsing arguments into a dictionary
         args_dict = {}
         for arg in args_list:
+            if arg == "":
+                continue
             arg_name, arg_value = arg.split("(")
             arg_value = arg_value.rstrip(")")
 
@@ -85,7 +92,7 @@ class ActionPlanner(BaseActionPlanner):
             str: Action to be taken
             dict: Arguments for the action
         """
-        task_description = belief.current_task
+        task_description = belief.current_task.content
         task_context = belief.get_context(self.llm.get_num_tokens)
         possible_actions = belief.action_description
         history_of_previous_actions = belief.get_internal_history(
@@ -101,8 +108,11 @@ class ActionPlanner(BaseActionPlanner):
             output_instruction=self.output_instruction,
         )
 
+        logger.debug(f"Prompt: {prompt}")
         result = self.llm.predict(prompt)
         result = result.split("\n")[0].strip()
+
+        logger.debug(f"Result: {result}")
 
         if result == "Finished":
             return None

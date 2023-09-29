@@ -44,6 +44,7 @@ class Physicist(BaseAgent):
 
         for _ in range(self.num_runs):
             result = self.action_planner.select_action(self.belief)
+            logger.debug(f"Action selected: {result}")
 
             if result is None:
                 # this means the action selector choose to finish
@@ -61,12 +62,20 @@ class Physicist(BaseAgent):
                 continue
 
             action_output = self.act(action, inputs)
+            logger.debug(f"Action output: {action_output}")
+
             self.belief.update_internal(
                 EventType.action_output, self.name, action_output
             )
 
-        synthesize_action = SynthesizeOutput(self.description, self.llm)
-        result = synthesize_action.run(self.belief)
+        synthesize_action = SynthesizeOutput(
+            self.description, self.llm
+        )
+        result = synthesize_action.execute(
+            self.belief.current_task.content,
+            self.belief.get_context(self.llm.get_num_tokens),
+            self.belief.get_internal_history(self.llm.get_num_tokens),
+        )
 
         self.shared_memory.add(EventType.result, self.name, result)
         return result

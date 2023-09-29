@@ -25,7 +25,7 @@ def get_tools(memory):
     tools.append(ContextTool(memory=memory))
 
     if cfg.SERPER_API_KEY is not None:
-        search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
+        search_tool = SearchTool()
         tools.append(search_tool)
     else:
         logger.warning(
@@ -41,11 +41,13 @@ class SearchTool(BaseTool):
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
-    api_wrapper: GoogleSerperAPIWrapper
 
     def _run(self, query: str) -> str:
+        logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
+        logger.debug(f"Google Search Result: {search_results}")
+
         # case 1: answerBox in the result dictionary
         if search_results.get("answerBox", False):
             answer_box = search_results.get("answerBox", {})

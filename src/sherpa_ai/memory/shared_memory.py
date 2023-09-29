@@ -21,7 +21,7 @@ class SharedMemory:
         self.add_event(event)
 
     def observe(self, belief: Belief):
-        tasks = self.shared_memory.get_by_type(EventType.task)
+        tasks = self.get_by_type(EventType.task)
         task = tasks[-1] if len(tasks) > 0 else ""
 
         belief.set_current_task(task)

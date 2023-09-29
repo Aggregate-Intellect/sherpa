@@ -33,7 +33,7 @@ class Belief:
     def set_current_task(self, task):
         self.current_task = task
 
-    def get_context(self, token_counter: Callable[[str], int], max_tokens=2000):
+    def get_context(self, token_counter: Callable[[str], int], max_tokens=4000):
         """
         Get the context of the agent
 
@@ -46,6 +46,12 @@ class Belief:
         """
         context = ""
         for event in reversed(self.events):
+            if (
+                event.event_type == EventType.task
+                or event.event_type == EventType.result
+            ):
+                continue
+
             context += event.content + "\n"
 
             if token_counter(context) > max_tokens:
@@ -54,7 +60,7 @@ class Belief:
         return context
 
     def get_internal_history(
-        self, token_counter: Callable[[str], int], max_tokens=2000
+        self, token_counter: Callable[[str], int], max_tokens=4000
     ):
         """
         Get the internal history of the agent
@@ -66,12 +72,17 @@ class Belief:
         Returns:
             str: Internal history of the agent
         """
-        context = ""
-        for event in reversed(self.internal_events):
-            context += event.content + "\n"
+        results = []
+        current_tokens = 0
 
-            if token_counter(context) > max_tokens:
+        for event in reversed(self.internal_events):
+            results.append(event.content)
+            current_tokens += token_counter(event.content)
+
+            if current_tokens > max_tokens:
                 break
+
+        context = "\n".join(reversed(results))
 
         return context
 
