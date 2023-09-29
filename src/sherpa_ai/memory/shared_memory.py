@@ -1,8 +1,8 @@
 from typing import List
 
 from sherpa_ai.agents import AgentPool
+from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory.belief import Belief
-from sherpa_ai.memory.events import Event, EventType
 
 
 class SharedMemory:

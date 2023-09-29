@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.memory.events import Event, EventType
+from sherpa_ai.events import Event, EventType
 
 
 class Belief:

@@ -1,4 +1,8 @@
 import os
+import re
+import urllib
+import urllib.parse
+import urllib.request
 from typing import Any
 
 import requests
@@ -12,9 +16,6 @@ from loguru import logger
 from typing_extensions import Literal
 
 import sherpa_ai.config as cfg
-import re
-import urllib
-import urllib.request
 
 
 def get_tools(memory):
@@ -37,30 +38,45 @@ def get_tools(memory):
 
     return tools
 
+
 class SearchArxivTool(BaseTool):
     name = "Arxiv Search"
     description = (
         "Access all the papers from Arxiv to search for domain-specific scientific publication."
         "Only use this tool when you need information in the scientific paper."
     )
-    
+
     def _run(self, query: str) -> str:
         top_k = 10
 
-        url = 'http://export.arxiv.org/api/query?search_query=all:' + query.strip() + "&start=0&max_results=" + str(top_k)
+        logger.debug(f"Search query: {query}")
+        query = urllib.parse.quote_plus(query)
+        url = (
+            "http://export.arxiv.org/api/query?search_query=all:"
+            + query.strip()
+            + "&start=0&max_results="
+            + str(top_k)
+        )
         data = urllib.request.urlopen(url)
-        xml_content = data.read().decode('utf-8')
+        xml_content = data.read().decode("utf-8")
 
-        summary_pattern = r'<summary>(.*?)</summary>'
+        summary_pattern = r"<summary>(.*?)</summary>"
         summaries = re.findall(summary_pattern, xml_content, re.DOTALL)
-        title_pattern = r'<title>(.*?)</title>'
+        title_pattern = r"<title>(.*?)</title>"
         titles = re.findall(title_pattern, xml_content, re.DOTALL)
 
         result_list = []
         for i in range(len(titles)):
-            result_list.append("Title: " + titles[i] + "\n" + "Summary: " + summaries[i])
+            result_list.append(
+                "Title: " + titles[i] + "\n" + "Summary: " + summaries[i]
+            )
+
+        logger.debug(f"Arxiv Search Result: {result_list}")
         
         return " ".join(result_list)
+
+    def _arun(self, query: str) -> str:
+        raise NotImplementedError("SearchArxivTool does not support async run")
 
 
 class SearchTool(BaseTool):

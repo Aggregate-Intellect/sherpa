@@ -32,11 +32,17 @@ class ArxivSearch(BaseAction):
         self.n = n
 
         self.search_tool = SearchArxivTool()
+        self.name = "ArxivSearch"
 
     def execute(self, query) -> str:
         result = self.search_tool._run(query)
 
-        prompt = self.format(task=self.task, documents=result, n=self.n)
+        prompt = self.description.format(
+            task=self.task,
+            paper_title_summary=result,
+            n=self.n,
+            role_description=self.role_description,
+        )
 
         result = self.llm.predict(prompt)
 
