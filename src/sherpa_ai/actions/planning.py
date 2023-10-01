@@ -25,7 +25,7 @@ Step N:
     Agent: <AgentName>
     Task: <detailed task description>
 
-Do not answer anything else, and do not add any other information in your answer.
+Do not answer anything else, and do not add any other information in your answer. Only select agents from the the list and only select one agent at a time.
 """  # noqa: E501
 
 
@@ -55,7 +55,7 @@ Step N:
     Agent: <AgentName>
     Task: <detailed task description>
 
-Do not answer anything else, and do not add any other information in your answer.
+Do not answer anything else, and do not add any other information in your answer. Only select agents from the the list and only select one agent at a time.
 """  # noqa: E501
 
 
@@ -73,6 +73,10 @@ class Step:
     def __str__(self) -> str:
         return f"Agent: {self.agent_name}\nTask: {self.task}\n"
 
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["agent_name"], data["task"])
+
 
 class Plan:
     def __init__(self):
@@ -86,6 +90,16 @@ class Plan:
         for i, step in enumerate(self.steps):
             result += f"Step {i + 1}:\n{str(step)}"
         return result
+
+    @property
+    def __dict__(self):
+        return {"steps": [step.__dict__ for step in self.steps]}
+
+    @classmethod
+    def from_dict(cls, data):
+        plan = cls()
+        plan.steps = [Step.from_dict(step) for step in data["steps"]]
+        return plan
 
 
 class TaskPlanning(BaseAction):

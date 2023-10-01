@@ -4,7 +4,6 @@ from loguru import logger
 from sherpa_ai.actions.base import BaseAction
 
 SYNTHESIZE_DESCRIPTION = """{role_description}
-Task: {task}
 
 Context: {context}
 
@@ -12,7 +11,8 @@ Action - Result History:
 {history}
 
 Given the context and the action-result history, please complete the task mentioned. Include any links you used from the context and history in the result.
-
+Task: {task}
+Result:
 """  # noqa: E501
 
 
