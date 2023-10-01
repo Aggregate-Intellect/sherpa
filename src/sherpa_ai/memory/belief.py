@@ -15,7 +15,6 @@ class Belief:
 
     def update(self, observation: Event):
         if observation in self.events:
-            print("No!!!!")
             return
 
         self.events.append(observation)

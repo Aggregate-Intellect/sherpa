@@ -67,7 +67,7 @@ class Planner(BaseAgent):
         # run the planning
         plan = self.planning.execute(task, agent_pool_description, last_plan, feedback)
 
-        logger.debug(f"Plan: {plan}")
+        logger.info(f"Plan: {plan}")
 
         self.shared_memory.add(
             event_type=EventType.planning, agent=self.name, content=str(plan)

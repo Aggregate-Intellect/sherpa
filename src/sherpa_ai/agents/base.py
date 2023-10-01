@@ -50,7 +50,7 @@ class BaseAgent(ABC):
 
         for _ in range(self.num_runs):
             result = self.action_planner.select_action(self.belief)
-            logger.debug(f"Action selected: {result}")
+            logger.info(f"Action selected: {result}")
 
             if result is None:
                 # this means the action selector choose to finish
@@ -68,14 +68,14 @@ class BaseAgent(ABC):
                 continue
 
             action_output = self.act(action, inputs)
-            logger.debug(f"Action output: {action_output}")
+            logger.info(f"Action output: {action_output}")
 
             self.belief.update_internal(
                 EventType.action_output, self.name, action_output
             )
 
         result = self.synthesize_output()
-        logger.debug(f"Result: {result}")
+        logger.info(f"Result: {result}")
 
         self.shared_memory.add(EventType.result, self.name, result)
         return result

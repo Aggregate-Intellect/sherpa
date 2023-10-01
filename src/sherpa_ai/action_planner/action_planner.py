@@ -68,7 +68,7 @@ class ActionPlanner(BaseActionPlanner):
         for arg in args_list:
             if arg == "":
                 continue
-            arg_name, arg_value = arg.split("(")
+            arg_name, arg_value = arg.split("(", 1)
             arg_value = arg_value.rstrip(")")
 
             args_dict[arg_name.strip()] = arg_value.strip()
