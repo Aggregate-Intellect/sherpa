@@ -11,7 +11,7 @@ from sherpa_ai.memory import Belief, SharedMemory
 
 PLANNER_DESCRIPTION = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
 By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
-Your adaptability ensures customized solutions for diverse needs.
+Your adaptability ensures customized solutions for diverse needs. 
 """  # noqa: E501
 
 
@@ -74,3 +74,9 @@ class Planner(BaseAgent):
         )
 
         return plan
+
+    def create_actions(self):
+        pass
+
+    def synthesize_output(self) -> str:
+        pass

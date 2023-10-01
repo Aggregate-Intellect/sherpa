@@ -75,6 +75,7 @@ class BaseAgent(ABC):
             )
 
         result = self.synthesize_output()
+        logger.debug(f"Result: {result}")
 
         self.shared_memory.add(EventType.result, self.name, result)
         return result

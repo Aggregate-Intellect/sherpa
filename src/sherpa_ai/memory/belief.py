@@ -11,9 +11,11 @@ class Belief:
 
         self.events: List[Event] = []
         self.internal_events: List[Event] = []
+        self.current_task: Event = None
 
     def update(self, observation: Event):
         if observation in self.events:
+            print("No!!!!")
             return
 
         self.events.append(observation)
@@ -28,9 +30,9 @@ class Belief:
         self.internal_events.append(event)
 
     def get_by_type(self, event_type):
-        return [event for event in self.events if event.event_type == event_type]
+        return [event for event in self.internal_events if event.event_type == event_type]
 
-    def set_current_task(self, task):
+    def set_current_task(self, task: Event):
         self.current_task = task
 
     def get_context(self, token_counter: Callable[[str], int], max_tokens=4000):
@@ -50,12 +52,13 @@ class Belief:
                 event.event_type == EventType.task
                 or event.event_type == EventType.result
             ):
-                continue
+                context = event.content + "\n" + context
 
-            context += event.content + "\n"
+                if token_counter(context) > max_tokens:
+                    break
 
-            if token_counter(context) > max_tokens:
-                break
+        if context == "":
+            exit(1)
 
         return context
 
@@ -101,3 +104,23 @@ class Belief:
                 break
 
         return result
+
+    @property
+    def __dict__(self):
+        return {
+            "events": [event.__dict__ for event in self.events],
+            "internal_events": [event.__dict__ for event in self.internal_events],
+            "current_task": self.current_task.__dict__ if self.current_task else None,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        belief = cls()
+        belief.events = [Event.from_dict(event) for event in data["events"]]
+        belief.internal_events = [
+            Event.from_dict(event) for event in data["internal_events"]
+        ]
+        belief.current_task = (
+            Event.from_dict(data["current_task"]) if data["current_task"] else None
+        )
+        return belief
