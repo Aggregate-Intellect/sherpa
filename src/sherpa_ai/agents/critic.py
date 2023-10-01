@@ -97,7 +97,7 @@ class Critic(BaseAgent):
         # approve or not, check score/ ratio
         # insights = self.get_insight()
 
-        logger.debug(f"i_score: {i_score}, d_score: {d_score}")
+        logger.info(f"i_score: {i_score}, d_score: {d_score}")
 
         if i_score < 10 * self.ratio or d_score < 10 * self.ratio:
             prompt = (
@@ -111,7 +111,7 @@ class Critic(BaseAgent):
             feedback = self.llm.predict(self.description + prompt)
 
             self.shared_memory.add(EventType.feedback, self.name, feedback)
-            logger.debug(f"feedback: {feedback}")
+            logger.info(f"feedback: {feedback}")
 
             return self.post_process(feedback)
         else:
