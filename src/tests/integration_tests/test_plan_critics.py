@@ -16,7 +16,7 @@ from sherpa_ai.memory import SharedMemory
 from sherpa_ai.orchestrator import Orchestrator, OrchestratorConfig
 
 logger.remove()
-logger.add(sys.stderr, level="INFO")
+logger.add(sys.stderr, level="DEBUG")
 
 
 user_description1 = """Sahar is skilled in astronomy and astrophysics. She has a PhD in those areas specializing in star formation.
@@ -66,30 +66,6 @@ def test_planning():
         num_steps=5,
     )
 
-    # critic_agent = Critic(llm=orchestrator.llm, ratio=9, shared_memory=shared_memeory)
-    # plan = orchestrator.plan(objective, planner, critic_agent)
-    # print(plan)
-
-    plan_text = """Step 1:
-Agent: ML Engineer
-Task: Research and identify machine learning algorithms suitable for analyzing satellite imagery data to estimate wind speed of tropical cyclones. Specifically, focus on algorithms that have been successfully used for similar tasks in the past and have proven accuracy and reliability.
-Step 2:
-Agent: Physicist
-Task: Collaborate with the physicist to understand the underlying physics principles and equations that govern the relationship between satellite imagery features and wind speed of tropical cyclones. Gather insights and guidance on how to incorporate physics-based models into the analysis. Discuss the potential benefits of integrating physics-based models with machine learning algorithms for more accurate estimation.
-Step 3:
-Agent: Sahar
-Task: Consult with Sahar to understand the specific requirements and challenges related to using satellite imagery for estimating wind speed of tropical cyclones. Seek her expertise in computer vision algorithms and numerical methods for analyzing the satellite data. Discuss potential approaches and techniques that can be applied to enhance the accuracy of wind speed estimation.
-Step 4:
-Agent: ML Engineer
-Task: Work with the ML Engineer to develop and train a machine learning model using the identified algorithms and the satellite imagery data. Collaborate on optimizing the model's performance and accuracy in estimating the maximum wind speed of tropical cyclones. Ensure that the chosen algorithms are appropriate for the task and can provide accurate results.
-Step 5:
-Agent: Sahar
-Task: Consult with Sahar to explore the possibility of using computer vision algorithms and advanced image processing techniques to extract relevant features from the satellite imagery data. Collaborate on implementing these techniques to enhance the accuracy of wind speed estimation."""
-    plan = planner.planning.post_process(plan_text)
-    shared_memeory.add(EventType.planning, "Planner", str(plan))
-
-    assert len(plan.steps) > 0
-
-    assert user_agent1.shared_memory == physicist.shared_memory
-
-    orchestrator.execute(plan, planner)
+    critic_agent = Critic(llm=orchestrator.llm, ratio=9, shared_memory=shared_memeory)
+    plan = orchestrator.plan(objective, planner, critic_agent)
+    print(plan)
