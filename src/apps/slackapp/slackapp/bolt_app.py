@@ -126,6 +126,8 @@ def event_test(client, say, event):
     replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
 
+    if replies["messages"][0]['files'] is not None:
+         say("media file is not supported please use text only.", thread_ts=thread_ts)
     # check if the verbose is on
     verbose_on = contains_verbose(question)
     verbose_logger = (
