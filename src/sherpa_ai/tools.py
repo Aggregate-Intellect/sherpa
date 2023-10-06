@@ -15,14 +15,10 @@ import sherpa_ai.config as cfg
 
 
 def get_tools(memory):
-    prompt = (
-        "You are an assistant helping user solve the task. Perform the task as writen"
-        "in the instruction.\nTask: {input}\nResult: "
-    )
-    prompt = Prompt.from_template(prompt)
     tools = []
 
-    tools.append(ContextTool(memory=memory))
+    # tools.append(ContextTool(memory=memory))
+    tools.append(UserInputTool())
 
     if cfg.SERPER_API_KEY is not None:
         search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
@@ -122,7 +118,11 @@ class SearchTool(BaseTool):
 
 class ContextTool(BaseTool):
     name = "Context Search"
-    description = "Access internal documents for various information."
+    description = (
+        "Access internal technical documentation for AI related projects, including"
+        + "Fixie, LangChain, GPT index, GPTCache, GPT4ALL, autoGPT, db-GPT, AgentGPT, sherpa."
+        + "Only use this tool if you need information for these projects specifically."
+    )
     memory: VectorStoreRetriever
 
     def _run(self, query: str) -> str:
@@ -147,7 +147,7 @@ class UserInputTool(BaseTool):
     name = "UserInput"
     description = (
         "Access the user input for the task."
-        "You use this tool if you need further clarification of the task from the user."
+        "You use this tool if you need more context and would like to ask clarifying questions to solve the task"
     )
 
     def _run(self, query: str) -> str:

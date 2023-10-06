@@ -3,12 +3,14 @@
 #  Importing necessary modules
 ##############################################
 
+import time
 from typing import Dict, List
 
 from flask import Flask, request
 from loguru import logger
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
+from slackapp.routes.whitelist import whitelist_blueprint
 
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import get_vectordb
@@ -135,15 +137,18 @@ def event_test(client, say, event):
     team_id = input_message["team"]
     combined_id = user_id + "_" + team_id
 
-    user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
+    if cfg.FLASK_DEBUG:
+        can_excute = True
+    else:
+        user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
 
-    usage_cheker = user_db.check_usage(
-        user_id=user_id,
-        combined_id=combined_id,
-        token_ammount=count_string_tokens(question, "gpt-3.5-turbo"),
-    )
-    can_excute = usage_cheker["can_excute"]
-    user_db.close_connection()
+        usage_cheker = user_db.check_usage(
+            user_id=user_id,
+            combined_id=combined_id,
+            token_ammount=count_string_tokens(question, "gpt-3.5-turbo"),
+        )
+        can_excute = usage_cheker["can_excute"]
+        user_db.close_connection()
 
     # only will be excuted if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
@@ -162,7 +167,7 @@ def event_test(client, say, event):
 
         say(results, thread_ts=thread_ts)
     else:
-        say(cfg.DAILY_LIMIT_REACHED_MESSAGE, thread_ts=thread_ts)
+        say(f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_cheker['time_left']}.Thank you for your patience and understanding.""", thread_ts=thread_ts)
 
 
 @app.event("app_home_opened")
@@ -215,6 +220,8 @@ def update_home_tab(client, event):
 ###########################################################################
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
+flask_app.register_blueprint(whitelist_blueprint, url_prefix="/auth")
+
 
 if cfg.FLASK_DEBUG:
 

@@ -48,8 +48,9 @@ DAILY_TOKEN_LIMIT = environ.get("DAILY_TOKEN_LIMIT") or 20000
 TEMPRATURE = environ.get("TEMPRATURE") or 0
 DAILY_LIMIT_REACHED_MESSAGE = (
     environ.get("DAILY_LIMIT_REACHED_MESSAGE")
-    or "I  for the inconvenience, but it seems that you have exceeded your daily token limit. As a result, you will need to try again after 24 hours. Thank you for your understanding."
+    or "Sorry for the inconvenience, but it seems that you have exceeded your daily token limit. As a result, you will need to try again after 24 hours. Thank you for your understanding."
 )
+LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
 
 
 # Configure logger. To get JSON serialization, set serialize=True.
