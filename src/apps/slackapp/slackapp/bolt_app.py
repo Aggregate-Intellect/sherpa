@@ -35,10 +35,12 @@ app = App(
 bot = app.client.auth_test()
 logger.info(f"App init: bot auth_test results {bot}")
 
+def before_first_request():
+    UserUsageTracker().download_from_s3("sherpa-sqlight" , "token_counter.db" , "./token_counter.db")
+before_first_request()
 ###########################################################################
 # Define Slack client functionality:
 ###########################################################################
-
 
 @app.command("/hello-socket-mode")
 def hello_command(ack, body):
@@ -145,7 +147,7 @@ def event_test(client, say, event):
         usage_cheker = user_db.check_usage(
             user_id=user_id,
             combined_id=combined_id,
-            token_ammount=count_string_tokens(question, "gpt-3.5-turbo"),
+            token_amount=count_string_tokens(question, "gpt-3.5-turbo"),
         )
         can_excute = usage_cheker["can_excute"]
         user_db.close_connection()
