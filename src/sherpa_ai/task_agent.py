@@ -85,7 +85,7 @@ class TaskAgent:
         action_planner: BaseActionPlanner = None,
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseTaskOutputParser] = None,
-        max_iterations: int = 5,
+        max_iterations: int = 1,
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         if action_planner is None:
@@ -123,7 +123,7 @@ class TaskAgent:
         while True:
             # Discontinue if continuous limit is reached
             loop_count = self.loop_count
-            logger_step = {"Step": f"{loop_count}/{self.max_iterations}"}
+            logger_step = {"Step": f"{loop_count + 1}/{self.max_iterations}"}
 
             if loop_count >= self.max_iterations:
                 user_input = (
@@ -203,7 +203,7 @@ class TaskAgent:
                 tool = tools[action.name]
 
                 if tool.name == "UserInput":
-                    return {"type": "user_input", "query": action.args["query"]}
+                    return action.args["query"]
 
                 try:
                     observation = tool.run(action.args)
