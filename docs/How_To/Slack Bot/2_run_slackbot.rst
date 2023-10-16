@@ -8,6 +8,10 @@ text processing tasks. While you can :doc:`talk to Sherpa in the AISC Slack work
 if you want to go deeper and contribute to code or run Sherpa in your own Slack workspace then 
 this section is for you.
 
+Video tutorial
+--------------
+https://youtu.be/HX4lxzBkEoQ?si=6NlQupyZPrM3MHr1
+
 Slackbot Features
 -----------------
 
