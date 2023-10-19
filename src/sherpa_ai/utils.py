@@ -14,6 +14,7 @@ from loguru import logger
 import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
 
+import pdfplumber
 
 def load_files(files: List[str]) -> List[Document]:
     documents = []
@@ -115,14 +116,13 @@ def count_string_tokens(string: str, model_name: str) -> int:
 def chunk_and_summarize(
     text_data: str,
     question: str,
-    open_ai_key: str,
     link: str,
     team_id: str = None,
     user_id: str = None,
 ):
     llm = SherpaOpenAI(
         temperature=cfg.TEMPRATURE,
-        openai_api_key=open_ai_key,
+        openai_api_key=cfg.OPENAI_API_KEY,
         user_id=user_id,
         team_id=team_id,
     )
@@ -148,7 +148,50 @@ def chunk_and_summarize(
         chunk_summary.append(summarized)
 
     return " ".join(chunk_summary)
+def chunk_and_summarize_file(
+    text_data: str,
+    question: str,
+    file_name: str,
+    file_format: str,
+    title: str = None,
+    team_id: str = None,
+    user_id: str = None,
+):
+    
+    llm = SherpaOpenAI(
+        temperature=cfg.TEMPRATURE,
+        openai_api_key=cfg.OPENAI_API_KEY,
+        user_id=user_id,
+        team_id=team_id,
+    )
 
+    title = f",title {title} " if title is not None else ""
+
+    instruction = (
+        "include any information that can be used to answer the "
+        "question '{question}' the given literal text is a data "
+        "from the file named {file_name} {title} and file format {file_format} . Do not directly answer the question itself"
+    )
+    text_splitter = TokenTextSplitter(chunk_size=3000, chunk_overlap=0)
+    chunked_text = text_splitter.split_text(text_data)
+    chunk_summary = []
+    for text in chunked_text:
+        summarized = llm.predict(
+            f"""Write a concise summary of the following text
+            {instruction}:
+            "\n\n\n
+            f'LITERAL TEXT: {text}
+            \n\n\n
+            CONCISE SUMMARY: The text is best summarized as"""
+        )
+        chunk_summary.append(summarized)
+    return " ".join(chunk_summary)
+
+def question_with_file_reconstructor(data: str, file_name:str , title: str | None , file_format:str ,  question: str):
+    result = question + "./n Reference:"
+    title = f"'title':'{title}'" if title is not None else ""
+    result = result + f"""[ {{file_name: '{file_name}' , {title}  , file_format:'{file_format}' , content_of_{file_name}:'{data}'}} ]"""
+    return result
 
 # ---- add this for verbose output --- #
 
@@ -200,3 +243,11 @@ def show_commands_only(logs):
 
     log_string = "\n".join(log_strings)
     return log_string
+
+
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
+    return text

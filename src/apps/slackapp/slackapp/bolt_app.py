@@ -17,6 +17,7 @@ from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.error_handling import AgentErrorHandler
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
+from sherpa_ai.scrape.file_scraper import QuestionWithFileHandler
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 from sherpa_ai.task_agent import TaskAgent
 from sherpa_ai.tools import get_tools
@@ -126,6 +127,7 @@ def event_test(client, say, event):
     replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
 
+    
     # check if the verbose is on
     verbose_on = contains_verbose(question)
     verbose_logger = (
@@ -133,8 +135,11 @@ def event_test(client, say, event):
     )
 
     input_message = replies["messages"][-1]
-    user_id = input_message["user"]
-    team_id = input_message["team"]
+    user_id = input_message["user"] 
+    
+    # teamid is found on different places depending on the message from slack 
+    # if file exist it will be inside one of the files other wise on the parent message
+    team_id = input_message['files'][0]["user_team"] if 'files' in input_message else input_message["team"] 
     combined_id = user_id + "_" + team_id
 
     if cfg.FLASK_DEBUG:
@@ -155,12 +160,25 @@ def event_test(client, say, event):
     # users with a daily limitation can be allowed to use in a different workspace
 
     if can_excute:
-        # used to reconstruct the question. if the question contains a link recreate
-        # them so that they contain scraped and summarized content of the link
-        reconstructor = PromptReconstructor(
-            question=question, slack_message=[replies["messages"][-1]]
-        )
-        question = reconstructor.reconstruct_prompt()
+        if "files" in event:
+            files = event['files']
+            if files[0]['size'] > cfg.FILE_SIZE_LIMIT:
+                say("Sorry, the file you attached is larger than 2mb. Please try again with a smaller file" , thread_ts=thread_ts)
+                return
+            file_prompt = QuestionWithFileHandler( question=question , team_id=team_id , user_id=user_id, files=files , token="xoxb-5564327732725-5591539208368-79xy93zqjxRgeG2UlMDhWkIT" )
+            file_prompt_data = file_prompt.reconstruct_prompt_with_file()
+            if file_prompt_data['status']=='success':
+                question =  file_prompt_data['data']
+            else:
+                say(file_prompt_data['message'] , thread_ts=thread_ts)
+                return
+        else:
+            # used to reconstruct the question. if the question contains a link recreate
+            # them so that they contain scraped and summarized content of the link
+            reconstructor = PromptReconstructor(
+                question=question, slack_message=[replies["messages"][-1]]
+            )
+            question = reconstructor.reconstruct_prompt()
         results, _ = get_response(
             question, previous_messages, verbose_logger, user_id, team_id
         )
