@@ -11,7 +11,7 @@ Relevant Documents:
 {documents}
 
 
-Review and analyze the provided documents with respect to the task. Craft a concise and short, unified summary that distills key information that is most relevant to the task, incorporating reference links within the summary. 
+Review and analyze the provided documents with respect to the task. Craft a concise and short, unified summary that distills key information that is most relevant to the task, incorporating reference links within the summary.
 Only use the information given. Do not add any additional information. The summary should be less than {n} setences
 """  # noqa: E501
 
@@ -25,7 +25,6 @@ class GoogleSearch(BaseAction):
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         n: int = 5,
     ):
-        self.name = "GoogleSearch"
         self.role_description = role_description
         self.task = task
 
@@ -51,5 +50,10 @@ class GoogleSearch(BaseAction):
 
         return result
 
-    def __str__(self):
-        return self.name + ": query(strig)"
+    @property
+    def name(self) -> str:
+        return "Google Search"
+
+    @property
+    def args(self) -> dict:
+        return {"query": "string"}

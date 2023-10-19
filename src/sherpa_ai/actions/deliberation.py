@@ -23,10 +23,17 @@ class Deliberation(BaseAction):
         llm: BaseLanguageModel,
         description: str = DELIBERATION_DESCRIPTION,
     ):
-        self.name = "Deliberation"
         self.role_description = role_description
         self.description = description
         self.llm = llm
+
+    @property
+    def name(self) -> str:
+        return "Deliberation"
+
+    @property
+    def args(self) -> dict:
+        return {"task": "string"}
 
     def execute(self, task: str) -> str:
         prompt = self.description.format(
@@ -36,6 +43,3 @@ class Deliberation(BaseAction):
         result = self.llm.predict(prompt)
 
         return result
-
-    def __str__(self):
-        return self.name + ": task(string)"
