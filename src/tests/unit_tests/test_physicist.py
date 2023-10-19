@@ -17,7 +17,7 @@ def config_logger():
 
 
 def test_physicist(config_logger):
-    llm = ChatOpenAI(model_name='gpt-4')
+    llm = ChatOpenAI(model_name='gpt-3.5-turbo')
 
     shared_memory = SharedMemory(
         objective="Develop an deep Learning-Based approach for estimating the maximum wind speed of a tropical cyclone using satellite imagery",
