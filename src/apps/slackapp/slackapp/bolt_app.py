@@ -165,7 +165,7 @@ def event_test(client, say, event):
             if files[0]['size'] > cfg.FILE_SIZE_LIMIT:
                 say("Sorry, the file you attached is larger than 2mb. Please try again with a smaller file" , thread_ts=thread_ts)
                 return
-            file_prompt = QuestionWithFileHandler( question=question , team_id=team_id , user_id=user_id, files=files , token="xoxb-5564327732725-5591539208368-79xy93zqjxRgeG2UlMDhWkIT" )
+            file_prompt = QuestionWithFileHandler( question=question , team_id=team_id , user_id=user_id, files=files , token=cfg.SLACK_OAUTH_TOKEN )
             file_prompt_data = file_prompt.reconstruct_prompt_with_file()
             if file_prompt_data['status']=='success':
                 question =  file_prompt_data['data']
