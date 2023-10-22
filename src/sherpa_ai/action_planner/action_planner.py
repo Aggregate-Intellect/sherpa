@@ -1,10 +1,14 @@
-from typing import Optional, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
 from sherpa_ai.action_planner.base import BaseActionPlanner
-from sherpa_ai.memory.belief import Belief
+
+if TYPE_CHECKING:
+    from sherpa_ai.memory.belief import Belief
 
 SELECTION_DESCRIPTION = """{role_description}
 
