@@ -2,6 +2,7 @@ from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.tools import ContextTool
 
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
@@ -32,11 +33,11 @@ class ContextSearch(BaseAction):
         self.llm = llm
         self.n = n
 
-        self.context_tool = ContextTool()
+        self.context = ContextTool(memory = get_vectordb())
 
     def execute(self, query) -> str:
-        result = self.context_tool._run(query)
-
+        result = self.context._run(query)
+        # result = "Context Search"
         logger.debug("Context Search Result: {}", result)
 
         prompt = self.description.format(
