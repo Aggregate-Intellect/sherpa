@@ -9,8 +9,6 @@ class BaseActionPlanner(ABC):
     @abstractmethod
     def select_action(
         self,
-        previous_messages: List[BaseMessage],
-        memory: VectorStoreRetriever,
         **kwargs
     ) -> str:
         pass
