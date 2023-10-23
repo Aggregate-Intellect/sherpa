@@ -35,9 +35,14 @@ app = App(
 bot = app.client.auth_test()
 logger.info(f"App init: bot auth_test results {bot}")
 
+###########################################################################
+# usage tracker database downloader on every deployment:
+###########################################################################
 def before_first_request():
     UserUsageTracker().download_from_s3("sherpa-sqlight" , "token_counter.db" , "./token_counter.db")
-before_first_request()
+
+if not cfg.FLASK_DEBUG:
+    before_first_request()
 ###########################################################################
 # Define Slack client functionality:
 ###########################################################################

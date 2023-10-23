@@ -27,7 +27,7 @@ class Whitelist(Base):
 class UserUsageTracker:
     def __init__(
         self,
-        db_name="sqlite:///token_counter.db",
+        db_name=cfg.DB_NAME,
         max_daily_token=20000,
     ):
         self.engine = create_engine(db_name)
@@ -48,15 +48,12 @@ class UserUsageTracker:
         user = Whitelist(user_id=user_id)
         self.session.add(user)
         self.session.commit()
-        self.upload_to_s3("./token_counter.db", 'sherpa-sqlight', 'token_counter.db')
+        if not cfg.FLASK_DEBUG:
+            self.upload_to_s3("./token_counter.db", 'sherpa-sqlight', 'token_counter.db')
+        
 
     def get_all_whitelisted_ids(self):
-        print('# # # #  #    #  # # #  #')
-        print('# # # #  #    #  # # #  #')
-        whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]
-        print(whitelisted_ids)
-
-       
+        whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]     
         return whitelisted_ids
 
     def get_whitelist_by_user_id(self, user_id):
