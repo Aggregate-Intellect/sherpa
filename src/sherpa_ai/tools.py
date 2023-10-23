@@ -1,4 +1,8 @@
 import os
+import re
+import urllib
+import urllib.parse
+import urllib.request
 from typing import Any
 
 import requests
@@ -21,7 +25,7 @@ def get_tools(memory):
     tools.append(UserInputTool())
 
     if cfg.SERPER_API_KEY is not None:
-        search_tool = SearchTool(api_wrapper=GoogleSerperAPIWrapper())
+        search_tool = SearchTool()
         tools.append(search_tool)
     else:
         logger.warning(
@@ -31,17 +35,59 @@ def get_tools(memory):
     return tools
 
 
+class SearchArxivTool(BaseTool):
+    name = "Arxiv Search"
+    description = (
+        "Access all the papers from Arxiv to search for domain-specific scientific publication."
+        "Only use this tool when you need information in the scientific paper."
+    )
+
+    def _run(self, query: str) -> str:
+        top_k = 10
+
+        logger.debug(f"Search query: {query}")
+        query = urllib.parse.quote_plus(query)
+        url = (
+            "http://export.arxiv.org/api/query?search_query=all:"
+            + query.strip()
+            + "&start=0&max_results="
+            + str(top_k)
+        )
+        data = urllib.request.urlopen(url)
+        xml_content = data.read().decode("utf-8")
+
+        summary_pattern = r"<summary>(.*?)</summary>"
+        summaries = re.findall(summary_pattern, xml_content, re.DOTALL)
+        title_pattern = r"<title>(.*?)</title>"
+        titles = re.findall(title_pattern, xml_content, re.DOTALL)
+
+        result_list = []
+        for i in range(len(titles)):
+            result_list.append(
+                "Title: " + titles[i] + "\n" + "Summary: " + summaries[i]
+            )
+
+        logger.debug(f"Arxiv Search Result: {result_list}")
+        
+        return " ".join(result_list)
+
+    def _arun(self, query: str) -> str:
+        raise NotImplementedError("SearchArxivTool does not support async run")
+
+
 class SearchTool(BaseTool):
     name = "Search"
     description = (
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
-    api_wrapper: GoogleSerperAPIWrapper
 
     def _run(self, query: str) -> str:
+        logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
+        logger.debug(f"Google Search Result: {search_results}")
+
         # case 1: answerBox in the result dictionary
         if search_results.get("answerBox", False):
             answer_box = search_results.get("answerBox", {})
