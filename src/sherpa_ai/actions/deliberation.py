@@ -17,6 +17,7 @@ Keep the result concise and short. No more than one paragraph.
 
 
 class Deliberation(BaseAction):
+    # TODO: Make a version of Deliberation action that considers the context
     def __init__(
         self,
         role_description: str,
