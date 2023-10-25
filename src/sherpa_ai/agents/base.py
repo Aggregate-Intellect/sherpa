@@ -43,6 +43,7 @@ class BaseAgent(ABC):
         pass
 
     def run(self):
+        # TODO: Add feature for verbose logger
         self.shared_memory.observe(self.belief)
 
         actions = self.create_actions()

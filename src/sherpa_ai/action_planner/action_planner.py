@@ -68,7 +68,7 @@ class ActionPlanner(BaseActionPlanner):
         output = json.loads(output_str)
         command = output["command"]
         name = command["name"]
-        args = command["args"]
+        args = command.get("args", {})
         return name, args
 
     def select_action(
@@ -114,4 +114,9 @@ class ActionPlanner(BaseActionPlanner):
         if result == "Finished":
             return None
 
-        return self.transform_output(result)
+        name, args = self.transform_output(result)
+
+        if name == "Finished":
+            return None
+        
+        return name, args
