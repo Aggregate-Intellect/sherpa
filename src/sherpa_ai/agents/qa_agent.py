@@ -8,6 +8,7 @@ from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 # TODO: QA Agent only contains partial implementation from the original
 # task agent, more investigation is needed to add more content to it.
@@ -32,6 +33,7 @@ class QAAgent(BaseAgent):
         shared_memory: SharedMemory = None,
         belief: Belief = Belief(),
         num_runs: int = 3,
+        verbose_logger=DummyVerboseLogger(),
     ):
         """
         The QA agent is the agent handles a single task.
@@ -56,6 +58,7 @@ class QAAgent(BaseAgent):
         self.num_runs = num_runs
         self.llm = llm
         self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
+        self.verbose_logger = verbose_logger
 
     def create_actions(self) -> List[BaseAction]:
         return [
