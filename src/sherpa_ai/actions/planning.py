@@ -166,3 +166,16 @@ class TaskPlanning(BaseAction):
             plan.add_step(Step(agent_name, task_description))
 
         return plan
+
+    @property
+    def name(self) -> str:
+        return "TaskPlanning"
+
+    @property
+    def args(self) -> dict:
+        return {
+            "task": "string",
+            "agent_pool_description": "string",
+            "last_plan": "string",
+            "feedback": "string",
+        }

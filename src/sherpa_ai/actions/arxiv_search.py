@@ -10,7 +10,7 @@ Relevant Paper Title and Summary:
 {paper_title_summary}
 
 
-Review and analyze the provided paper summary with respect to the task. Craft a concise and short, unified summary that distills key information that is most relevant to the task, incorporating reference links within the summary. 
+Review and analyze the provided paper summary with respect to the task. Craft a concise and short, unified summary that distills key information that is most relevant to the task, incorporating reference links within the summary.
 Only use the information given. Do not add any additional information. The summary should be less than {n} setences
 """  # noqa: E501
 
@@ -32,7 +32,6 @@ class ArxivSearch(BaseAction):
         self.n = n
 
         self.search_tool = SearchArxivTool()
-        self.name = "ArxivSearch"
 
     def execute(self, query) -> str:
         result = self.search_tool._run(query)
@@ -48,5 +47,10 @@ class ArxivSearch(BaseAction):
 
         return result
 
-    def __str__(self):
-        return "ArxivSearch: query(strig)"
+    @property
+    def name(self) -> str:
+        return "ArxivSearch"
+
+    @property
+    def args(self) -> dict:
+        return {"query": "string"}
