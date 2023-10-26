@@ -3,6 +3,7 @@ import os
 from sherpa_ai.utils import chunk_and_summarize_file, count_string_tokens, extract_text_from_pdf, question_with_file_reconstructor
 import sherpa_ai.config as cfg
 
+
 class QuestionWithFileHandler:
 	def __init__(self, question,  files,  token  , user_id , team_id):
 		self.question = question
