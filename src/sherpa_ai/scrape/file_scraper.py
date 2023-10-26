@@ -24,6 +24,7 @@ class QuestionWithFileHandler:
 	
 
 	#file downloader
+    #using token from slack
 	def download_file(self , file):
 		headers = {
 			"Authorization": f"Bearer {self.token}",
