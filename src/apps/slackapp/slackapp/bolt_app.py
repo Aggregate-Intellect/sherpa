@@ -119,6 +119,18 @@ def get_response(
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
         return response, None
 
+def file_event_handler(say , files , team_id ,user_id , thread_ts , question):
+    if files[0]['size'] > cfg.FILE_SIZE_LIMIT:
+            say("Sorry, the file you attached is larger than 2mb. Please try again with a smaller file" , thread_ts=thread_ts)
+            return { "status":"error" }
+    file_prompt = QuestionWithFileHandler( question=question , team_id=team_id , user_id=user_id, files=files , token=cfg.SLACK_OAUTH_TOKEN )
+    file_prompt_data = file_prompt.reconstruct_prompt_with_file()
+    if file_prompt_data['status']=='success':
+        question =  file_prompt_data['data']
+        return {"status":"success" , "question":question}
+    else:
+        say(file_prompt_data['message'] , thread_ts=thread_ts)
+        return { "status":"error" }
 
 @app.event("app_mention")
 def event_test(client, say, event):
@@ -162,16 +174,11 @@ def event_test(client, say, event):
     if can_excute:
         if "files" in event:
             files = event['files']
-            if files[0]['size'] > cfg.FILE_SIZE_LIMIT:
-                say("Sorry, the file you attached is larger than 2mb. Please try again with a smaller file" , thread_ts=thread_ts)
+            file_event = file_event_handler( files=files ,say=say ,team_id=team_id , thread_ts=thread_ts , user_id=user_id , question=question)
+            if file_event['status']=="error":
                 return
-            file_prompt = QuestionWithFileHandler( question=question , team_id=team_id , user_id=user_id, files=files , token=cfg.SLACK_OAUTH_TOKEN )
-            file_prompt_data = file_prompt.reconstruct_prompt_with_file()
-            if file_prompt_data['status']=='success':
-                question =  file_prompt_data['data']
             else:
-                say(file_prompt_data['message'] , thread_ts=thread_ts)
-                return
+                question = file_event['question']
         else:
             # used to reconstruct the question. if the question contains a link recreate
             # them so that they contain scraped and summarized content of the link
