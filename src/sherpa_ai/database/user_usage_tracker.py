@@ -1,17 +1,21 @@
-import sqlite3
 import time
+import sqlite3
 import sherpa_ai.config as cfg
+from sherpa_ai.status_loggers.base import BaseStatusLogger
+from sherpa_ai.status_loggers.status_loggers import DummyStatusLogger
 
 class UserUsageTracker:
     def __init__(
         self,
-        db_name="token_countersaa.db",
+        status_logger:BaseStatusLogger = DummyStatusLogger() ,
+        db_name="token_countersa.db",
         max_daily_token=20000,
     ):
         self.conn = sqlite3.connect(db_name)
         self.create_table()
         self.max_daily_token = int(max_daily_token)
-
+        self.status_logger = status_logger
+        self.is_reminded = False
     def create_table(self):
         create_token_reset_table_query = """
         CREATE TABLE IF NOT EXISTS usage_tracker (
@@ -77,6 +81,7 @@ class UserUsageTracker:
             insert_query, (combined_id, token, int(time.time()), reset_timestamp)
         )
         self.conn.commit()
+        self.token_left_calculator(combined_id=combined_id )
 
     def get_data_since_last_reset(self, user_id):
         last_reset_info = self.get_last_reset_info(user_id)
@@ -137,6 +142,23 @@ class UserUsageTracker:
         seconds = remaining_seconds % 60
 
         return f"""{hours}hours : {minutes}min : {seconds}sec"""
+    
+    def token_left_calculator(self , combined_id ):
+        split_parts = combined_id.split('_')
+        user_id = ""
+        if len(split_parts) > 0:
+            user_id = split_parts[0]
+
+        user_is_whitelisted = self.is_in_whitelist(user_id)
+        if not user_is_whitelisted and not self.is_reminded:
+            total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
+                    user_id=combined_id
+                )
+            token_left = self.max_daily_token - total_token_since_last_reset
+            print('hhhhhhhhhhhhhhhh')
+            if(((float(self.max_daily_token) - float(token_left))*100) / float(self.max_daily_token)>75):
+                    self.is_reminded = True
+                    self.status_logger.log('hi friend, you have used up 75% of your daily token limit. once you go over the limit there will be a 24 cool down period after which you can continue using Sherpa! be awesome!')
 
 
     def check_usage(self, user_id, combined_id, token_ammount):

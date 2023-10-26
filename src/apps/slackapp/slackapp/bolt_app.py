@@ -18,6 +18,8 @@ from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.error_handling import AgentErrorHandler
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
+from sherpa_ai.status_loggers.base import BaseStatusLogger
+from sherpa_ai.status_loggers.status_loggers import SlackStatusLogger
 from sherpa_ai.task_agent import TaskAgent
 from sherpa_ai.tools import get_tools
 from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_only
@@ -132,6 +134,7 @@ def event_test(client, say, event):
         SlackVerboseLogger(say, thread_ts) if verbose_on else DummyVerboseLogger()
     )
 
+    status_logger = SlackStatusLogger(say , thread_ts)
     input_message = replies["messages"][-1]
     user_id = input_message["user"]
     team_id = input_message["team"]
@@ -140,7 +143,7 @@ def event_test(client, say, event):
     if cfg.FLASK_DEBUG:
         can_excute = True
     else:
-        user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
+        user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT  , status_logger=status_logger)
 
         usage_cheker = user_db.check_usage(
             user_id=user_id,
