@@ -155,7 +155,6 @@ class UserUsageTracker:
                     user_id=combined_id
                 )
             token_left = self.max_daily_token - total_token_since_last_reset
-            print('hhhhhhhhhhhhhhhh')
             if(((float(self.max_daily_token) - float(token_left))*100) / float(self.max_daily_token)>75):
                     self.is_reminded = True
                     self.status_logger.log('hi friend, you have used up 75% of your daily token limit. once you go over the limit there will be a 24 cool down period after which you can continue using Sherpa! be awesome!')
