@@ -2,6 +2,7 @@ import requests
 import os
 from sherpa_ai.utils import chunk_and_summarize_file, count_string_tokens, extract_text_from_pdf, question_with_file_reconstructor
 import sherpa_ai.config as cfg
+
 class QuestionWithFileHandler:
 	def __init__(self, question,  files,  token  , user_id , team_id):
 		self.question = question
@@ -55,7 +56,7 @@ class QuestionWithFileHandler:
 
 		if data_token_size > cfg.FILE_TOKEN_LIMIT:
 			return {"status":"error" , "message":"token ammount of a file has to be less than {}"}
-		else:
+		elif data_token_size>3000:
 			chunk_summary = chunk_and_summarize_file(
 				file_format=file_info['filetype'],
 				file_name=file_info['name'],
