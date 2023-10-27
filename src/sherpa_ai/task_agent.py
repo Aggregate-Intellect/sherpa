@@ -89,7 +89,6 @@ class TaskAgent:
         agent_config: AgentConfig = AgentConfig(),
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
-        print(tools)
         if action_planner is None:
             action_planner = SelectiveActionPlanner(
                 llm, tools, ai_name=ai_name, ai_role=ai_role

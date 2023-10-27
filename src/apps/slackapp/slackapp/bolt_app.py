@@ -102,6 +102,7 @@ def get_response(
         previous_messages=previous_messages,
         llm=llm,
         verbose_logger=verbose_logger,
+        agent_config=agent_config,
     )
     error_handler = AgentErrorHandler()
 
