@@ -8,6 +8,7 @@ from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief, SharedMemory
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 PHYSICIST_DESCRIPTION = "You are a physicist with a deep-rooted expertise in understanding and analyzing the fundamental principles of the universe, spanning from the tiniest subatomic particles to vast cosmic phenomena. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex physics-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."  # noqa: E501
 
@@ -26,6 +27,7 @@ class Physicist(BaseAgent):
         description=PHYSICIST_DESCRIPTION,
         shared_memory: SharedMemory = None,
         num_runs=3,
+        verbose_logger=DummyVerboseLogger(),
     ):
         self.llm = llm
         self.name = name
@@ -34,6 +36,7 @@ class Physicist(BaseAgent):
         self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
         self.num_runs = num_runs
         self.belief = Belief()
+        self.verbose_logger = verbose_logger
 
     def create_actions(self) -> List[BaseAction]:
         return [

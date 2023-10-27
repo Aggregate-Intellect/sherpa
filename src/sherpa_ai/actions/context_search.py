@@ -2,7 +2,8 @@ from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.tools import SearchTool
+from sherpa_ai.connectors.vectorstores import get_vectordb
+from sherpa_ai.tools import ContextTool
 
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
@@ -16,7 +17,7 @@ Only use the information given. Do not add any additional information. The summa
 """  # noqa: E501
 
 
-class GoogleSearch(BaseAction):
+class ContextSearch(BaseAction):
     def __init__(
         self,
         role_description: str,
@@ -32,12 +33,12 @@ class GoogleSearch(BaseAction):
         self.llm = llm
         self.n = n
 
-        self.search_tool = SearchTool()
+        self.context = ContextTool(memory = get_vectordb())
 
     def execute(self, query) -> str:
-        result = self.search_tool._run(query)
-
-        logger.debug("Search Result: {}", result)
+        result = self.context._run(query)
+        # result = "Context Search"
+        logger.debug("Context Search Result: {}", result)
 
         prompt = self.description.format(
             task=self.task,
@@ -52,7 +53,7 @@ class GoogleSearch(BaseAction):
 
     @property
     def name(self) -> str:
-        return "Google Search"
+        return "Context Search"
 
     @property
     def args(self) -> dict:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Optional, Tuple
 
 from langchain.base_language import BaseLanguageModel
@@ -12,6 +13,8 @@ if TYPE_CHECKING:
 
 SELECTION_DESCRIPTION = """{role_description}
 
+{output_instruction}
+
 **Task Description**: {task_description}
 
 **Possible Actions**:
@@ -23,14 +26,14 @@ SELECTION_DESCRIPTION = """{role_description}
 **History of Previous Actions**:
 {history_of_previous_actions}
 
-Please respond in the following format strictly, do not Reformat the text:
-"Action Name : ArgumentName1(Input Value); ArgumentName2(Input Value); ..."
+You should only respond in JSON format as described below without any extra text.
+Response Format:
+{response_format}
+Ensure the response can be parsed by Python json.loads
 
 If you believe the task is complete and no further actions are necessary, respond with "Finished".
 
-{output_instruction}
-
-Follow the described fromat strictly. Select only one action and use one argument exactly once.
+Follow the described fromat strictly.
 
 """  # noqa: E501
 
@@ -48,6 +51,13 @@ class ActionPlanner(BaseActionPlanner):
         self.output_instruction = output_instruction
         self.llm = llm
 
+        self.response_format = {
+            "command": {
+                "name": "tool/command name you choose",
+                "args": {"arg name": "value"},
+            },
+        }
+
     def transform_output(self, output_str: str) -> Tuple[str, dict]:
         """
         Transform the output string into an action and arguments
@@ -59,25 +69,11 @@ class ActionPlanner(BaseActionPlanner):
             str: Action to be taken
             dict: Arguments for the action
         """
-
-        # Splitting the action name from the arguments
-        action, args_str = output_str.split(":")
-
-        # Extracting individual arguments
-        args_list = args_str.split(";")
-
-        logger.debug(f"Args: {args_list}")
-        # Parsing arguments into a dictionary
-        args_dict = {}
-        for arg in args_list:
-            if arg == "":
-                continue
-            arg_name, arg_value = arg.split("(", 1)
-            arg_value = arg_value.rstrip(")")
-
-            args_dict[arg_name.strip()] = arg_value.strip()
-
-        return (action.strip(), args_dict)
+        output = json.loads(output_str)
+        command = output["command"]
+        name = command["name"]
+        args = command.get("args", {})
+        return name, args
 
     def select_action(
         self,
@@ -103,6 +99,8 @@ class ActionPlanner(BaseActionPlanner):
             self.llm.get_num_tokens
         )
 
+        response_format = json.dumps(self.response_format, indent=4)
+
         prompt = self.description.format(
             role_description=self.role_description,
             task_description=task_description,
@@ -110,15 +108,19 @@ class ActionPlanner(BaseActionPlanner):
             history_of_previous_actions=history_of_previous_actions,
             task_context=task_context,
             output_instruction=self.output_instruction,
+            response_format=response_format,
         )
 
         logger.debug(f"Prompt: {prompt}")
         result = self.llm.predict(prompt)
-        result = result.split("\n")[0].strip()
-
         logger.debug(f"Result: {result}")
 
         if result == "Finished":
             return None
 
-        return self.transform_output(result)
+        name, args = self.transform_output(result)
+
+        if name == "Finished":
+            return None
+        
+        return name, args
