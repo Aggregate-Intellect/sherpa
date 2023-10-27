@@ -1,18 +1,17 @@
 import re
 from argparse import ArgumentParser
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic import BaseModel
 
 
 class AgentConfig(BaseModel):
     verbose: bool = False
-    verbosex: bool = False
     gsite: Optional[str] = None
     do_reflect: bool = False
 
     @classmethod
-    def from_input(cls, input_str: str) -> "AgentConfig":
+    def from_input(cls, input_str: str) -> Tuple[str, "AgentConfig"]:
         """
         parse input string into AgentConfig. The configurations are
         at the end of the string
@@ -24,14 +23,13 @@ class AgentConfig(BaseModel):
             part = part.strip()
             configs.extend(part.split())
 
-        return cls.from_config(configs)
+        return parts[0].strip(), cls.from_config(configs)
 
     @classmethod
     def from_config(cls, configs: List[str]) -> "AgentConfig":
         parser = ArgumentParser()
 
         parser.add_argument("--verbose", action="store_true")
-        parser.add_argument("--verbosex", action="store_true")
         parser.add_argument("--gsite", type=str, default=None)
         parser.add_argument("--do-reflect", action="store_true")
 

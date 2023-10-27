@@ -5,20 +5,21 @@ from sherpa_ai.config import AgentConfig
 
 def test_parse_args():
     site = "https://www.google.com"
-    input_str = f"Test input. --verbose --verbosex --gsite {site}"
+    input_str = f"Test input. --verbose --gsite {site}"
 
-    config = AgentConfig.from_input(input_str)
+    parsed, config = AgentConfig.from_input(input_str)
 
+    assert parsed == "Test input."
     assert config.verbose
-    assert config.verbosex
     assert config.gsite == site
 
 
 def test_parse_args_partial():
     input_str = "Test input. --verbose"
 
-    config = AgentConfig.from_input(input_str)
+    parsed, config = AgentConfig.from_input(input_str)
 
+    assert parsed == "Test input."
     assert config.verbose
     assert config.gsite is None
 
