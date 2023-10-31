@@ -3,6 +3,7 @@ import re
 import urllib
 import urllib.parse
 import urllib.request
+from enum import Enum
 from typing import Any
 
 import requests
@@ -14,6 +15,8 @@ from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.vectorstores.base import VectorStoreRetriever
 from loguru import logger
 from typing_extensions import Literal
+from hugchat import hugchat
+from hugchat.login import Login
 
 import sherpa_ai.config as cfg
 
@@ -24,6 +27,7 @@ def get_tools(memory):
     # tools.append(ContextTool(memory=memory))
     tools.append(UserInputTool())
 
+
     if cfg.SERPER_API_KEY is not None:
         search_tool = SearchTool()
         tools.append(search_tool)
@@ -32,6 +36,12 @@ def get_tools(memory):
             "No SERPER_API_KEY found in environment variables, skipping SearchTool"
         )
 
+    if cfg.HUGCHAT_EMAIL is not None and cfg.HUGCHAT_PASS is not None:
+        tools.append(HugChatTool())
+    else:
+        logger.warning(
+            "No Hugchat email and pass in environment variables, skipping Hugchat tool"
+        )
     return tools
 
 
@@ -201,3 +211,47 @@ class UserInputTool(BaseTool):
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("UserInputTool does not support async run")
+
+class HugChatTool(BaseTool):
+    name = "Hugchat"
+    description = (
+        "Access the user input for the task."
+        "You use this tool if you need to use HugChat for Q&A."
+    )
+    def _run(self, query: str) -> str:
+
+        email = cfg.HUGCHAT_EMAIL
+        passwd = cfg.HUGCHAT_PASS
+        # Log in to huggingface and grant authorization to huggingchat
+        sign = Login(email, passwd)
+        cookies = sign.login()
+
+        # Save cookies to the local directory
+        cookie_path_dir = "./cookies_snapshot"
+        sign.saveCookiesToDir(cookie_path_dir)
+
+        # Create a ChatBot
+        chatbot = hugchat.ChatBot(cookies=cookies.get_dict())  # or cookie_path="usercookies/<email>.json"
+
+        query_result = ""
+
+        if HugchatConfig.no_stream:
+           query_result = chatbot.query(query)
+
+
+        if HugchatConfig.stream:
+            query_result = chatbot.query(query, stream=True)
+
+
+        if HugchatConfig.web_search:
+            query_result = chatbot.query(query, web_search=True)
+
+        return query_result
+
+    def _arun(self, query: str) -> str:
+        raise NotImplementedError("HugChat does not support async run")
+
+class HugchatConfig(Enum):
+        no_stream =1
+        stream = 2
+        web_search = 3

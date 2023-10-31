@@ -42,6 +42,11 @@ CHROMA_HOST = environ.get("CHROMA_HOST")
 CHROMA_PORT = environ.get("CHROMA_PORT")
 CHROMA_INDEX = environ.get("CHROMA_INDEX")
 
+
+# Hugchat settings
+HUGCHAT_EMAIL = environ.get("HUGCHAT_EMAIL")
+HUGCHAT_PASS = environ.get("HUGCHAT_PASS")
+
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
 DAILY_TOKEN_LIMIT = environ.get("DAILY_TOKEN_LIMIT") or 20000
@@ -55,7 +60,7 @@ LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
-logger.remove(0)  # remove the default handler configuration
+#logger.remove(0)  # remove the default handler configuration
 logger.add(sys.stderr, level=LOG_LEVEL, serialize=False)
 
 
