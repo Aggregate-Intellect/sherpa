@@ -5,6 +5,8 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
+from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 
 class BaseAgent(ABC):
@@ -16,6 +18,7 @@ class BaseAgent(ABC):
         belief=None,
         action_selector=None,
         num_runs=1,
+        verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         self.name = name
         self.description = description
@@ -27,6 +30,8 @@ class BaseAgent(ABC):
         self.actions = []
         self.reflections = []
         self.subscribed_events = []
+
+        self.verbose_logger = verbose_logger
 
     def add_action(self, action):
         self.actions.append(action)
@@ -43,6 +48,9 @@ class BaseAgent(ABC):
         pass
 
     def run(self):
+        self.verbose_logger.log(f"⏳{self.name} is thinking...")
+        logger.debug(f"```⏳{self.name} is thinking...```")
+
         self.shared_memory.observe(self.belief)
 
         actions = self.create_actions()
@@ -59,6 +67,9 @@ class BaseAgent(ABC):
             action_name, inputs = result
             action = self.belief.get_action(action_name)
 
+            self.verbose_logger.log(f"🤖{self.name} is executing {action_name}...")
+            logger.debug(f"```🤖{self.name} is executing {action_name}...```")
+
             self.belief.update_internal(
                 EventType.action, self.name, action_name + str(inputs)
             )
@@ -68,14 +79,18 @@ class BaseAgent(ABC):
                 continue
 
             action_output = self.act(action, inputs)
-            logger.info(f"Action output: {action_output}")
+
+            self.verbose_logger.log(f"Action output: {action_output}")
+            logger.debug(f"```Action output: {action_output}```")
 
             self.belief.update_internal(
                 EventType.action_output, self.name, action_output
             )
 
         result = self.synthesize_output()
-        logger.info(f"Result: {result}")
+
+        self.verbose_logger.log(f"🤖{self.name} wrote: {result}")
+        logger.debug(f"```🤖{self.name} wrote: {result}```")
 
         self.shared_memory.add(EventType.result, self.name, result)
         return result
