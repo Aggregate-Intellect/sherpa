@@ -30,6 +30,7 @@ SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
 SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
 SLACK_PORT = environ.get("SLACK_PORT", 3000)
 OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
+TEMPRATURE = environ.get("TEMPRATURE") or 0
 
 # Pinecone settings
 PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
@@ -49,14 +50,16 @@ HUGCHAT_PASS = environ.get("HUGCHAT_PASS")
 
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
+
+#Usage setting 
 DAILY_TOKEN_LIMIT = environ.get("DAILY_TOKEN_LIMIT") or 20000
-TEMPRATURE = environ.get("TEMPRATURE") or 0
 DAILY_LIMIT_REACHED_MESSAGE = (
     environ.get("DAILY_LIMIT_REACHED_MESSAGE")
     or "Sorry for the inconvenience, but it seems that you have exceeded your daily token limit. As a result, you will need to try again after 24 hours. Thank you for your understanding."
 )
 LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
-
+FILE_SIZE_LIMIT = environ.get("FILE_SIZE_LIMIT") or 2097152
+FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.

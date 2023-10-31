@@ -6,6 +6,7 @@ from loguru import logger
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief, SharedMemory
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 DESCRIPTION_PROMPT = """
 You are a Critic agent that receive a plan from the planner to execuate a task from user.
@@ -53,6 +54,7 @@ class Critic(BaseAgent):
         belief: Belief = Belief(),
         ratio: float = 0.9,
         num_feedback: int = 3,
+        verbose_logger=DummyVerboseLogger(),
     ):
         self.name = "Critic"
         self.llm = llm
@@ -61,6 +63,7 @@ class Critic(BaseAgent):
         self.belief = belief
         self.ratio = ratio
         self.num_feedback = num_feedback
+        self.verbose_logger = verbose_logger
 
     def get_importance_evaluation(self, task: str, plan: str):
         # return score in int and evaluation in string for importance matrix
