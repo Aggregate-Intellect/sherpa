@@ -48,7 +48,7 @@ def hello_command(ack, body):
     ack(f"Hi, <@{user_id}>!")
 
 
-def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:
+def process_chat_history(messages: List[dict]) -> List[BaseMessage]:
     results = []
 
     for message in messages:
@@ -149,7 +149,7 @@ def event_test(client, say, event):
             question=question, slack_message=[replies["messages"][-1]]
         )
         question = reconstructor.reconstruct_prompt()
-        results, _ = get_response(
+        results = get_response(
             question,
             previous_messages,
             user_id,
