@@ -1,14 +1,14 @@
 import pytest
+from langchain import GoogleSerperAPIWrapper
+from langchain.llms import OpenAI
 
+import sherpa_ai.config as cfg
+from sherpa_ai.actions.google_search import GoogleSearch
 from sherpa_ai.config import AgentConfig
 from sherpa_ai.tools import ContextTool, SearchTool
-from langchain import GoogleSerperAPIWrapper
-from sherpa_ai.actions.google_search import GoogleSearch
-from langchain.llms import OpenAI
-import sherpa_ai.config as cfg
 
 
-def test_parse_args():
+def test_all_parameters_parse_successfully():
     site = "https://www.google.com"
     input_str = f"Test input. --verbose --gsite {site}"
 
@@ -19,7 +19,7 @@ def test_parse_args():
     assert config.gsite == site
 
 
-def test_parse_args_partial():
+def test_no_gsite_parses_successfully():
     input_str = "Test input. --verbose"
 
     parsed, config = AgentConfig.from_input(input_str)
@@ -37,7 +37,7 @@ def test_parse_args_noise():
         AgentConfig.from_input(input_str)
 
 
-def test_gsite_google_search():
+def test_invalid_input_raises_value_error():
     site = "https://www.google.com"
     input_str = f"Test input. --verbose --gsite {site}"
 
@@ -45,17 +45,21 @@ def test_gsite_google_search():
 
     assert config.gsite == site
 
-    role_description =  "The programmer receives requirements about a program and write it"
-    
+    role_description = (
+        "The programmer receives requirements about a program and write it"
+    )
+
     task = """We need to render a highly complex 3D image on the solar system. We can use any publicly avaliable
     resources to achieve this task."""  # noqa: E501
-    
+
     llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
-    
-    google_search = GoogleSearch(role_description=role_description, task=task, llm=llm, config=config)
+
+    google_search = GoogleSearch(
+        role_description=role_description, task=task, llm=llm, config=config
+    )
 
     query = "What is the weather today?"
-    
+
     updated_query = google_search.config_gsite_query(query)
-    
+
     assert site in updated_query
