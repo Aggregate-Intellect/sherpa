@@ -13,8 +13,6 @@ ENV POETRY_HOME="/opt/poetry"
 # Install Poetry
 RUN pip install poetry
 
-# Install pdfplumber
-RUN pip install pdfplumber
 
 # Copy the application code to the container
 COPY . .
