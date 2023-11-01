@@ -3,6 +3,7 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.tools import SearchTool
+from sherpa_ai.config.task_config import AgentConfig
 
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
@@ -22,6 +23,7 @@ class GoogleSearch(BaseAction):
         role_description: str,
         task: str,
         llm: BaseLanguageModel,
+        config: AgentConfig,
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         n: int = 5,
     ):
@@ -31,10 +33,19 @@ class GoogleSearch(BaseAction):
         self.description = description
         self.llm = llm
         self.n = n
+        self.config = config
 
         self.search_tool = SearchTool()
+    
+    def config_gsite_query(self, query) -> str:
+        # check if the gsite is none
+        if self.config.gsite:
+            query = query + " " + self.config.gsite
+        return query
+        
 
     def execute(self, query) -> str:
+        query = self.config_gsite_query(query)
         result = self.search_tool._run(query)
 
         logger.debug("Search Result: {}", result)
