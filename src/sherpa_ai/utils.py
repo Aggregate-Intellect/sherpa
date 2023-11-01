@@ -15,7 +15,7 @@ import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
 from typing import Union
 
-# import PyPDF2
+import PyPDF2
 def load_files(files: List[str]) -> List[Document]:
     documents = []
     loader = None
@@ -248,12 +248,12 @@ def show_commands_only(logs):
 def extract_text_from_pdf(pdf_path):
     text = ""
     # Extract text from a PDF using PdfReader
-    # pdf_file = open(pdf_path, "rb")
-    # pdf_reader = PyPDF2.PdfReader(pdf_file)
+    pdf_file = open(pdf_path, "rb")
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
 
-    # text = ""
-    # for page in pdf_reader.pages:
-    #     text += page.extract_text()
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
 
-    # pdf_file.close()
+    pdf_file.close()
     return text
