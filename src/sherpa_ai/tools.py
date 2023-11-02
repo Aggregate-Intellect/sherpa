@@ -16,16 +16,17 @@ from loguru import logger
 from typing_extensions import Literal
 
 import sherpa_ai.config as cfg
+from sherpa_ai.config.task_config import AgentConfig
 
 
-def get_tools(memory):
+def get_tools(memory, config):
     tools = []
 
     # tools.append(ContextTool(memory=memory))
     tools.append(UserInputTool())
 
     if cfg.SERPER_API_KEY is not None:
-        search_tool = SearchTool()
+        search_tool = SearchTool(config=config)
         tools.append(search_tool)
     else:
         logger.warning(
@@ -82,7 +83,18 @@ class SearchTool(BaseTool):
         "you cannot find the information using internal search."
     )
 
+    def __init__(self, config: AgentConfig):
+        self.config = config
+
+    def _add_gsite(self, query: str) -> str:
+        # check if the gsite is none
+        if self.config.gsite:
+            query = query + " " + self.config.gsite
+        return query
+
     def _run(self, query: str) -> str:
+        query = self._add_gsite(query, self.config)
+
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
