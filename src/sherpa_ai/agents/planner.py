@@ -8,6 +8,7 @@ from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory import Belief, SharedMemory
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 PLANNER_DESCRIPTION = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
 By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
@@ -26,6 +27,7 @@ class Planner(BaseAgent):
         action_selector=None,
         llm=LLM,
         num_steps: int = 5,
+        verbose_logger=DummyVerboseLogger(),
     ):
         self.name = name
         self.description = description
@@ -35,6 +37,7 @@ class Planner(BaseAgent):
         self.action_selector = action_selector
 
         self.planning = TaskPlanning(llm, num_steps)
+        self.verbose_logger = verbose_logger
 
     def get_last_feedback(self) -> Optional[str]:
         """

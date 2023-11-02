@@ -17,6 +17,7 @@ from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.error_handling import AgentErrorHandler
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
+from sherpa_ai.scrape.file_scraper import QuestionWithFileHandler
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 from sherpa_ai.status_loggers.base import BaseStatusLogger
 from sherpa_ai.status_loggers.status_loggers import SlackStatusLogger
@@ -120,6 +121,18 @@ def get_response(
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
         return response, None
 
+def file_event_handler(say , files , team_id ,user_id , thread_ts , question):
+    if files[0]['size'] > cfg.FILE_SIZE_LIMIT:
+            say("Sorry, the file you attached is larger than 2mb. Please try again with a smaller file" , thread_ts=thread_ts)
+            return { "status":"error" }
+    file_prompt = QuestionWithFileHandler( question=question , team_id=team_id , user_id=user_id, files=files , token=cfg.SLACK_OAUTH_TOKEN )
+    file_prompt_data = file_prompt.reconstruct_prompt_with_file()
+    if file_prompt_data['status']=='success':
+        question =  file_prompt_data['data']
+        return {"status":"success" , "question":question}
+    else:
+        say(file_prompt_data['message'] , thread_ts=thread_ts)
+        return { "status":"error" }
 
 @app.event("app_mention")
 def event_test(client, say, event):
@@ -128,6 +141,7 @@ def event_test(client, say, event):
     replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
 
+    
     # check if the verbose is on
     verbose_on = contains_verbose(question)
     verbose_logger = (
@@ -136,8 +150,11 @@ def event_test(client, say, event):
 
     status_logger = SlackStatusLogger(say , thread_ts)
     input_message = replies["messages"][-1]
-    user_id = input_message["user"]
-    team_id = input_message["team"]
+    user_id = input_message["user"] 
+    
+    # teamid is found on different places depending on the message from slack 
+    # if file exist it will be inside one of the files other wise on the parent message
+    team_id = input_message['files'][0]["user_team"] if 'files' in input_message else input_message["team"] 
     combined_id = user_id + "_" + team_id
 
     if cfg.FLASK_DEBUG:
@@ -158,12 +175,20 @@ def event_test(client, say, event):
     # users with a daily limitation can be allowed to use in a different workspace
 
     if can_excute:
-        # used to reconstruct the question. if the question contains a link recreate
-        # them so that they contain scraped and summarized content of the link
-        reconstructor = PromptReconstructor(
-            question=question, slack_message=[replies["messages"][-1]]
-        )
-        question = reconstructor.reconstruct_prompt()
+        if "files" in event:
+            files = event['files']
+            file_event = file_event_handler( files=files ,say=say ,team_id=team_id , thread_ts=thread_ts , user_id=user_id , question=question)
+            if file_event['status']=="error":
+                return
+            else:
+                question = file_event['question']
+        else:
+            # used to reconstruct the question. if the question contains a link recreate
+            # them so that they contain scraped and summarized content of the link
+            reconstructor = PromptReconstructor(
+                question=question, slack_message=[replies["messages"][-1]]
+            )
+            question = reconstructor.reconstruct_prompt()
         results, _ = get_response(
             question, previous_messages, verbose_logger, user_id, team_id
         )

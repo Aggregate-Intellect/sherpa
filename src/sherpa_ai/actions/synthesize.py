@@ -40,3 +40,11 @@ class SynthesizeOutput(BaseAction):
         result = self.llm.predict(prompt)
 
         return result
+
+    @property
+    def name(self) -> str:
+        return "SynthesizeOutput"
+
+    @property
+    def args(self) -> dict:
+        return {"task": "string", "context": "string", "history": "string"}

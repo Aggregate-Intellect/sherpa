@@ -8,6 +8,7 @@ from sherpa_ai.actions.arxiv_search import ArxivSearch
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief, SharedMemory
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 ACTION_PLAN_DESCRIPTION = "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."  # noqa: E501
 
@@ -31,6 +32,7 @@ class MLEngineer(BaseAgent):
         description=ML_ENGINEER_DESCRIPTION,
         shared_memory: SharedMemory = None,
         num_runs=3,
+        verbose_logger=DummyVerboseLogger(),
     ):
         self.llm = llm
         self.name = name
@@ -39,6 +41,7 @@ class MLEngineer(BaseAgent):
         self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
         self.num_runs = num_runs
         self.belief = Belief()
+        self.verbose_logger = verbose_logger
 
     def create_actions(self) -> List[BaseAction]:
         return [
