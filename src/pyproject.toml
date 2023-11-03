@@ -19,6 +19,7 @@ beautifulsoup4 = "4.12.2"
 markdown = ">=3.4.4,<3.5.0"
 loguru = ">=0.7.0,<0.8.0"
 pypdf2 = "^3.0.1"
+boto3 = "^1.28.77"
 
 
 

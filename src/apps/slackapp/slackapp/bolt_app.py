@@ -37,6 +37,15 @@ bot = app.client.auth_test()
 logger.info(f"App init: bot auth_test results {bot}")
 
 ###########################################################################
+# usage tracker database downloader on every deployment:
+###########################################################################
+def before_first_request():
+    UserUsageTracker().download_from_s3("sherpa-sqlight" , "token_counter.db" , "./token_counter.db")
+
+if not cfg.FLASK_DEBUG:
+    before_first_request()
+
+###########################################################################
 # Define Slack client functionality:
 ###########################################################################
 
@@ -162,7 +171,7 @@ def event_test(client, say, event):
         usage_cheker = user_db.check_usage(
             user_id=user_id,
             combined_id=combined_id,
-            token_ammount=count_string_tokens(question, "gpt-3.5-turbo"),
+            token_amount=count_string_tokens(question, "gpt-3.5-turbo")
         )
         can_excute = usage_cheker["can_excute"]
         user_db.close_connection()
