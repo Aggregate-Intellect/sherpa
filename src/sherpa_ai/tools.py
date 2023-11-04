@@ -3,7 +3,6 @@ import re
 import urllib
 import urllib.parse
 import urllib.request
-from enum import Enum
 from typing import Any
 
 import requests
