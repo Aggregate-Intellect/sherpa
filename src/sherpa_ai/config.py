@@ -64,7 +64,7 @@ FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
-#logger.remove(0)  # remove the default handler configuration
+logger.remove(0)  # remove the default handler configuration
 logger.add(sys.stderr, level=LOG_LEVEL, serialize=False)
 
 
