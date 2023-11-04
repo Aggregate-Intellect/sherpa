@@ -236,15 +236,15 @@ class HugChatTool(BaseTool):
 
         query_result = ""
 
-        if HugchatConfig.no_stream:
+        if cfg.HUGCHAT_CONFIG == 1:
            query_result = chatbot.query(query)
 
 
-        if HugchatConfig.stream:
+        if cfg.HUGCHAT_CONFIG == 2:
             query_result = chatbot.query(query, stream=True)
 
 
-        if HugchatConfig.web_search:
+        if cfg.HUGCHAT_CONFIG == 3:
             query_result = chatbot.query(query, web_search=True)
 
         return query_result
@@ -252,7 +252,3 @@ class HugChatTool(BaseTool):
     def _arun(self, query: str) -> str:
         raise NotImplementedError("HugChat does not support async run")
 
-class HugchatConfig(Enum):
-        no_stream =1
-        stream = 2
-        web_search = 3

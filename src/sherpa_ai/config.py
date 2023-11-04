@@ -47,6 +47,7 @@ CHROMA_INDEX = environ.get("CHROMA_INDEX")
 # Hugchat settings
 HUGCHAT_EMAIL = environ.get("HUGCHAT_EMAIL")
 HUGCHAT_PASS = environ.get("HUGCHAT_PASS")
+HUGCHAT_CONFIG = 1
 
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
