@@ -18,7 +18,8 @@ pinecone-client = "^2.2.2"
 beautifulsoup4 = "4.12.2"
 markdown = ">=3.4.4,<3.5.0"
 loguru = ">=0.7.0,<0.8.0"
-pdfplumber = "^0.10.2"
+pypdf2 = "^3.0.1"
+
 
 
 [tool.poetry.group.test.dependencies]

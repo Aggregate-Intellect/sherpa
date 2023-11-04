@@ -13,9 +13,9 @@ from loguru import logger
 
 import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
+from typing import Union
 
-import pdfplumber
-
+import PyPDF2
 def load_files(files: List[str]) -> List[Document]:
     documents = []
     loader = None
@@ -187,7 +187,7 @@ def chunk_and_summarize_file(
         chunk_summary.append(summarized)
     return " ".join(chunk_summary)
 
-def question_with_file_reconstructor(data: str, file_name:str , title: str | None , file_format:str ,  question: str):
+def question_with_file_reconstructor(data: str, file_name:str , title: Union[str, None] , file_format:str ,  question: str):
     result = question + "./n Reference:"
     title = f"'title':'{title}'" if title is not None else ""
     result = result + f"""[ {{file_name: '{file_name}' , {title}  , file_format:'{file_format}' , content_of_{file_name}:'{data}'}} ]"""
@@ -247,7 +247,13 @@ def show_commands_only(logs):
 
 def extract_text_from_pdf(pdf_path):
     text = ""
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            text += page.extract_text()
+    # Extract text from a PDF using PdfReader
+    pdf_file = open(pdf_path, "rb")
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
+
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+
+    pdf_file.close()
     return text
