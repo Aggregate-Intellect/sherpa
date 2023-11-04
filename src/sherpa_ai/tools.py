@@ -244,7 +244,7 @@ class HugChatTool(BaseTool):
 
 
         if cfg.HUGCHAT_CONFIG == 3:
-            query_result = chatbot.query(query, web_search=True)
+            query_result = chatbot.query(query, web_search=True).text
 
         return query_result
 
