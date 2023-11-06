@@ -78,13 +78,11 @@ class SearchArxivTool(BaseTool):
 
 class SearchTool(BaseTool):
     name = "Search"
+    config: AgentConfig = AgentConfig()
     description = (
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
-
-    def __init__(self, config: AgentConfig):
-        self.config = config
 
     def _add_gsite(self, query: str) -> str:
         # check if the gsite is none

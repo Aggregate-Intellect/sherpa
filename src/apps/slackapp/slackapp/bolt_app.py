@@ -89,7 +89,7 @@ def get_response(
     # check if the verbose is on
     verbose_logger = verbose_logger if agent_config.verbose else DummyVerboseLogger()
 
-    tools = get_tools(memory)
+    tools = get_tools(memory, agent_config)
     ai_name = "Sherpa"
     ai_id = bot_dict["user_id"]
 
