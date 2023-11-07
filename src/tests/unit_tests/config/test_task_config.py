@@ -10,13 +10,14 @@ from sherpa_ai.tools import ContextTool, SearchTool
 
 def test_all_parameters_parse_successfully():
     site = "https://www.google.com"
-    input_str = f"Test input. --verbose --gsite {site}"
+    input_str = f"Test input. --verbose --gsite {site} --do_reflect"
 
     parsed, config = AgentConfig.from_input(input_str)
 
     assert parsed == "Test input."
     assert config.verbose
     assert config.gsite == site
+    assert config.do_reflect
 
 
 def test_no_gsite_parses_successfully():

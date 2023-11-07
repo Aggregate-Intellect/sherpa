@@ -48,7 +48,7 @@ def hello_command(ack, body):
     ack(f"Hi, <@{user_id}>!")
 
 
-def process_chat_history(messages: List[dict]) -> List[BaseMessage]:
+def convert_thread_history_messages(messages: List[dict]) -> List[BaseMessage]:
     results = []
 
     for message in messages:
@@ -59,7 +59,7 @@ def process_chat_history(messages: List[dict]) -> List[BaseMessage]:
         message_cls = AIMessage if message["user"] == self.ai_id else HumanMessage
         # replace the at in the message with the name of the bot
         text = message["text"].replace(f"@{self.ai_id}", f"@{self.ai_name}")
-        # added by JF
+
         text = text.split("#verbose", 1)[0]  # remove everything after #verbose
         text = text.replace("-verbose", "")  # remove -verbose if it exists
         results.append(message_cls(content=text))
@@ -73,8 +73,23 @@ def get_response(
     user_id: str,
     team_id: str,
     verbose_logger: BaseVerboseLogger,
-    bot_dict: Dict[str, str]
-):
+    bot_info: Dict[str, str]
+) -> str:
+    """
+    Get response from the task agent for the question
+
+    Args:
+        question (str): question to be answered
+        previous_messages (List[BaseMessage]): previous messages in the thread
+        user_id (str): user id of the user who asked the question
+        team_id (str): team id of the workspace
+        verbose_logger (BaseVerboseLogger): verbose logger to be used
+        bot_info (Dict[str, str]): information of the Slack bot
+
+    Returns:
+        str: response from the task agent
+    """
+
     llm = SherpaChatOpenAI(
         openai_api_key=cfg.OPENAI_API_KEY,
         request_timeout=120,
@@ -86,17 +101,16 @@ def get_response(
     memory = get_vectordb()
 
     question, agent_config = AgentConfig.from_input(question)
-    # check if the verbose is on
     verbose_logger = verbose_logger if agent_config.verbose else DummyVerboseLogger()
 
     tools = get_tools(memory, agent_config)
     ai_name = "Sherpa"
-    ai_id = bot_dict["user_id"]
+    ai_id = bot_info["user_id"]
 
     task_agent = TaskAgent.from_llm_and_tools(
         ai_name="Sherpa",
         ai_role="assistant",
-        ai_id=bot_dict["user_id"],
+        ai_id=bot_info["user_id"],
         memory=memory,
         tools=tools,
         previous_messages=previous_messages,
@@ -118,7 +132,7 @@ def event_test(client, say, event):
     thread_ts = event.get("thread_ts", None) or event["ts"]
     replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
-    previous_messages = process_chat_history(previous_messages)
+    previous_messages = convert_thread_history_messages(previous_messages)
 
     input_message = replies["messages"][-1]
     user_id = input_message["user"]
@@ -155,7 +169,7 @@ def event_test(client, say, event):
             user_id,
             team_id,
             verbose_logger=SlackVerboseLogger(say, thread_ts),
-            bot_dict=bot,
+            bot_info=bot,
         )
 
         say(results, thread_ts=thread_ts)
