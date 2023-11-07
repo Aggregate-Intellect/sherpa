@@ -8,8 +8,7 @@ Summary
 -------
 Farshad Farah provides an overview of high-performance computing for AI/ML in the cloud, with a focus on using Genova. He discusses foundational model providers, fine-tuning models, and inference. He also talks about the challenges faced by foundational model providers and the different approaches to training models on AWS. Farshad shares tips for building large models and discusses the selection of the right model for different use cases. He also addresses data privacy concerns and the availability of AWS solutions. The presentation includes a Q&A session with the audience. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/DV6sgnfBnc0>`__
+`RECORDING <https://youtu.be/DV6sgnfBnc0>`__
 
 Topics: 
 -------
