@@ -10,8 +10,7 @@ Pandas AI is a Python library that integrates generative artificial intelligence
 
 The presentation focused on the challenges and advancements in using large-language models for tasks such as natural language to pandas code conversion. It also discussed the capabilities of large-language models in machine learning research, including data analysis, data visualization, and data exploration. The presentation highlighted the potential of large-language models in democratizing access to data analytics and showcased the capabilities of Pandas-Ai, a platform that focuses on data analysis and conversation with data. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/mQmRi2QTebM>`__
+`RECORDING <https://youtu.be/mQmRi2QTebM>`__
 
 Topics: 
 -------

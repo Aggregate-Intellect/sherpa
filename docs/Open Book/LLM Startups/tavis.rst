@@ -11,8 +11,7 @@ Summary
 
 Tavis Lochhead, one of the founders of Kodoa, introduced their company's mission to automate data extraction using AI. He emphasized the importance of data in today's world and explained how Kodoa's solution can automate the laborious process of extracting data from unstructured formats. Lochhead showcased their technology's ability to extract structured data from various websites. Kodoa aims to offer their services to companies in need of structured data for various use cases such as lead generation and e-commerce monitoring. Lochhead shared a success story of a job board client and expressed their commitment to building a strong infrastructure and pursuing larger deals in the future. The Q&A session provided feedback and suggestions for improvement, including enhancing the visuals, providing step-by-step demonstrations, condensing text-heavy slides, adding market size information, and including details on the business model, revenue projections, competitors, traction, and funding requirements. The speakers also acknowledged the need to improve storytelling and address the bottom-up approach in the market slide. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/mNGEdJFA3eA>`__
+`RECORDING <https://youtu.be/mNGEdJFA3eA>`__
 
 Topics: 
 -------
