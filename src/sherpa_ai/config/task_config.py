@@ -29,9 +29,22 @@ class AgentConfig(BaseModel):
     def from_config(cls, configs: List[str]) -> "AgentConfig":
         parser = ArgumentParser()
 
-        parser.add_argument("--verbose", action="store_true")
-        parser.add_argument("--gsite", type=str, default=None)
-        parser.add_argument("--do-reflect", action="store_true")
+        parser.add_argument(
+            "--verbose",
+            action="store_true",
+            help="enable verbose messaging during agent execution",
+        )
+        parser.add_argument(
+            "--gsite",
+            type=str,
+            default=None,
+            helo="site to be used for the Google search tool.",
+        )
+        parser.add_argument(
+            "--do-reflect",
+            action="store_true",
+            help="enable performing the reflection step for each agent.",
+        )
 
         args, unknown = parser.parse_known_args(configs)
 

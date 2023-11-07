@@ -64,7 +64,7 @@ class TaskAgent:
         self.ai_id = ai_id
         self.agent_config = agent_config
         self.previous_message = previous_messages
-        self.logger = []  # added by JF
+        self.logger = []
 
         link_parser = LinkParser()
         slack_link_paerser = MDToSlackParse()
@@ -160,14 +160,14 @@ class TaskAgent:
             self.logger.append(logger_step)
 
             # Serial Verbose Feature
-            if not self.agent_config.verbose:
+            if self.agent_config.verbose:
+                formatted_logger_step = logger_step
+            else:
                 try:
                     formatted_logger_step = show_commands_only(logger_step)
-                except Exception as e:
+                except KeyError as e:
                     logger.error(e)
                     formatted_logger_step = logger_step
-            else:
-                formatted_logger_step = logger_step
 
             logger.info(f"```{formatted_logger_step}```")
             self.verbose_logger.log(f"```{formatted_logger_step}```")
