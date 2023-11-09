@@ -84,14 +84,11 @@ class SearchTool(BaseTool):
         "you cannot find the information using internal search."
     )
 
-    def _add_gsite(self, query: str) -> str:
-        # check if the gsite is none
-        if self.config.gsite:
-            query = query + " " + self.config.gsite
-        return query
+    def query_with_gsite(self, query: str) -> str:
+        return query + " " + self.config.gsite if self.config.gsite else query
 
     def _run(self, query: str) -> str:
-        query = self._add_gsite(query, self.config)
+        query = self.query_with_gsite(query, self.config)
 
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
