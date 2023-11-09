@@ -38,7 +38,7 @@ class AgentConfig(BaseModel):
             "--gsite",
             type=str,
             default=None,
-            helo="site to be used for the Google search tool.",
+            help="site to be used for the Google search tool.",
         )
         parser.add_argument(
             "--do-reflect",
