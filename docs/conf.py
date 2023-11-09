@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Sherpa - Thinking Companion'
-copyright = '2023, Amir Feizpour et al'
+copyright = '2023, Aggregate Intellect Inc.'
 author = 'Amir Feizpour et al'
 
 # The full version, including alpha/beta/rc tags
