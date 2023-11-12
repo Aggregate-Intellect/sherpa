@@ -44,10 +44,12 @@ CHROMA_PORT = environ.get("CHROMA_PORT")
 CHROMA_INDEX = environ.get("CHROMA_INDEX")
 
 
-# Hugchat settings
+#Your HuggingChat.com user account email address
 HUGCHAT_EMAIL = environ.get("HUGCHAT_EMAIL")
 HUGCHAT_PASS = environ.get("HUGCHAT_PASS")
-HUGCHAT_CONFIG = environ.get("HUGCHAT_CONFIG")
+# Hugchat mode options
+HUGCHAT_MODE_STREAM_RESPONSE = environ.get("HUGCHAT_MODE_STREAM_RESPONSE", False) == "True"  # Use the stream response option
+HUGCHAT_MODE_WEB_SEARCH = environ.get("HUGCHAT_MODE_WEB_SEARCH", False) == "True"    # Use websearch for response
 
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()

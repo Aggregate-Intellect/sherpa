@@ -216,37 +216,18 @@ class HugChatTool(BaseTool):
     name = "Hugchat"
     description = (
         "Access the user input for the task."
-        "You use this tool if you need to use HugChat for Q&A."
+        "This tool is an alternative way to to ask clarifying questions to solve the task, using HuggingChat via the HugChat API."
     )
     def _run(self, query: str) -> str:
 
-        email = cfg.HUGCHAT_EMAIL
-        passwd = cfg.HUGCHAT_PASS
         # Log in to huggingface and grant authorization to huggingchat
-        sign = Login(email, passwd)
-        cookies = sign.login()
-
-        # Save cookies to the local directory
-        cookie_path_dir = "./cookies_snapshot"
-        sign.saveCookiesToDir(cookie_path_dir)
+        sign = Login(cfg.HUGCHAT_EMAIL, cfg.HUGCHAT_PASS)
+        session = sign.login()
 
         # Create a ChatBot
-        chatbot = hugchat.ChatBot(cookies=cookies.get_dict())  # or cookie_path="usercookies/<email>.json"
+        chatbot = hugchat.ChatBot(session)
 
-        query_result = ""
-
-        if cfg.HUGCHAT_CONFIG == 1:
-           query_result = chatbot.query(query)
-
-
-        if cfg.HUGCHAT_CONFIG == 2:
-            query_result = chatbot.query(query, stream=True)
-
-
-        if cfg.HUGCHAT_CONFIG == 3:
-            query_result = chatbot.query(query, web_search=True).text
-
-        return query_result
+        return chatbot.query(query,stream=cfg.HUGCHAT_MODE_STREAM_RESPONSE,web_search= cfg.HUGCHAT_MODE_WEB_SEARCH).text
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("HugChat does not support async run")

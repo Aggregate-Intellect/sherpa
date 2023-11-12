@@ -2,8 +2,7 @@ import json
 from os import environ
 from typing import List, Optional
 
-import openai
-from langchain.chains.llm import LLMChain
+
 from langchain.chat_models.base import BaseChatModel
 from langchain.llms.base import BaseLLM
 from langchain.schema import (
