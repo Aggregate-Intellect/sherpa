@@ -65,9 +65,6 @@ class UserUsageTracker:
     def add_data(self, combined_id, token, reset_timestamp=False):
         data = UsageTracker(user_id=combined_id, token=token, timestamp=int(time.time()), reset_timestamp=reset_timestamp)
         self.session.add(data)
-        print('########################################################################' , flush=True)
-        print(token,flush=True)
-        print('########################################################################' , flush=True)
         self.session.commit()
 
     def get_data_since_last_reset(self, user_id):
