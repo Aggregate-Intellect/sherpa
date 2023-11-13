@@ -41,6 +41,9 @@ build-backend = "poetry.core.masonry.api"
 pythonpath = [
   "."
 ]
+markers = [
+  "real: a description of the real mark"
+]
 
 [tool.black]
 line-length = 88
