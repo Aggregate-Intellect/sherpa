@@ -2,8 +2,8 @@ from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.tools import SearchTool
 from sherpa_ai.config.task_config import AgentConfig
+from sherpa_ai.tools import SearchTool
 
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
@@ -36,13 +36,12 @@ class GoogleSearch(BaseAction):
         self.config = config
 
         self.search_tool = SearchTool()
-    
+
     def config_gsite_query(self, query) -> str:
         # check if the gsite is none
         if self.config.gsite:
-            query = query + " " + self.config.gsite
+            query = query + " site:" + self.config.gsite
         return query
-        
 
     def execute(self, query) -> str:
         query = self.config_gsite_query(query)
