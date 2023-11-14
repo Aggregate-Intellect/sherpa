@@ -43,7 +43,7 @@ pythonpath = [
   "."
 ]
 markers = [
-  "real: a description of the real mark"
+  "real:  this test calls 3rd party APIs"
 ]
 
 [tool.black]
