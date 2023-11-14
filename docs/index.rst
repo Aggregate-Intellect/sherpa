@@ -15,7 +15,7 @@ Project Overview:
 Onboarding Checklist:
 ^^^^^^^^^^^^^^^^^^^^^
 
-There are a lot of information that you can leverage about this project in the following section. However, to make it easier for you to get started, especially if you are interested in contributing to the project, we have shortlisted a few items to go through:
+There is a lot of information that you can leverage about this project in the following section. However, to make it easier for you to get started, especially if you are interested in contributing to the project, we have shortlisted a few items to go through:
 
 - Step 1: skim through :doc:`About Sherpa<About_Sherpa/index>` to get a better sense of what the project is trying to achieve. 
 - Step 2: skim through / watch the :doc:`recent project updates<About_Sherpa/Updates/index>` to get a sense of what is currently happening in the project.
