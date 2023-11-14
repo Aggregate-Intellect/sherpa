@@ -5,7 +5,7 @@ import sherpa_ai.config as cfg
 class UserUsageTracker:
     def __init__(
         self,
-        db_name="token_countersaa.db",
+        db_name="token_countersa.db",
         max_daily_token=20000,
     ):
         self.conn = sqlite3.connect(db_name)

@@ -13,6 +13,7 @@ ENV POETRY_HOME="/opt/poetry"
 # Install Poetry
 RUN pip install poetry
 
+
 # Copy the application code to the container
 COPY . .
 
