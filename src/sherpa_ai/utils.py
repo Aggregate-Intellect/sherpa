@@ -15,7 +15,9 @@ import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
 from typing import Union
 
-import PyPDF2
+from pypdf import PdfReader
+
+
 def load_files(files: List[str]) -> List[Document]:
     documents = []
     loader = None
@@ -70,7 +72,8 @@ def get_link_from_slack_client_conversation(data):
                             if newElement.get("type") == "link":
                                 newUrl = newElement["url"]
                                 links.append(
-                                    {"url": newUrl, "base_url": get_base_url(newUrl)}
+                                    {"url": newUrl,
+                                        "base_url": get_base_url(newUrl)}
                                 )
     return links
 
@@ -92,7 +95,8 @@ def question_reconstructor(data: any, question: str):
     for chunk in data:
         chunk_link = f"<{chunk['link']}>"
         result = result.replace(f"{chunk_link}", f"[{count}]")
-        result = result + f""" [{count}] link: "{chunk['link']}" , link_data: {data}"""
+        result = result + \
+            f""" [{count}] link: "{chunk['link']}" , link_data: {data}"""
         count += 1
 
     return result
@@ -148,6 +152,8 @@ def chunk_and_summarize(
         chunk_summary.append(summarized)
 
     return " ".join(chunk_summary)
+
+
 def chunk_and_summarize_file(
     text_data: str,
     question: str,
@@ -157,7 +163,7 @@ def chunk_and_summarize_file(
     team_id: str = None,
     user_id: str = None,
 ):
-    
+
     llm = SherpaOpenAI(
         temperature=cfg.TEMPRATURE,
         openai_api_key=cfg.OPENAI_API_KEY,
@@ -187,10 +193,12 @@ def chunk_and_summarize_file(
         chunk_summary.append(summarized)
     return " ".join(chunk_summary)
 
-def question_with_file_reconstructor(data: str, file_name:str , title: Union[str, None] , file_format:str ,  question: str):
+
+def question_with_file_reconstructor(data: str, file_name: str, title: Union[str, None], file_format: str,  question: str):
     result = question + "./n Reference:"
     title = f"'title':'{title}'" if title is not None else ""
-    result = result + f"""[ {{file_name: '{file_name}' , {title}  , file_format:'{file_format}' , content_of_{file_name}:'{data}'}} ]"""
+    result = result + \
+        f"""[ {{file_name: '{file_name}' , {title}  , file_format:'{file_format}' , content_of_{file_name}:'{data}'}} ]"""
     return result
 
 # ---- add this for verbose output --- #
@@ -249,7 +257,7 @@ def extract_text_from_pdf(pdf_path):
     text = ""
     # Extract text from a PDF using PdfReader
     pdf_file = open(pdf_path, "rb")
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    pdf_reader = PdfReader(pdf_file)
 
     text = ""
     for page in pdf_reader.pages:
