@@ -7,7 +7,7 @@ import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers import DummyVerboseLogger
 
 
-@pytest.mark.real
+@pytest.mark.external_api
 def test_get_response_contains_todays_date():
     question = "What is the date today, using the following format: YYYY-MM-DD?"
     date = datetime.now().strftime("%Y-%m-%d")
@@ -30,7 +30,7 @@ def test_get_response_contains_todays_date():
     assert date in response, "Today's date not found in response"
 
 
-@pytest.mark.real
+@pytest.mark.external_api
 def test_response_contains_correct_info():
     question = "What is AutoGPT and how does it compare with MetaGPT"
 
