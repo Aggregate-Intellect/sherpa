@@ -265,3 +265,39 @@ def extract_text_from_pdf(pdf_path):
 
     pdf_file.close()
     return text
+
+
+def extract_urls(text):
+    # extract urls from natrual language texts
+    # return a list of urls [a,b,c]. Each url is a string
+
+    # Split the text into words
+    words = text.split()
+
+    # Extract URLs using urllib.parse
+    urls = [word for word in words if urlparse(word).scheme in ['http', 'https']]
+
+    return urls
+
+
+def check_url(url):
+    # check whether a url is valid
+    # return True is url is valid
+    
+    try:
+        html = urlopen(url)
+        
+    # except block to catch
+    # exception
+    # and identify error
+    except HTTPError as e:
+        print("HTTP error", e)
+        return False
+        
+    except URLError as e:
+        print("Opps ! Page not found!", e)
+        return False
+    
+    else:
+        return True
+    
