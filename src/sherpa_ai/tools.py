@@ -69,7 +69,7 @@ class SearchArxivTool(BaseTool):
             )
 
         logger.debug(f"Arxiv Search Result: {result_list}")
-        
+
         return " ".join(result_list)
 
     def _arun(self, query: str) -> str:
@@ -78,12 +78,21 @@ class SearchArxivTool(BaseTool):
 
 class SearchTool(BaseTool):
     name = "Search"
+    config = AgentConfig()
     description = (
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
 
+    def augment_query(self, query) -> str:
+        # check if the gsite is none
+        if self.config.gsite:
+            query = query + " site:" + self.config.gsite
+        return query
+
     def _run(self, query: str) -> str:
+        query = self.augment_query(query)
+
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
@@ -191,7 +200,7 @@ class ContextTool(BaseTool):
 
 
 class UserInputTool(BaseTool):
-    # TODO: Make an action for the user input 
+    # TODO: Make an action for the user input
     name = "UserInput"
     description = (
         "Access the user input for the task."

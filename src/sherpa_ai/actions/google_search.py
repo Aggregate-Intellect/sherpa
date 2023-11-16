@@ -23,8 +23,8 @@ class GoogleSearch(BaseAction):
         role_description: str,
         task: str,
         llm: BaseLanguageModel,
-        config: AgentConfig = AgentConfig(),
         description: str = SEARCH_SUMMARY_DESCRIPTION,
+        config: AgentConfig = AgentConfig(),
         n: int = 5,
     ):
         self.role_description = role_description
@@ -33,18 +33,10 @@ class GoogleSearch(BaseAction):
         self.description = description
         self.llm = llm
         self.n = n
-        self.config = config
 
-        self.search_tool = SearchTool()
-
-    def config_gsite_query(self, query) -> str:
-        # check if the gsite is none
-        if self.config.gsite:
-            query = query + " site:" + self.config.gsite
-        return query
+        self.search_tool = SearchTool(config=config)
 
     def execute(self, query) -> str:
-        query = self.config_gsite_query(query)
         result = self.search_tool._run(query)
 
         logger.debug("Search Result: {}", result)

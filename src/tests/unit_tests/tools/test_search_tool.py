@@ -1,5 +1,5 @@
-from sherpa_ai.actions.google_search import GoogleSearch
 from sherpa_ai.config import AgentConfig
+from sherpa_ai.tools import SearchTool
 
 
 def test_gsite_config_successfully():
@@ -11,10 +11,10 @@ def test_gsite_config_successfully():
 
     assert config.gsite == site
 
-    google_search = GoogleSearch(role_description="", task="", llm=None, config=config)
+    search_tool = SearchTool(config=config)
 
     query = "What is the weather today?"
 
-    updated_query = google_search.config_gsite_query(query)
+    updated_query = search_tool.augment_query(query)
 
     assert f"site:{site}" in updated_query
