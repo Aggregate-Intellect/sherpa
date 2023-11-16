@@ -5,7 +5,7 @@ from sherpa_ai.config import AgentConfig
 
 def test_all_parameters_parse_successfully():
     site = "https://www.google.com"
-    input_str = f"Test input. --verbose --gsite {site} --do_reflect"
+    input_str = f"Test input. --verbose --gsite {site} --do-reflect"
 
     parsed, config = AgentConfig.from_input(input_str)
 

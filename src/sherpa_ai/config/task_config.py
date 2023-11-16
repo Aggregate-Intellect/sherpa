@@ -41,7 +41,7 @@ class AgentConfig(BaseModel):
             help="site to be used for the Google search tool.",
         )
         parser.add_argument(
-            "--do_reflect",
+            "--do-reflect",
             action="store_true",
             help="enable performing the reflection step for each agent.",
         )
