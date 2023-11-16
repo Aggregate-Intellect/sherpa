@@ -21,7 +21,7 @@ Write the code to display the "Hello, World!" message on the screen. The code wi
 
 def test_evaluation_matrices():
     llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
-    critic_agent = Critic(name="CriticAgent", llm=llm, ratio=1)
+    critic_agent = Critic(llm=llm, ratio=1)
 
     i_score, i_evaluation = critic_agent.get_importance_evaluation(task, plan)
     assert type(i_score) is int
@@ -34,7 +34,7 @@ def test_evaluation_matrices():
 
 def test_get_feedback():
     llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
-    critic_agent = Critic(name="CriticAgent", llm=llm, ratio=1)
+    critic_agent = Critic(llm=llm, ratio=1)
     feedback_list = critic_agent.get_feedback(task, plan)
     assert len(feedback_list) == 3
     # assert type(feedback) is str

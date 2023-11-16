@@ -31,7 +31,7 @@ def config_task_agent(
     return task_agent
 
 
-@pytest.mark.real
+@pytest.mark.external_api
 def test_task_solving_with_search():
     """Test task solving with search"""
     question = "What is the date today, using the following format: YYYY-MM-DD?"
@@ -42,7 +42,7 @@ def test_task_solving_with_search():
             "SERPER_API_KEY not found in environment variables, skipping this test"
         )
     memory = get_vectordb()
-    tools = [SearchTool(api_wrapper=GoogleSerperAPIWrapper())]
+    tools = [SearchTool()]
 
     task_agent = config_task_agent(tools=tools, memory=memory)
 
@@ -50,7 +50,7 @@ def test_task_solving_with_search():
     assert date in response, "Today's date not found in response"
 
 
-@pytest.mark.real
+@pytest.mark.external_api
 def test_task_solving_with_context_search():
     question = "What is langchain?"
 
