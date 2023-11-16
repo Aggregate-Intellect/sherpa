@@ -78,18 +78,12 @@ class SearchArxivTool(BaseTool):
 
 class SearchTool(BaseTool):
     name = "Search"
-    config: AgentConfig = AgentConfig()
     description = (
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
 
-    def query_with_gsite(self, query: str) -> str:
-        return query + " " + self.config.gsite if self.config.gsite else query
-
     def _run(self, query: str) -> str:
-        query = self.query_with_gsite(query, self.config)
-
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
