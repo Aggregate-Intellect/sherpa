@@ -131,9 +131,9 @@ class TaskAgent:
                 user_input = (
                     "Use the above information to respond to the user's message:"
                     f"\n{task}\n\n"
-                    "If you use any resource, then create inline citation by adding "
-                    " of the reference document at the end of the sentence in the "
-                    "format of 'Sentence [DocID]'\n"
+                    "If you use any resource, then create inline citation by adding"
+                    "the DocID of the reference document at the end of the sentence in "
+                    "the format of 'Sentence [DocID]'\n"
                     "Example:\n"
                     "Sentence1 [1]. Sentence2. Sentence3 [2].\n"
                     "Only use the reference document. DO NOT use any links"
