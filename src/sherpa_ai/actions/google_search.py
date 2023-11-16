@@ -23,7 +23,7 @@ class GoogleSearch(BaseAction):
         role_description: str,
         task: str,
         llm: BaseLanguageModel,
-        config: AgentConfig,
+        config: AgentConfig = AgentConfig(),
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         n: int = 5,
     ):

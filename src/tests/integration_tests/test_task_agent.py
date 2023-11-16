@@ -42,7 +42,7 @@ def test_task_solving_with_search():
             "SERPER_API_KEY not found in environment variables, skipping this test"
         )
     memory = get_vectordb()
-    tools = [SearchTool(api_wrapper=GoogleSerperAPIWrapper())]
+    tools = [SearchTool()]
 
     task_agent = config_task_agent(tools=tools, memory=memory)
 
