@@ -85,10 +85,7 @@ class SearchTool(BaseTool):
     )
 
     def augment_query(self, query) -> str:
-        # check if the gsite is none
-        if self.config.gsite:
-            query = query + " site:" + self.config.gsite
-        return query
+        return query + " site:" + self.config.gsite if self.config.gsite else query
 
     def _run(self, query: str) -> str:
         query = self.augment_query(query)
