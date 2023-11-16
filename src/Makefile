@@ -11,4 +11,7 @@ lint:
 	black . --check
 
 test:
-	pytest .
+	echo "Running tests for sherpa"
+	pytest tests
+	echo "Running tests for sherpa slackapp"
+	cd apps/slackapp && pytest tests

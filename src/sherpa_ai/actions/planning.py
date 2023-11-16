@@ -116,8 +116,8 @@ class TaskPlanning(BaseAction):
         self,
         task: str,
         agent_pool_description: str,
-        last_plan: Optional[str],
-        feedback: Optional[str],
+        last_plan: Optional[str] = None,
+        feedback: Optional[str] = None,
     ) -> Plan:
         """
         Execute the action

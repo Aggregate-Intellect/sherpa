@@ -4,8 +4,6 @@ from langchain.llms.base import LLM
 import sherpa_ai.config as cfg
 from sherpa_ai.actions.planning import TaskPlanning
 
-llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
-
 
 def test_planning():
     llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)

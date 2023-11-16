@@ -4,35 +4,40 @@ import sherpa_ai.config as cfg
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.physicist import Physicist
 from sherpa_ai.agents.planner import Planner
-from sherpa_ai.agents.programmer import Programmer
+
+# from sherpa_ai.agents.programmer import Programmer
 from sherpa_ai.memory.shared_memory import SharedMemory
 
 
 def test_planner():
-    programmer_description = (
-        "The programmer receives requirements about a program and write it"
-    )
-    programmer = Programmer(name="Programmer", description=programmer_description)
+    # programmer_description = (
+    #     "The programmer receives requirements about a program and write it"
+    # )
+    # programmer = Programmer(name="Programmer", description=programmer_description)
+
+    llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
 
     physicist_description = (
         "The physicist agent answers questions or research about physics-related topics"
     )
-    physicist = Physicist(name="Physicist", description=physicist_description)
+    physicist = Physicist(
+        name="Physicist",
+        description=physicist_description,
+        llm=llm,
+    )
 
     agent_pool = AgentPool()
-    agent_pool.add_agents([programmer, physicist])
+    agent_pool.add_agents([physicist])
 
-    shared_memeory = SharedMemory(
+    shared_memory = SharedMemory(
         objective="Share the information across different agents.",
         agent_pool=agent_pool,
     )
 
-    llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
-
     planner = Planner(
         name="planner",
         agent_pool=agent_pool,
-        shared_memory=shared_memeory,
+        shared_memory=shared_memory,
         llm=llm,
     )
 
