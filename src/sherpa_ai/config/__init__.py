@@ -17,6 +17,8 @@ from os import environ
 from dotenv import find_dotenv, load_dotenv
 from loguru import logger
 
+from sherpa_ai.config.task_config import AgentConfig
+
 env_path = find_dotenv(usecwd=True)
 load_dotenv(env_path)
 
@@ -117,3 +119,7 @@ else:
     logger.info("Config: OpenAI environment variables are set")
 
 check_vectordb_setting()
+
+__all__ = [
+    "AgentConfig",
+]

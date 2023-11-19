@@ -18,9 +18,10 @@ from hugchat import hugchat
 from hugchat.login import Login
 
 import sherpa_ai.config as cfg
+from sherpa_ai.config.task_config import AgentConfig
 
 
-def get_tools(memory):
+def get_tools(memory, config):
     tools = []
 
     # tools.append(ContextTool(memory=memory))
@@ -28,7 +29,7 @@ def get_tools(memory):
 
 
     if cfg.SERPER_API_KEY is not None:
-        search_tool = SearchTool()
+        search_tool = SearchTool(config=config)
         tools.append(search_tool)
     else:
         logger.warning(
@@ -77,7 +78,7 @@ class SearchArxivTool(BaseTool):
             )
 
         logger.debug(f"Arxiv Search Result: {result_list}")
-        
+
         return " ".join(result_list)
 
     def _arun(self, query: str) -> str:
@@ -86,12 +87,18 @@ class SearchArxivTool(BaseTool):
 
 class SearchTool(BaseTool):
     name = "Search"
+    config = AgentConfig()
     description = (
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
 
+    def augment_query(self, query) -> str:
+        return query + " site:" + self.config.gsite if self.config.gsite else query
+
     def _run(self, query: str) -> str:
+        query = self.augment_query(query)
+
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
@@ -199,7 +206,7 @@ class ContextTool(BaseTool):
 
 
 class UserInputTool(BaseTool):
-    # TODO: Make an action for the user input 
+    # TODO: Make an action for the user input
     name = "UserInput"
     description = (
         "Access the user input for the task."

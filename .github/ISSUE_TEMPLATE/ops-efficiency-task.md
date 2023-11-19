@@ -1,5 +1,5 @@
 ---
-name: Ops Efficinecy Task
+name: Ops Efficiency Task
 about: Any tasks for improved operational efficiency
 title: "[OPS]"
 labels: enhancement
