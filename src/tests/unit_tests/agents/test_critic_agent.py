@@ -1,8 +1,10 @@
+from unittest.mock import MagicMock
+
 from langchain.llms import OpenAI
 from langchain.llms.base import LLM
 
-import sherpa_ai.config as cfg
 from sherpa_ai.agents.critic import Critic
+from tests.fixtures.llms import get_llm
 
 task = "Write a hello world program"
 plan = """
@@ -19,8 +21,8 @@ Write the code to display the "Hello, World!" message on the screen. The code wi
 """  # noqa: E501
 
 
-def test_evaluation_matrices():
-    llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
+def test_evaluation_matrices_successful(get_llm):
+    llm = get_llm(__file__, test_evaluation_matrices_successful.__name__)
     critic_agent = Critic(llm=llm, ratio=1)
 
     i_score, i_evaluation = critic_agent.get_importance_evaluation(task, plan)
@@ -32,10 +34,9 @@ def test_evaluation_matrices():
     assert type(d_evaluation) is str
 
 
-def test_get_feedback():
-    llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
-    critic_agent = Critic(llm=llm, ratio=1)
+def test_get_feedback_successful(get_llm):
+    llm = get_llm(__file__, test_get_feedback_successful.__name__)
+    # set ratio to 2 to force feedback
+    critic_agent = Critic(llm=llm, ratio=2, shared_memory=MagicMock())
     feedback_list = critic_agent.get_feedback(task, plan)
     assert len(feedback_list) == 3
-    # assert type(feedback) is str
-    # assert type(feedback) is not ""

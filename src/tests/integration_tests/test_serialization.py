@@ -1,13 +1,16 @@
+import pytest
 from langchain.chat_models import ChatOpenAI
 
 from sherpa_ai.agents import Physicist
 from sherpa_ai.events import Event
 from sherpa_ai.orchestrator import EventType, Orchestrator, OrchestratorConfig
+from tests.fixtures.llms import get_llm
 
 
-def test_orchestrator():
+@pytest.mark.external_api
+def test_orchestrator_successful(get_llm):
     orchestrator = Orchestrator(OrchestratorConfig())
-    llm = ChatOpenAI(model_name="gpt-4")
+    llm = get_llm(__file__, test_orchestrator_successful.__name__)
 
     orchestrator.shared_memory.add_event(
         Event(event_type=EventType.task, agent="shared_memory", content="shared_memory")
@@ -27,5 +30,4 @@ def test_orchestrator():
     )
 
     new_physicist = new_or.agent_pool.agents[physicist.name]
-    print(new_physicist.belief.__dict__)
     assert new_physicist.belief.get_by_type(EventType.task)[0].content == "belief"

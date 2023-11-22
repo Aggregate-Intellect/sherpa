@@ -11,6 +11,7 @@ import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.task_agent import TaskAgent
 from sherpa_ai.tools import ContextTool, SearchTool
+from tests.fixtures.llms import get_llm
 
 
 def config_task_agent(
@@ -32,7 +33,7 @@ def config_task_agent(
 
 
 @pytest.mark.external_api
-def test_task_solving_with_search():
+def test_task_solving_with_search_successful(get_llm):
     """Test task solving with search"""
     question = "What is the date today, using the following format: YYYY-MM-DD?"
     date = datetime.now().strftime("%Y-%m-%d")
@@ -44,14 +45,15 @@ def test_task_solving_with_search():
     memory = get_vectordb()
     tools = [SearchTool()]
 
-    task_agent = config_task_agent(tools=tools, memory=memory)
+    llm = get_llm(__file__, test_task_solving_with_search_successful.__name__)
+    task_agent = config_task_agent(tools=tools, memory=memory, llm=llm)
 
     response = task_agent.run(question)
     assert date in response, "Today's date not found in response"
 
 
 @pytest.mark.external_api
-def test_task_solving_with_context_search():
+def test_task_solving_with_context_search_successful(get_llm):
     question = "What is langchain?"
 
     if cfg.VECTORDB != "pinecone" or cfg.VECTORDB != "chroma":
@@ -60,7 +62,8 @@ def test_task_solving_with_context_search():
     memory = get_vectordb()
     tools = [ContextTool(memory=memory)]
 
-    task_agent = config_task_agent(tools=tools, memory=memory)
+    llm = get_llm(__file__, test_task_solving_with_context_search_successful.__name__)
+    task_agent = config_task_agent(tools=tools, memory=memory, llm=llm)
 
     response = task_agent.run(question)
 
