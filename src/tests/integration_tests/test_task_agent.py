@@ -56,7 +56,7 @@ def test_task_solving_with_search_successful(get_llm):
 def test_task_solving_with_context_search_successful(get_llm):
     question = "What is langchain?"
 
-    if cfg.VECTORDB != "pinecone" or cfg.VECTORDB != "chroma":
+    if cfg.VECTORDB != "pinecone" and cfg.VECTORDB != "chroma":
         pytest.skip("VECTORDB is not configured properly, skipping this test")
 
     memory = get_vectordb()
