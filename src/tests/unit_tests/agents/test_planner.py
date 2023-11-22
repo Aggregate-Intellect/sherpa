@@ -13,22 +13,11 @@ from sherpa_ai.agents.planner import Planner
 # from sherpa_ai.agents.programmer import Programmer
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.models.sherpa_logger_chat_model import SherpaLoggerLLM
-from tests.fixtures.llms import get_fake_llm, get_real_llm
-from tests.fixtures.loggers import get_logger
+from tests.fixtures.llms import get_llm
 
 
-def test_planner(
-    get_logger: Callable[[str], type(logger)],  # noqa: F811 (redefinition of variable)
-    get_fake_llm: Callable[[str], FakeListLLM],  # noqa: F811
-    get_real_llm: Callable[[str], ChatOpenAI],  # noqa: F811
-    external_api: bool,
-):
-    cache_name = "tests/data/test_planner_test_planner.json"
-    if external_api:
-        logger = get_logger(cache_name)
-        llm = SherpaLoggerLLM(llm=get_real_llm(), logger=logger)
-    else:
-        llm = get_fake_llm(cache_name)
+def test_planner_successful(get_llm):
+    llm = get_llm(__file__, test_planner_successful.__name__)
 
     physicist_description = (
         "The physicist agent answers questions or research about physics-related topics"

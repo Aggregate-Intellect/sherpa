@@ -4,10 +4,10 @@ import pytest
 from langchain.chat_models import ChatOpenAI
 from loguru import logger
 
-import sherpa_ai.config
 from sherpa_ai.agents import MLEngineer
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
+from tests.fixtures.llms import get_llm
 
 
 @pytest.fixture
@@ -16,8 +16,9 @@ def config_logger():
     logger.add(sys.stderr, level="DEBUG")
 
 
-def test_physicist(config_logger):
-    llm = ChatOpenAI(model_name="gpt-4")
+@pytest.mark.external_api
+def test_ml_engineer_successful(config_logger, get_llm):
+    llm = get_llm(__file__, test_ml_engineer_successful.__name__)
 
     shared_memory = SharedMemory(
         objective="Develop an deep Learning-Based approach for estimating the maximum wind speed of a tropical cyclone using satellite imagery",
