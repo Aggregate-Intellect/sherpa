@@ -31,13 +31,13 @@ He can answer questions about general quantum mechanics topics and also in depth
 """  # noqa E501
 
 
-def test_planning(get_llm):
+def test_orchestrator_successfully(get_llm):
     objective = "Write a proposal for estimating the maximum wind speed of a tropical cyclone using satellite imagery"  # noqa E501
     config = OrchestratorConfig()
 
     orchestrator = Orchestrator(config=config)
 
-    llm = get_llm(__file__, test_planning.__name__)
+    llm = get_llm(__file__, test_orchestrator_successfully.__name__)
     orchestrator.llm = llm
 
     shared_memeory = SharedMemory(
