@@ -3,7 +3,7 @@ import re
 import urllib
 import urllib.parse
 import urllib.request
-from typing import Any
+from typing import Any, List
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,6 +17,7 @@ from typing_extensions import Literal
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
+from sherpa_ai.output_parser import TaskAction
 
 
 def get_tools(memory, config):
@@ -83,13 +84,32 @@ class SearchTool(BaseTool):
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
-
-    def augment_query(self, query) -> str:
-        return query + " site:" + self.config.gsite if self.config.gsite else query
-
+    
     def _run(self, query: str) -> str:
-        query = self.augment_query(query)
+        result = ""
+        if self.config.gsite:
+            try:
+                gsite_list = self.config.gsite.split(",")
+                gsite_list = [i for i in gsite_list if i != " " and i != "\n" and i != None]
+                gsite_list = [query + " site:" + i for i in gsite_list]
+            except Exception:
+                return TaskAction(
+                    name="ERROR",
+                    args={"error": f"Could not process invalid website URLs format. Split urls with comma."},
+                )
+            if len(gsite_list) >= 5:
+                gsite_list = gsite_list[:5]
+                result = result + "Warning: Only the first 5 URLs are taken into consideration.\n"
+            
+        else:
+            gsite_list = [query]
+        top_k = int(10 / len(gsite_list))
+        for query_gsite in gsite_list:
+            result += self._run_single_query(query_gsite, top_k)
+        return result
+        
 
+    def _run_single_query(self, query: str, top_k: int) -> str:
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
@@ -122,7 +142,7 @@ class SearchTool(BaseTool):
                 snippets.append(description)
             for attribute, value in kg.get("attributes", {}).items():
                 snippets.append(f"{title} {attribute}: {value}.")
-        k = 10
+
         search_type: Literal["news", "search", "places", "images"] = "search"
         result_key_for_type = {
             "news": "news",
@@ -130,7 +150,7 @@ class SearchTool(BaseTool):
             "images": "images",
             "search": "organic",
         }
-        for result in search_results[result_key_for_type[search_type]][:k]:
+        for result in search_results[result_key_for_type[search_type]][:top_k]:
             if "snippet" in result:
                 snippets.append(result["snippet"])
             for attribute, value in result.get("attributes", {}).items():
@@ -140,7 +160,7 @@ class SearchTool(BaseTool):
                 return ["No good Google Search Result was found"]
 
         result = []
-        for i in range(len(search_results["organic"][:10])):
+        for i in range(len(search_results["organic"][:top_k])):
             r = search_results["organic"][i]
             single_result = (
                 "Description: " + r["title"] + r["snippet"] + "\nLink:" + r["link"]
