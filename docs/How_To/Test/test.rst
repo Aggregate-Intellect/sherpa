@@ -161,6 +161,10 @@ Naming Conventions, Tools, and Test Infrastructure
 
 **src/tests/**: Houses all test files.
 
+**src/tests/fixtures/**: Contains fixtures for testing.
+
+**src/tests/data**: Data files and caches for testing.
+
 **Organization of Test Files:**
 
 **unit/**: Unit tests for individual functions or components.
@@ -200,11 +204,15 @@ interacts with.
 First when running your test case locally be on the src file
 directory first.
 
-To run all tests, use the command **pytest**.
+To run all tests, use the command **pytest tests**.
 
 For a specific test file, run **pytest tests/test_module_name.py**
 
 To run a specific test function, use **pytest -k test_function_name**.
+
+By default, the tests run using local caches (avoiding accessing their-party 
+APIs for testing). To run the tests without using the local caches, use the
+`pytest --external_api` option.
 
 **Test Coverage:**
 
@@ -224,3 +232,35 @@ automatically. View the workflow configuration in **.github/workflows/tests.yml*
 Update tests whenever there are changes in dependencies or code.
 When updating tests, verify that they still pass and accurately
 represent the intended behavior of the code.
+
+
+**Test with LLMs:**
+Most of the time, the tests should be able to run offline without involvement of 
+third-party APIs such as OpenAI LLM calls. In most cases, you can *mock* an LLM using
+the `unittest.mock` library. However, there are some cases where you need to test
+the LLMs directly. 
+
+In this case, we need to cache the output of the LLMs so that we can run the tests
+offline later on. To do this, the `tests.fixtures.llms.get_llm` *fixture* provide automatical
+caching of the LLMs. If you have any test that needs to call the LLMs, you should get the
+LLM using this fixture and pass it as a attribute to the module under test. To help avoiding
+caching conflicts, you should pass the file name (the `__file__` attribute) of the module and
+the name of the test function (the `__name__` attribute of the function) to the `get_llm` fixture.
+
+For example, if we have test file name `test.py`:
+
+      .. code:: python
+
+            from tests.fixtures.llms import get_llm
+            def test_my_llm(get_llm):
+                  llm = get_llm(__file__, test_my_llm.__name__)
+                  # use llm to test your code            
+            
+Then the name of the cache file will be "<test filename>_<test_name>.jsonl" stored in the `tests/data`
+folder, which will be automatically created if it does not exist. In the above example, the cache file
+will be `test_test_my_llm.jsonl`.
+
+.. note:: 
+      Notice that when tests are run with external APIs using the `--external_api` option, the LLMs interactions
+      will be appended in the cache file rather than overwriting it. To create a new cache file, you should
+      delete the old cache file first.
