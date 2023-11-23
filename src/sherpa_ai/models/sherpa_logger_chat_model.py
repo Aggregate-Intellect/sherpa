@@ -44,8 +44,8 @@ class SherpaLoggerLLM(BaseChatModel):
     def _agenerate(
         self,
         messages: List[BaseMessage],
-        stop: List[str] | None = None,
-        run_manager: AsyncCallbackManagerForLLMRun | None = None,
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> Coroutine[Any, Any, ChatResult]:
         self.llm.agenerate(messages, stop, run_manager, **kwargs)
