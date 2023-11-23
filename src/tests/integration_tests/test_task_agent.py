@@ -4,6 +4,7 @@ from typing import List
 import pytest
 from langchain import GoogleSerperAPIWrapper
 from langchain.chat_models import ChatOpenAI
+from langchain.llms import FakeListLLM
 from langchain.tools.base import BaseTool
 from langchain.vectorstores.base import VectorStoreRetriever
 
@@ -46,6 +47,11 @@ def test_task_solving_with_search_successful(get_llm):
     tools = [SearchTool()]
 
     llm = get_llm(__file__, test_task_solving_with_search_successful.__name__)
+
+    # use the cached date if the llm is a fake llm
+    if isinstance(llm, FakeListLLM):
+        date = llm.responses[-1]
+
     task_agent = config_task_agent(tools=tools, memory=memory, llm=llm)
 
     response = task_agent.run(question)
