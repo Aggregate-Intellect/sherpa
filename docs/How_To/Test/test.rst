@@ -21,15 +21,11 @@ Use clear and descriptive naming for your test functions to indicate
 what concept or behavior the test is verifying. This makes your test
 suite easier to understand and maintain.
 
--  
-
 **Keep It Short and Sweet (KISS):**
 
 Keep your tests short, simple, and focused. A test should be easy to
 understand at a glance. This often translates to testing a single thing
 per test.
-
--  
 
 **Avoid Test Dependencies:**
 
@@ -122,8 +118,6 @@ requirements are met.
 Test the points where your code integrates with other systems,
 libraries, or frameworks
 
- 
-=
 
 What Not to Test
 ================
@@ -153,7 +147,8 @@ Constants or configuration settings generally do not need to be tested
 Naming Conventions, Tools, and Test Infrastructure
 ==================================================
 
-**Folder Structure**
+Folder Structure
+----------------
 
 **app/**: Contains application interface
 
@@ -163,18 +158,17 @@ Naming Conventions, Tools, and Test Infrastructure
 
 **src/tests/fixtures/**: Contains fixtures for testing.
 
-**src/tests/data**: Data files and caches for testing.
+**src/tests/data**: Data files and cached responses from 3rd party APIs for test mocks.
 
-**Organization of Test Files:**
+**src/tests/unit/**: Unit tests for individual functions or components.
 
-**unit/**: Unit tests for individual functions or components.
-
-**integration/**: Integration tests for interactions between
+**src/tests/integration/**: Integration tests for interactions between
 different components.
 
-**e2e/**: End-to-end tests for testing the application as a whole.
+**src/tests/e2e/**: End-to-end tests for testing the application as a whole.
 
-**Naming Convention:**
+Naming Conventions
+------------------
 
 **The naming convention for a testing file is to add the prefix**
 **test\_** to the original file name
@@ -188,6 +182,9 @@ test\_ to the original function name
       -  e.g. test_subtractor. If an edge case exists, add a descriptive
             name at the end e.g. test_subtractor_zero.
 
+Tools
+-----
+
 **Testing Packages:**
       We use **pytest** for testing
 
@@ -199,10 +196,15 @@ make assertions about how they have been used. This can be
 useful for testing external systems or services that your code
 interacts with.
 
-**Running Tests:**
+**Test Coverage**
 
-First when running your test case locally be on the src file
-directory first.
+Measure test coverage with **pytest-cov**. Run tests with coverage
+using **pytest --cov=sherpa_ai .** We do not yet have a code coverage target.
+
+Running Tests
+-------------
+
+To run test cases lcoally, first switch to the src directory: **cd src**
 
 To run all tests, use the command **pytest tests**.
 
@@ -210,55 +212,80 @@ For a specific test file, run **pytest tests/test_module_name.py**
 
 To run a specific test function, use **pytest -k test_function_name**.
 
-By default, the tests run using local caches (avoiding accessing their-party 
-APIs for testing). To run the tests without using the local caches, use the
-`pytest --external_api` option.
+By default, the tests run using locally cached data. See "offline and online testing" below
+for more details. 
+To run the tests without using the local caches, use **pytest --external_api**.
 
-**Test Coverage:**
+.. warning:: 
+      The `external_api` option will result in calls to 3rd party APIs from the machine runnning tests, 
+      which may incur real dollar costs,
+      and may be significantly slower than a local (offline) test run.
 
-Measure test coverage with **pytest-cov**. Run tests with coverage
-using **pytest --cov=sherpa_ai .**
-
-We do not yet have a code coverage target.
-
-**GitHub Actions Integration:**
+GitHub Actions Integration
+--------------------------
 
 We use GitHub Actions for automated testing. When you create a
 pull request, the automated tests will be triggered
 automatically. View the workflow configuration in **.github/workflows/tests.yml**.
 
-**Maintaining and Updating Tests:**
+Maintaining and Updating Tests
+------------------------------
 
 Update tests whenever there are changes in dependencies or code.
 When updating tests, verify that they still pass and accurately
 represent the intended behavior of the code.
 
+Offline and Online Testing
+--------------------------
 
-**Test with LLMs:**
-Most of the time, the tests should be able to run offline without involvement of 
-third-party APIs such as OpenAI LLM calls. In most cases, you can *mock* an LLM using
-the `unittest.mock` library. However, there are some cases where you need to test
-the LLMs directly. 
+By default, all tests run entirely offline, using locally cached data to mock the results of network calls. 
+This has several important benefits:
 
-In this case, we need to cache the output of the LLMs so that we can run the tests
-offline later on. To do this, the `tests.fixtures.llms.get_llm` *fixture* provide automatical
-caching of the LLMs. If you have any test that needs to call the LLMs, you should get the
-LLM using this fixture and pass it as a attribute to the module under test. To help avoiding
-caching conflicts, you should pass the file name (the `__file__` attribute) of the module and
-the name of the test function (the `__name__` attribute of the function) to the `get_llm` fixture.
+1. No network calls to 3rd party APIs for services such as LLMs, which can be both slow and costly
+2. Tests run offline, enabling offline development
+3. Tests are deterministic
+4. Tests are fast 
+
+We want to preserve these benefits. Therefore, when you modify or add tests, 
+make sure they run offline by default.
+
+Guidelines for testing code that makes network calls:
+
+1. Mark your test `@pytest.mark.external_api` to indicate that it calls code which uses the network. 
+2. Define a *mock* as described in "Mocking" to simulate the results of calling 3rd party APIs over the network. See "Test with LLMs" below for guidance on mocking LLMs. 
+3. Run your tests both with and without the `external_api` option, to ensure your test works when offline (the default) and when making actual network calls.
+
+When we deploy a release to production we run tests with the `external_api` 
+option enabled as an integration test. 
+
+
+
+Testing with LLMs
+-----------------
+
+As described above, by default, all tests run offline and use mocks where necessary.
+However, there are some situations where you need to use real LLM-generated data in your tests. 
+To support this, we periodically cache the output of LLM API calls so that we can run the tests
+offline later on using previously captured data. 
+
+Here's how it works:
+
+- the `tests.fixtures.llms.get_llm` *fixture* automatically caches LLM calls. If you have a test that needs to call LLMs, get the LLM using the `get_llm` fixture and pass it as an attribute to the module under test. Behind the scenes, `get_llm` will either use cached test data (the default) or append new data from an actual LLM API call to the appropriate cache file (when tests run with `external_api` option).
+- To avoid cache conflicts, pass the file name (the `__file__` attribute) of the module and the name of the test function (the `__name__` attribute of the function) to the `get_llm` fixture.
 
 For example, if we have test file name `test.py`:
 
       .. code:: python
 
             from tests.fixtures.llms import get_llm
-            def test_my_llm(get_llm):
+            def test_my_llm(get_llm): # noqa F811
                   llm = get_llm(__file__, test_my_llm.__name__)
                   # use llm to test your code            
             
-Then the name of the cache file will be "<test filename>_<test_name>.jsonl" stored in the `tests/data`
-folder, which will be automatically created if it does not exist. In the above example, the cache file
-will be `test_test_my_llm.jsonl`.
+The name of the resulting cache file will be `tests/data/<test filename>_<test_name>.jsonl`.
+In the above example, the cache file will be `test_test_my_llm.jsonl`.
+
+The file will be automatically created if it does not exist.
 
 .. note:: 
       Notice that when tests are run with external APIs using the `--external_api` option, the LLMs interactions
