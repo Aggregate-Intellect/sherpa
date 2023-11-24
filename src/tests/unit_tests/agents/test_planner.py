@@ -1,23 +1,14 @@
-import os
-from typing import Callable
-
-from langchain.chat_models import ChatOpenAI
-from langchain.llms import FakeListLLM
-from loguru import logger
-
-import sherpa_ai.config as cfg
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.physicist import Physicist
 from sherpa_ai.agents.planner import Planner
 
 # from sherpa_ai.agents.programmer import Programmer
 from sherpa_ai.memory.shared_memory import SharedMemory
-from sherpa_ai.models.sherpa_logger_chat_model import SherpaLoggerLLM
 from tests.fixtures.llms import get_llm
 
 
-def test_planner_successful(get_llm):
-    llm = get_llm(__file__, test_planner_successful.__name__)
+def test_planner_succeeds(get_llm):  # noqa: F811
+    llm = get_llm(__file__, test_planner_succeeds.__name__)
 
     physicist_description = (
         "The physicist agent answers questions or research about physics-related topics"

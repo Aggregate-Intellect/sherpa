@@ -54,7 +54,6 @@ max-line-length = 88
 ignore  = ['F401', 'W503']
 per-file-ignores = [
     'bolt_app.py:E402',
-    'tests/*:F811'
 ]
 
 [tool.isort]

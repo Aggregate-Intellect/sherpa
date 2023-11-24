@@ -3,7 +3,6 @@ import sys
 import pytest
 from loguru import logger
 
-import sherpa_ai.config
 from sherpa_ai.agents import (
     AgentPool,
     Critic,
@@ -12,7 +11,6 @@ from sherpa_ai.agents import (
     Planner,
     UserAgent,
 )
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.orchestrator import Orchestrator, OrchestratorConfig
 from tests.fixtures.llms import get_llm
@@ -33,13 +31,13 @@ He can answer questions about general quantum mechanics topics and also in depth
 
 
 @pytest.mark.external_api
-def test_planning_successful(get_llm):
+def test_planning_succeeds(get_llm):  # noqa: F811
     objective = "Write a proposal for estimating the maximum wind speed of a tropical cyclone using satellite imagery"  # noqa E501
     config = OrchestratorConfig()
 
     orchestrator = Orchestrator(config=config)
 
-    llm = get_llm(__file__, test_planning_successful.__name__)
+    llm = get_llm(__file__, test_planning_succeeds.__name__)
     orchestrator.llm = llm
 
     shared_memeory = SharedMemory(

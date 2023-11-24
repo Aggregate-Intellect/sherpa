@@ -1,6 +1,5 @@
 """Unit testing the error handler"""
 from functools import partial
-from typing import Dict, List
 
 import pytest
 from loguru import logger
@@ -37,7 +36,7 @@ def configure_logger(dummy_log):
     logger.add(dummy_log.log)
 
 
-def test_handling_predefined_errors(configure_logger, dummy_log):
+def test_handling_predefined_errors_succeeds(configure_logger, dummy_log):
     error_handler = AgentErrorHandler()
     count = 0
     for error, error_message in error_handler.error_map.items():
@@ -53,7 +52,7 @@ def test_handling_predefined_errors(configure_logger, dummy_log):
         assert error.__name__ in str(dummy_log.logs[-1])
 
 
-def test_handling_undefined_errors(configure_logger, dummy_log):
+def test_handling_undefined_errors_succeeds(configure_logger, dummy_log):
     error_handler = AgentErrorHandler()
     action = partial(dummy_agent_action, exception=DummyError("Error happened"))
     response = error_handler.run_with_error_handling(
@@ -65,7 +64,7 @@ def test_handling_undefined_errors(configure_logger, dummy_log):
     assert isinstance(dummy_log.logs[0], str)
 
 
-def test_no_error(configure_logger, dummy_log):
+def test_no_error_succeeds(configure_logger, dummy_log):
     error_handler = AgentErrorHandler()
     action = partial(dummy_agent_action, exception=None)
     response = error_handler.run_with_error_handling(

@@ -7,20 +7,16 @@ from sherpa_ai.agents import Physicist
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from tests.fixtures.llms import get_llm
-
-
-@pytest.fixture
-def config_logger():
-    logger.remove()
-    logger.add(sys.stderr, level="DEBUG")
+from tests.fixtures.loggers import config_logger_level
 
 
 @pytest.mark.external_api
-def test_physicist_successful(config_logger, get_llm):
-    llm = get_llm(__file__, test_physicist_successful.__name__)
+def test_physicist_succeeds(config_logger_level, get_llm):  # noqa: F811
+    config_logger_level()
+    llm = get_llm(__file__, test_physicist_succeeds.__name__)
 
     shared_memory = SharedMemory(
-        objective="Develop an deep Learning-Based approach for estimating the maximum wind speed of a tropical cyclone using satellite imagery",  # noqa E501
+        objective="Develop a deep learning-Based approach for estimating the maximum wind speed of a tropical cyclone using satellite imagery",  # noqa E501
         agent_pool=None,
     )
     physicist = Physicist(llm=llm, shared_memory=shared_memory)

@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List
 
 import pytest
-from langchain import GoogleSerperAPIWrapper
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import FakeListLLM
 from langchain.tools.base import BaseTool
@@ -34,10 +33,9 @@ def config_task_agent(
 
 
 @pytest.mark.external_api
-def test_task_solving_with_search_successful(get_llm):
+def test_task_solving_with_search_succeeds(get_llm):  # noqa: F811
     """Test task solving with search"""
     question = "What is the date today, using the following format: YYYY-MM-DD?"
-    date = datetime.now().strftime("%Y-%m-%d")
 
     if cfg.SERPER_API_KEY is None:
         pytest.skip(
@@ -46,11 +44,13 @@ def test_task_solving_with_search_successful(get_llm):
     memory = get_vectordb()
     tools = [SearchTool()]
 
-    llm = get_llm(__file__, test_task_solving_with_search_successful.__name__)
+    llm = get_llm(__file__, test_task_solving_with_search_succeeds.__name__)
 
-    # use the cached date if the llm is a fake llm
-    if isinstance(llm, FakeListLLM):
-        date = llm.responses[-1]
+    date = (
+        llm.responses[-1]
+        if isinstance(llm, FakeListLLM)
+        else datetime.now().strftime("%Y-%m-%d")
+    )
 
     task_agent = config_task_agent(tools=tools, memory=memory, llm=llm)
 
@@ -59,7 +59,7 @@ def test_task_solving_with_search_successful(get_llm):
 
 
 @pytest.mark.external_api
-def test_task_solving_with_context_search_successful(get_llm):
+def test_task_solving_with_context_search_succeeds(get_llm):  # noqa: F811
     question = "What is langchain?"
 
     if cfg.VECTORDB != "pinecone" and cfg.VECTORDB != "chroma":
@@ -68,7 +68,7 @@ def test_task_solving_with_context_search_successful(get_llm):
     memory = get_vectordb()
     tools = [ContextTool(memory=memory)]
 
-    llm = get_llm(__file__, test_task_solving_with_context_search_successful.__name__)
+    llm = get_llm(__file__, test_task_solving_with_context_search_succeeds.__name__)
     task_agent = config_task_agent(tools=tools, memory=memory, llm=llm)
 
     response = task_agent.run(question)
