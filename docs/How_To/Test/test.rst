@@ -179,8 +179,16 @@ Naming Conventions
 The naming convention for a test function is to add the prefix
 test\_ to the original function name
 
-      -  e.g. test_subtractor. If an edge case exists, add a descriptive
-            name at the end e.g. test_subtractor_zero.
+      -  e.g. test_division. If an edge case exists, add a descriptive
+            name at the end e.g. test_division_zero.
+
+Append `succeeds` to the end of the test name if the test is expected to succeed.
+
+      -  e.g. test_division_succeeds
+
+Append `fails` to the end of the test name if the test is about some error / exception handling.
+
+      -  e.g. test_division_zero_fails
 
 Tools
 -----
