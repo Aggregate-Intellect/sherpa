@@ -1,15 +1,12 @@
 import pytest
-from langchain.llms import OpenAI
-from langchain.llms.base import LLM
 
-import sherpa_ai.config as cfg
 from sherpa_ai.actions.planning import TaskPlanning
 from tests.fixtures.llms import get_llm
 
 
 @pytest.mark.external_api
-def test_planning(get_llm):
-    llm = get_llm(__file__, test_planning.__name__)
+def test_planning_succeeds(get_llm):  # noqa: F811
+    llm = get_llm(__file__, test_planning_succeeds.__name__)
 
     task_planning = TaskPlanning(llm)
 

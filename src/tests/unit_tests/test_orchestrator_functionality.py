@@ -1,22 +1,18 @@
-import pytest
-from langchain.chat_models import ChatOpenAI
+from unittest.mock import MagicMock
 
 from sherpa_ai.agents import Physicist
 from sherpa_ai.events import Event
 from sherpa_ai.orchestrator import EventType, Orchestrator, OrchestratorConfig
-from tests.fixtures.llms import get_llm
 
 
-@pytest.mark.external_api
-def test_orchestrator_successful(get_llm):
+def test_serialization_succeeds():
     orchestrator = Orchestrator(OrchestratorConfig())
-    llm = get_llm(__file__, test_orchestrator_successful.__name__)
 
     orchestrator.shared_memory.add_event(
         Event(event_type=EventType.task, agent="shared_memory", content="shared_memory")
     )
 
-    physicist = Physicist(llm=llm, shared_memory=orchestrator.shared_memory)
+    physicist = Physicist(llm=MagicMock(), shared_memory=orchestrator.shared_memory)
     physicist.belief.update_internal(
         event_type=EventType.task, agent="belief", content="belief"
     )

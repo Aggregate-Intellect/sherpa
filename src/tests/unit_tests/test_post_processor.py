@@ -1,10 +1,9 @@
 """A unit test to test the post processor for LLM responses."""
-import os
 
 from sherpa_ai.post_processors import md_link_to_slack
 
 
-def test_slack_link() -> None:
+def test_slack_link_succeeds() -> None:
     """Test that the Slack links are converted correctly."""
     test = (
         "Large language models like GPT-3 exhibit emergent phenomena due to the"
@@ -26,7 +25,7 @@ def test_slack_link() -> None:
     )
 
 
-def test_slack_link_nested() -> None:
+def test_slack_link_nested_succeeds() -> None:
     """Test that the Slack links are converted correctly."""
     test = "[^1^]: [LLamaIndex Documentation](https://sherpa-ai.readthedocs.io/en/latest/LLM%20Agents/llm_tools_use.html)"
 

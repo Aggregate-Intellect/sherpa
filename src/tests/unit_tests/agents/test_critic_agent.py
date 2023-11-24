@@ -1,8 +1,5 @@
 from unittest.mock import MagicMock
 
-from langchain.llms import OpenAI
-from langchain.llms.base import LLM
-
 from sherpa_ai.agents.critic import Critic
 from tests.fixtures.llms import get_llm
 
@@ -21,8 +18,8 @@ Write the code to display the "Hello, World!" message on the screen. The code wi
 """  # noqa: E501
 
 
-def test_evaluation_matrices_successful(get_llm):
-    llm = get_llm(__file__, test_evaluation_matrices_successful.__name__)
+def test_evaluation_matrices_succeeds(get_llm):  # noqa: F811
+    llm = get_llm(__file__, test_evaluation_matrices_succeeds.__name__)
     critic_agent = Critic(llm=llm, ratio=1)
 
     i_score, i_evaluation = critic_agent.get_importance_evaluation(task, plan)
@@ -34,8 +31,8 @@ def test_evaluation_matrices_successful(get_llm):
     assert type(d_evaluation) is str
 
 
-def test_get_feedback_successful(get_llm):
-    llm = get_llm(__file__, test_get_feedback_successful.__name__)
+def test_get_feedback_succeeds(get_llm):  # noqa: F811
+    llm = get_llm(__file__, test_get_feedback_succeeds.__name__)
     # set ratio to 2 to force feedback
     critic_agent = Critic(llm=llm, ratio=2, shared_memory=MagicMock())
     feedback_list = critic_agent.get_feedback(task, plan)

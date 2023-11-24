@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 
@@ -19,7 +20,7 @@ def mock_chunk_and_summarize():
     # return string  # Replace with the desired mocked result
 
 
-def test_reconstruct_prompt_with_link_inside(
+def test_reconstruct_prompt_with_link_inside_succeeds(
     mock_get_link_from_slack_client_conversation, mock_scarape_with_url,mock_chunk_and_summarize
 ):
     question = "Here's a <https://google.com>"

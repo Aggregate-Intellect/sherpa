@@ -2,15 +2,7 @@ import sys
 
 from loguru import logger
 
-import sherpa_ai.config
-from sherpa_ai.agents import (
-    AgentPool,
-    Critic,
-    MLEngineer,
-    Physicist,
-    Planner,
-    UserAgent,
-)
+from sherpa_ai.agents import AgentPool, MLEngineer, Physicist, Planner
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.orchestrator import Orchestrator, OrchestratorConfig
@@ -31,23 +23,23 @@ He can answer questions about general quantum mechanics topics and also in depth
 """  # noqa E501
 
 
-def test_orchestrator_successfully(get_llm):
+def test_orchestrator_succeeds(get_llm):  # noqa: F811
     objective = "Write a proposal for estimating the maximum wind speed of a tropical cyclone using satellite imagery"  # noqa E501
     config = OrchestratorConfig()
 
     orchestrator = Orchestrator(config=config)
 
-    llm = get_llm(__file__, test_orchestrator_successfully.__name__)
+    llm = get_llm(__file__, test_orchestrator_succeeds.__name__)
     orchestrator.llm = llm
 
-    shared_memeory = SharedMemory(
+    shared_memory = SharedMemory(
         objective=objective,
     )
-    orchestrator.shared_memory = shared_memeory
+    orchestrator.shared_memory = shared_memory
 
-    physicist = Physicist(llm=orchestrator.llm, shared_memory=shared_memeory)
+    physicist = Physicist(llm=orchestrator.llm, shared_memory=shared_memory)
 
-    ml_engineer = MLEngineer(llm=orchestrator.llm, shared_memory=shared_memeory)
+    ml_engineer = MLEngineer(llm=orchestrator.llm, shared_memory=shared_memory)
 
     agent_pool = AgentPool()
     agent_pool.add_agents([physicist, ml_engineer])
@@ -56,7 +48,7 @@ def test_orchestrator_successfully(get_llm):
 
     planner = Planner(
         agent_pool=agent_pool,
-        shared_memory=shared_memeory,
+        shared_memory=shared_memory,
         llm=orchestrator.llm,
         num_steps=5,
     )
@@ -73,7 +65,7 @@ Task: Work with the ML Engineer to develop and train a machine learning model us
 """  # noqa E501
 
     plan = planner.planning.post_process(plan_text)
-    shared_memeory.add(EventType.planning, "Planner", str(plan))
+    shared_memory.add(EventType.planning, "Planner", str(plan))
 
     assert len(plan.steps) > 0
 
@@ -81,6 +73,6 @@ Task: Work with the ML Engineer to develop and train a machine learning model us
 
     orchestrator.execute(plan, planner)
 
-    results = shared_memeory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type(EventType.result)
 
     assert len(results) > 0

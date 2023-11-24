@@ -2,7 +2,7 @@ from sherpa_ai.config import AgentConfig
 from sherpa_ai.tools import SearchTool
 
 
-def test_search_query_includes_gsite_config():
+def test_search_query_includes_gsite_config_succeeds():
     site = "https://www.google.com"
     config = AgentConfig(
         verbose=True,
