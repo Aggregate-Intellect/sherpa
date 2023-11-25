@@ -182,13 +182,14 @@ test\_ to the original function name
       -  e.g. test_division. If an edge case exists, add a descriptive
             name at the end e.g. test_division_zero.
 
-Append `succeeds` to the end of the test name if the test is expected to succeed.
+Then add a word or two that explain what the test expects to achieve. 
+For example:
 
-      -  e.g. test_division_succeeds
-
-Append `fails` to the end of the test name if the test is about some error / exception handling.
-
-      -  e.g. test_division_zero_fails
+      - test_division_by_non_zero_succeeds
+      - test_division_by_negative_number_succeeds
+      - test_division_by_zero_raises_exception
+      - test_url_parser_identifies_domain_correctly
+      - test_doc_generator_includes_correct_citation
 
 Tools
 -----
