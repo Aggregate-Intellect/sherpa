@@ -8,7 +8,7 @@ from sherpa_ai.verbose_loggers import DummyVerboseLogger
 
 
 @pytest.mark.external_api
-def test_get_response_contains_todays_date_succeeds():
+def test_get_response_contains_todays_date():
     question = "What is the date today, using the following format: YYYY-MM-DD?"
     date = datetime.now().strftime("%Y-%m-%d")
 
@@ -31,7 +31,7 @@ def test_get_response_contains_todays_date_succeeds():
 
 
 @pytest.mark.external_api
-def test_response_contains_correct_info_succeeds():
+def test_response_contains_correct_info():
     question = "What is AutoGPT and how does it compare with MetaGPT"
 
     if cfg.SERPER_API_KEY is None:
