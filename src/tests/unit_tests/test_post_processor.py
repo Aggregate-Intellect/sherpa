@@ -3,8 +3,7 @@
 from sherpa_ai.post_processors import md_link_to_slack
 
 
-def test_slack_link_succeeds() -> None:
-    """Test that the Slack links are converted correctly."""
+def test_convert_markdown_link_to_slack_format() -> None:
     test = (
         "Large language models like GPT-3 exhibit emergent phenomena due to the"
         " complex interactions between their vast number of parameters and the "
@@ -25,8 +24,7 @@ def test_slack_link_succeeds() -> None:
     )
 
 
-def test_slack_link_nested_succeeds() -> None:
-    """Test that the Slack links are converted correctly."""
+def test_convert_nested_markdown_link_to_slack_format() -> None:
     test = "[^1^]: [LLamaIndex Documentation](https://sherpa-ai.readthedocs.io/en/latest/LLM%20Agents/llm_tools_use.html)"
 
     result = md_link_to_slack(test)
