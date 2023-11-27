@@ -12,7 +12,7 @@ from tests.fixtures.loggers import config_logger_level
 
 @pytest.mark.external_api
 def test_ml_engineer_succeeds(config_logger_level, get_llm):  # noqa: F811
-    config_logger_level()
+    # config_logger_level()
     llm = get_llm(__file__, test_ml_engineer_succeeds.__name__)
 
     shared_memory = SharedMemory(
