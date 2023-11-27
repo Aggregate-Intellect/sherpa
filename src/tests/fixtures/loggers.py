@@ -17,7 +17,7 @@ def get_new_logger(filename, level="INFO") -> Callable[[str], type(logger)]:
     # add handler back
     logger.add(sys.stderr)
 
-    child_logger.add(filename, level=level, format="{message}")
+    child_logger.add(filename, level=level, format="{message}", mode="w")
 
     return child_logger
 

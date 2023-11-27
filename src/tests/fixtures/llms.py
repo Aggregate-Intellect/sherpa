@@ -41,8 +41,11 @@ def get_llm(external_api: bool):
         import sherpa_ai.config
 
     def get(
-        filename: str, method_name: str, folder: str = "tests/data", **kwargs
+        filename: str, method_name: str, folder: str = "data", **kwargs
     ) -> BaseLanguageModel:
+        path = re.split("(\\\\|/)tests", filename)[0]
+        folder = f"{path}/tests/{folder}"
+        print(folder)
         filename = format_cache_name(filename, method_name)
         filename = f"{folder}/{filename}"
         if external_api:
