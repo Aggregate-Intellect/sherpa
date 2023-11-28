@@ -1,21 +1,14 @@
-from langchain.llms import OpenAI
-
-import sherpa_ai.config as cfg
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.physicist import Physicist
 from sherpa_ai.agents.planner import Planner
 
 # from sherpa_ai.agents.programmer import Programmer
 from sherpa_ai.memory.shared_memory import SharedMemory
+from tests.fixtures.llms import get_llm
 
 
-def test_planner():
-    # programmer_description = (
-    #     "The programmer receives requirements about a program and write it"
-    # )
-    # programmer = Programmer(name="Programmer", description=programmer_description)
-
-    llm = OpenAI(openai_api_key=cfg.OPENAI_API_KEY, temperature=0)
+def test_planner_succeeds(get_llm):  # noqa: F811
+    llm = get_llm(__file__, test_planner_succeeds.__name__)
 
     physicist_description = (
         "The physicist agent answers questions or research about physics-related topics"
@@ -43,11 +36,6 @@ def test_planner():
 
     task = """We need to render a highly complex 3D image on the solar system. We can use any publicly avaliable
     resources to achieve this task."""  # noqa: E501
-
-    # shared_memory=None,
-    # belief=None,
-    # action_selector=None,
-    # num_runs=1,
 
     p = planner.plan(task=task)
     assert len(p.steps) > 0
