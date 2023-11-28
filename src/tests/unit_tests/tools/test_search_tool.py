@@ -8,11 +8,8 @@ def test_search_query_includes_gsite_config():
         verbose=True,
         gsite=site,
     )
-
     assert config.gsite == site
-
     search_tool = SearchTool(config=config)
-
     query = "What is the weather today?"
 
     search_result = search_tool._run(query)
@@ -73,4 +70,3 @@ def test_search_query_includes_more_gsite_config_failed():
 
     assert search_result is not None
     assert search_result is not ""
-

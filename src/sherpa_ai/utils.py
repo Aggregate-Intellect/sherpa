@@ -78,7 +78,7 @@ def get_link_from_slack_client_conversation(data):
     return links
 
 
-def scarape_with_url(url: str):
+def scrape_with_url(url: str):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)

@@ -39,6 +39,15 @@ bot = app.client.auth_test()
 logger.info(f"App init: bot auth_test results {bot}")
 
 ###########################################################################
+# usage tracker database downloader on every deployment:
+###########################################################################
+def before_first_request():
+    UserUsageTracker().download_from_s3("sherpa-sqlight" , "token_counter.db" , "./token_counter.db")
+
+if not cfg.FLASK_DEBUG:
+    before_first_request()
+
+###########################################################################
 # Define Slack client functionality:
 ###########################################################################
 
@@ -71,10 +80,9 @@ def convert_thread_history_messages(messages: List[dict]) -> List[BaseMessage]:
 def get_response(
     question: str,
     previous_messages: List[BaseMessage],
-    user_id: str,
-    team_id: str,
     verbose_logger: BaseVerboseLogger,
     bot_info: Dict[str, str],
+    llm: SherpaChatOpenAI = None,
 ) -> str:
     """
     Get response from the task agent for the question
@@ -82,22 +90,13 @@ def get_response(
     Args:
         question (str): question to be answered
         previous_messages (List[BaseMessage]): previous messages in the thread
-        user_id (str): user id of the user who asked the question
-        team_id (str): team id of the workspace
         verbose_logger (BaseVerboseLogger): verbose logger to be used
         bot_info (Dict[str, str]): information of the Slack bot
+        llm (SherpaChatOpenAI, optional): LLM to be used. Defaults to None.
 
     Returns:
         str: response from the task agent
     """
-
-    llm = SherpaChatOpenAI(
-        openai_api_key=cfg.OPENAI_API_KEY,
-        request_timeout=120,
-        user_id=user_id,
-        team_id=team_id,
-        temperature=cfg.TEMPRATURE,
-    )
 
     memory = get_vectordb()
 
@@ -178,7 +177,7 @@ def event_test(client, say, event):
         usage_cheker = user_db.check_usage(
             user_id=user_id,
             combined_id=combined_id,
-            token_ammount=count_string_tokens(question, "gpt-3.5-turbo"),
+            token_amount=count_string_tokens(question, "gpt-3.5-turbo")
         )
         can_excute = usage_cheker["can_excute"]
         user_db.close_connection()
@@ -210,13 +209,20 @@ def event_test(client, say, event):
             )
             question = reconstructor.reconstruct_prompt()
 
+        llm = SherpaChatOpenAI(
+            openai_api_key=cfg.OPENAI_API_KEY,
+            request_timeout=120,
+            user_id=user_id,
+            team_id=team_id,
+            temperature=cfg.TEMPRATURE,
+        )
+
         results = get_response(
             question,
             previous_messages,
-            user_id,
-            team_id,
             verbose_logger=SlackVerboseLogger(say, thread_ts),
             bot_info=bot,
+            llm=llm,
         )
 
         say(results, thread_ts=thread_ts)

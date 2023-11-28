@@ -7,7 +7,7 @@ from typing import Any, List
 
 import requests
 from bs4 import BeautifulSoup
-from langchain import LLMChain
+from langchain.chains import LLMChain
 from langchain.prompts import Prompt
 from langchain.tools import BaseTool
 from langchain.utilities import GoogleSerperAPIWrapper
