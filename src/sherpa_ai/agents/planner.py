@@ -10,8 +10,8 @@ from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
-PLANNER_DESCRIPTION = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
-By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
+PLANNER_DESCRIPTION = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
+By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.
 Your adaptability ensures customized solutions for diverse needs. 
 """  # noqa: E501
 
