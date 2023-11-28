@@ -229,12 +229,18 @@ class HugChatTool(BaseTool):
 
         # Log in to huggingface and grant authorization to huggingchat
         sign = Login(cfg.HUGCHAT_EMAIL, cfg.HUGCHAT_PASS)
-        session = sign.login()
+        # Save cookies to the local directory
+        cookies = sign.login()
+
+        # Save cookies to the local directory
+        cookie_path_dir = "./cookies_snapshot"
+        sign.saveCookiesToDir(cookie_path_dir)
 
         # Create a ChatBot
-        chatbot = hugchat.ChatBot(session)
+        chatbot = hugchat.ChatBot(cookies=cookies.get_dict())  # or cookie_path="usercookies/<email>.json"
 
-        return chatbot.query(query,stream=cfg.HUGCHAT_MODE_STREAM_RESPONSE,web_search= cfg.HUGCHAT_MODE_WEB_SEARCH).text
+        query_result = chatbot.query(query,stream=cfg.HUGCHAT_MODE_STREAM_RESPONSE,web_search= cfg.HUGCHAT_MODE_WEB_SEARCH)
+        return query_result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("HugChat does not support async run")
