@@ -11,7 +11,7 @@ from sherpa_ai.prompt_generator import get_prompt
 from sherpa_ai.tools import BaseTool
 
 
-class SlackBotPrompt(BaseChatPromptTemplate, BaseModel):
+class SlackBotPrompt(BaseChatPromptTemplate):
     ai_name: str
     ai_role: str
     tools: List[BaseTool]
