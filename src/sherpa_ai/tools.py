@@ -4,6 +4,7 @@ import urllib
 import urllib.parse
 import urllib.request
 from typing import Any, List
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -35,6 +36,14 @@ def get_tools(memory, config):
         )
 
     return tools
+
+
+def validate_url(url: str) -> bool:
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except:
+        return False
 
 
 class SearchArxivTool(BaseTool):
@@ -88,15 +97,14 @@ class SearchTool(BaseTool):
     def _run(self, query: str) -> str:
         result = ""
         if self.config.gsite:
-            try:
-                gsite_list = self.config.gsite.split(",")
-                gsite_list = [i for i in gsite_list if i != " " and i != "\n" and i != None]
-                gsite_list = [query + " site:" + i for i in gsite_list]
-            except Exception:
+            gsite_list = self.config.gsite.split(", ")
+            gsite_list = [i for i in gsite_list if i != " " and i != "\n" and i != None]
+            if False in [validate_url(i) for i in gsite_list]:
                 return TaskAction(
-                    name="ERROR",
-                    args={"error": f"Could not process invalid website URLs format. Split urls with comma."},
-                )
+                name="ERROR",
+                args={"error": f"The input URL is not valid"},
+            )
+            gsite_list = [query + " site:" + i for i in gsite_list]
             if len(gsite_list) >= 5:
                 gsite_list = gsite_list[:5]
                 result = result + "Warning: Only the first 5 URLs are taken into consideration.\n"
@@ -106,6 +114,11 @@ class SearchTool(BaseTool):
         top_k = int(10 / len(gsite_list))
         for query_gsite in gsite_list:
             result += self._run_single_query(query_gsite, top_k)
+        if (result == "" or result == " ") and len(gsite_list) == 1:
+            return TaskAction(
+                    name="ERROR",
+                    args={"error": f"Could not process invalid website URLs format. Split urls with ', "},
+                )
         return result
         
 
@@ -229,3 +242,4 @@ class UserInputTool(BaseTool):
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("UserInputTool does not support async run")
+
