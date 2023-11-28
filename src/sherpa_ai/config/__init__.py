@@ -65,6 +65,7 @@ DAILY_LIMIT_REACHED_MESSAGE = (
 LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
 FILE_SIZE_LIMIT = environ.get("FILE_SIZE_LIMIT") or 2097152
 FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
+DB_NAME= environ.get("DB_NAME") or "sqlite:///token_counter.db"
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
