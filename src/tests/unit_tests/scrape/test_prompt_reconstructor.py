@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 
@@ -10,7 +11,7 @@ def mock_get_link_from_slack_client_conversation():
     return [   {"url": "https://google.com", "base_url":"https://google.com"}]  # Replace with the desired mocked result
 
 @pytest.fixture
-def mock_scarape_with_url():
+def mock_scrape_with_url():
     return {"data": "this is the data", "status": 200}  # Replace with the desired mocked result
 
 @pytest.fixture
@@ -19,8 +20,8 @@ def mock_chunk_and_summarize():
     # return string  # Replace with the desired mocked result
 
 
-def test_reconstruct_prompt_with_link_inside(
-    mock_get_link_from_slack_client_conversation, mock_scarape_with_url,mock_chunk_and_summarize
+def test_reconstruct_prompt_with_link_inside_succeeds(
+    mock_get_link_from_slack_client_conversation, mock_scrape_with_url,mock_chunk_and_summarize
 ):
     question = "Here's a <https://google.com>"
     slack_message = ""
@@ -36,8 +37,8 @@ def test_reconstruct_prompt_with_link_inside(
         "sherpa_ai.utils.chunk_and_summarize",
         return_value=mock_get_link_from_slack_client_conversation,
     ), patch(
-        "sherpa_ai.utils.scarape_with_url",
-        return_value=mock_scarape_with_url,
+        "sherpa_ai.utils.scrape_with_url",
+        return_value=mock_scrape_with_url,
     ):
         reconstructed_prompt = reconstructor.reconstruct_prompt()
 

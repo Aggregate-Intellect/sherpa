@@ -2,6 +2,7 @@ from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.tools import SearchTool
 
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
@@ -23,6 +24,7 @@ class GoogleSearch(BaseAction):
         task: str,
         llm: BaseLanguageModel,
         description: str = SEARCH_SUMMARY_DESCRIPTION,
+        config: AgentConfig = AgentConfig(),
         n: int = 5,
     ):
         self.role_description = role_description
@@ -32,7 +34,7 @@ class GoogleSearch(BaseAction):
         self.llm = llm
         self.n = n
 
-        self.search_tool = SearchTool()
+        self.search_tool = SearchTool(config=config)
 
     def execute(self, query) -> str:
         result = self.search_tool._run(query)
