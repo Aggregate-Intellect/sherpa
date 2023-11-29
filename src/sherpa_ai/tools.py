@@ -174,6 +174,7 @@ class ContextTool(BaseTool):
     def _run(self, query: str) -> str:
         docs = self.memory.get_relevant_documents(query)
         result = ""
+        metadata = []
         for doc in docs:
             result += (
                 "Document"
@@ -182,8 +183,9 @@ class ContextTool(BaseTool):
                 + doc.metadata.get("source", "")
                 + "\n"
             )
+            metadata.append({'Document':doc.page_content, "Source": doc.metadata.get("source", "")})
 
-        return result
+        return result, metadata
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("ContextTool does not support async run")
