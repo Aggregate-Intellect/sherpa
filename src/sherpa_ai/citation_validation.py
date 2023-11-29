@@ -105,7 +105,6 @@ def validateCitation(generated: str, resources: list[dict()]) -> str:
 
                             links.append(link)
                             ids.append(index)
-            
             citations = []
             for id, url in zip(ids, links):
                 reference = f"[{id}]({url})"
