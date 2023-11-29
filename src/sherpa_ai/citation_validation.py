@@ -1,4 +1,3 @@
-from sherpa_ai.actions.base import BaseAction
 import nltk
 from nltk.tokenize import word_tokenize
 
@@ -67,14 +66,18 @@ def validateCitation(generated: str, resources: list[dict()]) -> str:
     # resources type
     # resources = [{"Document":, "Source":...}, {}]
     paragraph = generated.split("\n")
+    paragraph = [p for p in paragraph if len(p.strip()) > 0]
     sub_string = [s.split(".") for s in paragraph]  # nested list
+
     # sentences = unfoldList(sub_string)
     new_paragraph = []
     for paragraph in sub_string:
         new_sentence = []
-        for sentence in paragraph:
+        for i, sentence in enumerate(paragraph):
             links = []
-            for source in resources:
+            ids = []
+            sentence = sentence.strip()
+            for index, source in enumerate(resources):
                 cited = False  # if this resource is cited
                 text = source["Document"]
                 one_sentences = text.split(".")
@@ -82,6 +85,7 @@ def validateCitation(generated: str, resources: list[dict()]) -> str:
                 split_texts = unfoldList(sub_string)
 
                 link = source["Source"]
+                
                 for j in split_texts:
                     if len(sentence) > 5 and not cited and \
                         not (link in links):
@@ -99,7 +103,14 @@ def validateCitation(generated: str, resources: list[dict()]) -> str:
                         if (seq/len(sentence)) > 0.8 or contained \
                            or jaccard > 0.7:
 
-                            links.add(link)      
-            new_sentence.append(sentence + ' '.join(links) + ".")
+                            links.append(link)
+                            ids.append(index)
+            
+            citations = []
+            for id, url in zip(ids, links):
+                reference = f"[{id}]({url})"
+                citations.append(reference)
+
+            new_sentence.append(sentence + ', '.join(citations) + ".")
         new_paragraph.append(" ".join(new_sentence) + "\n")
-    return " ".join(new_paragraph)
+    return "".join(new_paragraph)
