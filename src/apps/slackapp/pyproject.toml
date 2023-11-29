@@ -33,6 +33,9 @@ build-backend = "poetry.core.masonry.api"
 pythonpath = [
   "."
 ]
+markers = [
+  "external_api:  this test calls 3rd party APIs"
+]
 
 [tool.black]
 line-length = 88
