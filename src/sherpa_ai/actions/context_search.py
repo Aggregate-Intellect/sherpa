@@ -33,7 +33,7 @@ class ContextSearch(BaseAction):
         self.llm = llm
         self.n = n
 
-        self.context = ContextTool(memory = get_vectordb())
+        self.context = ContextTool(memory=get_vectordb())
 
     def execute(self, query) -> str:
         result, metadata = self.context._run(query)
