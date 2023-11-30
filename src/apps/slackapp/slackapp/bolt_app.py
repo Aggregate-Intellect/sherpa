@@ -168,11 +168,13 @@ def event_test(client, say, event):
         else input_message["team"]
     )
     combined_id = user_id + "_" + team_id
-
+    usage_logger = SlackVerboseLogger(
+                say, thread_ts)
     if cfg.FLASK_DEBUG:
         can_excute = True
     else:
-        user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
+        user_db = UserUsageTracker(
+            max_daily_token=cfg.DAILY_TOKEN_LIMIT, verbos_logger=usage_logger)
 
         usage_cheker = user_db.check_usage(
             user_id=user_id,
@@ -214,6 +216,7 @@ def event_test(client, say, event):
             request_timeout=120,
             user_id=user_id,
             team_id=team_id,
+            usage_logger=usage_logger,
             temperature=cfg.TEMPRATURE,
         )
 

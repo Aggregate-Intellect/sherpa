@@ -1,12 +1,14 @@
+from anyio import Path
+import boto3
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import time
 import sherpa_ai.config as cfg
+from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 Base = declarative_base()
-
-import boto3
 
 
 class UsageTracker(Base):
@@ -28,16 +30,23 @@ class UserUsageTracker:
         self,
         db_name=cfg.DB_NAME,
         max_daily_token=20000,
+        verbos_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         self.engine = create_engine(db_name)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         self.create_table()
         self.max_daily_token = int(max_daily_token)
-    def download_from_s3(self,bucket_name, s3_file_key, local_file_path):
-        s3 = boto3.client('s3')
-        s3.download_file(bucket_name, s3_file_key, local_file_path)
-    def upload_to_s3(self,local_file_path, bucket_name, s3_file_key):
+        self.verbos_logger = verbos_logger
+        self.is_reminded = False
+
+    def download_from_s3(self, bucket_name, s3_file_key, local_file_path):
+        file_path = Path('./token_counter.db')
+        if not file_path.exists():
+            s3 = boto3.client('s3')
+            s3.download_file(bucket_name, s3_file_key, local_file_path)
+            
+    def upload_to_s3(self, local_file_path, bucket_name, s3_file_key):
         s3 = boto3.client('s3')
         s3.upload_file(local_file_path, bucket_name, s3_file_key)
     def create_table(self):
@@ -50,9 +59,8 @@ class UserUsageTracker:
         if not cfg.FLASK_DEBUG:
             self.upload_to_s3("./token_counter.db", 'sherpa-sqlight', 'token_counter.db')
 
-
     def get_all_whitelisted_ids(self):
-        whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]     
+        whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]
         return whitelisted_ids
 
     def get_whitelist_by_user_id(self, user_id):
@@ -64,6 +72,7 @@ class UserUsageTracker:
 
     def add_data(self, combined_id, token, reset_timestamp=False):
         data = UsageTracker(user_id=combined_id, token=token, timestamp=int(time.time()), reset_timestamp=reset_timestamp)
+        self.token_left_calculator(combined_id=combined_id)
         self.session.add(data)
         self.session.commit()
 
@@ -86,8 +95,27 @@ class UserUsageTracker:
         token_sum = sum(item["token"] for item in data_since_last_reset[1:])
         return token_sum
 
+    def token_left_calculator(self, combined_id):
+        split_parts = combined_id.split('_')
+        user_id = ""
+        if len(split_parts) > 0:
+            user_id = split_parts[0]
+
+        user_is_whitelisted = self.is_in_whitelist(user_id)
+        if not user_is_whitelisted and not self.is_reminded:
+            total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
+                user_id=combined_id
+            )
+            maximum_daily_token = float(
+                getattr(cfg, 'DAILY_TOKEN_LIMIT', self.max_daily_token))
+            token_left = maximum_daily_token - total_token_since_last_reset
+            percentage_used = ((float(maximum_daily_token) - float(token_left))*100) / float(maximum_daily_token)
+            if percentage_used > 75:
+                self.verbos_logger.log(
+                'hi friend, you have used up 75% of your daily token limit. once you go over the limit there will be a 24 cool down period after which you can continue using Sherpa! be awesome!')
+
     def reset_usage(self, combined_id, token_amount):
-        self.add_data(combined_id=combined_id, token=token_amount, reset_timestamp=True)
+        self.add_data(combined_id=combined_id,token=token_amount, reset_timestamp=True)
 
     def get_last_reset_info(self, combined_id):
         data = self.session.query(UsageTracker.id, UsageTracker.timestamp).filter(UsageTracker.user_id == combined_id, UsageTracker.reset_timestamp == 1).order_by(UsageTracker.timestamp.desc()).first()
@@ -120,11 +148,13 @@ class UserUsageTracker:
             time_since_last_reset = 99999
 
             if last_reset_info is not None and last_reset_info["timestamp"] is not None:
-                time_since_last_reset = int(time.time()) - last_reset_info["timestamp"]
-
+                time_since_last_reset = int(
+                    time.time()) - last_reset_info["timestamp"]
             if time_since_last_reset != 0 and time_since_last_reset > 3600 * float(cfg.LIMIT_TIME_SIZE_IN_HOURS):
                 print(f"TIMESTAMP DIFFERENT: {time_since_last_reset}")
-                self.reset_usage(combined_id=combined_id, token_amount=token_amount)
+
+                self.reset_usage(combined_id=combined_id,
+                                 token_amount=token_amount)
                 return {
                     "token-left": self.max_daily_token,
                     "can_excute": True,
@@ -132,7 +162,8 @@ class UserUsageTracker:
                     "time_left": self.seconds_to_hms(time_since_last_reset)
                 }
             else:
-                total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(user_id=combined_id)
+                total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
+                    user_id=combined_id)
 
                 if self.max_daily_token - total_token_since_last_reset <= 0:
                     return {
