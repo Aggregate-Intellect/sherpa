@@ -8,6 +8,8 @@ from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from tests.fixtures.llms import get_llm
+from tests.fixtures.llms import get_real_llm
+from sherpa_ai.actions import GoogleSearch
 
 def test_citation_validation():
     text = """Born in Scranton, Pennsylvania, Biden moved with his family to Delaware in 1953. 
@@ -23,27 +25,36 @@ def test_citation_validation():
     result = module.parse_output(text, resource)
     assert (data["Source"] in result)
     
-def qa_agent(get_llm):
-    llm = get_llm(__file__, test_task_agent_succeeds.__name__)
+# def test_task_agent_succeeds(get_llm):
+#     llm = get_llm(__file__, test_task_agent_succeeds.__name__)
 
-    shared_memory = SharedMemory(
-        objective="What is AutoGPT?",
-        agent_pool=None,
-    )
+#     shared_memory = SharedMemory(
+#         objective="What is AutoGPT?",
+#         agent_pool=None,
+#     )
 
-    task_agent = QAAgent(
-        llm=llm,
-        shared_memory=shared_memory,
-    )
+#     task_agent = QAAgent(
+#         llm=llm,
+#         shared_memory=shared_memory,
+#     )
 
-    shared_memory.add(
-        EventType.task,
-        "Planner",
-        "What is AutoGPT?",
-    )
+#     shared_memory.add(
+#         EventType.task,
+#         "Planner",
+#         "What is AutoGPT?",
+#     )
 
-    task_agent.run()
+#     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+#     results = shared_memory.get_by_type(EventType.result)
+#     print(results)
+#     assert len(results) == 1
+
+
+def test_google_search():
+    llm = get_real_llm(__file__)
+    google = GoogleSearch(llm=llm, role_description= "You are a search tool", task="Your task is to search useful information.")
+    
+    results = google.execute("what is langchain", True)
     print(results)
-    assert len(results) == 1
+    assert len(results) == 2

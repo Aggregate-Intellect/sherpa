@@ -87,7 +87,7 @@ class SearchTool(BaseTool):
     def augment_query(self, query) -> str:
         return query + " site:" + self.config.gsite if self.config.gsite else query
 
-    def _run(self, query: str) -> str:
+    def _run(self, query: str, require_meta=False) -> str:
         query = self.augment_query(query)
 
         logger.debug(f"Search query: {query}")
@@ -109,10 +109,10 @@ class SearchTool(BaseTool):
 
             response = "Answer: " + answer + "\nLink:" + link
             meta = [{"Document": answer, "Source": link}]
-            if self.config.require_meta:
+            if require_meta:
                 return response, meta
             else:
-                return meta
+                return response
 
         # case 2: knowledgeGraph in the result dictionary
         snippets = []
@@ -170,7 +170,7 @@ class SearchTool(BaseTool):
                 + search_results["knowledgeGraph"]["descriptionLink"]
             )
             full_result = answer + "\n" + full_result
-        if self.config.require_meta:
+        if require_meta:
             return full_result, meta
         else:
             return full_result

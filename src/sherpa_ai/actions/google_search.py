@@ -36,8 +36,12 @@ class GoogleSearch(BaseAction):
 
         self.search_tool = SearchTool(config=config)
 
-    def execute(self, query) -> str:
-        result = self.search_tool._run(query)
+    def execute(self, query, reqire_meta=False) -> str:
+        if reqire_meta:
+            result, meta = self.search_tool._run(query, reqire_meta)
+            return result, meta
+        else:
+            result = self.search_tool._run(query)
 
         logger.debug("Search Result: {}", result)
 
