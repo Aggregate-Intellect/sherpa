@@ -67,7 +67,8 @@ class CitationValidation(BaseOutputParser):
                     sentences.append(item)
         return sentences
 
-    def validateCitation(self, generated: str, resources: list[dict()]) -> str:
+    # add citation to the generated text
+    def parse_output(self, generated: str, resources: list[dict()]) -> str:
         # resources type
         # resources = [{"Document":, "Source":...}, {}]
         paragraph = generated.split("\n")
