@@ -56,7 +56,10 @@ def extract_github_readme(repo_url):
         if "content" in data:
             content = base64.b64decode(data["content"]).decode("utf-8")
             metadata = [{"type": "github", "url": repo_url}]
-            save_to_pine_cone(content, metadata)
+            try:
+                save_to_pine_cone(content, metadata)
+            except Exception :
+                pass
             return content
         else:
             logger.warning("README file not found.")
