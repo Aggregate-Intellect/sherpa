@@ -36,7 +36,7 @@ class ContextSearch(BaseAction):
         self.context = ContextTool(memory=get_vectordb())
 
     def execute(self, query) -> str:
-        result, metadata = self.context._run(query)
+        result = self.context._run(query)
         # result = "Context Search"
         logger.debug("Context Search Result: {}", result)
 

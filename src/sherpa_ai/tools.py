@@ -178,7 +178,7 @@ class ContextTool(BaseTool):
     )
     memory: VectorStoreRetriever
 
-    def _run(self, query: str) -> str:
+    def _run(self, query: str, need_meta=False) -> str:
         docs = self.memory.get_relevant_documents(query)
         result = ""
         metadata = []
@@ -190,9 +190,14 @@ class ContextTool(BaseTool):
                 + doc.metadata.get("source", "")
                 + "\n"
             )
-            metadata.append({'Document':doc.page_content, "Source": doc.metadata.get("source", "")})
+            if need_meta:
+                metadata.append({'Document': doc.page_content,
+                "Source": doc.metadata.get("source", "")})
 
-        return result, metadata
+        if need_meta:
+            return result, metadata
+        else:
+            return result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("ContextTool does not support async run")
