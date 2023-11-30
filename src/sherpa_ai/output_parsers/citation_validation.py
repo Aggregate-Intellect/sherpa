@@ -79,7 +79,7 @@ class CitationValidation(BaseOutputParser):
         new_paragraph = []
         for paragraph in sub_string:
             new_sentence = []
-            for i, sentence in enumerate(paragraph):
+            for _, sentence in enumerate(paragraph):
                 links = []
                 ids = []
                 sentence = sentence.strip()
