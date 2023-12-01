@@ -7,11 +7,11 @@ nltk.download('punkt')
 
 
 class CitationValidation(BaseOutputParser):
-    def __init__(self):
+    def __init__(self, seq_thresh=0.7, jaccard_thresh=0.7, token_overlap=0.7):
         # threshold
-        self.seq_thresh = 0.8  # threshold for common longest subsequece / text
-        self.jaccard_thresh = 0.7
-        self.token_overlap = 0.7
+        self.seq_thresh = seq_thresh  # threshold for common longest subsequece / text
+        self.jaccard_thresh = jaccard_thresh
+        self.token_overlap = token_overlap
 
     def calculate_token_overlap(self, sentence1, sentence2):
         # Tokenize the sentences

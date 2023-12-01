@@ -5,6 +5,7 @@ from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.tools import SearchTool
 
+# TODO check for prompt that keep orginal snetnences
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
 
@@ -26,6 +27,7 @@ class GoogleSearch(BaseAction):
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         config: AgentConfig = AgentConfig(),
         n: int = 5,
+        require_meta=False
     ):
         self.role_description = role_description
         self.task = task
@@ -35,11 +37,13 @@ class GoogleSearch(BaseAction):
         self.n = n
 
         self.search_tool = SearchTool(config=config)
+        self.meta=[]
+        self.require_meta = require_meta
 
-    def execute(self, query, reqire_meta=False) -> str:
-        if reqire_meta:
-            result, meta = self.search_tool._run(query, reqire_meta)
-            return result, meta
+    def execute(self, query) -> str:
+        if self.require_meta:
+            result, meta = self.search_tool._run(query, self.require_meta)
+            self.meta.append(meta)
         else:
             result = self.search_tool._run(query)
 
