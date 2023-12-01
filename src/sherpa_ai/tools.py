@@ -39,7 +39,7 @@ def get_tools(memory, config):
     if cfg.HUGCHAT_EMAIL is not None and cfg.HUGCHAT_PASS is not None:
         tools.append(HugChatTool())
     else:
-        logger.warning(
+        logger.info(
             "No Hugchat email and pass in environment variables, skipping Hugchat tool"
         )
     return tools
@@ -237,9 +237,10 @@ class HugChatTool(BaseTool):
         sign.saveCookiesToDir(cookie_path_dir)
 
         # Create a ChatBot
-        chatbot = hugchat.ChatBot(cookies=cookies.get_dict())  # or cookie_path="usercookies/<email>.json"
+        chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
 
         query_result = chatbot.query(query,stream=cfg.HUGCHAT_MODE_STREAM_RESPONSE,web_search= cfg.HUGCHAT_MODE_WEB_SEARCH)
+
         return query_result
 
     def _arun(self, query: str) -> str:
