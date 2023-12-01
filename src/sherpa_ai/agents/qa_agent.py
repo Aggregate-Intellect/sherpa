@@ -9,7 +9,7 @@ from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
+from sherpa_ai.output_parsers.citation_validation import CitationValidation
 # TODO: QA Agent only contains partial implementation from the original
 # task agent, more investigation is needed to add more content to it.
 # Some of the feature may be added to the agent base class, such as
@@ -34,6 +34,7 @@ class QAAgent(BaseAgent):
         belief: Belief = Belief(),
         num_runs: int = 3,
         verbose_logger=DummyVerboseLogger(),
+        require_meta=False
     ):
         """
         The QA agent is the agent handles a single task.
@@ -59,18 +60,32 @@ class QAAgent(BaseAgent):
         self.llm = llm
         self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
         self.verbose_logger = verbose_logger
+        self.require_meta = require_meta
 
     def create_actions(self) -> List[BaseAction]:
         return [
-            GoogleSearch(self.description, self.belief.current_task, self.llm),
+            GoogleSearch(self.description, self.belief.current_task, self.llm,require_meta=self.require_meta),
         ]
 
     def synthesize_output(self) -> str:
-        synthesize_action = SynthesizeOutput(self.description, self.llm)
+        synthesize_action = SynthesizeOutput(self.description, self.llm, add_citation=self.require_meta)
         result = synthesize_action.execute(
             self.belief.current_task.content,
             self.belief.get_context(self.llm.get_num_tokens),
             self.belief.get_internal_history(self.llm.get_num_tokens),
         )
+        result = self.add_citation(result)
+        return result
 
+    def add_citation(self, text) -> str:
+        google = None
+        for action in self.belief.actions:
+            if isinstance(action, GoogleSearch):
+                google = action
+                
+        citation_module = CitationValidation()
+        resource = google.meta[-1]
+        
+        result = citation_module.parse_output(text, resource)
+        
         return result

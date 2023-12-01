@@ -51,10 +51,37 @@ def test_citation_validation():
 #     assert len(results) == 1
 
 
-def test_google_search():
-    llm = get_real_llm(__file__)
-    google = GoogleSearch(llm=llm, role_description= "You are a search tool", task="Your task is to search useful information.")
+# def test_google_search(get_llm):
+#     llm = get_llm(__file__, test_google_search.__name__)
+#     google = GoogleSearch(llm=llm, role_description="You are a search tool", task="Your task is to search useful information.")
     
-    results = google.execute("what is langchain", True)
-    print(results)
-    assert len(results) == 2
+#     results = google.execute("what is langchain")
+#     # print(results)
+#     assert len(self.meta) >= 1
+    
+def test_task_agent_succeeds(get_llm):  # noqa: F811
+    llm = get_llm(__file__, test_task_agent_succeeds.__name__)
+
+    shared_memory = SharedMemory(
+        objective="What is AutoGPT?",
+        agent_pool=None,
+    )
+
+    task_agent = QAAgent(
+        llm=llm,
+        shared_memory=shared_memory,
+        require_meta=True
+    )
+
+    shared_memory.add(
+        EventType.task,
+        "Planner",
+        "What is AutoGPT?",
+    )
+
+    task_agent.run()
+
+    results = shared_memory.get_by_type(EventType.result)
+    logger.error(results[0].content)
+    
+    assert len(results) == 1
