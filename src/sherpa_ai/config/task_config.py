@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class AgentConfig(BaseModel):
-    verbose: bool = False
+    verbose: bool = True
     gsite: Optional[str] = None
     do_reflect: bool = False
 
@@ -30,9 +30,9 @@ class AgentConfig(BaseModel):
         parser = ArgumentParser()
 
         parser.add_argument(
-            "--verbose",
+            "--not-verbose",
             action="store_true",
-            help="enable verbose messaging during agent execution",
+            help="disable verbose messaging during agent execution",
         )
         parser.add_argument(
             "--gsite",
@@ -47,6 +47,10 @@ class AgentConfig(BaseModel):
         )
 
         args, unknown = parser.parse_known_args(configs)
+
+        # negate the verbose flag
+        if args.not_verbose:
+            args.verbose = False
 
         if len(unknown) > 0:
             raise ValueError(f"Invalid configuration, check your input: {unknown}")
