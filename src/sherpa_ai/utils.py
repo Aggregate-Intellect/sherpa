@@ -91,14 +91,13 @@ def scrape_with_url(url: str):
 
 def question_reconstructor(data: any, question: str):
     result = question + "./n Reference:"
-    count = 1
-    for chunk in data:
-        chunk_link = f"<{chunk['link']}>"
-        result = result.replace(f"{chunk_link}", f"[{count}]")
+    for count, chunk in enumerate(data):
+        reference = f"[{ count + 1}]"
+        link = chunk['link']
+        link_with_angle_brackets = f"<{ link }>"
+        result = result.replace(link_with_angle_brackets, reference)
         result = result + \
-            f""" [{count}] link: "{chunk['link']}" , link_data: {data}"""
-        count += 1
-
+            f""" {reference} link: "{ link }" , link_data: {data}"""
     return result
 
 
