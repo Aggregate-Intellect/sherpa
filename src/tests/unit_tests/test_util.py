@@ -121,14 +121,13 @@ def logs_with_final_response():
         {"Step": 2, "reply": "Another final response."},
     ]
 
-def test_format_logs_with_thoughts_and_command_succeeds(logs_with_thoughts_and_command):
+def test_log_formatter_formats_correctly_1(logs_with_thoughts_and_command):
     expected_output = (
-        "-- Step: 1 -- \nThoughts: \n Thinking..."
-        "\n-- Step: 2 -- \nThoughts: \n Still thinking... \nCommand: \n Do something else"
+        "-- Step: 1 -- \nThoughts: \n Thinking... \n-- Step: 2 -- \nThoughts: \n Still thinking... \nCommand: \n Do something else"
     )
     assert log_formatter(logs_with_thoughts_and_command) == expected_output
 
-def test_format_logs_with_final_response_succeeds(logs_with_final_response):
+def test_log_formatter_formats_correctly_2(logs_with_final_response):
     expected_output = (
         "-- Step: 1 -- \nFinal Response: \n This is the final response."
         "\n-- Step: 2 -- \nFinal Response: \n Another final response."
