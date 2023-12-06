@@ -18,7 +18,6 @@ class SharedMemoryWithVectorDB(SharedMemory):
 
     Attributes:
         session_id (str): Unique identifier for the current session.
-
     """
 
     def __init__(
