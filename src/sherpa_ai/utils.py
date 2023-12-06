@@ -89,7 +89,7 @@ def scrape_with_url(url: str):
         return {"data": "", "status": status}
 
 
-def question_reconstructor(data: any, question: str):
+def rewrite_link_references(data: any, question: str):
     result = question + "./n Reference:"
     for count, chunk in enumerate(data):
         reference = f"[{ count + 1}]"

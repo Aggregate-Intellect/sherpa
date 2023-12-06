@@ -4,7 +4,7 @@ from sherpa_ai.utils import (
     chunk_and_summarize,
     count_string_tokens,
     get_link_from_slack_client_conversation,
-    question_reconstructor,
+    rewrite_link_references,
     scrape_with_url,
 )
 
@@ -64,5 +64,5 @@ class PromptReconstructor:
 
                     final_summary.append({"data": chunk_summary, "link": link})
 
-            question = question_reconstructor(question=question, data=final_summary)
+            question = rewrite_link_references(question=question, data=final_summary)
         return question
