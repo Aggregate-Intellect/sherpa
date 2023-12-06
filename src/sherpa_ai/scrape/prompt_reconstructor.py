@@ -33,7 +33,7 @@ class PromptReconstructor:
                     git_scraper = extract_github_readme(link)
                     if git_scraper:
                         scraped_data = {
-                            "data": extract_github_readme(link),
+                            "data": git_scraper,
                             "status": 200,
                         }
                     else:
