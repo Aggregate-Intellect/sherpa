@@ -107,7 +107,7 @@ class SearchTool(BaseTool):
             title = search_results["organic"][0]["title"]
             link = search_results["organic"][0]["link"]
 
-            response = "Answer: " + answer + "\nLink:" + link
+            response = "Answer: " + answer 
             meta = [{"Document": answer, "Source": link}]
             if require_meta:
                 return response, meta
@@ -149,7 +149,7 @@ class SearchTool(BaseTool):
         for i in range(len(search_results["organic"][:10])):
             r = search_results["organic"][i]
             single_result = (
-                "Description: " + r["title"] + r["snippet"] + "\nLink:" + r["link"]
+                r["title"] + r["snippet"]
             )
 
             result.append(single_result)
@@ -169,7 +169,7 @@ class SearchTool(BaseTool):
                 + "\nLink:"
                 + search_results["knowledgeGraph"]["descriptionLink"]
             )
-            full_result = answer + "\n" + full_result
+            full_result = answer + "\n\n" + full_result
         if require_meta:
             return full_result, meta
         else:

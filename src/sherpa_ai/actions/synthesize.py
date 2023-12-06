@@ -54,7 +54,6 @@ class SynthesizeOutput(BaseAction):
         logger.debug("Prompt: {}", prompt)
 
         result = self.llm.predict(prompt)
-
         return result
 
     @property
