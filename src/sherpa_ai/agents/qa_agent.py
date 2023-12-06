@@ -83,7 +83,7 @@ class QAAgent(BaseAgent):
             if isinstance(action, GoogleSearch):
                 google = action
                 
-        citation_module = CitationValidation()
+        citation_module = CitationValidation(0.5, 0.5, 0.5)
         resource = google.meta[-1]
         
         result = citation_module.parse_output(text, resource)

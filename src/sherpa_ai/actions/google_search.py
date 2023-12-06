@@ -17,6 +17,17 @@ Review and analyze the provided documents with respect to the task. Craft a conc
 Only use the information given. Do not add any additional information. The summary should be less than {n} setences
 """  # noqa: E501
 
+SEARCH_EXTRACT_DESCRIPTION = """Role Description: {role_description}
+Task: {task}
+
+Relevant Documents:
+{documents}
+
+
+Review and analyze the provided documents with respect to the task. Extract original sentences from the relevant documents that is most relevant to the task, incorporating reference links within the summary.
+Only use the information given. Do not add any additional information. The summary should be less than {n} setences.
+"""  # noqa: E501
+
 
 class GoogleSearch(BaseAction):
     def __init__(
@@ -46,18 +57,18 @@ class GoogleSearch(BaseAction):
             self.meta.append(meta)
         else:
             result = self.search_tool._run(query)
-
         logger.debug("Search Result: {}", result)
 
-        prompt = self.description.format(
-            task=self.task,
-            documents=result,
-            n=self.n,
-            role_description=self.role_description,
-        )
+        return result
+                
+        # prompt = self.description.format(
+        #     task=self.task,
+        #     documents=result,
+        #     n=self.n,
+        #     role_description=self.role_description,
+        # )
 
-        result = self.llm.predict(prompt)
-
+        # result = self.llm.predict(prompt)
         return result
 
     @property
