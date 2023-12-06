@@ -55,6 +55,7 @@ class Belief:
             if (
                 event.event_type == EventType.task
                 or event.event_type == EventType.result
+                or event.event_type == EventType.user_input
             ):
                 context = event.content + "\n" + context
 
