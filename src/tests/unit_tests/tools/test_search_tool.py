@@ -11,8 +11,9 @@ def test_search_query_includes_gsite_config():
     config = AgentConfig(
         verbose=True,
         gsite=site,
+        search_domains = [site],
+        invalid_domain = []
     )
-    assert config.gsite == site
     search_tool = SearchTool(config=config)
 
     query = "What is the weather today?"
@@ -20,14 +21,15 @@ def test_search_query_includes_gsite_config():
     assert search_result is not None
     assert search_result is not ""
 
-
 def test_search_query_includes_multiple_gsite_config():
     site = "https://www.google.com, https://www.langchain.com, https://openai.com"
     config = AgentConfig(
         verbose=True,
         gsite=site,
+        search_domains = ["https://www.google.com", "https://www.langchain.com", "https://openai.com"],
+        invalid_domain = []
+
     )
-    assert config.gsite == site
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
     search_result = search_tool._run(query)
@@ -39,6 +41,8 @@ def test_search_query_includes_more_gsite_config_warning():
     config = AgentConfig(
         verbose=True,
         gsite=site,
+        search_domains = ["https://www.google.com", "https://www.langchain.com", "https://openai.com", "https://www.google.com", "https://www.langchain.com", "https://openai.com"],
+        invalid_domain = []
     )
     assert config.gsite == site
     search_tool = SearchTool(config=config)
@@ -51,6 +55,8 @@ def test_search_query_includes_more_gsite_config_empty():
     config = AgentConfig(
         verbose=True,
         gsite=site,
+        search_domains = [],
+        invalid_domain = []
     )
     assert config.gsite == site
     search_tool = SearchTool(config=config)
@@ -61,37 +67,21 @@ def test_search_query_includes_more_gsite_config_empty():
 
 def test_search_query_includes_invalid_url():
     site = "http://www.cwi.nl:80/%7Eguido/Python.html, /data/Python.html, 532, https://stackoverflow.com"
+    invalid_domain_list = ["http://www.cwi.nl:80/%7Eguido/Python.html", "/data/Python.html", "532"]
     config = AgentConfig(
         verbose=True,
         gsite=site,
+        search_domains = ["https://stackoverflow.com"],
+        invalid_domain = invalid_domain_list
     )
     assert config.gsite == site
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
-    error = search_tool._run(query)
+    result = search_tool._run(query)
 
-    expected_error = TaskAction(
-                name="ERROR",
-                args={"error": f"The input URL is not valid"},
-            )
-    assert error == expected_error
+    invalid_domain = ", ".join(invalid_domain_list)
+    expected_error = f"Warning: The doman {invalid_domain} is invalid and is not taken into consideration.\n"
 
-def test_search_query_invalid_format():
-    site = "https://www.google.com,https://www.langchain.com,https://openai.com"
-    config = AgentConfig(
-        verbose=True,
-        gsite=site,
-    )
-    assert config.gsite == site
-    search_tool = SearchTool(config=config)
-    query = "What is the weather today?"
-    search_result = search_tool._run(query)
-
-    expected_result = TaskAction(
-                    name="ERROR",
-                    args={"error": f"Could not process invalid website URLs format. Split urls with ', "},
-                )
-    assert search_result is not None
-    assert search_result == expected_result
+    assert expected_error in result
     
 

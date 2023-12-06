@@ -38,14 +38,6 @@ def get_tools(memory, config):
     return tools
 
 
-def validate_url(url: str) -> bool:
-    try:
-        result = urlparse(url)
-        return all([result.scheme, result.netloc])
-    except:
-        return False
-
-
 class SearchArxivTool(BaseTool):
     name = "Arxiv Search"
     description = (
@@ -89,6 +81,7 @@ class SearchArxivTool(BaseTool):
 class SearchTool(BaseTool):
     name = "Search"
     config = AgentConfig()
+    top_k: int = 10
     description = (
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
@@ -96,29 +89,19 @@ class SearchTool(BaseTool):
     
     def _run(self, query: str) -> str:
         result = ""
-        if self.config.gsite:
-            gsite_list = self.config.gsite.split(", ")
-            gsite_list = [i for i in gsite_list if i != " " and i != "\n" and i != None]
-            if False in [validate_url(i) for i in gsite_list]:
-                return TaskAction(
-                name="ERROR",
-                args={"error": f"The input URL is not valid"},
-            )
-            gsite_list = [query + " site:" + i for i in gsite_list]
-            if len(gsite_list) >= 5:
-                gsite_list = gsite_list[:5]
+        if self.config.search_domains:
+            query_list = [query + " Site: " + str(i) for i in self.config.search_domains]
+            if len(query_list) >= 5:
+                query_list = query_list[:5]
                 result = result + "Warning: Only the first 5 URLs are taken into consideration.\n"
-            
         else:
-            gsite_list = [query]
-        top_k = int(10 / len(gsite_list))
-        for query_gsite in gsite_list:
-            result += self._run_single_query(query_gsite, top_k)
-        if (result == "" or result == " ") and len(gsite_list) == 1:
-            return TaskAction(
-                    name="ERROR",
-                    args={"error": f"Could not process invalid website URLs format. Split urls with ', "},
-                )
+            query_list = [query]
+        if self.config.invalid_domain:
+            invalid_domain_string = ", ".join(self.config.invalid_domain)
+            result = result + f"Warning: The doman {invalid_domain_string} is invalid and is not taken into consideration.\n"
+        top_k = int(self.top_k / len(query_list))
+        for domain in query_list:
+            result += self._run_single_query(domain, top_k)
         return result
         
 
