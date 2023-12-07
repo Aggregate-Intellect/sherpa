@@ -34,7 +34,8 @@ class QAAgent(BaseAgent):
         belief: Belief = Belief(),
         num_runs: int = 3,
         verbose_logger=DummyVerboseLogger(),
-        require_meta=False
+        require_meta=False,
+        citation_thresh = [0.5,0.5,0.5] # threshold for citations seq_thresh, jaccard_thresh, token_overlap,
     ):
         """
         The QA agent is the agent handles a single task.
@@ -61,10 +62,12 @@ class QAAgent(BaseAgent):
         self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
         self.verbose_logger = verbose_logger
         self.require_meta = require_meta
+        self.citation_thresh = citation_thresh
+        
 
     def create_actions(self) -> List[BaseAction]:
         return [
-            GoogleSearch(self.description, self.belief.current_task, self.llm,require_meta=self.require_meta),
+            GoogleSearch(self.description, self.belief.current_task, self.llm, require_meta=self.require_meta),
         ]
 
     def synthesize_output(self) -> str:
@@ -83,7 +86,7 @@ class QAAgent(BaseAgent):
             if isinstance(action, GoogleSearch):
                 google = action
                 
-        citation_module = CitationValidation(0.5, 0.5, 0.5)
+        citation_module = CitationValidation(self.citation_thresh[0], self.citation_thresh[1], self.citation_thresh[2])
         resource = google.meta[-1]
         
         result = citation_module.parse_output(text, resource)

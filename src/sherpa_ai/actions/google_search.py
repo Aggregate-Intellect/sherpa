@@ -60,6 +60,11 @@ class GoogleSearch(BaseAction):
         logger.debug("Search Result: {}", result)
 
         return result
+
+        # the code block below is not currently used because the single google search result 
+        # is short enough to fit into the context.
+        # Maybe get back to use the LLM to summarize the google search result again if the result beocme
+        # too long to handle in the context.
                 
         # prompt = self.description.format(
         #     task=self.task,
