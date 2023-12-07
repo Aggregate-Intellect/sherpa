@@ -6,7 +6,7 @@ from sherpa_ai.utils import (
     get_base_url,
     get_links_from_string,
     log_formatter,
-    question_reconstructor,
+    rewrite_link_references,
     scrape_with_url,
     show_commands_only,
 )
@@ -40,11 +40,12 @@ def test_scrape_with_url_handles_url_not_found():
     assert result['status'] == 404
     assert result['data'] == ''
 
-def test_question_reconstructor_succeeds():
-    data = [{'data': ' a comparison of five open-source large language models (LLMs) that are making waves in the AI community. Each model is discussed in detail, including their features, performance metrics, and training data. The models discussed are Llama 2, Claude 2, MPT-7B, Falcon, and Vicuna-13B. These models are designed to provide users with extended and coherent responses, process lengthy inputs, and produce accurate and reliable results. They are also optimized for swift training and inference, and are available for commercial use.  a discussion of the current state of Large Language Models (LLMs) and their potential applications. It covers Vicuna-13B, an open-source model that has been fine-tuned on LLaMA, and Falcon, another open-source model with superior performance metrics. It also discusses the collaborative spirit of the AI community and the potential of open-source models to shape the future of AI.', 'link': 'https://www.unite.ai/best-open-source-llms/'}]
+def test_rewrite_link_references_succeeds():
+    data = [{'data': ' a comparison of five open-source large language models (LLMs) that are making waves in the AI community. Each model is discussed in detail, including their features, performance metrics, and training data.', 'link': 'https://www.unite.ai/best-open-source-llms/'}]
     question = "<@U05HDFV64AU> what is this link talking about <https://www.unite.ai/best-open-source-llms/>"
-    expected_result = """<@U05HDFV64AU> what is this link talking about [1]./n Reference: [1] link: "https://www.unite.ai/best-open-source-llms/" , link_data:  a comparison of five open-source large language models (LLMs) that are making waves in the AI community. Each model is discussed in detail, including their features, performance metrics, and training data. The models discussed are Llama 2, Claude 2, MPT-7B, Falcon, and Vicuna-13B. These models are designed to provide users with extended and coherent responses, process lengthy inputs, and produce accurate and reliable results. They are also optimized for swift training and inference, and are available for commercial use.  a discussion of the current state of Large Language Models (LLMs) and their potential applications. It covers Vicuna-13B, an open-source model that has been fine-tuned on LLaMA, and Falcon, another open-source model with superior performance metrics. It also discusses the collaborative spirit of the AI community and the potential of open-source models to shape the future of AI."""
-    result = question_reconstructor(data, question)
+    expected_result = """<@U05HDFV64AU> what is this link talking about [1]./n Reference: [1] link: "https://www.unite.ai/best-open-source-llms/" , link_data: [{'data': ' a comparison of five open-source large language models (LLMs) that are making waves in the AI community. Each model is discussed in detail, including their features, performance metrics, and training data.', 'link': 'https://www.unite.ai/best-open-source-llms/'}]"""
+
+    result = rewrite_link_references(data, question)
     assert result == expected_result
     
 def test_show_commands_only_succeeds():
