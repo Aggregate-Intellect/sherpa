@@ -41,7 +41,7 @@ def get_tools(memory, config):
 class SearchArxivTool(BaseTool):
     name = "Arxiv Search"
     description = (
-        "Access all the papers from Arxiv to search for domain-specific scientific publication."
+        "Access all the papers from Arxiv to search for domain-specific scientific publication."  # noqa: E501
         "Only use this tool when you need information in the scientific paper."
     )
 
@@ -86,24 +86,31 @@ class SearchTool(BaseTool):
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
-    
+
     def _run(self, query: str) -> str:
         result = ""
         if self.config.search_domains:
-            query_list = [query + " Site: " + str(i) for i in self.config.search_domains]
+            query_list = [
+                query + " Site: " + str(i) for i in self.config.search_domains
+            ]
             if len(query_list) >= 5:
                 query_list = query_list[:5]
-                result = result + "Warning: Only the first 5 URLs are taken into consideration.\n"
+                result = (
+                    result
+                    + "Warning: Only the first 5 URLs are taken into consideration.\n"
+                )  # noqa: E501
         else:
             query_list = [query]
-        if self.config.invalid_domain:
-            invalid_domain_string = ", ".join(self.config.invalid_domain)
-            result = result + f"Warning: The doman {invalid_domain_string} is invalid and is not taken into consideration.\n"
+        if self.config.invalid_domains:
+            invalid_domain_string = ", ".join(self.config.invalid_domains)
+            result = (
+                result
+                + f"Warning: The doman {invalid_domain_string} is invalid and is not taken into consideration.\n"  # noqa: E501
+            )  # noqa: E501
         top_k = int(self.top_k / len(query_list))
         for domain in query_list:
             result += self._run_single_query(domain, top_k)
         return result
-        
 
     def _run_single_query(self, query: str, top_k: int) -> str:
         logger.debug(f"Search query: {query}")
@@ -189,7 +196,7 @@ class ContextTool(BaseTool):
     name = "Context Search"
     description = (
         "Access internal technical documentation for AI related projects, including"
-        + "Fixie, LangChain, GPT index, GPTCache, GPT4ALL, autoGPT, db-GPT, AgentGPT, sherpa."
+        + "Fixie, LangChain, GPT index, GPTCache, GPT4ALL, autoGPT, db-GPT, AgentGPT, sherpa."  # noqa: E501
         + "Only use this tool if you need information for these projects specifically."
     )
     memory: VectorStoreRetriever
@@ -217,7 +224,7 @@ class UserInputTool(BaseTool):
     name = "UserInput"
     description = (
         "Access the user input for the task."
-        "You use this tool if you need more context and would like to ask clarifying questions to solve the task"
+        "You use this tool if you need more context and would like to ask clarifying questions to solve the task"  # noqa: E501
     )
 
     def _run(self, query: str) -> str:
@@ -225,4 +232,3 @@ class UserInputTool(BaseTool):
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("UserInputTool does not support async run")
-

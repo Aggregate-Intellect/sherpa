@@ -1,4 +1,5 @@
 import pytest
+from loguru import logger
 
 from sherpa_ai.config import AgentConfig
 
@@ -11,10 +12,11 @@ def test_config_parses_all_parameters_correctly():
 
     assert parsed == "Test input."
     assert config.verbose
-    assert config.gsite == site
+    assert config.gsite == site.split(", ")
     assert config.do_reflect
     assert config.search_domains == ["https://www.google.com"]
-    assert config.invalid_domain == []
+    assert config.invalid_domains == []
+
 
 def test_config_parse_multiple_gsites_correctly():
     site = "https://www.google.com, https://www.langchain.com, https://openai.com, /data/Python.html, 532"
@@ -24,10 +26,14 @@ def test_config_parse_multiple_gsites_correctly():
 
     assert parsed == "Test input."
     assert config.verbose
-    assert config.gsite == site
+    assert config.gsite == site.split(", ")
     assert config.do_reflect
-    assert config.search_domains == ["https://www.google.com", "https://www.langchain.com", "https://openai.com"]
-    assert config.invalid_domain == ["/data/Python.html", "532"]
+    assert config.search_domains == [
+        "https://www.google.com",
+        "https://www.langchain.com",
+        "https://openai.com",
+    ]
+    assert config.invalid_domains == ["/data/Python.html", "532"]
 
 
 def test_config_parses_input_and_verbose_options_with_no_gsite():
@@ -37,7 +43,7 @@ def test_config_parses_input_and_verbose_options_with_no_gsite():
 
     assert parsed == "Test input."
     assert config.verbose
-    assert config.gsite is None
+    assert config.gsite == []
 
 
 def test_config_raises_exception_for_unsupported_options():
