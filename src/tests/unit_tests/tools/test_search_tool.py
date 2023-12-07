@@ -19,7 +19,7 @@ def test_search_query_includes_gsite_config():
     query = "What is the weather today?"
     search_result = search_tool._run(query)
     assert search_result is not None
-    assert search_result is not ""
+    assert search_result != ""
 
 def test_search_query_includes_multiple_gsite_config():
     site = "https://www.google.com, https://www.langchain.com, https://openai.com"
@@ -34,7 +34,7 @@ def test_search_query_includes_multiple_gsite_config():
     query = "What is the weather today?"
     search_result = search_tool._run(query)
     assert search_result is not None
-    assert search_result is not ""
+    assert search_result != ""
 
 def test_search_query_includes_more_gsite_config_warning():
     site = "https://www.google.com, https://www.langchain.com, https://openai.com, https://www.google.com, https://www.langchain.com, https://openai.com"
@@ -63,7 +63,7 @@ def test_search_query_includes_more_gsite_config_empty():
     query = "What is the weather today?"
     search_result = search_tool._run(query)
     assert search_result is not None
-    assert search_result is not ""
+    assert search_result != ""
 
 def test_search_query_includes_invalid_url():
     site = "http://www.cwi.nl:80/%7Eguido/Python.html, /data/Python.html, 532, https://stackoverflow.com"
