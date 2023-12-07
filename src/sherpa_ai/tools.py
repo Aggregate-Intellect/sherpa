@@ -87,7 +87,7 @@ class SearchTool(BaseTool):
     def augment_query(self, query) -> str:
         return query + " site:" + self.config.gsite if self.config.gsite else query
 
-    def _run(self, query: str) -> str:
+    def _run(self, query: str, require_meta=False) -> str:
         query = self.augment_query(query)
 
         logger.debug(f"Search query: {query}")
@@ -107,7 +107,12 @@ class SearchTool(BaseTool):
             title = search_results["organic"][0]["title"]
             link = search_results["organic"][0]["link"]
 
-            return "Answer: " + answer + "\nLink:" + link
+            response = "Answer: " + answer 
+            meta = [{"Document": answer, "Source": link}]
+            if require_meta:
+                return response, meta
+            else:
+                return response
 
         # case 2: knowledgeGraph in the result dictionary
         snippets = []
@@ -140,13 +145,15 @@ class SearchTool(BaseTool):
                 return ["No good Google Search Result was found"]
 
         result = []
+        meta = []
         for i in range(len(search_results["organic"][:10])):
             r = search_results["organic"][i]
             single_result = (
-                "Description: " + r["title"] + r["snippet"] + "\nLink:" + r["link"]
+                r["title"] + r["snippet"]
             )
 
             result.append(single_result)
+            meta.append({"Document": "Description: " + r["title"] + r["snippet"], "Source": r["link"]})
         full_result = "\n".join(result)
 
         # answer = " ".join(snippets)
@@ -162,8 +169,11 @@ class SearchTool(BaseTool):
                 + "\nLink:"
                 + search_results["knowledgeGraph"]["descriptionLink"]
             )
-            full_result = answer + "\n" + full_result
-        return full_result
+            full_result = answer + "\n\n" + full_result
+        if require_meta:
+            return full_result, meta
+        else:
+            return full_result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("SearchTool does not support async run")
@@ -178,9 +188,10 @@ class ContextTool(BaseTool):
     )
     memory: VectorStoreRetriever
 
-    def _run(self, query: str) -> str:
+    def _run(self, query: str, need_meta=False) -> str:
         docs = self.memory.get_relevant_documents(query)
         result = ""
+        metadata = []
         for doc in docs:
             result += (
                 "Document"
@@ -189,8 +200,14 @@ class ContextTool(BaseTool):
                 + doc.metadata.get("source", "")
                 + "\n"
             )
+            if need_meta:
+                metadata.append({'Document': doc.page_content,
+                "Source": doc.metadata.get("source", "")})
 
-        return result
+        if need_meta:
+            return result, metadata
+        else:
+            return result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("ContextTool does not support async run")

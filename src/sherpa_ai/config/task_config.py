@@ -9,7 +9,7 @@ class AgentConfig(BaseModel):
     verbose: bool = False
     gsite: Optional[str] = None
     do_reflect: bool = False
-
+    
     @classmethod
     def from_input(cls, input_str: str) -> Tuple[str, "AgentConfig"]:
         """
