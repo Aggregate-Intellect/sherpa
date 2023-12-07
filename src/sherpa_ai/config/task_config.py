@@ -2,16 +2,18 @@ import re
 from argparse import ArgumentParser
 from typing import List, Optional, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
+from functools import cached_property
 from urllib.parse import urlparse
+
 
 
 class AgentConfig(BaseModel):
     verbose: bool = False
     gsite: Optional[str] = None
     do_reflect: bool = False
-    search_domains: List[str] = None
-    invalid_domain: List[str] = None
+    search_domains: List[str] = []
+    invalid_domain: List[str] = []
 
     @classmethod
     def from_input(cls, input_str: str) -> Tuple[str, "AgentConfig"]:
@@ -63,11 +65,24 @@ class AgentConfig(BaseModel):
         
         if args.gsite:
             gsite_list = [url.strip() for url in args.gsite.split(",")]
-            args.search_domains = [url for url in gsite_list if validate_url(url)]
-            args.invalid_domain = [url for url in gsite_list if not validate_url(url)]
+            args.search_domains = cls.get_search_domain(gsite_list)
+            args.invalid_domain = cls.get_invalid_domain(gsite_list)
 
         return AgentConfig(**args.__dict__)
+
+    @classmethod
+    @computed_field
+    @cached_property
+    def get_search_domain(cls, gsite_list):
+        return [url for url in gsite_list if validate_url(url)]
     
+    @classmethod
+    @computed_field
+    @cached_property
+    def get_invalid_domain(cls, gsite_list):
+        return [url for url in gsite_list if not validate_url(url)]
+
+
 def validate_url(url: str) -> bool:
     try:
         result = urlparse(url)
