@@ -30,7 +30,7 @@ class AgentConfig(BaseModel):
         parser = ArgumentParser()
 
         parser.add_argument(
-            "--not-verbose",
+            "--concise",
             action="store_true",
             help="disable verbose messaging during agent execution",
         )
@@ -49,7 +49,7 @@ class AgentConfig(BaseModel):
         args, unknown = parser.parse_known_args(configs)
 
         # negate the verbose flag
-        if args.not_verbose:
+        if args.concise:
             args.verbose = False
 
         if len(unknown) > 0:

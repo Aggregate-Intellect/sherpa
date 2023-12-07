@@ -69,7 +69,7 @@ def test_response_contains_correct_info(get_llm):  # noqa: F811
 @pytest.mark.external_api
 def test_response_no_verbose(get_llm):  # noqa: F811
     llm = get_llm(__file__, test_response_no_verbose.__name__)
-    question = "What is AutoGPT and how does it compare with MetaGPT --not-verbose"
+    question = "What is AutoGPT and how does it compare with MetaGPT --concise"
 
     if cfg.SERPER_API_KEY is None:
         pytest.skip(
