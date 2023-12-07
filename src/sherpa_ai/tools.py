@@ -3,7 +3,7 @@ import re
 import urllib
 import urllib.parse
 import urllib.request
-from typing import Any, List
+from typing import Any, List, Tuple, Union
 from urllib.parse import urlparse
 
 import requests
@@ -87,7 +87,9 @@ class SearchTool(BaseTool):
         "you cannot find the information using internal search."
     )
 
-    def _run(self, query: str) -> str:
+    def _run(
+        self, query: str, require_meta=False
+    ) -> Union[str, Tuple[str, List[dict]]]:
         result = ""
         if self.config.search_domains:
             query_list = [
@@ -107,12 +109,28 @@ class SearchTool(BaseTool):
                 result
                 + f"Warning: The doman {invalid_domain_string} is invalid and is not taken into consideration.\n"  # noqa: E501
             )  # noqa: E501
+
         top_k = int(self.top_k / len(query_list))
-        for domain in query_list:
-            result += self._run_single_query(domain, top_k)
+        if require_meta:
+            meta = []
+
+        for query in query_list:
+            cur_result = self._run_single_query(query, top_k, require_meta)
+
+            if require_meta:
+                result += "\n" + cur_result[0]
+                meta.extend(cur_result[1])
+            else:
+                result += "\n" + cur_result
+
+        if require_meta:
+            result = (result, meta)
+
         return result
 
-    def _run_single_query(self, query: str, top_k: int) -> str:
+    def _run_single_query(
+        self, query: str, top_k: int, require_meta=False
+    ) -> Union[str, Tuple[str, List[dict]]]:
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
@@ -130,7 +148,12 @@ class SearchTool(BaseTool):
             title = search_results["organic"][0]["title"]
             link = search_results["organic"][0]["link"]
 
-            return "Answer: " + answer + "\nLink:" + link
+            response = "Answer: " + answer
+            meta = [{"Document": answer, "Source": link}]
+            if require_meta:
+                return response, meta
+            else:
+                return response
 
         # case 2: knowledgeGraph in the result dictionary
         snippets = []
@@ -163,13 +186,19 @@ class SearchTool(BaseTool):
                 return ["No good Google Search Result was found"]
 
         result = []
+
+        meta = []
         for i in range(len(search_results["organic"][:top_k])):
             r = search_results["organic"][i]
-            single_result = (
-                "Description: " + r["title"] + r["snippet"] + "\nLink:" + r["link"]
-            )
+            single_result = r["title"] + r["snippet"]
 
             result.append(single_result)
+            meta.append(
+                {
+                    "Document": "Description: " + r["title"] + r["snippet"],
+                    "Source": r["link"],
+                }
+            )
         full_result = "\n".join(result)
 
         # answer = " ".join(snippets)
@@ -185,8 +214,11 @@ class SearchTool(BaseTool):
                 + "\nLink:"
                 + search_results["knowledgeGraph"]["descriptionLink"]
             )
-            full_result = answer + "\n" + full_result
-        return full_result
+            full_result = answer + "\n\n" + full_result
+        if require_meta:
+            return full_result, meta
+        else:
+            return full_result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("SearchTool does not support async run")
@@ -201,9 +233,10 @@ class ContextTool(BaseTool):
     )
     memory: VectorStoreRetriever
 
-    def _run(self, query: str) -> str:
+    def _run(self, query: str, need_meta=False) -> str:
         docs = self.memory.get_relevant_documents(query)
         result = ""
+        metadata = []
         for doc in docs:
             result += (
                 "Document"
@@ -212,8 +245,18 @@ class ContextTool(BaseTool):
                 + doc.metadata.get("source", "")
                 + "\n"
             )
+            if need_meta:
+                metadata.append(
+                    {
+                        "Document": doc.page_content,
+                        "Source": doc.metadata.get("source", ""),
+                    }
+                )
 
-        return result
+        if need_meta:
+            return result, metadata
+        else:
+            return result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("ContextTool does not support async run")
