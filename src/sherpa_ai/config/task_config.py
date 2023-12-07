@@ -1,15 +1,33 @@
 import re
 from argparse import ArgumentParser
+from functools import cached_property
 from typing import List, Optional, Tuple
+from urllib.parse import urlparse
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field, validator
 
 
 class AgentConfig(BaseModel):
     verbose: bool = False
-    gsite: Optional[str] = None
+    gsite: list[str] = []
     do_reflect: bool = False
-    
+
+    @validator("gsite", pre=True)
+    def parse_gsite(cls, value: Optional[str]) -> list[str]:
+        if value is None:
+            return []
+        return [url.strip() for url in value.split(",")]
+
+    @computed_field
+    @cached_property
+    def search_domains(self) -> List[str]:
+        return [url for url in self.gsite if validate_url(url)]
+
+    @computed_field
+    @cached_property
+    def invalid_domains(self) -> List[str]:
+        return [url for url in self.gsite if not validate_url(url)]
+
     @classmethod
     def from_input(cls, input_str: str) -> Tuple[str, "AgentConfig"]:
         """
@@ -21,7 +39,14 @@ class AgentConfig(BaseModel):
 
         for part in parts[1:]:
             part = part.strip()
-            configs.extend(part.split())
+            if part.startswith("--gsite"):
+                gsite_arg, gsite_val = part.split(maxsplit=1)
+                configs.append(gsite_arg)
+                urls = [url.strip() for url in gsite_val.split(",")]
+                concatenated_urls = ", ".join(urls)
+                configs.append(concatenated_urls)
+            else:
+                configs.extend(part.split())
 
         return parts[0].strip(), cls.from_config(configs)
 
@@ -52,3 +77,11 @@ class AgentConfig(BaseModel):
             raise ValueError(f"Invalid configuration, check your input: {unknown}")
 
         return AgentConfig(**args.__dict__)
+
+
+def validate_url(url: str) -> bool:
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
