@@ -2937,6 +2937,7 @@ botocore = ">=1.33.2,<2.0a.0"
 crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
 
 [[package]]
+
 name = "safetensors"
 version = "0.4.1"
 description = ""
