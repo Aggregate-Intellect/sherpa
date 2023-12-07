@@ -10,6 +10,7 @@ from sherpa_ai.memory import SharedMemory
 from tests.fixtures.llms import get_llm
 from tests.fixtures.llms import get_real_llm
 from sherpa_ai.actions import GoogleSearch
+from sherpa_ai.utils import extract_urls
 
 def test_citation_validation():
     text = """Born in Scranton, Pennsylvania, Biden moved with his family to Delaware in 1953. 
@@ -51,4 +52,8 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
     results = shared_memory.get_by_type(EventType.result)
     logger.error(results[0].content)
     
-    assert len(results) == 1
+    # e.g. [7](https://neilpatel.com/blog/autogpt/)
+    # citation headler [?](https://)
+    
+    assert "](http" in results[0].content
+    

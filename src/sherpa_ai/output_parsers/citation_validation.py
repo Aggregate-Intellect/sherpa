@@ -115,6 +115,6 @@ class CitationValidation(BaseOutputParser):
                     reference = f"[{id}]({url})"
                     citations.append(reference)
 
-                new_sentence.append(sentence + ', '.join(citations) + ".")
+                new_sentence.append(sentence + " " + ', '.join(citations) + ".")
             new_paragraph.append(" ".join(new_sentence) + "\n")
         return "".join(new_paragraph)
