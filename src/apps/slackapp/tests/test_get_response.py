@@ -36,18 +36,17 @@ def test_get_response_contains_todays_date(get_llm):  # noqa: F811
 
 
 @pytest.mark.external_api
-def test_response_contains_correct_info(get_llm):  # noqa: F811
-    llm = get_llm(__file__, test_response_contains_correct_info.__name__)
-    question = "What is AutoGPT and how does it compare with MetaGPT"
-
+def test_response_is_verbose_by_default(get_llm):  # noqa: F811
     if cfg.SERPER_API_KEY is None:
         pytest.skip(
             "SERPER_API_KEY not found in environment variables, skipping this test"
         )
 
+    llm = get_llm(__file__, test_response_is_verbose_by_default.__name__)
+    question = "What is AutoGPT and how does it compare with MetaGPT"
+
     verbose_logger = MagicMock()
     verbose_logger.log = MagicMock()
-
     response = get_response(
         question=question,
         previous_messages=[],
@@ -55,9 +54,7 @@ def test_response_contains_correct_info(get_llm):  # noqa: F811
         bot_info={"user_id": "Sherpa"},
         llm=llm,
     )
-
     logger.info(response)
-
     verbose_logger.log.assert_called()
 
     assert response is not None
@@ -67,18 +64,16 @@ def test_response_contains_correct_info(get_llm):  # noqa: F811
 
 
 @pytest.mark.external_api
-def test_response_no_verbose(get_llm):  # noqa: F811
-    llm = get_llm(__file__, test_response_no_verbose.__name__)
-    question = "What is AutoGPT and how does it compare with MetaGPT --concise"
-
+def test_response_concise_is_not_verbose(get_llm):  # noqa: F811
     if cfg.SERPER_API_KEY is None:
         pytest.skip(
             "SERPER_API_KEY not found in environment variables, skipping this test"
         )
+    llm = get_llm(__file__, test_response_concise_is_not_verbose.__name__)
+    question = "What is AutoGPT and how does it compare with MetaGPT --concise"
 
     verbose_logger = MagicMock()
     verbose_logger.log = MagicMock()
-
     response = get_response(
         question=question,
         previous_messages=[],
@@ -86,9 +81,7 @@ def test_response_no_verbose(get_llm):  # noqa: F811
         bot_info={"user_id": "Sherpa"},
         llm=llm,
     )
-
     logger.info(response)
-
     verbose_logger.log.assert_not_called()
 
     assert response is not None
