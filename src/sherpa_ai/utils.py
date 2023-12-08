@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Union
 from urllib.parse import urlparse
 
 import requests
@@ -10,12 +10,10 @@ from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredP
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 from loguru import logger
+from pypdf import PdfReader
 
 import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
-from typing import Union
-
-from pypdf import PdfReader
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -72,8 +70,7 @@ def get_link_from_slack_client_conversation(data):
                             if newElement.get("type") == "link":
                                 newUrl = newElement["url"]
                                 links.append(
-                                    {"url": newUrl,
-                                        "base_url": get_base_url(newUrl)}
+                                    {"url": newUrl, "base_url": get_base_url(newUrl)}
                                 )
     return links
 
@@ -93,11 +90,10 @@ def rewrite_link_references(data: any, question: str):
     result = question + "./n Reference:"
     for count, chunk in enumerate(data):
         reference = f"[{ count + 1}]"
-        link = chunk['link']
+        link = chunk["link"]
         link_with_angle_brackets = f"<{ link }>"
         result = result.replace(link_with_angle_brackets, reference)
-        result = result + \
-            f""" {reference} link: "{ link }" , link_data: {data}"""
+        result = result + f""" {reference} link: "{ link }" , link_data: {data}"""
     return result
 
 
@@ -162,7 +158,6 @@ def chunk_and_summarize_file(
     team_id: str = None,
     user_id: str = None,
 ):
-
     llm = SherpaOpenAI(
         temperature=cfg.TEMPRATURE,
         openai_api_key=cfg.OPENAI_API_KEY,
@@ -193,12 +188,17 @@ def chunk_and_summarize_file(
     return " ".join(chunk_summary)
 
 
-def question_with_file_reconstructor(data: str, file_name: str, title: Union[str, None], file_format: str,  question: str):
+def question_with_file_reconstructor(
+    data: str, file_name: str, title: Union[str, None], file_format: str, question: str
+):
     result = question + "./n Reference:"
     title = f"'title':'{title}'" if title is not None else ""
-    result = result + \
-        f"""[ {{file_name: '{file_name}' , {title}  , file_format:'{file_format}' , content_of_{file_name}:'{data}'}} ]"""
+    result = (
+        result
+        + f"""[ {{file_name: '{file_name}' , {title}  , file_format:'{file_format}' , content_of_{file_name}:'{data}'}} ]"""
+    )
     return result
+
 
 # ---- add this for verbose output --- #
 
@@ -274,7 +274,7 @@ def extract_urls(text):
     words = text.split()
 
     # Extract URLs using urllib.parse
-    urls = [word for word in words if urlparse(word).scheme in ['http', 'https']]
+    urls = [word for word in words if urlparse(word).scheme in ["http", "https"]]
 
     return urls
 
@@ -282,21 +282,20 @@ def extract_urls(text):
 def check_url(url):
     # check whether a url is valid
     # return True is url is valid
-    
+
     try:
         html = urlopen(url)
-        
+
     # except block to catch
     # exception
     # and identify error
     except HTTPError as e:
         print("HTTP error", e)
         return False
-        
+
     except URLError as e:
         print("Opps ! Page not found!", e)
         return False
-    
+
     else:
         return True
-    

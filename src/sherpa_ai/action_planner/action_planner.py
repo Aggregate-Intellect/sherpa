@@ -125,5 +125,5 @@ class ActionPlanner(BaseActionPlanner):
 
         if name == "Finished":
             return None
-        
+
         return name, args

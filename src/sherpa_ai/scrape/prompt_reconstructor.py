@@ -43,7 +43,6 @@ class PromptReconstructor:
                 if scraped_data["status"] == 200:
                     chunk_summary = chunk_and_summarize(
                         link=link,
-                     
                         question=question,
                         text_data=scraped_data["data"],
                         user_id=user_id,

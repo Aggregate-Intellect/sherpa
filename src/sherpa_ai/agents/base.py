@@ -52,7 +52,7 @@ class BaseAgent(ABC):
         logger.debug(f"```⏳{self.name} is thinking...```")
 
         self.shared_memory.observe(self.belief)
-        
+
         actions = self.create_actions()
         self.belief.set_actions(actions)
 

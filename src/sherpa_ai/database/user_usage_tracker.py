@@ -1,7 +1,9 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, TIMESTAMP
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 import time
+
+from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
 import sherpa_ai.config as cfg
 
 Base = declarative_base()
@@ -10,18 +12,20 @@ import boto3
 
 
 class UsageTracker(Base):
-    __tablename__ = 'usage_tracker'
+    __tablename__ = "usage_tracker"
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(String)
     token = Column(Integer)
     timestamp = Column(Integer)
     reset_timestamp = Column(Boolean)
 
+
 class Whitelist(Base):
-    __tablename__ = 'whitelist'
+    __tablename__ = "whitelist"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(String)
+
 
 class UserUsageTracker:
     def __init__(
@@ -34,12 +38,15 @@ class UserUsageTracker:
         self.session = Session()
         self.create_table()
         self.max_daily_token = int(max_daily_token)
-    def download_from_s3(self,bucket_name, s3_file_key, local_file_path):
-        s3 = boto3.client('s3')
+
+    def download_from_s3(self, bucket_name, s3_file_key, local_file_path):
+        s3 = boto3.client("s3")
         s3.download_file(bucket_name, s3_file_key, local_file_path)
-    def upload_to_s3(self,local_file_path, bucket_name, s3_file_key):
-        s3 = boto3.client('s3')
+
+    def upload_to_s3(self, local_file_path, bucket_name, s3_file_key):
+        s3 = boto3.client("s3")
         s3.upload_file(local_file_path, bucket_name, s3_file_key)
+
     def create_table(self):
         Base.metadata.create_all(self.engine)
 
@@ -48,11 +55,12 @@ class UserUsageTracker:
         self.session.add(user)
         self.session.commit()
         if not cfg.FLASK_DEBUG:
-            self.upload_to_s3("./token_counter.db", 'sherpa-sqlight', 'token_counter.db')
-
+            self.upload_to_s3(
+                "./token_counter.db", "sherpa-sqlight", "token_counter.db"
+            )
 
     def get_all_whitelisted_ids(self):
-        whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]     
+        whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]
         return whitelisted_ids
 
     def get_whitelist_by_user_id(self, user_id):
@@ -63,7 +71,12 @@ class UserUsageTracker:
         return bool(self.get_whitelist_by_user_id(user_id))
 
     def add_data(self, combined_id, token, reset_timestamp=False):
-        data = UsageTracker(user_id=combined_id, token=token, timestamp=int(time.time()), reset_timestamp=reset_timestamp)
+        data = UsageTracker(
+            user_id=combined_id,
+            token=token,
+            timestamp=int(time.time()),
+            reset_timestamp=reset_timestamp,
+        )
         self.session.add(data)
         self.session.commit()
 
@@ -72,10 +85,35 @@ class UserUsageTracker:
 
         if last_reset_info is None or last_reset_info["id"] is None:
             data = self.session.query(UsageTracker).filter_by(user_id=user_id).all()
-            return [{"id": item.id, "user_id": item.user_id, "token": item.token, "timestamp": item.timestamp, "reset_timestamp": item.reset_timestamp} for item in data]
+            return [
+                {
+                    "id": item.id,
+                    "user_id": item.user_id,
+                    "token": item.token,
+                    "timestamp": item.timestamp,
+                    "reset_timestamp": item.reset_timestamp,
+                }
+                for item in data
+            ]
 
-        data = self.session.query(UsageTracker).filter(UsageTracker.user_id == user_id, UsageTracker.id >= last_reset_info["id"]).all()
-        return [{"id": item.id, "user_id": item.user_id, "token": item.token, "timestamp": item.timestamp, "reset_timestamp": item.reset_timestamp} for item in data]
+        data = (
+            self.session.query(UsageTracker)
+            .filter(
+                UsageTracker.user_id == user_id,
+                UsageTracker.id >= last_reset_info["id"],
+            )
+            .all()
+        )
+        return [
+            {
+                "id": item.id,
+                "user_id": item.user_id,
+                "token": item.token,
+                "timestamp": item.timestamp,
+                "reset_timestamp": item.reset_timestamp,
+            }
+            for item in data
+        ]
 
     def get_sum_of_tokens_since_last_reset(self, user_id):
         data_since_last_reset = self.get_data_since_last_reset(user_id)
@@ -90,7 +128,14 @@ class UserUsageTracker:
         self.add_data(combined_id=combined_id, token=token_amount, reset_timestamp=True)
 
     def get_last_reset_info(self, combined_id):
-        data = self.session.query(UsageTracker.id, UsageTracker.timestamp).filter(UsageTracker.user_id == combined_id, UsageTracker.reset_timestamp == 1).order_by(UsageTracker.timestamp.desc()).first()
+        data = (
+            self.session.query(UsageTracker.id, UsageTracker.timestamp)
+            .filter(
+                UsageTracker.user_id == combined_id, UsageTracker.reset_timestamp == 1
+            )
+            .order_by(UsageTracker.timestamp.desc())
+            .first()
+        )
         if data:
             last_reset_id, last_reset_timestamp = data
             return {"id": last_reset_id, "timestamp": last_reset_timestamp}
@@ -113,7 +158,7 @@ class UserUsageTracker:
                 "token-left": self.max_daily_token,
                 "can_excute": True,
                 "message": "",
-                "time_left": ""
+                "time_left": "",
             }
         else:
             last_reset_info = self.get_last_reset_info(combined_id=combined_id)
@@ -122,38 +167,53 @@ class UserUsageTracker:
             if last_reset_info is not None and last_reset_info["timestamp"] is not None:
                 time_since_last_reset = int(time.time()) - last_reset_info["timestamp"]
 
-            if time_since_last_reset != 0 and time_since_last_reset > 3600 * float(cfg.LIMIT_TIME_SIZE_IN_HOURS):
+            if time_since_last_reset != 0 and time_since_last_reset > 3600 * float(
+                cfg.LIMIT_TIME_SIZE_IN_HOURS
+            ):
                 print(f"TIMESTAMP DIFFERENT: {time_since_last_reset}")
                 self.reset_usage(combined_id=combined_id, token_amount=token_amount)
                 return {
                     "token-left": self.max_daily_token,
                     "can_excute": True,
                     "message": "",
-                    "time_left": self.seconds_to_hms(time_since_last_reset)
+                    "time_left": self.seconds_to_hms(time_since_last_reset),
                 }
             else:
-                total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(user_id=combined_id)
+                total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
+                    user_id=combined_id
+                )
 
                 if self.max_daily_token - total_token_since_last_reset <= 0:
                     return {
-                        "token-left": self.max_daily_token - total_token_since_last_reset,
+                        "token-left": self.max_daily_token
+                        - total_token_since_last_reset,
                         "can_excute": False,
                         "message": "daily usage limit exceeded. you can try after 24 hours",
-                        "time_left": self.seconds_to_hms(time_since_last_reset)
+                        "time_left": self.seconds_to_hms(time_since_last_reset),
                     }
                 else:
                     self.add_data(combined_id=combined_id, token=token_amount)
                     return {
-                        "token-left": self.max_daily_token - total_token_since_last_reset,
+                        "token-left": self.max_daily_token
+                        - total_token_since_last_reset,
                         "current_token": token_amount,
                         "can_excute": True,
                         "message": "",
-                        "time_left": self.seconds_to_hms(time_since_last_reset)
+                        "time_left": self.seconds_to_hms(time_since_last_reset),
                     }
 
     def get_all_data(self):
         data = self.session.query(UsageTracker).all()
-        return [{"id": item.id, "user_id": item.user_id, "token": item.token, "timestamp": item.timestamp, "reset_timestamp": item.reset_timestamp} for item in data]
+        return [
+            {
+                "id": item.id,
+                "user_id": item.user_id,
+                "token": item.token,
+                "timestamp": item.timestamp,
+                "reset_timestamp": item.reset_timestamp,
+            }
+            for item in data
+        ]
 
     def close_connection(self):
         self.session.close()
