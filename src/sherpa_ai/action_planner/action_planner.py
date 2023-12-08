@@ -69,7 +69,11 @@ class ActionPlanner(BaseActionPlanner):
             str: Action to be taken
             dict: Arguments for the action
         """
-        output = json.loads(output_str)
+        try:
+            output = json.loads(output_str)
+        except json.decoder.JSONDecodeError:
+            logger.error("Output is not a proper json format {}", output_str)
+            return "Finished", None
         command = output["command"]
         name = command["name"]
         args = command.get("args", {})
@@ -110,7 +114,6 @@ class ActionPlanner(BaseActionPlanner):
             output_instruction=self.output_instruction,
             response_format=response_format,
         )
-
         logger.debug(f"Prompt: {prompt}")
         result = self.llm.predict(prompt)
         logger.debug(f"Result: {result}")
