@@ -1,31 +1,31 @@
-# Name of PR
-
-### Your checklist for this pull request
+# Your checklist for this pull request
 Thank you for submitting a pull request! To speed up the review process, please follow this checklist:
 
-- [ ] Pull Request is small and focused on one topic so it can be reviewed easily 
+- [ ] My Pull Request is small and focused on one topic so it can be reviewed easily 
+- [ ] My code follows the style guidelines of this project (`make format`)
 - [ ] Commit messages are detailed
-- [ ] Code compiles correctly
-- [ ] Documentation is updated to reflect changes (docstrings, comments, `/docs`)
-- [ ] Added new tests to cover changes, especially when resolving an issue
-- [ ] All tests pass in offline mode (the default)
-- [ ] All tests pass when run with the `external_api` test option (if possible)
+- [ ] I have performed a self-review of my code
+- [ ] I commented hard-to-understand parts of my code
+- [ ] I updated the documentation (docstrings, `/docs`)
+- [ ] My changes generate no new warnings (or explain any new warnings and why they're ok)
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] All tests pass when I run `pytest tests` (offline mode)
 
-If you're adding a feature that makes network calls, remember to add new tests and 
-follow the test guideline documentation about offline and online testing. 
+Additional steps for code with networking dependencies:
 
-### Description
-Please describe your pull request.
+- [ ] I followed the [offline and online testing guidelines](https://sherpa-ai.readthedocs.io/en/latest/How_To/Test/test.html#offline-and-online-testing)
+- [ ] All tests pass when I run `pytest tests --external_api` (online mode, making network calls)
 
-What does this implement/fix? Explain.
+# Description
+Describe your pull request here.
 
-Does this resolve any currently open issues? 
-If so, mention the issues, e.g. `Closes #xxx`, and Github will close them automatically
-when your PR is merged into `main`.
+What does this PR implement or fix? Explain.
+
+If this PR resolves any currently open issues then mention them like this: `Closes #xxx`.
+Github will close such issues automatically when your PR is merged into `main`.
 
 Any relevant logs, error output, etc?
 
-Any other comments? For example, will other contributors need to install new libraries
-after picking up these changes?
+Any other comments? For example, will other contributors need to install new libraries via `poetry install` after picking up these changes?
 
 💔Thank you!
