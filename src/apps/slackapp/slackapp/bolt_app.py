@@ -36,13 +36,18 @@ app = App(
     signing_secret=cfg.SLACK_SIGNING_SECRET,
 )
 bot = app.client.auth_test()
+ai_name = "Sherpa"
 logger.info(f"App init: bot auth_test results {bot}")
+
 
 ###########################################################################
 # usage tracker database downloader on every deployment:
 ###########################################################################
 def before_first_request():
-    UserUsageTracker().download_from_s3("sherpa-sqlight" , "token_counter.db" , "./token_counter.db")
+    UserUsageTracker().download_from_s3(
+        "sherpa-sqlight", "token_counter.db", "./token_counter.db"
+    )
+
 
 if not cfg.FLASK_DEBUG:
     before_first_request()
@@ -61,14 +66,15 @@ def hello_command(ack, body):
 def convert_thread_history_messages(messages: List[dict]) -> List[BaseMessage]:
     results = []
 
+    ai_id = bot["user_id"]
     for message in messages:
         logger.info(message)
         if message["type"] != "message" and message["type"] != "text":
             continue
 
-        message_cls = AIMessage if message["user"] == self.ai_id else HumanMessage
+        message_cls = AIMessage if message["user"] == ai_id else HumanMessage
         # replace the at in the message with the name of the bot
-        text = message["text"].replace(f"@{self.ai_id}", f"@{self.ai_name}")
+        text = message["text"].replace(f"@{ai_id}", f"@{ai_name}")
 
         text = text.split("#verbose", 1)[0]  # remove everything after #verbose
         text = text.replace("-verbose", "")  # remove -verbose if it exists
@@ -104,7 +110,6 @@ def get_response(
     verbose_logger = verbose_logger if agent_config.verbose else DummyVerboseLogger()
 
     tools = get_tools(memory, agent_config)
-    ai_name = "Sherpa"
     ai_id = bot_info["user_id"]
 
     task_agent = TaskAgent.from_llm_and_tools(
@@ -129,7 +134,7 @@ def get_response(
 def file_event_handler(say, files, team_id, user_id, thread_ts, question):
     if files[0]["size"] > cfg.FILE_SIZE_LIMIT:
         say(
-            "Sorry, the file you attached is larger than 2mb. Please try again with a smaller file",
+            "Sorry, the file you attached is larger than 2mb. Please try again with a smaller file",  # noqa E501
             thread_ts=thread_ts,
         )
         return {"status": "error"}
@@ -177,7 +182,7 @@ def event_test(client, say, event):
         usage_cheker = user_db.check_usage(
             user_id=user_id,
             combined_id=combined_id,
-            token_amount=count_string_tokens(question, "gpt-3.5-turbo")
+            token_amount=count_string_tokens(question, "gpt-3.5-turbo"),
         )
         can_excute = usage_cheker["can_excute"]
         user_db.close_connection()
@@ -211,7 +216,6 @@ def event_test(client, say, event):
 
         llm = SherpaChatOpenAI(
             openai_api_key=cfg.OPENAI_API_KEY,
-            request_timeout=120,
             user_id=user_id,
             team_id=team_id,
             temperature=cfg.TEMPRATURE,
@@ -228,7 +232,7 @@ def event_test(client, say, event):
         say(results, thread_ts=thread_ts)
     else:
         say(
-            f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_cheker['time_left']}.Thank you for your patience and understanding.""",
+            f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_cheker['time_left']}.Thank you for your patience and understanding.""",  # noqa E501
             thread_ts=thread_ts,
         )
 

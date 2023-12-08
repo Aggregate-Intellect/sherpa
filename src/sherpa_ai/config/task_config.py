@@ -8,7 +8,7 @@ from pydantic import BaseModel, computed_field, validator
 
 
 class AgentConfig(BaseModel):
-    verbose: bool = False
+    verbose: bool = True
     gsite: list[str] = []
     do_reflect: bool = False
 
@@ -55,9 +55,9 @@ class AgentConfig(BaseModel):
         parser = ArgumentParser()
 
         parser.add_argument(
-            "--verbose",
+            "--concise",
             action="store_true",
-            help="enable verbose messaging during agent execution",
+            help="disable verbose messaging during agent execution",
         )
         parser.add_argument(
             "--gsite",
@@ -72,6 +72,10 @@ class AgentConfig(BaseModel):
         )
 
         args, unknown = parser.parse_known_args(configs)
+
+        # negate the verbose flag
+        if args.concise:
+            args.verbose = False
 
         if len(unknown) > 0:
             raise ValueError(f"Invalid configuration, check your input: {unknown}")
