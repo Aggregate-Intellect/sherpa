@@ -36,7 +36,11 @@ class QAAgent(BaseAgent):
         num_runs: int = 3,
         verbose_logger=DummyVerboseLogger(),
         require_meta=False,
-        citation_thresh = [0.5,0.5,0.5] # threshold for citations seq_thresh, jaccard_thresh, token_overlap,
+        citation_thresh=[
+            0.5,
+            0.5,
+            0.5,
+        ],  # threshold for citations seq_thresh, jaccard_thresh, token_overlap,
     ):
         """
         The QA agent is the agent handles a single task.
@@ -54,7 +58,7 @@ class QAAgent(BaseAgent):
             verbose_logger (BaseVerboseLogger, optional): The verbose logger used to
                 log the agent's internal state. Defaults to DummyVerboseLogger().
             require_meta (bool, optional): Whether the agent requires meta information
-                during Google search. True means the search will use metadata and 
+                during Google search. True means the search will use metadata and
                 citation validation will be performed.
         """
         self.name = name
@@ -67,7 +71,6 @@ class QAAgent(BaseAgent):
         self.verbose_logger = verbose_logger
         self.require_meta = require_meta
         self.citation_thresh = citation_thresh
-        
 
     def create_actions(self) -> List[BaseAction]:
         return [
@@ -98,8 +101,10 @@ class QAAgent(BaseAgent):
         for action in self.belief.actions:
             if isinstance(action, GoogleSearch):
                 google = action
-                
-        citation_module = CitationValidation(self.citation_thresh[0], self.citation_thresh[1], self.citation_thresh[2])
+
+        citation_module = CitationValidation(
+            self.citation_thresh[0], self.citation_thresh[1], self.citation_thresh[2]
+        )
         resource = google.meta[-1]
 
         result = citation_module.parse_output(text, resource)
