@@ -8,6 +8,8 @@ from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
+from hugchat import hugchat
+from hugchat.login import Login
 from langchain.chains import LLMChain
 from langchain.prompts import Prompt
 from langchain.tools import BaseTool
@@ -15,8 +17,6 @@ from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.vectorstores.base import VectorStoreRetriever
 from loguru import logger
 from typing_extensions import Literal
-from hugchat import hugchat
-from hugchat.login import Login
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
@@ -28,7 +28,6 @@ def get_tools(memory, config):
 
     # tools.append(ContextTool(memory=memory))
     tools.append(UserInputTool())
-
 
     if cfg.SERPER_API_KEY is not None:
         search_tool = SearchTool(config=config)
@@ -285,30 +284,35 @@ class UserInputTool(BaseTool):
     def _arun(self, query: str) -> str:
         raise NotImplementedError("UserInputTool does not support async run")
 
+
 class HugChatTool(BaseTool):
     name = "Hugchat"
     description = (
         "Access the user input for the task."
-        "This tool is an alternative way to to ask clarifying questions to solve the task, using HuggingChat via the HugChat API."
+        "This tool is an alternative way to to ask clarifying questions to solve the task, using HuggingFace-hosted language models via the HugChat API."
     )
+
     def _run(self, query: str) -> str:
-
         # Log in to huggingface and grant authorization to huggingchat
-        sign = Login(cfg.HUGCHAT_EMAIL, cfg.HUGCHAT_PASS)
-        # Save cookies to the local directory
-        cookies = sign.login()
-
-        # Save cookies to the local directory
-        cookie_path_dir = "./cookies_snapshot"
-        sign.saveCookiesToDir(cookie_path_dir)
+        # TODO consider caching authentication cookies for the duration of a conversation session,
+        # or for Sherpa's process lifetime, rather than logging in again on every query. Caching
+        # would improve our response time and reduce load on HuggingChat's service.
+        # HugChat supports caching cookies in a file but we should cache in-memory since our server deployment
+        # is ephemeral. If we cache we will have to refresh authentication upon expiry of login session.
+        auth = Login(cfg.HUGCHAT_EMAIL, cfg.HUGCHAT_PASS)
+        cookies = auth.login()
 
         # Create a ChatBot
+        # TODO consider keeping ChatBot alive for longer than a single query
         chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
 
-        query_result = chatbot.query(query,stream=cfg.HUGCHAT_MODE_STREAM_RESPONSE,web_search= cfg.HUGCHAT_MODE_WEB_SEARCH)
+        query_result = chatbot.query(
+            query,
+            stream=cfg.HUGCHAT_MODE_STREAM_RESPONSE,
+            web_search=cfg.HUGCHAT_MODE_WEB_SEARCH,
+        )
 
         return query_result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("HugChat does not support async run")
-
