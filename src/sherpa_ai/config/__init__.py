@@ -17,6 +17,8 @@ from os import environ
 from dotenv import find_dotenv, load_dotenv
 from loguru import logger
 
+from sherpa_ai.config.task_config import AgentConfig
+
 env_path = find_dotenv(usecwd=True)
 load_dotenv(env_path)
 
@@ -55,6 +57,7 @@ DAILY_LIMIT_REACHED_MESSAGE = (
 LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
 FILE_SIZE_LIMIT = environ.get("FILE_SIZE_LIMIT") or 2097152
 FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
+DB_NAME= environ.get("DB_NAME") or "sqlite:///token_counter.db"
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
@@ -109,3 +112,7 @@ else:
     logger.info("Config: OpenAI environment variables are set")
 
 check_vectordb_setting()
+
+__all__ = [
+    "AgentConfig",
+]

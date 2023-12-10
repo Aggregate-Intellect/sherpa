@@ -1,12 +1,12 @@
 import typing
 from typing import Any, List, Optional
 
-from langchain import OpenAI
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
 from langchain.chat_models.base import BaseChatModel
+from langchain.llms.openai import OpenAI
 from langchain.schema import BaseMessage, ChatResult
 from pydantic import BaseModel
 
