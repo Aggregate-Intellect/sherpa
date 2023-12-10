@@ -2,8 +2,8 @@ from datetime import datetime
 from typing import List
 
 import pytest
-from langchain import GoogleSerperAPIWrapper
 from langchain.chat_models import ChatOpenAI
+from langchain.llms import FakeListLLM
 from langchain.tools.base import BaseTool
 from langchain.vectorstores.base import VectorStoreRetriever
 
@@ -11,6 +11,7 @@ import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.task_agent import TaskAgent
 from sherpa_ai.tools import ContextTool, SearchTool
+from tests.fixtures.llms import get_llm
 
 
 def config_task_agent(
@@ -31,36 +32,44 @@ def config_task_agent(
     return task_agent
 
 
-@pytest.mark.real
-def test_task_solving_with_search():
+@pytest.mark.external_api
+def test_task_solving_with_search_succeeds(get_llm):  # noqa: F811
     """Test task solving with search"""
     question = "What is the date today, using the following format: YYYY-MM-DD?"
-    date = datetime.now().strftime("%Y-%m-%d")
 
     if cfg.SERPER_API_KEY is None:
         pytest.skip(
             "SERPER_API_KEY not found in environment variables, skipping this test"
         )
     memory = get_vectordb()
-    tools = [SearchTool(api_wrapper=GoogleSerperAPIWrapper())]
+    tools = [SearchTool()]
 
-    task_agent = config_task_agent(tools=tools, memory=memory)
+    llm = get_llm(__file__, test_task_solving_with_search_succeeds.__name__)
+
+    date = (
+        llm.responses[-1]
+        if isinstance(llm, FakeListLLM)
+        else datetime.now().strftime("%Y-%m-%d")
+    )
+
+    task_agent = config_task_agent(tools=tools, memory=memory, llm=llm)
 
     response = task_agent.run(question)
     assert date in response, "Today's date not found in response"
 
 
-@pytest.mark.real
-def test_task_solving_with_context_search():
+@pytest.mark.external_api
+def test_task_solving_with_context_search_succeeds(get_llm):  # noqa: F811
     question = "What is langchain?"
 
-    if cfg.VECTORDB != "pinecone" or cfg.VECTORDB != "chroma":
+    if cfg.VECTORDB != "pinecone" and cfg.VECTORDB != "chroma":
         pytest.skip("VECTORDB is not configured properly, skipping this test")
 
     memory = get_vectordb()
     tools = [ContextTool(memory=memory)]
 
-    task_agent = config_task_agent(tools=tools, memory=memory)
+    llm = get_llm(__file__, test_task_solving_with_context_search_succeeds.__name__)
+    task_agent = config_task_agent(tools=tools, memory=memory, llm=llm)
 
     response = task_agent.run(question)
 

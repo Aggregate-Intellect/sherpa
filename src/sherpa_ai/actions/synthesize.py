@@ -15,6 +15,18 @@ Task: {task}
 Result:
 """  # noqa: E501
 
+SYNTHESIZE_DESCRIPTION_CITATION = """{role_description}
+
+Context: {context}
+
+Action - Result History:
+{history}
+
+Given the context and the action-result history, please complete the task mentioned. If you can cite some of the sentences in the Context, please use them in your response as much intact as possible. DO NOT Include any links you used from the context and history in the result.
+Task: {task}
+Result:
+"""  # noqa: E501
+
 
 class SynthesizeOutput(BaseAction):
     def __init__(
@@ -22,9 +34,13 @@ class SynthesizeOutput(BaseAction):
         role_description: str,
         llm: BaseLanguageModel,
         description: str = SYNTHESIZE_DESCRIPTION,
-    ):
+        add_citation=False
+    ):  
+        if add_citation:
+            self.description = SYNTHESIZE_DESCRIPTION_CITATION
+        else:
+            self.description = description
         self.role_description = role_description
-        self.description = description
         self.llm = llm
 
     def execute(self, task: str, context: str, history: str) -> str:
@@ -38,7 +54,6 @@ class SynthesizeOutput(BaseAction):
         logger.debug("Prompt: {}", prompt)
 
         result = self.llm.predict(prompt)
-
         return result
 
     @property

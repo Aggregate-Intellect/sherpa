@@ -78,7 +78,7 @@ def get_link_from_slack_client_conversation(data):
     return links
 
 
-def scarape_with_url(url: str):
+def scrape_with_url(url: str):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)
@@ -89,16 +89,15 @@ def scarape_with_url(url: str):
         return {"data": "", "status": status}
 
 
-def question_reconstructor(data: any, question: str):
+def rewrite_link_references(data: any, question: str):
     result = question + "./n Reference:"
-    count = 1
-    for chunk in data:
-        chunk_link = f"<{chunk['link']}>"
-        result = result.replace(f"{chunk_link}", f"[{count}]")
+    for count, chunk in enumerate(data):
+        reference = f"[{ count + 1}]"
+        link = chunk['link']
+        link_with_angle_brackets = f"<{ link }>"
+        result = result.replace(link_with_angle_brackets, reference)
         result = result + \
-            f""" [{count}] link: "{chunk['link']}" , link_data: {data}"""
-        count += 1
-
+            f""" {reference} link: "{ link }" , link_data: {data}"""
     return result
 
 
@@ -246,7 +245,7 @@ def show_commands_only(logs):
                 log_strings.append(formatted_reply)
 
             else:  # for final response
-                formatted_reply = f"""💡Thought process finished!"""
+                formatted_reply = """💡Thought process finished!"""
                 log_strings.append(formatted_reply)
 
     log_string = "\n".join(log_strings)
@@ -265,3 +264,39 @@ def extract_text_from_pdf(pdf_path):
 
     pdf_file.close()
     return text
+
+
+def extract_urls(text):
+    # extract urls from natrual language texts
+    # return a list of urls [a,b,c]. Each url is a string
+
+    # Split the text into words
+    words = text.split()
+
+    # Extract URLs using urllib.parse
+    urls = [word for word in words if urlparse(word).scheme in ['http', 'https']]
+
+    return urls
+
+
+def check_url(url):
+    # check whether a url is valid
+    # return True is url is valid
+    
+    try:
+        html = urlopen(url)
+        
+    # except block to catch
+    # exception
+    # and identify error
+    except HTTPError as e:
+        print("HTTP error", e)
+        return False
+        
+    except URLError as e:
+        print("Opps ! Page not found!", e)
+        return False
+    
+    else:
+        return True
+    

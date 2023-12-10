@@ -12,7 +12,7 @@ from sherpa_ai.output_parser import TaskAction, TaskOutputParser, preprocess_jso
         ('{"key": "value"}', '{"key": "value"}'),  # Test without any backslash to escape
     ],
 )
-def test_preprocess_json_input(input_str, expected_output):
+def test_preprocess_json_input_succeeds(input_str, expected_output):
     result = preprocess_json_input(input_str)
     assert result == expected_output
 
@@ -26,7 +26,7 @@ def test_preprocess_json_input(input_str, expected_output):
         ('not_a_json_string', TaskAction(name="ERROR", args={"error": "Could not parse invalid json: not_a_json_string"})),
     ],
 )
-def test_TaskOutputParser_parse(text, expected_action):
+def test_TaskOutputParser_parse_succeeds(text, expected_action):
     parser = TaskOutputParser()
     result = parser.parse(text)
     assert result == expected_action

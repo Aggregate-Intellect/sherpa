@@ -1,23 +1,16 @@
 import sys
 
 import pytest
-from langchain.chat_models import ChatOpenAI
 from loguru import logger
 
-import sherpa_ai.config
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
+from tests.fixtures.llms import get_llm
 
 
-@pytest.fixture
-def config_logger():
-    logger.remove()
-    logger.add(sys.stderr, level="DEBUG")
-
-
-def test_task_agent(config_logger):
-    llm = ChatOpenAI(model_name='gpt-3.5-turbo')
+def test_task_agent_succeeds(get_llm):  # noqa: F811
+    llm = get_llm(__file__, test_task_agent_succeeds.__name__)
 
     shared_memory = SharedMemory(
         objective="What is AutoGPT?",
@@ -39,4 +32,3 @@ def test_task_agent(config_logger):
 
     results = shared_memory.get_by_type(EventType.result)
     assert len(results) == 1
-    logger.debug(results[0].content)
