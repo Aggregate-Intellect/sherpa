@@ -2,7 +2,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+
 from sherpa_ai.utils import (
+    check_if_number_exist,
+    extract_numbers_from_text,
     get_base_url,
     get_links_from_string,
     log_formatter,
@@ -10,7 +13,6 @@ from sherpa_ai.utils import (
     scrape_with_url,
     show_commands_only,
 )
-
 
 def test_get_links_from_string_succeeds():
     text_with_link = "this is the link for ui/ux <https://ui8.net/artpaperdsgn/products/e-commerce-shopping-and-marketing-3d> , <http://codepen.io/trending> "
@@ -134,3 +136,15 @@ def test_log_formatter_formats_correctly_2(logs_with_final_response):
         "\n-- Step: 2 -- \nFinal Response: \n Another final response."
     )
     assert log_formatter(logs_with_final_response) == expected_output
+
+def test_extract_numbers_from_text_pass():
+    source = " Cillum labore et culpa elit irure labore nostrud 12.45 minim cupidatat. Nulla nisi aliquip do duis elit tempor magna. Occaecat sunt nisi aliqua officia fugiat. Dolor ea ad mollit nulla ullamco sit voluptate cillum id laboris et proident anim. Culpa officia incididunt sit qui exercitation magna voluptate Lorem duis eu occaecat. Non occaecat deserunt voluptate cillum aliquip voluptate veniam. Ullamco commodo eiusmod consequat dolor cillum quis Lorem $45,000 labore tempor cupidatat  7 elit quis deserunt.  "
+    result = "Labore deserunt 12.45 $45,000 ,7 sit velit nulla. Sint ipsum reprehenderit sint cupidatat amet est id anim exercitation fugiat adipisicing elit. Id est dolore minim magna occaecat aute. Est dolore culpa laborum non esse nostrud."
+    check_result = check_if_number_exist(source ,result , 'jack.com')
+    assert check_result['number_exisit'] == True
+
+def test_extract_numbers_from_text_fails():
+    source = " Cillum labore et culpa elit irure labore nostrud 12.45 minim cupidatat. Nulla nisi aliquip do duis elit tempor magna. Occaecat sunt nisi aliqua officia fugiat. Dolor ea ad mollit nulla ullamco sit voluptate cillum id laboris et proident anim. Culpa officia incididunt sit qui exercitation magna voluptate Lorem duis eu occaecat. Non occaecat deserunt voluptate cillum aliquip voluptate veniam. Ullamco commodo eiusmod consequat dolor cillum quis Lorem $45,000 labore tempor cupidatat  7 elit quis deserunt.  "
+    result = "Labore deserunt 12.45 $45,000  sit velit nulla. Sint ipsum reprehenderit sint cupidatat amet est id anim exercitation fugiat adipisicing elit. Id est dolore minim magna occaecat aute. Est dolore culpa laborum non esse nostrud."
+    check_result = check_if_number_exist(source ,result , 'jack.com')
+    assert check_result['number_exisit'] == False

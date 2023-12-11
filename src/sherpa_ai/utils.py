@@ -1,6 +1,9 @@
 import re
 from typing import List
+from urllib.error import URLError
 from urllib.parse import urlparse
+from urllib.request import urlopen
+
 
 import requests
 import tiktoken
@@ -16,6 +19,7 @@ from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
 from typing import Union
 
 from pypdf import PdfReader
+import re
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -300,3 +304,19 @@ def check_url(url):
     else:
         return True
     
+def extract_numbers_from_text(text):
+    pattern = r"\d+\.\d+|\d+\,\d+|\d+"
+    matches = re.findall(pattern, text)
+
+    return matches
+def check_if_number_exist(result:str, source:str , source_link:str or None = None):
+    check_numbers = extract_numbers_from_text(result)
+    source_numbers = extract_numbers_from_text(source)
+    source_link =  source_link if source_link is not None else "source data"
+    message = []
+    for data in check_numbers:
+        if data not in source_numbers:
+            message.append(f"{data} is not mentioned in the {source_link}. ")
+    if len(message)>0:
+        return {"number_exisit": False , "messages":message}
+    return {"number_exisit": True , "messages":message}
