@@ -1,4 +1,4 @@
-THEORETICAL FOUNDATIONS OF LARGE LANGUAGE MDOELS
+THEORETICAL FOUNDATIONS OF LARGE LANGUAGE MODELS
 ================================================
 
 What you need to know about the foundations of LLMs.
