@@ -3,12 +3,13 @@ import re
 import urllib
 import urllib.parse
 import urllib.request
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
 from hugchat import hugchat
+from hugchat.hugchat import ChatBot
 from hugchat.login import Login
 from langchain.chains import LLMChain
 from langchain.prompts import Prompt
@@ -38,7 +39,14 @@ def get_tools(memory, config):
         )
 
     if cfg.HUGCHAT_EMAIL is not None and cfg.HUGCHAT_PASS is not None:
-        tools.append(HugChatTool())
+        tools.append(
+            HugChatTool(
+                username=cfg.HUGCHAT_EMAIL,
+                password=cfg.HUGCHAT_PASS,
+                stream_results=cfg.HUGCHAT_MODE_STREAM_results_RESPONSE,
+                web_search=cfg.HUGCHAT_MODE_WEB_SEARCH,
+            )
+        )
     else:
         logger.info(
             "No Hugchat email and pass in environment variables, skipping Hugchat tool"
@@ -286,33 +294,47 @@ class UserInputTool(BaseTool):
 
 
 class HugChatTool(BaseTool):
-    name = "Hugchat"
+    name = "HugChat"
     description = (
-        "Access the user input for the task."
-        "This tool is an alternative way to to ask clarifying questions to solve the task, using HuggingFace-hosted language models via the HugChat API."
+        "Access HuggingFace-hosted language models and optionally search the web to get answers."
+        "This tool is an alternative way to to ask clarifying questions to solve the task."
     )
+    username: Optional[str]
+    password: Optional[str]
+    cookies: Optional[requests.cookies.RequestsCookieJar]
+    stream_results: bool = False
+    web_search: bool = False
+
+    def login(self):
+        if not self.username or not self.password:
+            logger.error("No email or password, cannot initialize HugChat tool")
+            return None
+        auth = Login(self.username, self.password)
+        self.cookies = auth.login()
+        return self.cookies
+
+    def authenticated(self) -> bool:
+        return self.cookies is not None
 
     def _run(self, query: str) -> str:
-        # Log in to huggingface and grant authorization to huggingchat
         # TODO consider caching authentication cookies for the duration of a conversation session,
         # or for Sherpa's process lifetime, rather than logging in again on every query. Caching
         # would improve our response time and reduce load on HuggingChat's service.
         # HugChat supports caching cookies in a file but we should cache in-memory since our server deployment
         # is ephemeral. If we cache we will have to refresh authentication upon expiry of login session.
-        auth = Login(cfg.HUGCHAT_EMAIL, cfg.HUGCHAT_PASS)
-        cookies = auth.login()
-
-        # Create a ChatBot
-        # TODO consider keeping ChatBot alive for longer than a single query
-        chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
-
-        query_result = chatbot.query(
-            query,
-            stream=cfg.HUGCHAT_MODE_STREAM_RESPONSE,
-            web_search=cfg.HUGCHAT_MODE_WEB_SEARCH,
-        )
-
-        return query_result
+        self.login()
+        if self.authenticated():
+            # Create a ChatBot
+            # TODO consider keeping ChatBot alive for longer than a single query
+            chatbot = ChatBot(cookies=self.cookies.get_dict())
+            query_result = chatbot.query(
+                query,
+                stream=self.stream_results,
+                web_search=self.web_search,
+            )
+            return query_result
+        else:
+            return None
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("HugChat does not support async run")

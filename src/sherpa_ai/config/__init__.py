@@ -46,17 +46,21 @@ CHROMA_PORT = environ.get("CHROMA_PORT")
 CHROMA_INDEX = environ.get("CHROMA_INDEX")
 
 
-#Your HuggingChat.com user account email address
+# Your HuggingChat.com user account email address
 HUGCHAT_EMAIL = environ.get("HUGCHAT_EMAIL")
 HUGCHAT_PASS = environ.get("HUGCHAT_PASS")
 # Hugchat mode options
-HUGCHAT_MODE_STREAM_RESPONSE = environ.get("HUGCHAT_MODE_STREAM_RESPONSE", False) == "True"  # Use the stream response option
-HUGCHAT_MODE_WEB_SEARCH = environ.get("HUGCHAT_MODE_WEB_SEARCH", False) == "True"    # Use websearch for response
+HUGCHAT_MODE_STREAM_RESPONSE = (
+    environ.get("HUGCHAT_MODE_STREAM_RESPONSE", False) == "True"
+)  # Use the stream response option
+HUGCHAT_MODE_WEB_SEARCH = (
+    environ.get("HUGCHAT_MODE_WEB_SEARCH", False) == "True"
+)  # Use websearch for response
 
 SERPER_API_KEY = environ.get("SERPER_API_KEY")
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
 
-#Usage setting 
+# Usage setting
 DAILY_TOKEN_LIMIT = environ.get("DAILY_TOKEN_LIMIT") or 20000
 DAILY_LIMIT_REACHED_MESSAGE = (
     environ.get("DAILY_LIMIT_REACHED_MESSAGE")
@@ -65,7 +69,7 @@ DAILY_LIMIT_REACHED_MESSAGE = (
 LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
 FILE_SIZE_LIMIT = environ.get("FILE_SIZE_LIMIT") or 2097152
 FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
-DB_NAME= environ.get("DB_NAME") or "sqlite:///token_counter.db"
+DB_NAME = environ.get("DB_NAME") or "sqlite:///token_counter.db"
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
