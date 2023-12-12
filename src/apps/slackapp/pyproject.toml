@@ -13,8 +13,6 @@ flask = "^2.3.3"
 loguru = "^0.7.0"
 sherpa-ai = {path = "../..", develop = true}
 hugchat = "^0.3.8"
-pypdf = "^3.17.1"
-sqlalchemy = "^2.0.23"
 
 [tool.poetry.scripts]
 sherpa_slack = 'slackapp.bolt_app:main'
