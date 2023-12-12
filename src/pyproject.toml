@@ -21,8 +21,7 @@ loguru = ">=0.7.0,<0.8.0"
 boto3 = "^1.28.77"
 pypdf = "^3.17.0"
 hugchat = "^0.3.8"
-requests-toolbelt = "^1.0.0"
-
+transformers = "^4.35.2"
 
 
 [tool.poetry.group.test.dependencies]

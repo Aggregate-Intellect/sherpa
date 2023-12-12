@@ -34,12 +34,14 @@ OPEN BOOK CONTENT
    :maxdepth: 1
    :glob:
 
-   LLM_Agents/index
+   LLM Agents/index
    LLM Engineering/index
+   LLM Evaluation/index
    LLM Use Cases/index
    LLM Projects/index
    LLM Startups/index
    LLM Commercialization/index
+   Economic Impact of LLMs/index
    Responsible Generative AI/index
    LLM Foundations/index
    Research Papers/index
