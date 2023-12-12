@@ -2602,17 +2602,17 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-iso639"
-version = "2023.6.15"
+version = "2023.12.11"
 description = "Look-up utilities for ISO 639 language codes and names"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "python-iso639-2023.6.15.tar.gz", hash = "sha256:d456740d046d769a4263472ace1a9b790264210e0c199d61a520087c1fab7078"},
-    {file = "python_iso639-2023.6.15-py3-none-any.whl", hash = "sha256:6a4e197cb4a5f39338b9cc2c6356bdfd4cd4bdf6d2a69eb8f707bc8a76f6cf9e"},
+    {file = "python-iso639-2023.12.11.tar.gz", hash = "sha256:2dec683da597374a22df6f18f1ca5958e642143d9e729d8b39bf0dfe7156e798"},
+    {file = "python_iso639-2023.12.11-py3-none-any.whl", hash = "sha256:d42504153a06ece2ac929c9d59f9addb897522d4191693f0dcc007c6b4a1f937"},
 ]
 
 [package.extras]
-dev = ["black (==23.1.0)", "build (==0.10.0)", "flake8 (==6.0.0)", "pytest (==7.2.1)", "twine (==4.0.2)"]
+dev = ["black (==23.11.0)", "build (==1.0.3)", "flake8 (==6.1.0)", "pytest (==7.4.3)", "twine (==4.0.2)"]
 
 [[package]]
 name = "python-magic"
