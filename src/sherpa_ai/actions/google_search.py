@@ -38,7 +38,7 @@ class GoogleSearch(BaseAction):
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         config: AgentConfig = AgentConfig(),
         n: int = 5,
-        require_meta=False
+        require_meta=False,
     ):
         self.role_description = role_description
         self.task = task
@@ -48,7 +48,7 @@ class GoogleSearch(BaseAction):
         self.n = n
 
         self.search_tool = SearchTool(config=config)
-        self.meta=[]
+        self.meta = []
         self.require_meta = require_meta
 
     def execute(self, query) -> str:
@@ -61,11 +61,11 @@ class GoogleSearch(BaseAction):
 
         return result
 
-        # the code block below is not currently used because the single google search result 
+        # the code block below is not currently used because the single google search result
         # is short enough to fit into the context.
         # Maybe get back to use the LLM to summarize the google search result again if the result beocme
         # too long to handle in the context.
-                
+
         # prompt = self.description.format(
         #     task=self.task,
         #     documents=result,

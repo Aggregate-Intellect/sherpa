@@ -34,8 +34,8 @@ class SynthesizeOutput(BaseAction):
         role_description: str,
         llm: BaseLanguageModel,
         description: str = SYNTHESIZE_DESCRIPTION,
-        add_citation=False
-    ):  
+        add_citation=False,
+    ):
         if add_citation:
             self.description = SYNTHESIZE_DESCRIPTION_CITATION
         else:
