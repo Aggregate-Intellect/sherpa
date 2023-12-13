@@ -29,7 +29,9 @@ class Belief:
         self.internal_events.append(event)
 
     def get_by_type(self, event_type):
-        return [event for event in self.internal_events if event.event_type == event_type]
+        return [
+            event for event in self.internal_events if event.event_type == event_type
+        ]
 
     def set_current_task(self, task: Event):
         self.current_task = task
