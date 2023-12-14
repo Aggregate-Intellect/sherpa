@@ -322,6 +322,6 @@ def check_if_number_exist(result:str, source:str):
     if len(error_numbers)>0:
         for numbers in error_numbers:
             message += numbers + ", "
-        message += f"not mentioned in the {source_link}. "
+        message += f"not mentioned in the {source_link}. \n"
         return {"number_exists": False , "messages":message}
     return {"number_exists": True , "messages":message}
