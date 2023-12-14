@@ -309,14 +309,19 @@ def extract_numbers_from_text(text):
     matches = re.findall(pattern, text)
 
     return matches
-def check_if_number_exist(result:str, source:str , source_link:str or None = None):
+def check_if_number_exist(result:str, source:str):
     check_numbers = extract_numbers_from_text(result)
     source_numbers = extract_numbers_from_text(source)
-    source_link =  source_link if source_link is not None else "source data"
-    message = []
+    source_link = "source data"
+    error_numbers = []
+    message = ""
     for data in check_numbers:
         if data not in source_numbers:
-            message.append(f"{data} is not mentioned in the {source_link}. ")
-    if len(message)>0:
-        return {"number_exisit": False , "messages":message}
-    return {"number_exisit": True , "messages":message}
+            error_numbers.append(data)
+            
+    if len(error_numbers)>0:
+        for numbers in error_numbers:
+            message += numbers + ", "
+        message += f"not mentioned in the {source_link}. "
+        return {"number_exists": False , "messages":message}
+    return {"number_exists": True , "messages":message}
