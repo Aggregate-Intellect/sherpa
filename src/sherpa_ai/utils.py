@@ -307,8 +307,8 @@ def check_url(url):
 def extract_numbers_from_text(text):
     pattern = r"\d+\.\d+|\d+\,\d+|\d+"
     matches = re.findall(pattern, text)
-
     return matches
+
 def check_if_number_exist(result:str, source:str):
     check_numbers = extract_numbers_from_text(result)
     source_numbers = extract_numbers_from_text(source)
