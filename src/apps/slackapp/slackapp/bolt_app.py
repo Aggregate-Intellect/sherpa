@@ -14,11 +14,15 @@ from slack_bolt.adapter.flask import SlackRequestHandler
 from slackapp.routes.whitelist import whitelist_blueprint
 
 import sherpa_ai.config as cfg
+from sherpa_ai.agents import QAAgent
 from sherpa_ai.config import AgentConfig
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.error_handling import AgentErrorHandler
+from sherpa_ai.events import EventType
+from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
+from sherpa_ai.post_processors import md_link_to_slack
 from sherpa_ai.scrape.file_scraper import QuestionWithFileHandler
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 from sherpa_ai.task_agent import TaskAgent
@@ -103,30 +107,50 @@ def get_response(
     Returns:
         str: response from the task agent
     """
-
-    memory = get_vectordb()
-
-    question, agent_config = AgentConfig.from_input(question)
-    verbose_logger = verbose_logger if agent_config.verbose else DummyVerboseLogger()
-
-    tools = get_tools(memory, agent_config)
     ai_id = bot_info["user_id"]
-
-    task_agent = TaskAgent.from_llm_and_tools(
-        ai_name="Sherpa",
-        ai_role="assistant",
-        ai_id=bot_info["user_id"],
-        memory=memory,
-        tools=tools,
-        previous_messages=previous_messages,
-        llm=llm,
-        verbose_logger=verbose_logger,
-        agent_config=agent_config,
-    )
+    question, agent_config = AgentConfig.from_input(question)
+    ai_name = "Sherpa"
+    question = question.replace(f"@{ai_id}", f"@{ai_name}")
     error_handler = AgentErrorHandler()
 
-    question = question.replace(f"@{ai_id}", f"@{ai_name}")
-    response = error_handler.run_with_error_handling(task_agent.run, task=question)
+    memory = get_vectordb()
+    tools = get_tools(memory, agent_config)
+
+    if agent_config.obsolete:
+        verbose_logger.log("⚠️🤖 Use obsolete mode ...")
+        task_agent = TaskAgent.from_llm_and_tools(
+            ai_name=ai_name,
+            ai_role="assistant",
+            ai_id=bot_info["user_id"],
+            memory=memory,
+            tools=tools,
+            previous_messages=previous_messages,
+            llm=llm,
+            verbose_logger=verbose_logger,
+            agent_config=agent_config,
+        )
+
+        response = error_handler.run_with_error_handling(task_agent.run, task=question)
+    else:
+        memory = SharedMemory(objective="Answer the question")
+
+        for message in previous_messages:
+            memory.add(EventType.result, message.type, message.content)
+        memory.add(EventType.task, "human", question)
+
+        agent = QAAgent(
+            llm=llm,
+            name=ai_name,
+            num_runs=1,
+            shared_memory=memory,
+            agent_config=agent_config,
+            require_meta=True,
+            verbose_logger=verbose_logger,
+        )
+
+        error_handler = AgentErrorHandler()
+        response = error_handler.run_with_error_handling(agent.run)
+        response = md_link_to_slack(response)
 
     return response
 

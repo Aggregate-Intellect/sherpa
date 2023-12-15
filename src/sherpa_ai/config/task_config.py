@@ -11,6 +11,7 @@ class AgentConfig(BaseModel):
     verbose: bool = True
     gsite: list[str] = []
     do_reflect: bool = False
+    obsolete: bool = False
 
     @validator("gsite", pre=True)
     def parse_gsite(cls, value: Optional[str]) -> list[str]:
@@ -69,6 +70,12 @@ class AgentConfig(BaseModel):
             "--do-reflect",
             action="store_true",
             help="enable performing the reflection step for each agent.",
+        )
+
+        parser.add_argument(
+            "--obsolete",
+            action="store_true",
+            help="enable performing the obsolete step for each agent.",
         )
 
         args, unknown = parser.parse_known_args(configs)

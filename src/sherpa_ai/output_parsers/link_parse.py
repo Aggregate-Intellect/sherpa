@@ -36,14 +36,14 @@ class LinkParser(BaseOutputParser):
         def replace_with_link(match: re.Match):
             logger.debug(match)
             doc_id = int(match.group(1))
-            if doc_id < 0 or doc_id >= len(self.links):
+            if doc_id <= 0 or doc_id > len(self.links):
                 return ""
 
             if doc_id not in self.reindex_mapping:
                 self.reindex_mapping[doc_id] = self.output_counter
                 self.output_counter += 1
 
-            result = f"<{self.links[doc_id]}|[{self.reindex_mapping[doc_id]}]>"
+            result = f"<{self.links[doc_id - 1]}|[{self.reindex_mapping[doc_id]}]>"
             return result
 
         logger.warning(self.link_to_id)

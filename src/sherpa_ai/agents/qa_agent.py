@@ -3,9 +3,10 @@ from typing import List
 from langchain.base_language import BaseLanguageModel
 
 from sherpa_ai.action_planner import ActionPlanner
-from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
+from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
+from sherpa_ai.config import AgentConfig
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
@@ -33,6 +34,7 @@ class QAAgent(BaseAgent):
         description: str = TASK_AGENT_DESRIPTION,
         shared_memory: SharedMemory = None,
         belief: Belief = Belief(),
+        agent_config: AgentConfig = AgentConfig(),
         num_runs: int = 3,
         verbose_logger=DummyVerboseLogger(),
         require_meta=False,
@@ -62,7 +64,7 @@ class QAAgent(BaseAgent):
                 citation validation will be performed.
         """
         self.name = name
-        self.description = description
+        self.description = description + "\n\n" + f"Your name is {name}."
         self.shared_memory = shared_memory
         self.belief = belief
         self.num_runs = num_runs
@@ -71,6 +73,7 @@ class QAAgent(BaseAgent):
         self.verbose_logger = verbose_logger
         self.require_meta = require_meta
         self.citation_thresh = citation_thresh
+        self.config = agent_config
 
     def create_actions(self) -> List[BaseAction]:
         return [
@@ -78,6 +81,7 @@ class QAAgent(BaseAgent):
                 self.description,
                 self.belief.current_task,
                 self.llm,
+                config=self.config,
                 require_meta=self.require_meta,
             ),
         ]
