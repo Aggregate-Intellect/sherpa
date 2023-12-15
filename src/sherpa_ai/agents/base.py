@@ -89,7 +89,6 @@ class BaseAgent(ABC):
 
         result = self.synthesize_output()
 
-        self.verbose_logger.log(f"🤖{self.name} wrote: {result}")
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
         self.shared_memory.add(EventType.result, self.name, result)
