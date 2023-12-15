@@ -153,7 +153,7 @@ class SearchTool(BaseTool):
             if require_meta:
                 return response, meta
             else:
-                return response
+                return response + "\nLink:" + link
 
         # case 2: knowledgeGraph in the result dictionary
         snippets = []
@@ -176,6 +176,8 @@ class SearchTool(BaseTool):
             "images": "images",
             "search": "organic",
         }
+
+        # case 3: general search results
         for result in search_results[result_key_for_type[search_type]][:top_k]:
             if "snippet" in result:
                 snippets.append(result["snippet"])
@@ -191,6 +193,11 @@ class SearchTool(BaseTool):
         for i in range(len(search_results["organic"][:top_k])):
             r = search_results["organic"][i]
             single_result = r["title"] + r["snippet"]
+
+            # If the links are not considered explicitly, add it to the search result 
+            # so that it can be considered by the LLM
+            if not require_meta:
+                single_result += "\nLink:" + r["link"]
 
             result.append(single_result)
             meta.append(
