@@ -7,9 +7,9 @@ from loguru import logger
 from slackapp.bolt_app import get_response
 
 import sherpa_ai.config as cfg
+from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.verbose_loggers import DummyVerboseLogger
 from tests.conftest import external_api
-from tests.fixtures.llms import get_llm
 
 
 @pytest.mark.external_api

@@ -10,8 +10,8 @@ from langchain.vectorstores.base import VectorStoreRetriever
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.task_agent import TaskAgent
+from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.tools import ContextTool, SearchTool
-from tests.fixtures.llms import get_llm
 
 
 def config_task_agent(

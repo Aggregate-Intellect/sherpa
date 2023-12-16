@@ -1,7 +1,7 @@
 import pytest
 
 from sherpa_ai.actions.planning import TaskPlanning
-from tests.fixtures.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm
 
 
 @pytest.mark.external_api
