@@ -6,7 +6,7 @@ from loguru import logger
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
-from tests.fixtures.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm
 
 
 def test_task_agent_succeeds(get_llm):  # noqa: F811

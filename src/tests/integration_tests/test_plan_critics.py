@@ -13,7 +13,7 @@ from sherpa_ai.agents import (
 )
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.orchestrator import Orchestrator, OrchestratorConfig
-from tests.fixtures.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")

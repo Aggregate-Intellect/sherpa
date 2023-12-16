@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from sherpa_ai.agents.critic import Critic
-from tests.fixtures.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm
 
 task = "Write a hello world program"
 plan = """

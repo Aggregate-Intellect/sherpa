@@ -8,8 +8,8 @@ from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
+from sherpa_ai.test_utils.llms import get_llm, get_real_llm
 from sherpa_ai.utils import extract_urls
-from tests.fixtures.llms import get_llm, get_real_llm
 
 
 def test_citation_validation():
