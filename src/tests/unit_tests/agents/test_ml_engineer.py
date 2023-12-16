@@ -6,8 +6,8 @@ from loguru import logger
 from sherpa_ai.agents import MLEngineer
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
-from tests.fixtures.llms import get_llm
-from tests.fixtures.loggers import config_logger_level
+from sherpa_ai.test_utils.llms import get_llm
+from sherpa_ai.test_utils.loggers import config_logger_level
 
 
 @pytest.mark.external_api

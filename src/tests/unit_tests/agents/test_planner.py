@@ -4,7 +4,7 @@ from sherpa_ai.agents.planner import Planner
 
 # from sherpa_ai.agents.programmer import Programmer
 from sherpa_ai.memory.shared_memory import SharedMemory
-from tests.fixtures.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm
 
 
 def test_planner_succeeds(get_llm):  # noqa: F811
