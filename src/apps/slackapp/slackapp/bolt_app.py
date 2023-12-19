@@ -113,6 +113,9 @@ def get_response(
     question = question.replace(f"@{ai_id}", f"@{ai_name}")
     error_handler = AgentErrorHandler()
 
+    if not agent_config.verbose:
+        verbose_logger = DummyVerboseLogger()
+
     memory = get_vectordb()
     tools = get_tools(memory, agent_config)
 

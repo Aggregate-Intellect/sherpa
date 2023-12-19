@@ -109,6 +109,11 @@ class QAAgent(BaseAgent):
         citation_module = CitationValidation(
             self.citation_thresh[0], self.citation_thresh[1], self.citation_thresh[2]
         )
+
+        # only do citation validation if search was used
+        if len(google.meta) == 0:
+            return text
+
         resource = google.meta[-1]
 
         result = citation_module.parse_output(text, resource)
