@@ -31,7 +31,7 @@ class LinkParser(BaseOutputParser):
                 self.links.append(link)
                 self.count += 1
 
-            return "DocID:" + self.link_to_id[link] + "\n\n"
+            return "DocID:" + self.link_to_id[link] + "\n"
 
         def replace_with_link(match: re.Match):
             logger.debug(match)

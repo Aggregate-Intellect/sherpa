@@ -119,8 +119,8 @@ def get_response(
     memory = get_vectordb()
     tools = get_tools(memory, agent_config)
 
-    if agent_config.obsolete:
-        verbose_logger.log("⚠️🤖 Use obsolete mode ...")
+    if agent_config.use_task_agent:
+        verbose_logger.log("⚠️🤖 Use task agent (obsolete)...")
         task_agent = TaskAgent.from_llm_and_tools(
             ai_name=ai_name,
             ai_role="assistant",
