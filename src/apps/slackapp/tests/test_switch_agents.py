@@ -6,7 +6,7 @@ from slackapp.bolt_app import get_response
 
 @patch("sherpa_ai.agents.qa_agent.QAAgent.run")
 @patch("sherpa_ai.task_agent.TaskAgent.run")
-def test_normal_mode(mock_task_agent_run, mock_qa_agent_run):
+def test_normal_mode_uses_qa_agent(mock_task_agent_run, mock_qa_agent_run):
     mock_task_agent_run.return_value = "Task agent response"
     mock_qa_agent_run.return_value = "QA agent response"
 
@@ -27,7 +27,7 @@ def test_normal_mode(mock_task_agent_run, mock_qa_agent_run):
 
 @patch("sherpa_ai.agents.qa_agent.QAAgent.run")
 @patch("sherpa_ai.task_agent.TaskAgent.run")
-def test_obsolete_mode(mock_task_agent_run, mock_qa_agent_run):
+def test_obsolete_mode_uses_task_agent(mock_task_agent_run, mock_qa_agent_run):
     mock_task_agent_run.return_value = "Task agent response"
     mock_qa_agent_run.return_value = "QA agent response"
 
@@ -35,7 +35,7 @@ def test_obsolete_mode(mock_task_agent_run, mock_qa_agent_run):
     llm = create_autospec(FakeListLLM)
 
     _ = get_response(
-        question="Messages? --obsolete",
+        question="Messages? --use_task_agent",
         previous_messages=[],
         verbose_logger=verbose_logger,
         bot_info={"user_id": "Sherpa"},

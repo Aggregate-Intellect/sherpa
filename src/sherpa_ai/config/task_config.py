@@ -11,7 +11,7 @@ class AgentConfig(BaseModel):
     verbose: bool = True
     gsite: list[str] = []
     do_reflect: bool = False
-    obsolete: bool = False
+    use_task_agent: bool = False
 
     @validator("gsite", pre=True)
     def parse_gsite(cls, value: Optional[str]) -> list[str]:
@@ -73,9 +73,9 @@ class AgentConfig(BaseModel):
         )
 
         parser.add_argument(
-            "--obsolete",
+            "--use_task_agent",
             action="store_true",
-            help="enable performing the obsolete step for each agent.",
+            help="enable use of task agent (obsolete).",
         )
 
         args, unknown = parser.parse_known_args(configs)
