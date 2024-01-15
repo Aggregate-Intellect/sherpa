@@ -299,3 +299,27 @@ def check_url(url):
 
     else:
         return True
+    
+def extract_numbers_from_text(text):
+    #remove , and number mentioned inside [] 
+    text = re.sub(',', '', text)
+
+    pattern = r"\d+\.\d+|\d+"
+    matches = re.findall(pattern, text)
+    return matches
+
+def check_if_number_exist(result:str, source:str):
+    check_numbers = extract_numbers_from_text(result)
+    source_numbers = extract_numbers_from_text(source)
+    error_numbers = []
+    message = ""
+    for data in check_numbers:
+        if data not in source_numbers:
+            error_numbers.append(data)
+    error_numbers = set(error_numbers)
+    if len(error_numbers)>0:
+        for numbers in error_numbers:
+            message += numbers + ", "
+        message = f"Disregard the numbers {message} as they are not relevant to the context provided and should not be taken into consideration."
+        return {"number_exists": False , "messages":message}
+    return {"number_exists": True , "messages":message}
