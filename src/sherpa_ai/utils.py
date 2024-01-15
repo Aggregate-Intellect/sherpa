@@ -302,7 +302,6 @@ def check_url(url):
     
 def extract_numbers_from_text(text):
     #remove , and number mentioned inside [] 
-    pattern = r'\[\d+(?:[,.]\d+)?\]|,'
     text = re.sub(',', '', text)
 
     pattern = r"\d+\.\d+|\d+"
@@ -317,7 +316,7 @@ def check_if_number_exist(result:str, source:str):
     for data in check_numbers:
         if data not in source_numbers:
             error_numbers.append(data)
-    error_numbers = list(set(error_numbers))     
+    error_numbers = set(error_numbers)
     if len(error_numbers)>0:
         for numbers in error_numbers:
             message += numbers + ", "
