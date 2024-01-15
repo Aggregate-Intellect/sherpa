@@ -171,7 +171,7 @@ def test_extract_numbers_from_text(source_data):
     assert len(numbers_in_source_data) == len(extracted_number) , "failed to extract a number"
     for number in extracted_number:
          assert number in numbers_in_source_data , number + " is not in numbers_in_source_data"
-    assert True
+
                 
 
 
