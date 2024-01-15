@@ -165,25 +165,22 @@ def incorrect_result_data():
 
 def test_extract_numbers_from_text(source_data):
     extracted_number = extract_numbers_from_text(source_data)
-    
+
     #source data has these numbers in it
     numbers_in_source_data = ['12.45', '45000','7']
-    if len(numbers_in_source_data) != len(extracted_number):
-        assert False , "failed to extract a number"
-    else:
-        for number in extracted_number:
-            if not(number in numbers_in_source_data):
-                assert False , number + " is not in numbers_in_source_data"
-        assert True
+    assert len(numbers_in_source_data) == len(extracted_number) , "failed to extract a number"
+    for number in extracted_number:
+         assert number in numbers_in_source_data , number + " is not in numbers_in_source_data"
+    assert True
                 
 
 
 def test_extract_numbers_from_text_pass(source_data, correct_result_data):
-    #test aganist a text with the same numbers within it
+#test aganist a text with the same numbers within it
     check_result = check_if_number_exist(source_data ,correct_result_data)
-    assert check_result['number_exists'] == True
+    assert check_result['number_exists']
 
 def test_extract_numbers_from_text_fails(source_data, incorrect_result_data):
     #test aganist a text which don't have the same numers as the source
     check_result = check_if_number_exist(incorrect_result_data , source_data)
-    assert check_result['number_exists'] == False
+    assert not check_result['number_exists']
