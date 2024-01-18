@@ -21,7 +21,6 @@ class ConversationStore(VectorStore):
     def __init__(self, namespace, db, embeddings, text_key):
         self.db = db
         self.namespace = namespace
-        self.embeddings = embeddings
         self.text_key = text_key
 
     @classmethod
@@ -29,13 +28,13 @@ class ConversationStore(VectorStore):
         pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         logger.info(f"Loading index {index_name} from Pinecone")
         index = pinecone.Index(index_name)
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        return cls(namespace, index, embeddings, text_key)
+        embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        return cls(namespace, index, embedding, text_key)
 
     def add_text(self, text: str, metadata={}) -> str:
         metadata[self.text_key] = text
         id = str(uuid.uuid4())
-        embedding = self.embeddings.embed_query(text)
+        embedding = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY).embed_query(text)
         doc = {"id": id, "values": embedding, "metadata": metadata}
         self.db.upsert(vectors=[doc], namespace=self.namespace)
 
@@ -52,7 +51,7 @@ class ConversationStore(VectorStore):
         filter: Optional[dict] = None,
         threshold: float = 0.7,
     ) -> list[Document]:
-        query_embedding = self.embeddings.embed_query(text)
+        query_embedding = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY).embed_query(text)
         results = self.db.query(
             [query_embedding],
             top_k=top_k,
@@ -76,7 +75,7 @@ class ConversationStore(VectorStore):
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
         logger.debug("query", query)
-        query_embedding = self.embeddings.embed_query(query)
+        query_embedding = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY).embed_query(query)
         results = self.db.query(
             [query_embedding],
             top_k=k,
