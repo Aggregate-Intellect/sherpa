@@ -7,9 +7,11 @@ from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.config import AgentConfig
+from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
+from sherpa_ai.output_parsers.number_validation import NumberValidation
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 # TODO: QA Agent only contains partial implementation from the original
@@ -38,6 +40,7 @@ class QAAgent(BaseAgent):
         num_runs: int = 3,
         verbose_logger=DummyVerboseLogger(),
         require_meta=False,
+        validation_count: int = 3,
         citation_thresh=[
             0.5,
             0.5,
@@ -74,6 +77,7 @@ class QAAgent(BaseAgent):
         self.require_meta = require_meta
         self.citation_thresh = citation_thresh
         self.config = agent_config
+        self.validation_count = validation_count
 
     def create_actions(self) -> List[BaseAction]:
         return [
@@ -96,6 +100,31 @@ class QAAgent(BaseAgent):
             self.belief.get_internal_history(self.llm.get_num_tokens),
         )
 
+        count = 0
+        while count < self.validation_count:
+            self.belief.update_internal(EventType.result, self.name, result)
+            checked, feedback = self.process_output(result)
+
+            if checked or count==self.validation_count :
+                break
+            else:
+                count+=1
+                self.belief.update_internal(EventType.feedback, "critic", feedback)
+        if count == self.validation_count:
+            self.belief.update_internal(EventType.feedback, "critic", "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible.")
+        result = synthesize_action.execute(
+            self.belief.current_task.content,
+            self.belief.get_context(self.llm.get_num_tokens),
+            self.belief.get_internal_history(self.llm.get_num_tokens),
+        )
+        return result
+    
+
+
+    def process_output(self, generated: str) -> tuple[bool, str]:
+        internal_history = self.belief.get_internal_history_with_out_result(self.llm.get_num_tokens)
+        num_val = NumberValidation(internal_history)
+        result = num_val.process_output(generated)
         if self.require_meta:
             result = self.add_citation(result)
         return result
