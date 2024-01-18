@@ -89,6 +89,33 @@ class Belief:
         context = "\n".join(reversed(results))
 
         return context
+    def get_internal_history_with_out_result(
+        self, token_counter: Callable[[str], int], max_tokens=4000
+    ):
+        """
+        Get the internal history of the agent with out EventType.result and EventType.feedback
+
+        Args:
+            token_counter: Token counter
+            max_tokens: Maximum number of tokens
+
+        Returns:
+            str: Internal history of the agent
+        """
+        results = []
+        current_tokens = 0
+
+        for event in reversed(self.internal_events):
+            if event.event_type != EventType.result and event.event_type != EventType.feedback:
+                results.append(event.content)
+                current_tokens += token_counter(event.content)
+
+            if current_tokens > max_tokens:
+                break
+
+        context = "\n".join(reversed(results))
+
+        return context
 
     def set_actions(self, actions: List[BaseAction]):
         self.actions = actions
