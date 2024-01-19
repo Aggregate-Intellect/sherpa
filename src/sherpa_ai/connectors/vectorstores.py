@@ -21,8 +21,8 @@ class ConversationStore(VectorStore):
     def __init__(self, namespace, db, embeddings, text_key):
         self.db = db
         self.namespace = namespace
+        self.embeddings_func = embeddings
         self.text_key = text_key
-        self.embeddings = embeddings
 
     @classmethod
     def from_index(cls, namespace, openai_api_key, index_name, text_key="text"):
@@ -40,6 +40,11 @@ class ConversationStore(VectorStore):
         self.db.upsert(vectors=[doc], namespace=self.namespace)
 
         return id
+
+    @property
+    def embeddings(self) -> Optional[Embeddings]:
+        """Access the query embedding object if available."""
+        return self.embeddings_func
 
     def add_texts(self, texts: Iterable[str], metadatas: List[dict]) -> List[str]:
         for text, metadata in zip(texts, metadatas):
