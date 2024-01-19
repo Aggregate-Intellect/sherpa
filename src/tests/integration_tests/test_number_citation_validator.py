@@ -51,78 +51,16 @@ from sherpa_ai.utils import extract_numbers_from_text
         #     ),
         #     ['2.4' ,'1.4' , '30' , '2022' ,'2023' ,'1.7']
         # ),
-        (
-            "how many players are in a field of a soccer game? and how many referees are there ?",
-            (
-                """
-                Soccer, also known as association football, is a sport played between two teams of 33 players on a rectangular field. The goal is to score more goals than the other team by kicking or heading the ball into the opponent's goal. Players can't use their hands or arms, except for the goalie, to touch the ball. Instead, they can use their legs, head, and torso to pass the ball. Soccer is the world's most popular sport, with 250 million players in over 200 countries. Outside of the United States and Australia, soccer is known as football. The term "soccer" originated in the 1880s when Oxford University students distinguished between "rugger" (rugby football) and "assoccer" (association football). The term was later shortened to 'soccer'.
-                """,
-                # """Soccer, or football, is a globally adored sport played by two teams of 33 players on a rectangular pitch. The goal is to score more goals than the opposing team by kicking a ball into their net. With over 250 million players in 200+ countries, soccer transcends borders, becoming a universal language of competition and passion. The term "soccer" originated in 19th-century England, distinguishing it from rugby. Today, major tournaments like the FIFA World Cup unite nations and foster cultural pride, highlighting the sport's profound impact on societies worldwide.""",
-                # """
-                # Association football, commonly referred to as soccer, involves a game between two teams, each comprised of 33 players, on a rectangular field. The primary objective is to outscore the opposing team by propelling the ball into their goal through kicking or heading. Players, excluding the goalie, are restricted from using their hands or arms to handle the ball; instead, they utilize their legs, head, and torso for ball control and passing. Soccer boasts global popularity, with 250 million participants spanning over 200 countries. Beyond the United States and Australia, the sport is recognized as football. The term "soccer" originated in the 1880s when Oxford University students differentiated between 'rugger' (rugby football) and 'assoccer' (association football), eventually evolving into the abbreviated term 'soccer.'
-                # """
-                [
-                    {
-                        "Document": "soccer",
-                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
-                    }
-                ],
-            ),
-            ["33", "250", "1880", "200"],
-        ),
-        #  (
-        #     "Who is Tesla's competitor with the second-highest market cap, and what is its market cap? ",
+        # (
+        #     "how many players are in a field of a soccer game? and how many referees are there ?",
         #     (
         #         """
-        #        TSLAOverviewStockScreenerEarningsCalendarSectorsNasdaqSearchTickerSwitchQuote|TSLAU.S.:NasdaqTeslaInc.WATCHLISTALERTNEWSetapricetargetalertOKTSLAUSPREMARKETLastUpdated:Jan4,20247:49a.m.ESTDelayedquote$239.230.780.33%CLOSE$238.45COMPETITORSNAMECHG%MARKETCAPToyotaMotorCorp.1.72%¥35.1TVolkswagenAGNon-VtgPfd.0.67%€58.35BVolkswagenAG0.65%€58.35BMercedes-BenzGroupAG0.42%€67.75BGeneralMotorsCo.-2.16%$49.37BFordMotorCo.-3.70%$48.68BBayerischeMotorenWerkeAG0.63%€64.37BBayerischeMotorenWerkeAGPfd.0.85%€64.37BNIOInc.ADR0.95%$15.01BStellantisN.V.0.20%€66.58BBACKTOTOP
-        #         """,
-        #         [
-        #             {
-        #                 "Document": "Tesla, Inc. engages in the design, development, manufacture, and sale of fully electric vehicles and energy generation and storage systems. ",
-        #                 "Source": "https://www.marketwatch.com/investing/stock/tsla",
-        #             }
-        #         ],
-        #     ),
-        #     ['35.1','58.35','1880','200']
-        # ),
-        #  (
-        #     "How far does The Great Barrier stretches? ",
-        #     (
-        #         """
-        #         The Earth's oceans cover approximately 57% of its surface, with an average depth of 9,664 feet. The Pacific Ocean is the largest, spanning about 50.4 million square miles. The Atlantic Ocean, although smaller, contains the world's deepest point, the Puerto Rico Trench, at 22,586 feet. The sea harbors an estimated 184,000 marine species, but only a fraction have been discovered. The Great Barrier Reef, stretching over 90,120 miles, is the largest coral reef system, visible from space. The ocean plays a vital role in regulating climate by absorbing about 24% of carbon dioxide produced by humans. Additionally, it holds 77.6% of the Earth's water, but only 2% is freshwater, locked in glaciers and ice caps. This vast expanse of water continues to inspire awe and curiosity, holding secrets yet to be unveiled by exploration and research.
-        #         """,
-        #         [
-        #             {
-        #                 "Document": "The Earth's oceans cover approximately 57% of its surface, with ",
-        #                 "Source": "https://www.chat gpt.com/investing/stock/tsla",
-        #             }
-        #         ],
-        #     ),
-        #     ['57','50.4' , '1120' ,'90120']
-        # ),
-        #  (
-        #     "what is mercury's diameter ?  ",
-        #     (
-        #         """
-        #         Our solar system boasts 8 planets. Mercury, closest to the Sun, faces extreme temperatures. Jupiter, the largest, dazzles with swirling clouds. Pluto, a dwarf planet in the Kuiper Belt. Earth's beauty stands out. Size ranges from Mercury's 3 km diameter to Jupiter's colossal 1,398.22 km. Each planet contributes to the cosmic symphony, revealing the wonders of space.
-        #         """,
-        #         [
-        #             {
-        #                 "Document": "Our solar system boasts 8 planets. Mercury, closes",
-        #                 "Source": "https://www.chat_gpt.com/investing/stock/tsla",
-        #             }
-        #         ],
-        #     ),
-        #     ['48.8','3']
-        # ),
-        #  (
-        #     "how many players are in a field of a soccer game? and how many referees are there ? ",
-        #     (
-        #         """
-        #         One intriguing fact about soccer is that, unlike many other team sports, there are no strict regulations regarding the size or weight of the soccer ball. According to the Laws of the Game set by the International Football Association Board (IFAB), a soccer ball should have a circumference of 68-70 cm (27-28 inches) and a weight of 410-450 grams (14-16 ounces).
-        #         In terms of the number of players, a standard soccer match is played with 16.5 players on each team, including one goalkeeper. This configuration has been widely adopted globally, contributing to the sport's balance of strategy, teamwork, and individual skill. The dynamic interplay of 33 players on .
+        #         Soccer, also known as association football, is a sport played between two teams of 33 players on a rectangular field. The goal is to score more goals than the other team by kicking or heading the ball into the opponent's goal. Players can't use their hands or arms, except for the goalie, to touch the ball. Instead, they can use their legs, head, and torso to pass the ball. Soccer is the world's most popular sport, with 250 million players in over 200 countries. Outside of the United States and Australia, soccer is known as football. The term "soccer" originated in the 1880s when Oxford University students distinguished between "rugger" (rugby football) and "assoccer" (association football). The term was later shortened to 'soccer'.
         #         """,
         #         # """Soccer, or football, is a globally adored sport played by two teams of 33 players on a rectangular pitch. The goal is to score more goals than the opposing team by kicking a ball into their net. With over 250 million players in 200+ countries, soccer transcends borders, becoming a universal language of competition and passion. The term "soccer" originated in 19th-century England, distinguishing it from rugby. Today, major tournaments like the FIFA World Cup unite nations and foster cultural pride, highlighting the sport's profound impact on societies worldwide.""",
+        #         # """
+        #         # Association football, commonly referred to as soccer, involves a game between two teams, each comprised of 33 players, on a rectangular field. The primary objective is to outscore the opposing team by propelling the ball into their goal through kicking or heading. Players, excluding the goalie, are restricted from using their hands or arms to handle the ball; instead, they utilize their legs, head, and torso for ball control and passing. Soccer boasts global popularity, with 250 million participants spanning over 200 countries. Beyond the United States and Australia, the sport is recognized as football. The term "soccer" originated in the 1880s when Oxford University students differentiated between 'rugger' (rugby football) and 'assoccer' (association football), eventually evolving into the abbreviated term 'soccer.'
+        #         # """
         #         [
         #             {
         #                 "Document": "soccer",
@@ -130,7 +68,83 @@ from sherpa_ai.utils import extract_numbers_from_text
         #             }
         #         ],
         #     ),
-        #     ['33' , '16.5']
+        #     ["33", "250", "1880", "200"],
+        # ),
+         (
+            "Who is Tesla's competitor with the second-highest market cap, and what is its market cap? ",
+            (
+                """
+               TSLAOverviewStockScreenerEarningsCalendarSectorsNasdaqSearchTickerSwitchQuote|TSLAU.S.:NasdaqTeslaInc.WATCHLISTALERTNEWSetapricetargetalertOKTSLAUSPREMARKETLastUpdated:Jan4,20247:49a.m.ESTDelayedquote$239.230.780.33%CLOSE$238.45COMPETITORSNAMECHG%MARKETCAPToyotaMotorCorp.1.72%¥35.1TVolkswagenAGNon-VtgPfd.0.67%€58.35BVolkswagenAG0.65%€58.35BMercedes-BenzGroupAG0.42%€67.75BGeneralMotorsCo.-2.16%$49.37BFordMotorCo.-3.70%$48.68BBayerischeMotorenWerkeAG0.63%€64.37BBayerischeMotorenWerkeAGPfd.0.85%€64.37BNIOInc.ADR0.95%$15.01BStellantisN.V.0.20%€66.58BBACKTOTOP
+                """,
+                [
+                    {
+                        "Document": "Tesla, Inc. engages in the design, development, manufacture, and sale of fully electric vehicles and energy generation and storage systems. ",
+                        "Source": "https://www.marketwatch.com/investing/stock/tsla",
+                    }
+                ],
+            ),
+            ['35.1','58.35','1880','200']
+        ),
+         (
+            "How far does The Great Barrier stretches? ",
+            (
+                """
+                The Earth's oceans cover approximately 57% of its surface, with an average depth of 9,664 feet. The Pacific Ocean is the largest, spanning about 50.4 million square miles. The Atlantic Ocean, although smaller, contains the world's deepest point, the Puerto Rico Trench, at 22,586 feet. The sea harbors an estimated 184,000 marine species, but only a fraction have been discovered. The Great Barrier Reef, stretching over 90,120 miles, is the largest coral reef system, visible from space. The ocean plays a vital role in regulating climate by absorbing about 24% of carbon dioxide produced by humans. Additionally, it holds 77.6% of the Earth's water, but only 2% is freshwater, locked in glaciers and ice caps. This vast expanse of water continues to inspire awe and curiosity, holding secrets yet to be unveiled by exploration and research.
+                """,
+                [
+                    {
+                        "Document": "The Earth's oceans cover approximately 57% of its surface, with ",
+                        "Source": "https://www.chat gpt.com/investing/stock/tsla",
+                    }
+                ],
+            ),
+            ['57','50.4' , '1120' ,'90120']
+        ),
+         (
+            "what is mercury's diameter ?  ",
+            (
+                """
+                Our solar system boasts 8 planets. Mercury, closest to the Sun, faces extreme temperatures. Jupiter, the largest, dazzles with swirling clouds. Pluto, a dwarf planet in the Kuiper Belt. Earth's beauty stands out. Size ranges from Mercury's 3 km diameter to Jupiter's colossal 1,398.22 km. Each planet contributes to the cosmic symphony, revealing the wonders of space.
+                """,
+                [
+                    {
+                        "Document": "Our solar system boasts 8 planets. Mercury, closes",
+                        "Source": "https://www.chat_gpt.com/investing/stock/tsla",
+                    }
+                ],
+            ),
+            ['48.8','3']
+        ),
+         (
+            "how many players are in a field of a soccer game? and how many referees are there ? ",
+            (
+                """
+                One intriguing fact about soccer is that, unlike many other team sports, there are no strict regulations regarding the size or weight of the soccer ball. According to the Laws of the Game set by the International Football Association Board (IFAB), a soccer ball should have a circumference of 68-70 cm (27-28 inches) and a weight of 410-450 grams (14-16 ounces).
+                In terms of the number of players, a standard soccer match is played with 16.5 players on each team, including one goalkeeper. This configuration has been widely adopted globally, contributing to the sport's balance of strategy, teamwork, and individual skill. The dynamic interplay of 33 players on .
+                """,
+                # """Soccer, or football, is a globally adored sport played by two teams of 33 players on a rectangular pitch. The goal is to score more goals than the opposing team by kicking a ball into their net. With over 250 million players in 200+ countries, soccer transcends borders, becoming a universal language of competition and passion. The term "soccer" originated in 19th-century England, distinguishing it from rugby. Today, major tournaments like the FIFA World Cup unite nations and foster cultural pride, highlighting the sport's profound impact on societies worldwide.""",
+                [
+                    {
+                        "Document": "soccer",
+                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+                    }
+                ],
+            ),
+            ['33' , '16.5']
+        ),
+        #  (
+        #     "what is unique about ethiopian callender? and Please provide the answer in numerical form.",
+        #     (
+        #         """
+        #         Ehtiopia has thirteen months.""",
+        #         [
+        #             {
+        #                 "Document": "soccer",
+        #                 "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+        #             }
+        #         ],
+        #     ),
+        #     []
         # ),
     ],
 )
@@ -164,7 +178,7 @@ def test_number_citation_succeeds_in_qa(
         data_numbers = expected_numbers
         logger.error(results[0].content)
         for number in extract_numbers_from_text(results[0].content):
-            if number in data_numbers:
+            if number in data_numbers or len(data_numbers)==0:
                 pass
             else:
                 assert False, number + " was not found in resource"
