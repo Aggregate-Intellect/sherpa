@@ -22,6 +22,7 @@ class ConversationStore(VectorStore):
         self.db = db
         self.namespace = namespace
         self.text_key = text_key
+        self.embeddings = embeddings
 
     @classmethod
     def from_index(cls, namespace, openai_api_key, index_name, text_key="text"):
@@ -34,7 +35,7 @@ class ConversationStore(VectorStore):
     def add_text(self, text: str, metadata={}) -> str:
         metadata[self.text_key] = text
         id = str(uuid.uuid4())
-        embedding = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY).embed_query(text)
+        embedding = self.embeddings.embed_query(text)
         doc = {"id": id, "values": embedding, "metadata": metadata}
         self.db.upsert(vectors=[doc], namespace=self.namespace)
 
@@ -51,7 +52,7 @@ class ConversationStore(VectorStore):
         filter: Optional[dict] = None,
         threshold: float = 0.7,
     ) -> list[Document]:
-        query_embedding = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY).embed_query(text)
+        query_embedding = self.embeddings.embed_query(text)
         results = self.db.query(
             [query_embedding],
             top_k=top_k,
@@ -75,7 +76,7 @@ class ConversationStore(VectorStore):
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
         logger.debug("query", query)
-        query_embedding = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY).embed_query(query)
+        query_embedding = self.embeddings.embed_query(query)
         results = self.db.query(
             [query_embedding],
             top_k=k,
