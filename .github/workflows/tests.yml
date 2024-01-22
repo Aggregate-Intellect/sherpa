@@ -2,20 +2,9 @@ name: Deploy newnew
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'The environment to deploy to (e.g. production, staging)'
-        required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-
-      - name: Run echo
-        run: |
-          echo 'Helllo'
+      - run: echo "we are here"
