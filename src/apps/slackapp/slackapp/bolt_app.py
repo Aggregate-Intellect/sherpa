@@ -201,10 +201,11 @@ def event_test(client, say, event):
     )
     combined_id = user_id + "_" + team_id
 
+    slack_verbose_logger = SlackVerboseLogger(say, thread_ts)
     if cfg.FLASK_DEBUG:
         can_excute = True
     else:
-        user_db = UserUsageTracker(max_daily_token=cfg.DAILY_TOKEN_LIMIT)
+        user_db = UserUsageTracker(verbose_logger=slack_verbose_logger)
 
         usage_cheker = user_db.check_usage(
             user_id=user_id,
@@ -245,13 +246,14 @@ def event_test(client, say, event):
             openai_api_key=cfg.OPENAI_API_KEY,
             user_id=user_id,
             team_id=team_id,
+            verbose_logger = slack_verbose_logger,
             temperature=cfg.TEMPRATURE,
         )
 
         results = get_response(
             question,
             previous_messages,
-            verbose_logger=SlackVerboseLogger(say, thread_ts),
+            verbose_logger=slack_verbose_logger,
             bot_info=bot,
             llm=llm,
         )
