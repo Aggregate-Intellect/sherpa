@@ -1,4 +1,4 @@
-name: Run tests
+name: Run online test
 
 on:
     workflow_dispatch:
@@ -9,5 +9,5 @@ jobs:
 
     steps:
       - name: Checkout
-        run: echo "we are here is here"
+        run: echo "we are here"
 
