@@ -3,7 +3,7 @@ name: Run tests
 on:
   push:
     branches:
-      - 'test'
+      - '*'
   pull_request:
     branches:
       - 'main'
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkssssout
+      - name: Checkout
         uses: actions/checkout@v2
 
       - name: Set up Python
@@ -22,8 +22,8 @@ jobs:
           python-version: 3.11
 
       - name: Set secrets in .env file
-        run: 
-        |          cd ./src
+        run: |
+          cd ./src
           echo "SLACK_SIGNING_SECRET=${{ secrets.SLACKSIGNINGSECRET }}" >> .env
           echo "SLACK_OAUTH_TOKEN=${{ secrets.SLACKOAUTHTOKEN }}" >> .env
           echo "SLACK_VERIFICATION_TOKEN=${{ secrets.SLACKVERIFICATIONTOKEN }}" >> .env
