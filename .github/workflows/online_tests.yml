@@ -15,6 +15,5 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-
       - name: Set secrets in .env file
-        run: 'echo hello-world'
+        run: echo 'hello-world'
