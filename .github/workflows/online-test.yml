@@ -1,9 +1,13 @@
-name: Deploy newnew
+name: Run tests
+
 on:
     workflow_dispatch:
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        steps:
-            - run: echo "we are here"
+  online:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        run: echo "we are here"
+
