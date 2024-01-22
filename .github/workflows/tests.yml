@@ -3,7 +3,10 @@ name: Run tests
 on:
   push:
     branches:
-      - '*'
+      - 'test'
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
   tests:
@@ -34,6 +37,7 @@ jobs:
           echo "TEMPRATURE=${{ secrets.TEMPRATURE }}" >> .env
 
         shell: bash
+
 
 
       - name: Install dependencies
