@@ -1,19 +1,15 @@
-name: manual online test run
-
+name: Deploy to production
 on:
   workflow_dispatch:
-
-jobs:
-  tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11
-      - name: Set secrets in .env file
-        run: echo 'hello-world'
+    inputs:
+      environment:
+        description: 'The environment to deploy to (e.g. production, staging)'
+        required: true
+    jobs:
+        deploy:
+            runs-on: ubuntu-latest
+            steps:
+            - name: Checkout code
+              uses: actions/checkout@v2 
+            - name: Deploy to environment
+              run: echo 'Helllo'
