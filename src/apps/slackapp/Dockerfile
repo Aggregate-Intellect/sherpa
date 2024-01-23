@@ -17,6 +17,9 @@ RUN pip install poetry
 # Copy the application code to the container
 COPY . .
 
+# Install dependency of Sherpa
+RUN poetry install
+
 # Install the Python dependencies for slackapp
 RUN cd apps/slackapp && poetry install
 
