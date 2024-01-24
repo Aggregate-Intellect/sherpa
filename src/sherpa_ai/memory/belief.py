@@ -90,15 +90,16 @@ class Belief:
 
         return context
 
-    def get_histories_without_result(
-        self, token_counter: Callable[[str], int], max_tokens=4000
+    def get_histories_excluding_types(
+        self, token_counter: Callable[[str], int],  exclude_type: [EventType] , max_tokens=4000 
     ):
         """
-        Get the internal history of the agent
+        Get the internal history of the agent with out events in the excluded_type
 
         Args:
             token_counter: Token counter
             max_tokens: Maximum number of tokens
+            exclude_type: List of events to be excluded 
 
         Returns:
             str: Internal history of the agent
@@ -107,45 +108,17 @@ class Belief:
         feedback = []
         current_tokens = 0
         for event in reversed(self.internal_events):
-            if event.event_type != EventType.result:
+            if event.event_type not in exclude_type:
                 if event.event_type == EventType.feedback:
                     feedback.append(event.content)
                 else:
                     results.append(event.content)
             current_tokens += token_counter(event.content)
-
             if current_tokens > max_tokens:
                 break
         context = "\n".join(set(reversed(results))) + "\n".join(set(feedback))
         return context
     
-    def get_internal_history_with_out_result_and_feedback(
-        self, token_counter: Callable[[str], int], max_tokens=4000
-    ):
-        """
-        Get the internal history of the agent with out EventType.result and EventType.feedback
-
-        Args:
-            token_counter: Token counter
-            max_tokens: Maximum number of tokens
-
-        Returns:
-            str: Internal history of the agent
-        """
-        results = []
-        current_tokens = 0
-
-        for event in reversed(self.internal_events):
-            if event.event_type != EventType.result and event.event_type != EventType.feedback:
-                results.append(event.content)
-                current_tokens += token_counter(event.content)
-
-            if current_tokens > max_tokens:
-                break
-
-        context = "\n".join(reversed(results))
-
-        return context
 
     def set_actions(self, actions: List[BaseAction]):
         self.actions = actions

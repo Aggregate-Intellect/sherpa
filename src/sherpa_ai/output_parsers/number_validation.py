@@ -10,8 +10,6 @@ class NumberValidation(BaseOutputProcessor):
         self,
         source: str,
     ):
-        # threshold
-
         self.source = source
     def process_output(self, text: str) -> Tuple[bool, str]:
         check_validation = check_if_number_exist( text ,self.source)
