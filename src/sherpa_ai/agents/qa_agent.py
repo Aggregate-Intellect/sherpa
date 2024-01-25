@@ -45,9 +45,9 @@ class QAAgent(BaseAgent):
         perform_number_validation=False,
         validation_count: int = 3,
         citation_thresh=[
-            0.5,
-            0.5,
-            0.5,
+            0.65,
+            0.65,
+            0.65,
         ],  # threshold for citations seq_thresh, jaccard_thresh, token_overlap,
     ):
         """
