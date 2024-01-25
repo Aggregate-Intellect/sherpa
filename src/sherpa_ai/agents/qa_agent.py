@@ -100,13 +100,14 @@ class QAAgent(BaseAgent):
             self.belief.get_internal_history(self.llm.get_num_tokens),
         )
 
+        self.belief.update_internal(EventType.result, self.name, result)
+
         number_validation  = self.num_validation(result=result , synthesize_action=synthesize_action)
         return number_validation
 
     def num_validation(self , result , synthesize_action):
         count = 0
         while count < self.validation_count:
-            self.belief.update_internal(EventType.result, self.name, result)
             checked, feedback = self.process_output(result)
 
             if checked or count==self.validation_count :
@@ -118,12 +119,13 @@ class QAAgent(BaseAgent):
             result = synthesize_action.execute(
                 self.belief.current_task.content,
                 self.belief.get_context(self.llm.get_num_tokens),
-                self.belief.get_histories_excuding_types(token_counter=self.llm.get_num_tokens , exclude_type=[EventType.result]),
+                self.belief.get_histories_excluding_types(token_counter=self.llm.get_num_tokens , exclude_type=[EventType.result]),
             )
+            self.belief.update_internal(EventType.result, self.name, result)
         if count == self.validation_count:
             result = result + "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible."
         return result
-
+    
 
     def process_output(self, generated: str) -> tuple[bool, str]:
         internal_history = self.belief.get_histories_excluding_types(token_counter=self.llm.get_num_tokens ,exclude_type=[EventType.feedback, EventType.result])
