@@ -1,14 +1,5 @@
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
-import sys
 
-import pytest
-from loguru import logger
-
-from sherpa_ai.agents import QAAgent
-from sherpa_ai.events import EventType
-from sherpa_ai.memory import SharedMemory
-from sherpa_ai.actions import GoogleSearch
-from sherpa_ai.utils import extract_urls
 
 def test_citation_validation():
     text = """Born in Scranton, Pennsylvania, Biden moved with his family to Delaware in 1953. 
@@ -23,14 +14,14 @@ def test_citation_validation():
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    assert (data["Source"] in result)
-    
+    assert data["Source"] in result
+
 
 def test_citation_validation_2():
     print("\n")
     # 1
     text = """Nikolaj Coster-Waldau worked with the Fox Broadcasting Company."""
-    
+
     source = """Nikolaj Coster-Waldau; born 27 July 1970 -RRB- is a Danish actor , producer and screenwriter . He graduated from Danish National School of Theatre in Copenhagen in 1993 . Coster-Waldau 's breakthrough performance in Denmark was his role in the film Nightwatch -LRB- 1994 -RRB- . Since then he has appeared in numerous films in his native Scandinavia and Europe in general , including Headhunters -LRB- 2011 -RRB- and A Thousand Times Good Night -LRB- 2013 -RRB- .   In the United States , his debut film role was in the war film Black Hawk Down -LRB- 2001 -RRB- , playing Medal of Honor recipient Gary Gordon . He then played Detective John Amsterdam in the short-lived Fox television series New Amsterdam -LRB- 2008 -RRB- , as well as appearing as Frank Pike in the 2009 Fox television film Virtuality , originally intended as a pilot . He became widely known to a broad audience for his current role as Ser Jaime Lannister , in the HBO series Game of Thrones . In 2017 , he became one of the highest paid actors on television and earned # 2 million per episode of Game of Thrones . 
     """
     data = {"Document": source, "Source": "www.Nikolaj_Coster-Waldau.com"}
@@ -38,19 +29,19 @@ def test_citation_validation_2():
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    
+
     # 2
     text = "Nikolaj Coster-Waldau was in a film."
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    
+
     # 3
     text = """In 1994, Nikolaj Coster-Waldau appeared in the movie "Nightwatch"."""
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    
+
     # 4
     text = "Nikolaj Coster-Waldau was in a Danish thriller film."
     module = CitationValidation()
@@ -62,7 +53,7 @@ def test_citation_validation_2():
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    
+
     # 6
     text = "Nikolaj Coster-Waldau played Detective John Amsterdam in New Amsterdam."
     module = CitationValidation()
@@ -74,20 +65,20 @@ def test_citation_validation_2():
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    
-    # 8 
+
+    # 8
     text = "Nikolaj Coster-Waldau is an actor."
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    
-    # 9 
+
+    # 9
     text = "Nikolaj Coster-Waldau worked with Peter Dinklage."
     module = CitationValidation()
     result = module.parse_output(text, resource)
     print(result)
-    
-    # 10 
+
+    # 10
     text = "Game of Thrones (season 1) featured Danish actor Nikolaj Coster-Waldau."
     module = CitationValidation()
     result = module.parse_output(text, resource)

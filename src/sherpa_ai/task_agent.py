@@ -6,13 +6,8 @@ import openai
 from langchain.chains.llm import LLMChain
 from langchain.chat_models.base import BaseChatModel
 from langchain.llms.base import BaseLLM
-from langchain.schema import (
-    AIMessage,
-    BaseMessage,
-    Document,
-    HumanMessage,
-    SystemMessage,
-)
+from langchain.schema import (AIMessage, BaseMessage, Document, HumanMessage,
+                              SystemMessage)
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
