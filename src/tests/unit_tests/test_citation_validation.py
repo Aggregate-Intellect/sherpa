@@ -1,16 +1,16 @@
-from sherpa_ai.output_parsers.citation_validation import CitationValidation
 import sys
 
 import pytest
 from loguru import logger
 
+from sherpa_ai.actions import GoogleSearch
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
-from tests.fixtures.llms import get_llm
-from tests.fixtures.llms import get_real_llm
-from sherpa_ai.actions import GoogleSearch
+from sherpa_ai.output_parsers.citation_validation import CitationValidation
 from sherpa_ai.utils import extract_urls
+from tests.fixtures.llms import get_llm, get_real_llm
+
 
 def test_citation_validation():
     text = """Born in Scranton, Pennsylvania, Biden moved with his family to Delaware in 1953. 
@@ -24,9 +24,9 @@ def test_citation_validation():
     resource = [data, data_2]
     module = CitationValidation()
     result = module.parse_output(text, resource)
-    assert (data["Source"] in result)
-    
-    
+    assert data["Source"] in result
+
+
 def test_task_agent_succeeds(get_llm):  # noqa: F811
     llm = get_llm(__file__, test_task_agent_succeeds.__name__)
 
@@ -35,11 +35,7 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
         agent_pool=None,
     )
 
-    task_agent = QAAgent(
-        llm=llm,
-        shared_memory=shared_memory,
-        require_meta=True
-    )
+    task_agent = QAAgent(llm=llm, shared_memory=shared_memory, require_meta=True)
 
     shared_memory.add(
         EventType.task,
@@ -51,9 +47,8 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
 
     results = shared_memory.get_by_type(EventType.result)
     logger.error(results[0].content)
-    
+
     # e.g. [7](https://neilpatel.com/blog/autogpt/)
     # citation headler [?](https://)
-    
+
     assert "](http" in results[0].content
-    

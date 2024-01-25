@@ -27,7 +27,8 @@ from sherpa_ai.scrape.file_scraper import QuestionWithFileHandler
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 from sherpa_ai.task_agent import TaskAgent
 from sherpa_ai.tools import get_tools
-from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_only
+from sherpa_ai.utils import (count_string_tokens, log_formatter,
+                             show_commands_only)
 from sherpa_ai.verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 

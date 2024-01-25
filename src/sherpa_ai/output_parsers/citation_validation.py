@@ -1,5 +1,5 @@
 import nltk
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 from sherpa_ai.output_parsers.base import BaseOutputParser
 from sherpa_ai.output_parsers.validation_result import ValidationResult
@@ -74,7 +74,9 @@ class CitationValidation(BaseOutputParser):
         return sentences
 
     # add citation to the generated text
-    def parse_output(self, generated: str, resources: list[dict()], activated=True) -> str:
+    def parse_output(
+        self, generated: str, resources: list[dict()], activated=True
+    ) -> str:
         """
         Add citation to each sentence in the generated text from resources based on fact checking model.
         Args:
@@ -89,11 +91,13 @@ class CitationValidation(BaseOutputParser):
 
         if not activated:
             return generated
-        
+
         paragraph = generated.split("\n")
         paragraph = [p for p in paragraph if len(p.strip()) > 0]
-        
-        paragraphs = [self.split_paragraph_into_sentences(s) for s in paragraph]  # nested list
+
+        paragraphs = [
+            self.split_paragraph_into_sentences(s) for s in paragraph
+        ]  # nested list
 
         new_paragraph = []
         for one_paragraph in paragraphs:
@@ -104,7 +108,7 @@ class CitationValidation(BaseOutputParser):
                 sentence = sentence.strip()
                 if len(sentence) == 0:
                     continue
-                
+
                 for index, source in enumerate(resources):
                     cited = False  # if this resource is cited
                     text = source["Document"]
@@ -131,17 +135,19 @@ class CitationValidation(BaseOutputParser):
                                 or jaccard > self.jaccard_thresh
                             ):
                                 links.append(link)
-                                ids.append(index+1)
+                                ids.append(index + 1)
                 citations = []
                 for id, url in zip(ids, links):
                     reference = f"[{id}]({url})"
                     citations.append(reference)
 
                 if len(citations) > 0:
-                    new_sentence.append(sentence[:-1] + " " + ", ".join(citations) + ".")
+                    new_sentence.append(
+                        sentence[:-1] + " " + ", ".join(citations) + "."
+                    )
                 else:
                     new_sentence.append(sentence)
-                    
+
             new_paragraph.append(" ".join(new_sentence) + "\n")
 
         return ValidationResult(

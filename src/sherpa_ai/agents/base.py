@@ -67,7 +67,9 @@ class BaseAgent(ABC):
             action_name, inputs = result
             action = self.belief.get_action(action_name)
 
-            self.verbose_logger.log(f"```🤖{self.name} is executing {action_name}\n Input: {inputs}...```")
+            self.verbose_logger.log(
+                f"```🤖{self.name} is executing {action_name}\n Input: {inputs}...```"
+            )
             logger.debug(f"🤖{self.name} is executing {action_name}...```")
 
             self.belief.update_internal(
