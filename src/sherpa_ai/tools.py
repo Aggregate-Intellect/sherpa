@@ -194,7 +194,7 @@ class SearchTool(BaseTool):
             r = search_results["organic"][i]
             single_result = r["title"] + r["snippet"]
 
-            # If the links are not considered explicitly, add it to the search result 
+            # If the links are not considered explicitly, add it to the search result
             # so that it can be considered by the LLM
             if not require_meta:
                 single_result += "\nLink:" + r["link"]
