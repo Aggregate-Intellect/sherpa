@@ -30,8 +30,10 @@ def extract_github_readme(repo_url):
         }
 
         response = requests.get(github_api_url, headers=headers)
-
+        print(response.json())
         files = response.json()
+        if(type(files) is dict and files.message == 'Bad Credentials'):
+            return None
         matching_files = [
             file["name"]
             for file in files
@@ -68,3 +70,4 @@ def save_to_pine_cone(content, metadatas):
 
     vectorstore = ConversationStore("Github_data", index, embeddings, "text")
     vectorstore.add_texts(content, metadatas)
+extract_github_readme("https://google.com")
