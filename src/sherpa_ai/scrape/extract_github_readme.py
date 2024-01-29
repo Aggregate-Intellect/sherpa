@@ -70,4 +70,3 @@ def save_to_pine_cone(content, metadatas):
 
     vectorstore = ConversationStore("Github_data", index, embeddings, "text")
     vectorstore.add_texts(content, metadatas)
-extract_github_readme("https://google.com")
