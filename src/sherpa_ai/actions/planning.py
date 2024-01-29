@@ -5,7 +5,7 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 
-PLANNING_PROMPT = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
+PLANNING_PROMPT = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
 By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
 Your adaptability ensures customized solutions for diverse needs.
 
@@ -29,8 +29,8 @@ Do not answer anything else, and do not add any other information in your answer
 """  # noqa: E501
 
 
-REVISION_PROMPT = """You are a **task decomposition assisstant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
-By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
+REVISION_PROMPT = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
+By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.
 Your adaptability ensures customized solutions for diverse needs.
 
 A good plan is concise, detailed, feasible and efficient. It should be broken down into individual steps, with each step assigned to an appropriate agent.
@@ -116,8 +116,8 @@ class TaskPlanning(BaseAction):
         self,
         task: str,
         agent_pool_description: str,
-        last_plan: Optional[str],
-        feedback: Optional[str],
+        last_plan: Optional[str] = None,
+        feedback: Optional[str] = None,
     ) -> Plan:
         """
         Execute the action

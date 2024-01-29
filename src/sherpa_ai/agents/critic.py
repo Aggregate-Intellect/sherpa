@@ -119,7 +119,7 @@ class Critic(BaseAgent):
             return self.post_process(feedback)
         else:
             return ""
-    
+
     def create_actions(self):
         pass
 

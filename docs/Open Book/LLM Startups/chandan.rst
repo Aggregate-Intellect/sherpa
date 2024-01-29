@@ -11,8 +11,7 @@ Summary
 
 Chandan Maruthi discusses the problem of technical customer experience teams not effectively using support AI tools and presents a solution. He also talks about the market opportunity, the company's vision, target customers, go-to-market strategy, and the process of ingesting data. Moien Giashi, Amir Feizpour, and Chandan Maruthi also discuss effective communication in pitch decks and provide recommendations. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/yIVoJoBOcvU>`__
+`RECORDING <https://youtu.be/yIVoJoBOcvU>`__
 
 Topics: 
 -------

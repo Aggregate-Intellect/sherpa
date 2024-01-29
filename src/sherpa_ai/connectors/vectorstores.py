@@ -21,7 +21,7 @@ class ConversationStore(VectorStore):
     def __init__(self, namespace, db, embeddings, text_key):
         self.db = db
         self.namespace = namespace
-        self.embeddings = embeddings
+        self.embeddings_func = embeddings
         self.text_key = text_key
 
     @classmethod
@@ -29,8 +29,8 @@ class ConversationStore(VectorStore):
         pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         logger.info(f"Loading index {index_name} from Pinecone")
         index = pinecone.Index(index_name)
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        return cls(namespace, index, embeddings, text_key)
+        embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        return cls(namespace, index, embedding, text_key)
 
     def add_text(self, text: str, metadata={}) -> str:
         metadata[self.text_key] = text
@@ -40,6 +40,11 @@ class ConversationStore(VectorStore):
         self.db.upsert(vectors=[doc], namespace=self.namespace)
 
         return id
+
+    @property
+    def embeddings(self) -> Optional[Embeddings]:
+        """Access the query embedding object if available."""
+        return self.embeddings_func
 
     def add_texts(self, texts: Iterable[str], metadatas: List[dict]) -> List[str]:
         for text, metadata in zip(texts, metadatas):

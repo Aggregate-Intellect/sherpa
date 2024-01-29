@@ -10,8 +10,7 @@ Large Language Models (LLMs) have taken the world by storm. There is no AI conve
 
 Large language models refer to deep learning-based models for language that have millions or billions of parameters. They are first trained on a massive corpus of unlabeled text in an unsupervised manner. These models are generative, meaning they learn to predict the next word. Despite their imperfections, large language models have shown remarkable success in various applications. However, it is important to note that large language models are not infallible. In conclusion, large language models offer immense potential for various applications, but it is crucial to approach their usage pragmatically and be aware of their limitations. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/u49KdmdPulc>`__
+`RECORDING <https://youtu.be/u49KdmdPulc>`__
 
 Topics: 
 -------

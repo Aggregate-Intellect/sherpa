@@ -11,8 +11,7 @@ In this talk, we’ll closely examine a case study that connects the impact of L
 
 Sathish Gangichetty, a senior solutions architect at Databricks, discussed the topic of forecasting systems and how they can be disrupted using transformers. He emphasized the importance of forecasting accuracy for companies to improve their performance and increase revenue. Sathish talked about the concept of transformers and their potential to improve forecasting accuracy, specifically focusing on the PatchTST. He also discussed channel independence in time series forecasting using transformers and the application of transformers in product forecasting. He highlighted the potential of transfer learning in time series forecasting and the importance of creating user-friendly interfaces using LLMs. He concludes by discussing the simplicity and accessibility of surfacing results using transformer models and the need for trust in the user experience. The presentation also briefly touched on the challenges of stock prediction using reinforcement learning models. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/V3nXHWMBASA>`__
+`RECORDING <https://youtu.be/V3nXHWMBASA>`__
 
 Topics: 
 -------

@@ -1,0 +1,13 @@
+name: Run online test
+
+on:
+    workflow_dispatch:
+
+jobs:
+  online:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        run: echo "we are here"
+

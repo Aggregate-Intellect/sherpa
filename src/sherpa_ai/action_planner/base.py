@@ -7,8 +7,5 @@ from langchain.vectorstores.base import VectorStoreRetriever
 
 class BaseActionPlanner(ABC):
     @abstractmethod
-    def select_action(
-        self,
-        **kwargs
-    ) -> str:
+    def select_action(self, **kwargs) -> str:
         pass

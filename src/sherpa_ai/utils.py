@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Union
 from urllib.parse import urlparse
 
 import requests
@@ -10,6 +10,7 @@ from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredP
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 from loguru import logger
+from pypdf import PdfReader
 
 import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
@@ -74,7 +75,7 @@ def get_link_from_slack_client_conversation(data):
     return links
 
 
-def scarape_with_url(url: str):
+def scrape_with_url(url: str):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)
@@ -85,15 +86,14 @@ def scarape_with_url(url: str):
         return {"data": "", "status": status}
 
 
-def question_reconstructor(data: any, question: str):
+def rewrite_link_references(data: any, question: str):
     result = question + "./n Reference:"
-    count = 1
-    for chunk in data:
-        chunk_link = f"<{chunk['link']}>"
-        result = result.replace(f"{chunk_link}", f"[{count}]")
-        result = result + f""" [{count}] link: "{chunk['link']}" , link_data: {data}"""
-        count += 1
-
+    for count, chunk in enumerate(data):
+        reference = f"[{ count + 1}]"
+        link = chunk["link"]
+        link_with_angle_brackets = f"<{ link }>"
+        result = result.replace(link_with_angle_brackets, reference)
+        result = result + f""" {reference} link: "{ link }" , link_data: {data}"""
     return result
 
 
@@ -115,14 +115,13 @@ def count_string_tokens(string: str, model_name: str) -> int:
 def chunk_and_summarize(
     text_data: str,
     question: str,
-    open_ai_key: str,
     link: str,
     team_id: str = None,
     user_id: str = None,
 ):
     llm = SherpaOpenAI(
         temperature=cfg.TEMPRATURE,
-        openai_api_key=open_ai_key,
+        openai_api_key=cfg.OPENAI_API_KEY,
         user_id=user_id,
         team_id=team_id,
     )
@@ -148,6 +147,57 @@ def chunk_and_summarize(
         chunk_summary.append(summarized)
 
     return " ".join(chunk_summary)
+
+
+def chunk_and_summarize_file(
+    text_data: str,
+    question: str,
+    file_name: str,
+    file_format: str,
+    title: str = None,
+    team_id: str = None,
+    user_id: str = None,
+):
+    llm = SherpaOpenAI(
+        temperature=cfg.TEMPRATURE,
+        openai_api_key=cfg.OPENAI_API_KEY,
+        user_id=user_id,
+        team_id=team_id,
+    )
+
+    title = f",title {title} " if title is not None else ""
+
+    instruction = (
+        "include any information that can be used to answer the "
+        "question '{question}' the given literal text is a data "
+        "from the file named {file_name} {title} and file format {file_format} . Do not directly answer the question itself"
+    )
+    text_splitter = TokenTextSplitter(chunk_size=3000, chunk_overlap=0)
+    chunked_text = text_splitter.split_text(text_data)
+    chunk_summary = []
+    for text in chunked_text:
+        summarized = llm.predict(
+            f"""Write a concise summary of the following text
+            {instruction}:
+            "\n\n\n
+            f'LITERAL TEXT: {text}
+            \n\n\n
+            CONCISE SUMMARY: The text is best summarized as"""
+        )
+        chunk_summary.append(summarized)
+    return " ".join(chunk_summary)
+
+
+def question_with_file_reconstructor(
+    data: str, file_name: str, title: Union[str, None], file_format: str, question: str
+):
+    result = question + "./n Reference:"
+    title = f"'title':'{title}'" if title is not None else ""
+    result = (
+        result
+        + f"""[ {{file_name: '{file_name}' , {title}  , file_format:'{file_format}' , content_of_{file_name}:'{data}'}} ]"""
+    )
+    return result
 
 
 # ---- add this for verbose output --- #
@@ -195,8 +245,81 @@ def show_commands_only(logs):
                 log_strings.append(formatted_reply)
 
             else:  # for final response
-                formatted_reply = f"""💡Thought process finished!"""
+                formatted_reply = """💡Thought process finished!"""
                 log_strings.append(formatted_reply)
 
     log_string = "\n".join(log_strings)
     return log_string
+
+
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    # Extract text from a PDF using PdfReader
+    pdf_file = open(pdf_path, "rb")
+    pdf_reader = PdfReader(pdf_file)
+
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+
+    pdf_file.close()
+    return text
+
+
+def extract_urls(text):
+    # extract urls from natrual language texts
+    # return a list of urls [a,b,c]. Each url is a string
+
+    # Split the text into words
+    words = text.split()
+
+    # Extract URLs using urllib.parse
+    urls = [word for word in words if urlparse(word).scheme in ["http", "https"]]
+
+    return urls
+
+
+def check_url(url):
+    # check whether a url is valid
+    # return True is url is valid
+
+    try:
+        html = urlopen(url)
+
+    # except block to catch
+    # exception
+    # and identify error
+    except HTTPError as e:
+        print("HTTP error", e)
+        return False
+
+    except URLError as e:
+        print("Opps ! Page not found!", e)
+        return False
+
+    else:
+        return True
+    
+def extract_numbers_from_text(text):
+    #remove , and number mentioned inside [] 
+    text = re.sub(',', '', text)
+
+    pattern = r"\d+\.\d+|\d+"
+    matches = re.findall(pattern, text)
+    return matches
+
+def check_if_number_exist(result:str, source:str):
+    check_numbers = extract_numbers_from_text(result)
+    source_numbers = extract_numbers_from_text(source)
+    error_numbers = []
+    message = ""
+    for data in check_numbers:
+        if data not in source_numbers:
+            error_numbers.append(data)
+    error_numbers = set(error_numbers)
+    if len(error_numbers)>0:
+        for numbers in error_numbers:
+            message += numbers + ", "
+        message = f"Disregard the numbers {message} as they are not relevant to the context provided and should not be taken into consideration."
+        return {"number_exists": False , "messages":message}
+    return {"number_exists": True , "messages":message}

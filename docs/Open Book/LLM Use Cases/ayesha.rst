@@ -11,8 +11,7 @@ In this talk, we will delve into the innovative approach of automating security 
 
 Ayesha Hafeez, the director of ML Solutions and Architecture at Arctic AI, discusses the use of LLMs (Language Model Models) for security compliance assessment. She explains the problem of manual compliance assessment and the benefits of automation using LLMs. Ayesha also provides an overview of the machine learning pipeline and the functional components involved in the solution. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/_f4ko9MX0XE>`__
+`RECORDING <https://youtu.be/_f4ko9MX0XE>`__
 
 Topics: 
 -------

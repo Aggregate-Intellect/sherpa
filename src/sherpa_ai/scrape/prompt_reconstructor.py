@@ -4,8 +4,8 @@ from sherpa_ai.utils import (
     chunk_and_summarize,
     count_string_tokens,
     get_link_from_slack_client_conversation,
-    question_reconstructor,
-    scarape_with_url,
+    rewrite_link_references,
+    scrape_with_url,
 )
 
 
@@ -33,17 +33,16 @@ class PromptReconstructor:
                     git_scraper = extract_github_readme(link)
                     if git_scraper:
                         scraped_data = {
-                            "data": extract_github_readme(link),
+                            "data": git_scraper,
                             "status": 200,
                         }
                     else:
                         scraped_data = {"data": "", "status": 404}
                 else:
-                    scraped_data = scarape_with_url(link)
+                    scraped_data = scrape_with_url(link)
                 if scraped_data["status"] == 200:
                     chunk_summary = chunk_and_summarize(
                         link=link,
-                        open_ai_key=cfg.OPENAI_API_KEY,
                         question=question,
                         text_data=scraped_data["data"],
                         user_id=user_id,
@@ -56,7 +55,6 @@ class PromptReconstructor:
                     ):
                         chunk_summary = chunk_and_summarize(
                             link=link,
-                            open_ai_key=cfg.OPENAI_API_KEY,
                             question=question,
                             text_data=chunk_summary,
                             user_id=user_id,
@@ -65,5 +63,5 @@ class PromptReconstructor:
 
                     final_summary.append({"data": chunk_summary, "link": link})
 
-            question = question_reconstructor(question=question, data=final_summary)
+            question = rewrite_link_references(question=question, data=final_summary)
         return question

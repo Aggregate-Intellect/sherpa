@@ -1,7 +1,7 @@
 ABOUT Sherpa
 ============
 
-.. image:: imgs/what_if.png
+.. image:: _imgs/what_if.png
   :width: 800
   :alt: What if you could code as you run
 
@@ -28,7 +28,7 @@ The remarkable performance of large language models on linguistic tasks (includi
 Continuous Exploration / Continuous Integration / Continuous Delivery
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. image:: imgs/CE_CI_CD.png
+.. image:: _imgs/CE_CI_CD.png
   :width: 800
   :alt: CE/CI/CD
 
@@ -43,7 +43,7 @@ This immediate feedback loop, although still manual where you had to interpret t
 KnowledgeOps
 ^^^^^^^^^^^^
 
-.. image:: imgs/triple_infinity.png
+.. image:: _imgs/triple_infinity.png
   :width: 800
   :alt: KnowledgeOps Triple Infinity 
 
@@ -72,7 +72,7 @@ Large Language Models (LLMs), specifically, showed a great deal of competence in
 LLM Agents
 ^^^^^^^^^^
 
-.. image:: imgs/multi_agent_loop.png
+.. image:: _imgs/multi_agent_loop.png
   :width: 800
   :alt: LLM Multi-agent Loop
 
@@ -84,7 +84,7 @@ This could be writing the literature review section of a research paper, or draf
 Introducing Sherpa
 ^^^^^^^^^^^^^^^^^^
 
-.. image:: imgs/sherpa_thinking_companion.png
+.. image:: _imgs/sherpa_thinking_companion.png
   :width: 800
   :alt: Sherpa thinking companion
 
@@ -106,14 +106,14 @@ This projects aims to aggregate the intellect of our community, as well as the k
 
 `This repository <https://github.com/Aggregate-Intellect/sherpa>`__ contains the source code for this project, and you are more than welcome to contribute.
 
-.. image:: imgs/sherpa_opensource.png
+.. image:: _imgs/sherpa_opensource.png
   :width: 800
   :alt: Sherpa Open Source
 
 Sherpa for Business
 ^^^^^^^^^^^^^^^^^^^
 
-.. image:: imgs/sherpa_biz.png
+.. image:: _imgs/sherpa_biz.png
   :width: 800
   :alt: Sherpa Open Source
 
@@ -128,3 +128,4 @@ If you want to know more about *Sherpa for Business* reach out to sherpa@ai.scie
 
     Resources/index
     Updates/index
+    multi_agent_framework.rst

@@ -21,6 +21,7 @@ from pydantic import ValidationError
 
 from sherpa_ai.action_planner import SelectiveActionPlanner
 from sherpa_ai.action_planner.base import BaseActionPlanner
+from sherpa_ai.config import AgentConfig
 from sherpa_ai.output_parser import BaseTaskOutputParser, TaskOutputParser
 from sherpa_ai.output_parsers import LinkParser, MDToSlackParse
 from sherpa_ai.post_processors import md_link_to_slack
@@ -42,14 +43,14 @@ class TaskAgent:
         action_planner: BaseActionPlanner,
         output_parser: BaseTaskOutputParser,
         tools: List[BaseTool],
-        previous_messages: List[dict],
+        previous_messages: List[BaseMessage],
         verbose_logger: BaseVerboseLogger,
         feedback_tool: Optional[HumanInputRun] = None,
+        agent_config: AgentConfig = AgentConfig(),
         max_iterations: int = 5,
     ):
         self.ai_name = ai_name
         self.memory = memory
-        # self.full_message_history: List[BaseMessage] = []
         self.next_action_count = 0
         self.llm = llm
         self.output_parser = output_parser
@@ -61,16 +62,15 @@ class TaskAgent:
         self.max_iterations = max_iterations
         self.loop_count = 0
         self.ai_id = ai_id
-        self.previous_message = self.process_chat_history(previous_messages)
-        self.logger = []  # added by JF
+        self.agent_config = agent_config
+        self.previous_message = previous_messages
+        self.logger = []
 
         link_parser = LinkParser()
         slack_link_paerser = MDToSlackParse()
 
         self.tool_output_parsers = [link_parser]
         self.output_parsers = [link_parser, slack_link_paerser]
-        # print(self.full_message_history)
-        # print("message:", self.previous_message)
 
     @classmethod
     def from_llm_and_tools(
@@ -86,6 +86,7 @@ class TaskAgent:
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseTaskOutputParser] = None,
         max_iterations: int = 1,
+        agent_config: AgentConfig = AgentConfig(),
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         if action_planner is None:
@@ -105,6 +106,7 @@ class TaskAgent:
             previous_messages,
             verbose_logger,
             feedback_tool=human_feedback_tool,
+            agent_config=agent_config,
             max_iterations=max_iterations,
         )
 
@@ -129,9 +131,9 @@ class TaskAgent:
                 user_input = (
                     "Use the above information to respond to the user's message:"
                     f"\n{task}\n\n"
-                    "If you use any resource, then create inline citation by adding "
-                    " of the reference document at the end of the sentence in the format "
-                    "of 'Sentence [DocID]'\n"
+                    "If you use any resource, then create inline citation by adding"
+                    "the DocID of the reference document at the end of the sentence in "
+                    "the format of 'Sentence [DocID]'\n"
                     "Example:\n"
                     "Sentence1 [1]. Sentence2. Sentence3 [2].\n"
                     "Only use the reference document. DO NOT use any links"
@@ -152,14 +154,20 @@ class TaskAgent:
                 logger_step["reply"] = reply_json
             except json.JSONDecodeError:
                 logger_step["reply"] = assistant_reply  # last reply is a string
+            if self.agent_config.verbose:
+                self.verbose_logger.log(f"```{assistant_reply}```")
+
             self.logger.append(logger_step)
 
-            ########## Serial Verbose Feature #######
-            try:
-                formatted_logger_step = show_commands_only(logger_step)
-            except Exception as e:
-                logger.error(e)
+            # Serial Verbose Feature
+            if self.agent_config.verbose:
                 formatted_logger_step = logger_step
+            else:
+                try:
+                    formatted_logger_step = show_commands_only(logger_step)
+                except KeyError as e:
+                    logger.error(e)
+                    formatted_logger_step = logger_step
 
             logger.info(f"```{formatted_logger_step}```")
             self.verbose_logger.log(f"```{formatted_logger_step}```")
@@ -179,7 +187,7 @@ class TaskAgent:
                     ):
                         result = result["command"]["args"]["response"]
                 except json.JSONDecodeError:
-                    result = assistant_reply
+                    result = str(assistant_reply)
 
                 for output_parser in self.output_parsers:
                     result = output_parser.parse_output(result)
@@ -250,24 +258,6 @@ class TaskAgent:
         memory_to_add = f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
 
         self.memory.add_documents([Document(page_content=memory_to_add)])
-
-    def process_chat_history(self, messages: List[dict]) -> List[BaseMessage]:
-        results = []
-
-        for message in messages:
-            logger.info(message)
-            if message["type"] != "message" and message["type"] != "text":
-                continue
-
-            message_cls = AIMessage if message["user"] == self.ai_id else HumanMessage
-            # replace the at in the message with the name of the bot
-            text = message["text"].replace(f"@{self.ai_id}", f"@{self.ai_name}")
-            # added by JF
-            text = text.split("#verbose", 1)[0]  # remove everything after #verbose
-            text = text.replace("-verbose", "")  # remove -verbose if it exists
-            results.append(message_cls(content=text))
-
-        return results
 
     def process_output(self, output: str) -> str:
         """

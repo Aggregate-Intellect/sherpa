@@ -11,15 +11,14 @@ Companies are banning ChatGPT due to these concerns, while CISOs, CIOs, and CPOs
 
 Privacy is a crucial aspect to consider when it comes to chatGPT and LLMs (large language models) in general. There are several reasons why privacy should be a top priority in these technologies. Her talk discussed
 
-* Importance of privacy in these systems
-* The legal obligations and market concerns related to privacy
-* Incidents highlighting privacy concerns
-* Measures taken by companies to protect user data
-* Challenges in corporate environments, and 
-* The risks of re-identification when combining quasi-identifiers.  
+* Importance of privacy in complex corporate systems
+* The legal obligations, market concerns, and reputation risk related to privacy
+* Incidents highlighting privacy concerns are abundant if you look for them
+* Measures taken by companies to protect user data are appearing but relatively early
+* Corporate environments introduce complex challenges, and 
+* The risks of re-identification when combining quasi-identifiers
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/qZKc7izOrms>`__
+`RECORDING <https://youtu.be/qZKc7izOrms>`__
 
 Topics: 
 -------

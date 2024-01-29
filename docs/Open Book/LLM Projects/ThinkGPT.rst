@@ -10,8 +10,7 @@ ThinkGPT is a Python library designed to empower Large Language Models (LLMs) wi
 
 Alaeddine Abdessalem introduces Think GPT, a library designed to build AI projects with large language models (LLMs) and overcome their limitations. The library offers features such as long memory, self-refinement, compression, and natural language conditions to enhance LLM applications. It provides an easy-to-use API and leverages Dockery as an intermediate layer for vector database interactions. The library supports code generation and the implementation of generative agents in video games. Minimal infrastructure is required to get started, and the library currently supports OpenAI models. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/hhX8b_jVvQI>`__
+`RECORDING <https://youtu.be/hhX8b_jVvQI>`__
 
 Topics: 
 -------

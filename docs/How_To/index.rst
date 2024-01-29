@@ -21,7 +21,7 @@ Communication Channels
 We use the AISC community slack workspace to communicate and coordinate. 
 
 - `Join Slack <https://join.slack.com/t/aisc-to/shared_invite/zt-f5zq5l35-PSIJTFk4v60FML177PgsPg>`__
-- `Open #llm-live-book-project <https://aisc-to.slack.com/archives/C056RU8PEJ0>`__
+- `Open #sherpa-dev channel <https://aisc-to.slack.com/archives/C056RU8PEJ0>`__
 
 If you run into any issues with the links above, please reach out to sherpa@ai.science
 
@@ -63,7 +63,7 @@ Mentoring/Buddy System:
 Community Events:
 ^^^^^^^^^^^^^^^^^
 
-- `Sherpa Dev Weekly Meeting <https://lu.ma/livebook-aug-sept>`__
+- `Sherpa Dev Weekly Meeting <https://lu.ma/sherpa-weekly>`__
 - `Aggregate Intellect Weekly Journal Club on NLP, GNN, etc <https://lu.ma/aisc-journal-club>`__
 - `Augmented Thinking - A.I. Youtube Channel <https://www.youtube.com/@ai-science>`__
 

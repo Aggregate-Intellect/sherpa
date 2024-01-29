@@ -10,8 +10,7 @@ When deploying machine learning models in production, there are three properties
 
 Abi Aryan, a machine learning engineer, discusses the decision-making process of whether to build or buy large language models (LLMs). He emphasizes the importance of aligning business use cases with model performance metrics and considering factors like generalizability, evaluability, and cost optimality. 
 
-`SLIDES <#>`__
-\| `RECORDING <https://youtu.be/Hne95kH5hxk>`__
+`RECORDING <https://youtu.be/Hne95kH5hxk>`__
 
 Topics: 
 -------

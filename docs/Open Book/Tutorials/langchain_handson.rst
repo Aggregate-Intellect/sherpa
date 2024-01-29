@@ -87,4 +87,4 @@ between McGill University and Aggregate Intellect.
 
 .. image:: ../_imgs/percyc.jpeg
   :width: 400
-  :alt: Noelle Silver Russell Headshot
+  :alt: Percy Chen Headshot

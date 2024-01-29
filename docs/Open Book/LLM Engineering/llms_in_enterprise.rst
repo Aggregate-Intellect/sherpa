@@ -121,6 +121,7 @@ different providers of LLMs, resource costs, and ethical issues.
    Revolution <https://www.bcg.com/publications/2023/ceo-guide-to-ai-revolution>`__
 -  `A New Era of Creativity: Expert-in-the-loop Generative
    AI <https://multithreaded.stitchfix.com/blog/2023/03/06/expert-in-the-loop-generative-ai-at-stitch-fix/>`__
+-  `Instruct-FinGPT: Financial Sentiment Analysis by Instruction Tuning of General-Purpose Large Language Models <https://arxiv.org/pdf/2310.04027.pdf>`__
 
 ----
 

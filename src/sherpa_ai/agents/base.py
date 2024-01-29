@@ -67,8 +67,8 @@ class BaseAgent(ABC):
             action_name, inputs = result
             action = self.belief.get_action(action_name)
 
-            self.verbose_logger.log(f"🤖{self.name} is executing {action_name}...")
-            logger.debug(f"```🤖{self.name} is executing {action_name}...```")
+            self.verbose_logger.log(f"```🤖{self.name} is executing {action_name}\n Input: {inputs}...```")
+            logger.debug(f"🤖{self.name} is executing {action_name}...```")
 
             self.belief.update_internal(
                 EventType.action, self.name, action_name + str(inputs)
@@ -80,7 +80,7 @@ class BaseAgent(ABC):
 
             action_output = self.act(action, inputs)
 
-            self.verbose_logger.log(f"Action output: {action_output}")
+            self.verbose_logger.log(f"```Action output: {action_output}```")
             logger.debug(f"```Action output: {action_output}```")
 
             self.belief.update_internal(
@@ -89,7 +89,6 @@ class BaseAgent(ABC):
 
         result = self.synthesize_output()
 
-        self.verbose_logger.log(f"🤖{self.name} wrote: {result}")
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
         self.shared_memory.add(EventType.result, self.name, result)
