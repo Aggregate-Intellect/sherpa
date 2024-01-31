@@ -1,0 +1,47 @@
+shared_memory:
+  _target_: sherpa_ai.memory.shared_memory.SharedMemory
+  objective: Answer the question
+
+user_id: none
+team_id: none
+
+llm:
+  _target_: sherpa_ai.models.sherpa_base_chat_model.SherpaChatOpenAI
+  model_name: gpt-4
+  temperature: 0.7
+  user_id: ${user_id}
+  team_id: ${team_id}
+
+agent_config:
+  _target_: sherpa_ai.config.task_config.AgentConfig
+
+arxiv_search:
+  _target_: sherpa_ai.actions.arxiv_search.ArxivSearch
+  role_description: Act as a question answering agent
+  task: Question answering
+  llm: ${llm}
+  n: 3
+
+google_search:
+  _target_: sherpa_ai.actions.GoogleSearch
+  role_description: Act as a question answering agent
+  task: Question answering
+  llm: ${llm}
+  require_meta: true
+  config: ${agent_config}
+
+qa_agent:
+  _target_: sherpa_ai.agents.qa_agent.QAAgent
+  llm: ${llm}
+  shared_memory: ${shared_memory}
+  name: QA Sherpa
+  description: Act as a question answering agent
+  agent_config: ${agent_config}
+  num_runs: 1
+  citation_thresh:
+    - 0.5
+    - 0.5
+    - 0.7
+  actions:
+    - ${arxiv_search}
+    - ${google_search}
