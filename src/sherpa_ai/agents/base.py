@@ -1,12 +1,19 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from loguru import logger
 
+from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
+
+# Avoid circular import
+if TYPE_CHECKING:
+    from sherpa_ai.memory import Belief, SharedMemory
 
 
 class BaseAgent(ABC):
@@ -14,30 +21,25 @@ class BaseAgent(ABC):
         self,
         name: str,
         description: str,
-        shared_memory=None,
-        belief=None,
-        action_selector=None,
-        num_runs=1,
+        shared_memory: SharedMemory = None,
+        belief: Belief = None,
+        action_planner: ActionPlanner = None,
+        num_runs: int = 1,
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
+        actions: List[BaseAction] = None,
     ):
         self.name = name
         self.description = description
         self.shared_memory = shared_memory
         self.belief = belief
-        self.action_selector = action_selector
+        self.action_planner = action_planner
         self.num_runs = num_runs
 
-        self.actions = []
-        self.reflections = []
         self.subscribed_events = []
 
         self.verbose_logger = verbose_logger
 
-    def add_action(self, action):
-        self.actions.append(action)
-
-    def add_reflection(self, reflection):
-        self.reflections.append(reflection)
+        self.actions = actions
 
     @abstractmethod
     def create_actions(self) -> List[BaseAction]:
@@ -53,7 +55,7 @@ class BaseAgent(ABC):
 
         self.shared_memory.observe(self.belief)
 
-        actions = self.create_actions()
+        actions = self.actions if self.actions is not None else self.create_actions()
         self.belief.set_actions(actions)
 
         for _ in range(self.num_runs):

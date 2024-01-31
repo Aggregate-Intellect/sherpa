@@ -49,6 +49,7 @@ class QAAgent(BaseAgent):
             0.65,
             0.65,
         ],  # threshold for citations seq_thresh, jaccard_thresh, token_overlap,
+        actions: List[BaseAction] = None,
     ):
         """
         The QA agent is the agent handles a single task.
@@ -69,13 +70,17 @@ class QAAgent(BaseAgent):
                 during Google search. True means the search will use metadata and
                 citation validation will be performed.
         """
-        self.name = name
-        self.description = description + "\n\n" + f"Your name is {name}."
-        self.shared_memory = shared_memory
-        self.num_runs = num_runs
+        super().__init__(
+            name,
+            description + "\n\n" + f"Your name is {name}.",
+            shared_memory,
+            belief,
+            ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm),
+            num_runs,
+            verbose_logger,
+            actions,
+        )
         self.llm = llm
-        self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
-        self.verbose_logger = verbose_logger
         self.require_meta = require_meta
         self.citation_thresh = citation_thresh
         self.config = agent_config
@@ -180,8 +185,11 @@ class QAAgent(BaseAgent):
             feedback="",
         )
         # only do citation validation if search was used
-        if len(google.meta) > 0:
-            resource = google.meta[-1]
-            result = citation_module.parse_output(text, resource)
+        if google is None or len(google.meta) == 0:
+            return text
+
+        resource = google.meta[-1]
+
+        result = citation_module.parse_output(text, resource)
 
         return result
