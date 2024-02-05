@@ -2,6 +2,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 
 from sherpa_ai.output_parsers.base import BaseOutputParser
+from sherpa_ai.output_parsers.validation_result import ValidationResult
 
 nltk.download("punkt")
 
@@ -68,7 +69,7 @@ class CitationValidation(BaseOutputParser):
         return sentences
 
     # add citation to the generated text
-    def parse_output(self, generated: str, resources: list[dict()]) -> str:
+    def parse_output(self, generated: str, resources: list[dict()]) -> ValidationResult:
         # resources type
         # resources = [{"Document":, "Source":...}, {}]
         paragraph = generated.split("\n")
@@ -117,4 +118,9 @@ class CitationValidation(BaseOutputParser):
 
                 new_sentence.append(sentence + " " + ", ".join(citations) + ".")
             new_paragraph.append(" ".join(new_sentence) + "\n")
-        return "".join(new_paragraph)
+
+        return ValidationResult(
+            is_valid=True,
+            result="".join(new_paragraph),
+            feedback="",
+        )
