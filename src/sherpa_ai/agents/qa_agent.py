@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 
 from langchain.base_language import BaseLanguageModel
+from loguru import logger
 
 from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
@@ -12,6 +13,7 @@ from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
 from sherpa_ai.output_parsers.number_validation import NumberValidation
+from sherpa_ai.output_parsers.validation_result import ValidationResult
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 # TODO: QA Agent only contains partial implementation from the original
@@ -35,11 +37,12 @@ class QAAgent(BaseAgent):
         name: str = "QA Agent",
         description: str = TASK_AGENT_DESRIPTION,
         shared_memory: SharedMemory = None,
-        belief: Belief = Belief(),
+        belief: Optional[Belief] = None,
         agent_config: AgentConfig = AgentConfig(),
         num_runs: int = 3,
         verbose_logger=DummyVerboseLogger(),
         require_meta=False,
+        perform_number_validation=False,
         validation_count: int = 3,
         citation_thresh=[
             0.5,
@@ -69,7 +72,6 @@ class QAAgent(BaseAgent):
         self.name = name
         self.description = description + "\n\n" + f"Your name is {name}."
         self.shared_memory = shared_memory
-        self.belief = belief
         self.num_runs = num_runs
         self.llm = llm
         self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
@@ -78,6 +80,11 @@ class QAAgent(BaseAgent):
         self.citation_thresh = citation_thresh
         self.config = agent_config
         self.validation_count = validation_count
+        self.perform_number_validation = perform_number_validation
+
+        if belief is None:
+            belief = Belief()
+        self.belief = belief
 
     def create_actions(self) -> List[BaseAction]:
         return [
@@ -102,40 +109,62 @@ class QAAgent(BaseAgent):
 
         self.belief.update_internal(EventType.result, self.name, result)
 
-        number_validation  = self.num_validation(result=result , synthesize_action=synthesize_action)
+        number_validation = self.num_validation(
+            result=result, synthesize_action=synthesize_action
+        )
         return number_validation
 
-    def num_validation(self , result , synthesize_action):
+    def num_validation(self, result, synthesize_action) -> str:
+        if not self.perform_number_validation and not self.require_meta:
+            return result
+
         count = 0
         while count < self.validation_count:
-            checked, feedback = self.process_output(result)
+            validation_result = self.process_output(result)
 
-            if checked or count==self.validation_count :
+            if validation_result.is_valid or count == self.validation_count:
+                result = validation_result.result
                 break
             else:
-                count+=1
-                self.belief.update_internal(EventType.feedback, "critic", feedback)
+                count += 1
+                self.belief.update_internal(
+                    EventType.feedback, "critic", validation_result.feedback
+                )
 
             result = synthesize_action.execute(
                 self.belief.current_task.content,
                 self.belief.get_context(self.llm.get_num_tokens),
-                self.belief.get_histories_excluding_types(token_counter=self.llm.get_num_tokens , exclude_type=[EventType.result]),
+                self.belief.get_histories_excluding_types(
+                    token_counter=self.llm.get_num_tokens,
+                    exclude_type=[EventType.result],
+                ),
             )
+
+            # update intermidiate belief for round
             self.belief.update_internal(EventType.result, self.name, result)
-        if count == self.validation_count:
-            result = result + "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible."
-        return result
-    
+            if count == self.validation_count:
+                result = (
+                    result
+                    + "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible."
+                )
 
-    def process_output(self, generated: str) -> tuple[bool, str]:
-        internal_history = self.belief.get_histories_excluding_types(token_counter=self.llm.get_num_tokens ,exclude_type=[EventType.feedback, EventType.result])
-        num_val = NumberValidation(internal_history)
-        result = num_val.process_output(generated)
+        self.belief.update_internal(EventType.result, self.name, result)
+        return result
+
+    def process_output(self, generated: str) -> ValidationResult:
+        if self.perform_number_validation:
+            internal_history = self.belief.get_histories_excluding_types(
+                token_counter=self.llm.get_num_tokens,
+                exclude_type=[EventType.feedback, EventType.result],
+            )
+            num_val = NumberValidation(internal_history)
+            result = num_val.process_output(generated)
+
         if self.require_meta:
-            result = self.add_citation(result)
+            result = self.add_citation(generated)
         return result
 
-    def add_citation(self, text) -> str:
+    def add_citation(self, text) -> ValidationResult:
         google = None
         for action in self.belief.actions:
             if isinstance(action, GoogleSearch):
@@ -145,12 +174,14 @@ class QAAgent(BaseAgent):
             self.citation_thresh[0], self.citation_thresh[1], self.citation_thresh[2]
         )
 
+        result = ValidationResult(
+            is_valid=True,
+            result=text,
+            feedback="",
+        )
         # only do citation validation if search was used
-        if len(google.meta) == 0:
-            return text
-
-        resource = google.meta[-1]
-
-        result = citation_module.parse_output(text, resource)
+        if len(google.meta) > 0:
+            resource = google.meta[-1]
+            result = citation_module.parse_output(text, resource)
 
         return result
