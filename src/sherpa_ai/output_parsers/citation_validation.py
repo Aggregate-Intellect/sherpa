@@ -1,7 +1,8 @@
 import nltk
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 from sherpa_ai.output_parsers.base import BaseOutputParser
+from sherpa_ai.output_parsers.validation_result import ValidationResult
 
 nltk.download("punkt")
 
@@ -67,22 +68,43 @@ class CitationValidation(BaseOutputParser):
                     sentences.append(item)
         return sentences
 
+    def split_paragraph_into_sentences(self, paragraph):
+        sentences = sent_tokenize(paragraph)
+        return sentences
+
     # add citation to the generated text
-    def parse_output(self, generated: str, resources: list[dict()]) -> str:
+    def parse_output(self, generated: str, resources: list[dict]) -> ValidationResult:
+        """ 
+        Add citation to each sentence in the generated text from resources based on fact checking model.
+        Args:
+            generated (str): The generated content where we need to add citation/reference
+            resources (list[dict]): A list of dictionaries containing reference text and links.
+                Each dictionary in the list should have the format {"Document": str, "Source": str}.
+            activated (bool): control whether we need to add citation or just return the raw generated text.
+                by default it is activated.
+        Returns:
+            str: A formatted string combining the citation information from the 'resources' list.
+        """
+
         # resources type
         # resources = [{"Document":, "Source":...}, {}]
         paragraph = generated.split("\n")
         paragraph = [p for p in paragraph if len(p.strip()) > 0]
-        sub_string = [s.split(".") for s in paragraph]  # nested list
 
-        # sentences = unfoldList(sub_string)
+        paragraphs = [
+            self.split_paragraph_into_sentences(s) for s in paragraph
+        ]  # nested list
+
         new_paragraph = []
-        for paragraph in sub_string:
+        for one_paragraph in paragraphs:
             new_sentence = []
-            for _, sentence in enumerate(paragraph):
+            for _, sentence in enumerate(one_paragraph):
                 links = []
                 ids = []
                 sentence = sentence.strip()
+                if len(sentence) == 0:
+                    continue
+
                 for index, source in enumerate(resources):
                     cited = False  # if this resource is cited
                     text = source["Document"]
@@ -109,12 +131,23 @@ class CitationValidation(BaseOutputParser):
                                 or jaccard > self.jaccard_thresh
                             ):
                                 links.append(link)
-                                ids.append(index)
+                                ids.append(index + 1)
                 citations = []
                 for id, url in zip(ids, links):
                     reference = f"[{id}]({url})"
                     citations.append(reference)
 
-                new_sentence.append(sentence + " " + ", ".join(citations) + ".")
+                if len(citations) > 0:
+                    new_sentence.append(
+                        sentence[:-1] + " " + ", ".join(citations) + "."
+                    )
+                else:
+                    new_sentence.append(sentence)
+
             new_paragraph.append(" ".join(new_sentence) + "\n")
-        return "".join(new_paragraph)
+
+        return ValidationResult(
+            is_valid=True,
+            result="".join(new_paragraph),
+            feedback="",
+        )

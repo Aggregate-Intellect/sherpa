@@ -1,6 +1,7 @@
 import pytest
 
-from sherpa_ai.output_parser import TaskAction, TaskOutputParser, preprocess_json_input
+from sherpa_ai.output_parser import (TaskAction, TaskOutputParser,
+                                     preprocess_json_input)
 
 
 @pytest.mark.parametrize(
