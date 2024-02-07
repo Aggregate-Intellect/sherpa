@@ -8,6 +8,7 @@ from loguru import logger
 from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
+from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
@@ -26,7 +27,9 @@ class BaseAgent(ABC):
         action_planner: ActionPlanner = None,
         num_runs: int = 1,
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
-        actions: List[BaseAction] = None,
+        actions: List[BaseAction] = [],
+        validation_steps: int = 1,
+        validations: List[BaseOutputProcessor] = [],
     ):
         self.name = name
         self.description = description
@@ -38,8 +41,9 @@ class BaseAgent(ABC):
         self.subscribed_events = []
 
         self.verbose_logger = verbose_logger
-
         self.actions = actions
+        self.validation_steps = validation_steps
+        self.validations = validations
 
     @abstractmethod
     def create_actions(self) -> List[BaseAction]:
@@ -55,7 +59,7 @@ class BaseAgent(ABC):
 
         self.shared_memory.observe(self.belief)
 
-        actions = self.actions if self.actions is not None else self.create_actions()
+        actions = self.actions if len(self.actions) > 0 else self.create_actions()
         self.belief.set_actions(actions)
 
         for _ in range(self.num_runs):
@@ -91,11 +95,38 @@ class BaseAgent(ABC):
                 EventType.action_output, self.name, action_output
             )
 
-        result = self.synthesize_output()
+        result = self.validation_and_output()
 
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
         self.shared_memory.add(EventType.result, self.name, result)
+        return result
+
+    def validation_and_output(self):
+        last_failed_validation = None
+
+        for _ in range(self.validation_steps):
+            result = self.synthesize_output()
+            self.belief.update_internal(EventType.result, self.name, result)
+            is_valid = True
+            for validation in self.validations:
+                validation_result = validation.process_output(result, self.belief)
+
+                if not validation_result.is_valid:
+                    is_valid = False
+                    self.belief.update_internal(
+                        EventType.feedback, "critic", validation_result.feedback
+                    )
+                    last_failed_validation = validation
+                    break
+                result = validation_result.result
+            if is_valid:
+                return result
+
+        if last_failed_validation is not None:
+            # if the validation failed after all steps, apped the result with the timeout message
+            result = result + "\n" + last_failed_validation.get_timeout_message()
+        self.belief.update_internal(EventType.result, self.name, result)
         return result
 
     def observe(self):
