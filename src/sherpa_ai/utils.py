@@ -6,8 +6,7 @@ import requests
 import tiktoken
 from bs4 import BeautifulSoup
 from langchain.docstore.document import Document
-from langchain.document_loaders import (UnstructuredMarkdownLoader,
-                                        UnstructuredPDFLoader)
+from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 from loguru import logger
@@ -323,6 +322,6 @@ def check_if_number_exist(result: str, source: str):
     if len(error_numbers) > 0:
         for numbers in error_numbers:
             message += numbers + ", "
-        message = f"Disregard the numbers {message} as they are not relevant to the context provided and should not be taken into consideration."
-        return {"number_exists": False, "messages": message}
-    return {"number_exists": True, "messages": message}
+        message = f"Don't use the numbers {message} to answer the question instead stick to the numbers mentioned in the context."
+        return {"number_exists": False , "messages":message}
+    return {"number_exists": True , "messages":message}
