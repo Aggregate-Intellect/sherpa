@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 
+from sherpa_ai.output_parsers.validation_result import ValidationResult
+
 
 class BaseOutputParser(ABC):
     """
@@ -18,7 +20,7 @@ class BaseOutputParser(ABC):
     """
 
     @abstractmethod
-    def parse_output(self, text: str) -> str:
+    def parse_output(text: str, **kwargs) -> str:
         """
         Abstract method to be implemented by subclasses for parsing output text.
 
@@ -51,7 +53,7 @@ class BaseOutputProcessor(ABC):
     """
 
     @abstractmethod
-    def process_output(self, text: str) -> Tuple[bool, str]:
+    def process_output(self, text: str, **kwargs) -> ValidationResult:
         """
         Abstract method to be implemented by subclasses for processing output text.
 
@@ -59,10 +61,10 @@ class BaseOutputProcessor(ABC):
             text (str): The input text to be processed.
 
         Returns:
-            Tuple[bool, str]: A tuple containing a boolean indicating success or failure,
-                             and the processed output text.
+            ValidationResult: The result of the processing, including the validity status,
+            the processed text, and optional feedback.
         """
         pass
 
-    def __call__(self, text: str) -> Tuple[bool, str]:
-        return self.process_output(text)
+    def __call__(self, text: str, **kwargs) -> ValidationResult:
+        return self.process_output(text, **kwargs)

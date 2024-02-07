@@ -11,6 +11,7 @@ from sherpa_ai.config import AgentConfig
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
+from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
 from sherpa_ai.output_parsers.number_validation import NumberValidation
 from sherpa_ai.output_parsers.validation_result import ValidationResult
@@ -49,7 +50,9 @@ class QAAgent(BaseAgent):
             0.65,
             0.65,
         ],  # threshold for citations seq_thresh, jaccard_thresh, token_overlap,
-        actions: List[BaseAction] = None,
+        actions: List[BaseAction] = [],
+        validation_steps: int = 1,
+        validations: List[BaseOutputProcessor] = [],
     ):
         """
         The QA agent is the agent handles a single task.
@@ -79,6 +82,8 @@ class QAAgent(BaseAgent):
             num_runs,
             verbose_logger,
             actions,
+            validation_steps,
+            validations,
         )
         self.llm = llm
         self.require_meta = require_meta
@@ -112,12 +117,11 @@ class QAAgent(BaseAgent):
             self.belief.get_internal_history(self.llm.get_num_tokens),
         )
 
-        self.belief.update_internal(EventType.result, self.name, result)
-
-        number_validation = self.num_validation(
-            result=result, synthesize_action=synthesize_action
-        )
-        return number_validation
+        # number_validation = self.num_validation(
+        #     result=result, synthesize_action=synthesize_action
+        # )
+        # return number_validation
+        return result
 
     def num_validation(self, result, synthesize_action) -> str:
         if not self.perform_number_validation and not self.require_meta:

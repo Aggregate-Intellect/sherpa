@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import Event, EventType
@@ -92,8 +92,13 @@ class Belief:
 
     def get_histories_excluding_types(
         self,
+<<<<<<< HEAD
         token_counter: Callable[[str], int],
         exclude_type: [EventType],
+=======
+        exclude_type: [EventType],
+        token_counter: Optional[Callable[[str], int]] = None,
+>>>>>>> bf5015c (Refactor th agents to modularize validation)
         max_tokens=4000,
     ):
         """
@@ -107,6 +112,11 @@ class Belief:
         Returns:
             str: Internal history of the agent
         """
+        if token_counter is None:
+            # if no token counter is provided, use the default word counter
+            def token_counter(x):
+                return len(x.split())
+
         results = []
         feedback = []
         current_tokens = 0
