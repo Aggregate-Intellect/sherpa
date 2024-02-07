@@ -74,7 +74,7 @@ class CitationValidation(BaseOutputParser):
 
     # add citation to the generated text
     def parse_output(self, generated: str, resources: list[dict]) -> ValidationResult:
-        """ 
+        """
         Add citation to each sentence in the generated text from resources based on fact checking model.
         Args:
             generated (str): The generated content where we need to add citation/reference
