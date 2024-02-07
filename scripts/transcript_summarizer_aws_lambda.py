@@ -1,22 +1,18 @@
 import json
+
 import boto3
+
 destination_bucket = "transcriptslangchain"
 import tiktoken
+from langchain import LLMChain, PromptTemplate
 from langchain.chat_models import ChatOpenAI
-from langchain import PromptTemplate, LLMChain
-
+from langchain.prompts.chat import (AIMessagePromptTemplate,
+                                    ChatPromptTemplate,
+                                    HumanMessagePromptTemplate,
+                                    SystemMessagePromptTemplate)
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain.text_splitter import MarkdownTextSplitter
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    AIMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
-from langchain.schema import (
-    AIMessage,
-    HumanMessage,
-    SystemMessage
-)
+
 imoprt config as cfg
 import json
 

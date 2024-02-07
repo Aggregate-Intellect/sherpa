@@ -3,12 +3,9 @@ import os
 import requests
 
 import sherpa_ai.config as cfg
-from sherpa_ai.utils import (
-    chunk_and_summarize_file,
-    count_string_tokens,
-    extract_text_from_pdf,
-    question_with_file_reconstructor,
-)
+from sherpa_ai.utils import (chunk_and_summarize_file, count_string_tokens,
+                             extract_text_from_pdf,
+                             question_with_file_reconstructor)
 
 
 class QuestionWithFileHandler:
