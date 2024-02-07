@@ -8,6 +8,7 @@ from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
+from sherpa_ai.output_parsers.number_validation import NumberValidation
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.tools import SearchTool
 from sherpa_ai.utils import extract_numbers_from_text
@@ -153,6 +154,7 @@ def test_number_citation_succeeds_in_qa(
         objective=objective,
         agent_pool=None,
     )
+    number_validation = NumberValidation()
     with patch.object(SearchTool, "_run", return_value=data):
         task_agent = QAAgent(
             llm=llm,
@@ -160,6 +162,8 @@ def test_number_citation_succeeds_in_qa(
             require_meta=False,
             num_runs=1,
             perform_number_validation=True,
+            validations=[number_validation],
+            validation_steps=3
         )
 
         shared_memory.add(
