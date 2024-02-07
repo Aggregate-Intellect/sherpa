@@ -29,14 +29,16 @@ class Physicist(BaseAgent):
         num_runs=3,
         verbose_logger=DummyVerboseLogger(),
     ):
+        super().__init__(
+            name=name,
+            description=description,
+            shared_memory=shared_memory,
+            belief=Belief(),
+            action_planner=ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm),
+            num_runs=num_runs,
+            verbose_logger=verbose_logger,
+        )
         self.llm = llm
-        self.name = name
-        self.description = description
-        self.shared_memory = shared_memory
-        self.action_planner = ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm)
-        self.num_runs = num_runs
-        self.belief = Belief()
-        self.verbose_logger = verbose_logger
 
     def create_actions(self) -> List[BaseAction]:
         return [
