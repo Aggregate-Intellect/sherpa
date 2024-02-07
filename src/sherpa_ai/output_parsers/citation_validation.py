@@ -2,6 +2,7 @@ import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 from sherpa_ai.output_parsers.base import BaseOutputParser
+from sherpa_ai.output_parsers.validation_result import ValidationResult
 
 nltk.download("punkt")
 
@@ -72,10 +73,8 @@ class CitationValidation(BaseOutputParser):
         return sentences
 
     # add citation to the generated text
-    def parse_output(
-        self, generated: str, resources: list[dict()], activated=True
-    ) -> str:
-        """
+    def parse_output(self, generated: str, resources: list[dict]) -> ValidationResult:
+        """ 
         Add citation to each sentence in the generated text from resources based on fact checking model.
         Args:
             generated (str): The generated content where we need to add citation/reference
@@ -87,9 +86,8 @@ class CitationValidation(BaseOutputParser):
             str: A formatted string combining the citation information from the 'resources' list.
         """
 
-        if not activated:
-            return generated
-
+        # resources type
+        # resources = [{"Document":, "Source":...}, {}]
         paragraph = generated.split("\n")
         paragraph = [p for p in paragraph if len(p.strip()) > 0]
 
@@ -147,4 +145,9 @@ class CitationValidation(BaseOutputParser):
                     new_sentence.append(sentence)
 
             new_paragraph.append(" ".join(new_sentence) + "\n")
-        return "".join(new_paragraph)
+
+        return ValidationResult(
+            is_valid=True,
+            result="".join(new_paragraph),
+            feedback="",
+        )
