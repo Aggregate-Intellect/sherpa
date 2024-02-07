@@ -2,16 +2,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from sherpa_ai.utils import (
-    check_if_number_exist,
-    extract_numbers_from_text,
-    get_base_url,
-    get_links_from_string,
-    log_formatter,
-    rewrite_link_references,
-    scrape_with_url,
-    show_commands_only,
-)
+from sherpa_ai.utils import (check_if_number_exist, extract_numbers_from_text,
+                             get_base_url, get_links_from_string,
+                             log_formatter, rewrite_link_references,
+                             scrape_with_url, show_commands_only)
 
 
 def test_get_links_from_string_succeeds():
@@ -152,11 +146,13 @@ def test_log_formatter_formats_correctly_2(logs_with_final_response):
 
 @pytest.fixture
 def source_data():
-    return  " Cillum labore et culpa elit irure labore nostrud 12.45 minim cupidatat. Nulla nisi aliquip do duis elit tempor magna. Occaecat sunt nisi aliqua officia fugiat. Dolor ea ad mollit nulla ullamco sit voluptate cillum id laboris et proident anim. Culpa officia incididunt sit qui exercitation magna voluptate Lorem duis eu occaecat. Non occaecat deserunt voluptate cillum aliquip voluptate veniam. Ullamco commodo eiusmod consequat dolor cillum quis Lorem $45,000 labore tempor cupidatat  7 elit quis deserunt.  "
+    return " Cillum labore et culpa elit irure labore nostrud 12.45 minim cupidatat. Nulla nisi aliquip do duis elit tempor magna. Occaecat sunt nisi aliqua officia fugiat. Dolor ea ad mollit nulla ullamco sit voluptate cillum id laboris et proident anim. Culpa officia incididunt sit qui exercitation magna voluptate Lorem duis eu occaecat. Non occaecat deserunt voluptate cillum aliquip voluptate veniam. Ullamco commodo eiusmod consequat dolor cillum quis Lorem $45,000 labore tempor cupidatat  7 elit quis deserunt.  "
+
 
 @pytest.fixture
 def correct_result_data():
     return "Labore deserunt 12.45 $45,000 ,7 sit velit nulla. Sint ipsum reprehenderit sint cupidatat amet est id anim exercitation fugiat adipisicing elit. Id est dolore minim magna occaecat aute. Est dolore culpa laborum non esse nostrud."
+
 
 @pytest.fixture
 def incorrect_result_data():
@@ -166,21 +162,24 @@ def incorrect_result_data():
 def test_extract_numbers_from_text(source_data):
     extracted_number = extract_numbers_from_text(source_data)
 
-    #source data has these numbers in it
-    numbers_in_source_data = ['12.45', '45000','7']
-    assert len(numbers_in_source_data) == len(extracted_number) , "failed to extract a number"
+    # source data has these numbers in it
+    numbers_in_source_data = ["12.45", "45000", "7"]
+    assert len(numbers_in_source_data) == len(
+        extracted_number
+    ), "failed to extract a number"
     for number in extracted_number:
-         assert number in numbers_in_source_data , number + " is not in numbers_in_source_data"
-
-                
+        assert number in numbers_in_source_data, (
+            number + " is not in numbers_in_source_data"
+        )
 
 
 def test_extract_numbers_from_text_pass(source_data, correct_result_data):
-#test aganist a text with the same numbers within it
-    check_result = check_if_number_exist(source_data ,correct_result_data)
-    assert check_result['number_exists']
+    # test aganist a text with the same numbers within it
+    check_result = check_if_number_exist(source_data, correct_result_data)
+    assert check_result["number_exists"]
+
 
 def test_extract_numbers_from_text_fails(source_data, incorrect_result_data):
-    #test aganist a text which don't have the same numers as the source
-    check_result = check_if_number_exist(incorrect_result_data , source_data)
-    assert not check_result['number_exists']
+    # test aganist a text which don't have the same numers as the source
+    check_result = check_if_number_exist(incorrect_result_data, source_data)
+    assert not check_result["number_exists"]

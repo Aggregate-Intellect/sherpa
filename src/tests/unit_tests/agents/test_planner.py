@@ -1,7 +1,6 @@
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.physicist import Physicist
 from sherpa_ai.agents.planner import Planner
-
 # from sherpa_ai.agents.programmer import Programmer
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.test_utils.llms import get_llm
