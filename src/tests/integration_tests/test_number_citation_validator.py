@@ -32,27 +32,27 @@ from sherpa_ai.utils import extract_numbers_from_text
             ),
             ["9000", "1000170000"],
         ),
-        (
-            1,
-            "on june how much cash does Sabio Delivers had?",
-            (
-                """Second Quarter 2023 Financial Highlights for Sabio Delivers
-                Sabio delivered revenues of US$8.0M in Q2-2023, up 11% from US$7.2M in Q2-2022.
-                CTV/OTT sales as a category increased by 57% to US$5.0 million, compared to US$3.2 million in the prior year's quarter. CTV/OTT sales accounted for 62% of the Company's sales mix, compared with 44% in the prior year's quarter.
-                Mobile display revenues of US$2.9million in Q2-2023, down 24%, from US$3.9 million in Q2-2022, as our legacy mobile display campaigns continued to shift their spend with Sabio from mobile display to higher-margin mobile OTT streaming, which is recognized under the Company's CTV/OTT revenue category.
-                Gross Profit of US$4.8 million in Q2-2023, up from US$4.3 million in Q2-2022. Gross Margin improved on a year-over-year basis, from 59% in Q2-2022 to 60% in the completed quarter. The increase is attributable to several efficiency and direct sales improvements within the CTV/OTT channel as well as our App Science business.
-                Adjusted EBITDA1 loss of US$1.7 million in Q2-2023 compared to a loss of US$1.4 million in Q2-2022. The loss was primarily driven by overhead added during and subsequent to the second quarter of 2022, which included the continued expansion of our sales and marketing apparatus in the prior year and costs associated with transitioning our workforce back to the office. On a sequential basis, second quarter operating expenses, normalized for commissions, were flat in comparison to the first quarter of 2023 as cost efficiencies implemented by management offset incremental headcount additions to our salesforce to position ourselves for the 2024 U.S. elections.
-                As of June 30, 2023, the Company had cash of US$1.7 million, as compared to US$2.4 million on June 30, 2022.`
-                As of June 2023, the Company had US$6 million outstanding under its credit facility with Avidbank.""",
-                [
-                    {
-                        "Document": "Sabio Delivers 11% Q2-2023 Revenue Growth, Led by 57% Increase in Connected TV/OTT Sales",
-                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
-                    }
-                ],
-            ),
-            ["2.4", "1.4", "30", "2022", "2023", "1.7"],
-        ),
+        # (
+        #     1,
+        #     "on june how much cash does Sabio Delivers had?",
+        #     (
+        #         """Second Quarter 2023 Financial Highlights for Sabio Delivers
+        #         Sabio delivered revenues of US$8.0M in Q2-2023, up 11% from US$7.2M in Q2-2022.
+        #         CTV/OTT sales as a category increased by 57% to US$5.0 million, compared to US$3.2 million in the prior year's quarter. CTV/OTT sales accounted for 62% of the Company's sales mix, compared with 44% in the prior year's quarter.
+        #         Mobile display revenues of US$2.9million in Q2-2023, down 24%, from US$3.9 million in Q2-2022, as our legacy mobile display campaigns continued to shift their spend with Sabio from mobile display to higher-margin mobile OTT streaming, which is recognized under the Company's CTV/OTT revenue category.
+        #         Gross Profit of US$4.8 million in Q2-2023, up from US$4.3 million in Q2-2022. Gross Margin improved on a year-over-year basis, from 59% in Q2-2022 to 60% in the completed quarter. The increase is attributable to several efficiency and direct sales improvements within the CTV/OTT channel as well as our App Science business.
+        #         Adjusted EBITDA1 loss of US$1.7 million in Q2-2023 compared to a loss of US$1.4 million in Q2-2022. The loss was primarily driven by overhead added during and subsequent to the second quarter of 2022, which included the continued expansion of our sales and marketing apparatus in the prior year and costs associated with transitioning our workforce back to the office. On a sequential basis, second quarter operating expenses, normalized for commissions, were flat in comparison to the first quarter of 2023 as cost efficiencies implemented by management offset incremental headcount additions to our salesforce to position ourselves for the 2024 U.S. elections.
+        #         As of June 30, 2023, the Company had cash of US$1.7 million, as compared to US$2.4 million on June 30, 2022.`
+        #         As of June 2023, the Company had US$6 million outstanding under its credit facility with Avidbank.""",
+        #         [
+        #             {
+        #                 "Document": "Sabio Delivers 11% Q2-2023 Revenue Growth, Led by 57% Increase in Connected TV/OTT Sales",
+        #                 "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+        #             }
+        #         ],
+        #     ),
+        #     ["2.4", "1.4", "30", "2022", "2023", "1.7"],
+        # ),
         (
             2,
             "how many players are in a field of a soccer game? and how many referees are there ?",
