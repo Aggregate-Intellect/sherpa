@@ -91,7 +91,10 @@ class Belief:
         return context
 
     def get_histories_excluding_types(
-        self, token_counter: Callable[[str], int],  exclude_type: [EventType] , max_tokens=4000 
+        self,
+        token_counter: Callable[[str], int],
+        exclude_type: [EventType],
+        max_tokens=4000,
     ):
         """
         Get the internal history of the agent with out events in the excluded_type
@@ -99,7 +102,7 @@ class Belief:
         Args:
             token_counter: Token counter
             max_tokens: Maximum number of tokens
-            exclude_type: List of events to be excluded 
+            exclude_type: List of events to be excluded
 
         Returns:
             str: Internal history of the agent
@@ -118,7 +121,6 @@ class Belief:
                 break
         context = "\n".join(set(reversed(results))) + "\n".join(set(feedback))
         return context
-    
 
     def set_actions(self, actions: List[BaseAction]):
         self.actions = actions
