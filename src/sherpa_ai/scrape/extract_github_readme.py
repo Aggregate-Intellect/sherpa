@@ -32,7 +32,7 @@ def extract_github_readme(repo_url):
         response = requests.get(github_api_url, headers=headers)
 
         files = response.json()
-        if(type(files) is dict and files.message == 'Bad Credentials'):
+        if type(files) is dict and files.message == "Bad Credentials":
             return None
         matching_files = [
             file["name"]

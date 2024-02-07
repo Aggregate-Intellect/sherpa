@@ -2,10 +2,16 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from sherpa_ai.utils import (check_if_number_exist, extract_numbers_from_text,
-                             get_base_url, get_links_from_string,
-                             log_formatter, rewrite_link_references,
-                             scrape_with_url, show_commands_only)
+from sherpa_ai.utils import (
+    check_if_number_exist,
+    extract_numbers_from_text,
+    get_base_url,
+    get_links_from_string,
+    log_formatter,
+    rewrite_link_references,
+    scrape_with_url,
+    show_commands_only,
+)
 
 
 def test_get_links_from_string_succeeds():
