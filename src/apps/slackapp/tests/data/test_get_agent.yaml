@@ -15,6 +15,12 @@ llm:
 agent_config:
   _target_: sherpa_ai.config.task_config.AgentConfig
 
+citation_validatoin:
+  _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
+  seq_thresh: 0.8
+  jaccard_thresh: 0.7
+  token_overlap: 0.6
+
 arxiv_search:
   _target_: sherpa_ai.actions.arxiv_search.ArxivSearch
   role_description: Act as a question answering agent
@@ -45,3 +51,5 @@ qa_agent:
   actions:
     - ${arxiv_search}
     - ${google_search}
+  validations:
+    - ${citation_validatoin}
