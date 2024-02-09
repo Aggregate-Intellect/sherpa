@@ -126,7 +126,7 @@ class Mathematician(BaseAgent):
         self.num_runs = num_runs
         self.belief = Belief()
         self.verbose_logger = verbose_logger
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        openai.api_key = os.getenv('OPENAI_API_KEY')
         interface = pal.interface.ProgramInterface(
             model=MODEL, get_answer_expr="solution()", verbose=pal_verbose
         )
@@ -167,20 +167,11 @@ class Mathematician(BaseAgent):
         return answer
 
 
-if __name__ == "__main__":
-    m = Mathematician(llm=None)
-    question = (
-        "if each apple costs 2 dollar. How much money do I need for buying 10 apples?"
-    )
-
-    answer = 20
-    result = m.answer_arithmetic(question)
-
-    logger.info(result)
-
+    
+    
     # MODEL = "gpt-3.5-turbo"
     # interface = pal.interface.ProgramInterface(
     #         model=MODEL, get_answer_expr="solution()", verbose=True
     #     )
-
-    # print(interface.history)
+    
+    # print(interface.history)  
