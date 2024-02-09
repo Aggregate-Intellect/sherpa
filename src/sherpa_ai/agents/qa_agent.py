@@ -42,8 +42,6 @@ class QAAgent(BaseAgent):
         agent_config: AgentConfig = AgentConfig(),
         num_runs: int = 3,
         verbose_logger=DummyVerboseLogger(),
-        require_meta=False,
-        perform_number_validation=False,
         citation_thresh=[
             0.65,
             0.65,
@@ -85,14 +83,17 @@ class QAAgent(BaseAgent):
             validations,
         )
         self.llm = llm
-        self.require_meta = require_meta
         self.citation_thresh = citation_thresh
         self.config = agent_config
-        self.perform_number_validation = perform_number_validation
 
         if belief is None:
             belief = Belief()
         self.belief = belief
+        self.citation_enabled = False
+        for validation in self.validations:
+            if isinstance(validation, CitationValidation):
+                self.citation_enabled = True
+                break
 
     def create_actions(self) -> List[BaseAction]:
         return [
@@ -101,13 +102,13 @@ class QAAgent(BaseAgent):
                 self.belief.current_task,
                 self.llm,
                 config=self.config,
-                require_meta=self.require_meta,
+                require_meta=self.citation_enabled,
             ),
         ]
 
     def synthesize_output(self) -> str:
         synthesize_action = SynthesizeOutput(
-            self.description, self.llm, add_citation=self.require_meta
+            self.description, self.llm, add_citation=self.citation_enabled
         )
         result = synthesize_action.execute(
             self.belief.current_task.content,
