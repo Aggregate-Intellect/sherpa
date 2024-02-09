@@ -6,6 +6,8 @@ from collections import Counter
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
 import types
+import openai
+import os
 from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
@@ -124,7 +126,7 @@ class Mathematician(BaseAgent):
         self.num_runs = num_runs
         self.belief = Belief()
         self.verbose_logger = verbose_logger
-
+        openai.api_key = os.getenv("OPENAI_API_KEY")
         interface = pal.interface.ProgramInterface(
             model=MODEL, get_answer_expr="solution()", verbose=pal_verbose
         )
@@ -160,6 +162,25 @@ class Mathematician(BaseAgent):
             prompt = math_prompts.MATH_PROMPT.format(question=scaled_question)
             answer = self.interface.run_with_dict(prompt, number_dict)
 
-        reasoning = self.interface.histroy[-1][0]
+        reasoning = self.interface.history[-1][0]
         logger.info(reasoning)
         return answer
+
+
+if __name__ == "__main__":
+    m = Mathematician(llm=None)
+    question = (
+        "if each apple costs 2 dollar. How much money do I need for buying 10 apples?"
+    )
+
+    answer = 20
+    result = m.answer_arithmetic(question)
+
+    logger.info(result)
+
+    # MODEL = "gpt-3.5-turbo"
+    # interface = pal.interface.ProgramInterface(
+    #         model=MODEL, get_answer_expr="solution()", verbose=True
+    #     )
+
+    # print(interface.history)
