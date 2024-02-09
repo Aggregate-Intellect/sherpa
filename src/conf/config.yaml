@@ -8,20 +8,21 @@ team_id: none
 llm:
   _target_: sherpa_ai.models.sherpa_base_chat_model.SherpaChatOpenAI
   model_name: gpt-3.5-turbo
-  temperature: 0.7
+  temperature: 0
   user_id: ${user_id}
   team_id: ${team_id}
 
 agent_config:
   _target_: sherpa_ai.config.task_config.AgentConfig
 
-search:
-  _target_: sherpa_ai.actions.GoogleSearch
-  role_description: Act as a question answering agent
-  task: Question answering
-  llm: ${llm}
-  require_meta: true
-  config: ${agent_config}
+citation_validatoin:
+  _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
+  seq_thresh: 0.5
+  jaccard_thresh: 0.5
+  token_overlap: 0.5
+
+number_validation:
+  _target_: sherpa_ai.output_parsers.number_validation.NumberValidation
 
 arxiv_search:
   _target_: sherpa_ai.actions.arxiv_search.ArxivSearch
@@ -29,6 +30,14 @@ arxiv_search:
   task: Question answering
   llm: ${llm}
   n: 3
+
+google_search:
+  _target_: sherpa_ai.actions.GoogleSearch
+  role_description: Act as a question answering agent
+  task: Question answering
+  llm: ${llm}
+  require_meta: true
+  config: ${agent_config}
 
 qa_agent:
   _target_: sherpa_ai.agents.qa_agent.QAAgent
@@ -38,10 +47,13 @@ qa_agent:
   description: Act as a question answering agent
   agent_config: ${agent_config}
   num_runs: 1
-  require_meta: true
+  validation_steps: 1
   citation_thresh:
     - 0.5
     - 0.5
     - 0.7
   actions:
-    - ${search}
+    - ${google_search}
+  validations:
+    - ${citation_validatoin}
+    - ${number_validation}
