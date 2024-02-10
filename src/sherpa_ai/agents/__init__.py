@@ -5,6 +5,8 @@ from sherpa_ai.agents.physicist import Physicist
 from sherpa_ai.agents.planner import Planner
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.agents.user import UserAgent
+from sherpa_ai.agents.mathematician import Mathematician
+
 
 __all__ = [
     "AgentPool",
@@ -15,4 +17,5 @@ __all__ = [
     "UserAgent",
     "Critic",
     "QAAgent",
+    "Mathematician",
 ]
