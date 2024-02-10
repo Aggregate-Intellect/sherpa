@@ -27,6 +27,7 @@ There is a lot of information that you can leverage about this project in the fo
    :caption: EXPLORE
    :maxdepth: 2
 
+   SHERPA API Docs <API_Docs/modules>
    How To <How_To/index>
    LLM Open Book <Open Book/index>
    About Sherpa <About_Sherpa/index>
