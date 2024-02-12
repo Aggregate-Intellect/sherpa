@@ -3,8 +3,14 @@ import sys
 import pytest
 from loguru import logger
 
-from sherpa_ai.agents import (AgentPool, Critic, MLEngineer, Physicist,
-                              Planner, UserAgent)
+from sherpa_ai.agents import (
+    AgentPool,
+    Critic,
+    MLEngineer,
+    Physicist,
+    Planner,
+    UserAgent,
+)
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.orchestrator import Orchestrator, OrchestratorConfig
 from sherpa_ai.test_utils.llms import get_llm
