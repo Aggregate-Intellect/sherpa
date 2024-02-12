@@ -323,5 +323,5 @@ def check_if_number_exist(result: str, source: str):
         for numbers in error_numbers:
             message += numbers + ", "
         message = f"Don't use the numbers {message} to answer the question instead stick to the numbers mentioned in the context."
-        return {"number_exists": False , "messages":message}
-    return {"number_exists": True , "messages":message}
+        return {"number_exists": False, "messages": message}
+    return {"number_exists": True, "messages": message}
