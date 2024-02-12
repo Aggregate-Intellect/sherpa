@@ -44,6 +44,7 @@ class UserUsageTracker:
         self.max_daily_token = cfg.DAILY_TOKEN_LIMIT
         self.verbose_logger = verbose_logger
         self.is_reminded = False
+        self.usage_percentage_allowed = 75
 
     def download_from_s3(self, bucket_name, s3_file_key, local_file_path):
         file_path = Path("./token_counter.db")
@@ -118,13 +119,13 @@ class UserUsageTracker:
         self.is_reminded = self.check_if_reminded(combined_id=combined_id)
         if not user_is_whitelisted and not self.is_reminded:
             if (
-                self.percentage_used(combined_id=combined_id) > 75
+                self.percentage_used(combined_id=combined_id) > self.usage_percentage_allowed
                 and not self.is_reminded
             ):
                 self.add_data(combined_id=combined_id, token=0, reminded_timestamp=True)
 
                 self.verbose_logger.log(
-                    "hi friend, you have used up 75% of your daily token limit. once you go over the limit there will be a 24 hour cool down period after which you can continue using Sherpa! be awesome!"
+                    f"Hi friend, you have used up {self.usage_percentage_allowed}% of your daily token limit. once you go over the limit there will be a 24 hour cool down period after which you can continue using Sherpa! be awesome!"
                 )
 
     def get_data_since_last_reset(self, user_id):
