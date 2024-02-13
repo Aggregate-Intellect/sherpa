@@ -13,6 +13,19 @@ from sherpa_ai.utils import (
 
 class QuestionWithFileHandler:
     def __init__(self, question, files, token, user_id, team_id):
+        """
+        Initializes the QuestionWithFileHandler instance.
+
+        currently works for one file only.
+
+        Args:
+            question (str): The user's question.
+            files (list): List of files associated with the question.
+            token (str): Authorization token.
+            user_id (str): User ID.
+            team_id (str): Team ID.
+        """
+
         self.question = question
         self.token = token
         self.files = files
@@ -20,6 +33,13 @@ class QuestionWithFileHandler:
         self.user_id = user_id
 
     def reconstruct_prompt_with_file(self):
+        """
+        Reconstructs the prompt using the associated file.
+
+        Returns:
+            dict: A dictionary with status and reconstructed prompt data.
+        """
+
         file_text_format = self.download_file(self.files[0])
         if file_text_format["status"] == "success":
             reconstructed_prompt = self.prompt_reconstruct(
@@ -33,6 +53,15 @@ class QuestionWithFileHandler:
             return {"status": "error", "message": file_text_format["message"]}
 
     def download_file(self, file):
+        """
+        Downloads the specified file and return the content of the file.
+
+        Args:
+            file (dict): Information about the file to be downloaded. Example name, title, filetype etc
+
+        Returns:
+            dict: A dictionary with status and downloaded file content.
+        """
         headers = {
             "Authorization": f"Bearer {self.token}",
             "Accept": file["mimetype"],
@@ -66,6 +95,17 @@ class QuestionWithFileHandler:
             }
 
     def prompt_reconstruct(self, file_info, data=str):
+        """
+        Reconstructs the prompt with the file content.
+
+        Args:
+            file_info (dict): Information about the file being reconstructed. Example name, title, filetype etc
+            data (str): Content of the file.
+
+        Returns:
+            dict: A dictionary with status and reconstructed prompt data.
+        """
+
         chunk_summary = data
         data_token_size = count_string_tokens(self.question + data, "gpt-3.5-turbo")
 
