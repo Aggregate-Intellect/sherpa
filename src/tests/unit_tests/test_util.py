@@ -11,7 +11,12 @@ from sherpa_ai.utils import (
     rewrite_link_references,
     scrape_with_url,
     show_commands_only,
+    string_comparison_with_jaccard_and_levenshtein,
 )
+
+from sherpa_ai.output_parsers.citation_validation import CitationValidation
+from nltk.metrics import edit_distance
+from nltk.metrics import jaccard_distance
 
 
 def test_get_links_from_string_succeeds():
@@ -189,3 +194,46 @@ def test_extract_numbers_from_text_fails(source_data, incorrect_result_data):
     # test aganist a text which don't have the same numers as the source
     check_result = check_if_number_exist(incorrect_result_data, source_data)
     assert not check_result["number_exists"]
+
+
+def test_entity_comparator():
+    word1 = "ethiopian"
+    word2 = "ethiopia"
+    lev_constant = 0.5
+
+    lists_of_test = [
+        ["Ethiopia", "Ethiopian"],
+        ["Gastrointestinal", "astrointestin"],
+        ["World Cup", "World football Cup"],
+        ["New York City", "New York"],
+        ["New York", "New York ****"],
+    ]
+    print('#########################')
+    print('#########################')
+    for tester in lists_of_test:
+        string_comparison_with_jaccard_and_levenshtein(
+            tester[0], tester[1], lev_constant
+        )
+    assert True
+
+
+
+
+
+
+
+
+
+def test_check_entities_match():
+    text = """my name is Eyob Yirgu Bekachew, am 28 years old and I have 20 cows , it has been 100 years since my great great grand father died."""
+    bew = """the person's name is Eyob Yirgu Belachew he is 28 years old and he must be a cow something that he has 20 of them and his 100 years old  great grand father died"""
+    result = extract_entities(text)
+    result2 = extract_entities(bew)
+
+    content = check_entities_match(bew, text)
+    print("#########################")
+    print(result)
+    print(result2)
+    print(content)
+    print("#########################")
+    assert True

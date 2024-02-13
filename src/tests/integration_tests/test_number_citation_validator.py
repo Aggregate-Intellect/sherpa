@@ -128,7 +128,10 @@ from sherpa_ai.utils import extract_numbers_from_text
             "what is unique about ethiopian callender? and Please provide the answer in numerical form.",
             (
                 """
-                Ehtiopia has thirteen months.""",
+                One intriguing fact about soccer is that, unlike many other team sports, there are no strict regulations regarding the size or weight of the soccer ball. According to the Laws of the Game set by the International Football Association Board (IFAB), a soccer ball should have a circumference of 68-70 cm (27-28 inches) and a weight of 410-450 grams (14-16 ounces).
+                In terms of the number of players, a standard soccer match is played with 16.5 players on each team, including one goalkeeper. This configuration has been widely adopted globally, contributing to the sport's balance of strategy, teamwork, and individual skill. The dynamic interplay of 33 players on .
+                """,
+                # """Soccer, or football, is a globally adored sport played by two teams of 33 players on a rectangular pitch. The goal is to score more goals than the opposing team by kicking a ball into their net. With over 250 million players in 200+ countries, soccer transcends borders, becoming a universal language of competition and passion. The term "soccer" originated in 19th-century England, distinguishing it from rugby. Today, major tournaments like the FIFA World Cup unite nations and foster cultural pride, highlighting the sport's profound impact on societies worldwide.""",
                 [
                     {
                         "Document": "soccer",
@@ -138,6 +141,20 @@ from sherpa_ai.utils import extract_numbers_from_text
             ),
             [],
         ),
+        #  (
+        #     "what is unique about ethiopian callender? and Please provide the answer in numerical form.",
+        #     (
+        #         """
+        #         Ehtiopia has thirteen months.""",
+        #         [
+        #             {
+        #                 "Document": "soccer",
+        #                 "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+        #             }
+        #         ],
+        #     ),
+        #     []
+        # ),
     ],
 )
 def test_number_citation_succeeds_in_qa(

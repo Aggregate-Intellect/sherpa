@@ -12,6 +12,7 @@ from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
+from sherpa_ai.output_parsers.entity_validation import EntityValidation
 from sherpa_ai.output_parsers.number_validation import NumberValidation
 from sherpa_ai.output_parsers.validation_result import ValidationResult
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
@@ -109,10 +110,36 @@ class QAAgent(BaseAgent):
 
         self.belief.update_internal(EventType.result, self.name, result)
 
-        number_validation = self.num_validation(
-            result=result, synthesize_action=synthesize_action
-        )
+        # number_validation = self.num_validation(
+        #     result=result, synthesize_action=synthesize_action
+        # )
+        number_validation  = self.entity_validation(result=result , synthesize_action=synthesize_action)
         return number_validation
+    
+    def entity_validation(self , result , synthesize_action):
+        count = 0
+        while count < self.validation_count:
+            
+            checked, feedback = self.process_output_for_entity_validation(result , count)
+            print('################### CHECK UP ###########################')
+            print(result)
+            print(checked )
+            print(feedback)
+            print('##############################################')
+            if checked or count==self.validation_count :
+                break
+            else:
+                count+=1
+                self.belief.update_internal(EventType.feedback, "critic", feedback)
+
+            result = synthesize_action.execute(
+                self.belief.current_task.content,
+                self.belief.get_context(self.llm.get_num_tokens),
+                self.belief.get_histories_excluding_types(token_counter=self.llm.get_num_tokens , exclude_type=[EventType.result]),
+            )
+        if count == self.validation_count:
+            result = result + "you might not see some of the entities mentioned in the context be aware of that ."
+        return result
 
     def num_validation(self, result, synthesize_action) -> str:
         if not self.perform_number_validation and not self.require_meta:
@@ -120,7 +147,7 @@ class QAAgent(BaseAgent):
 
         count = 0
         while count < self.validation_count:
-            validation_result = self.process_output(result)
+            validation_result = self.process_output_for_number_validation(result)
 
             if validation_result.is_valid or count == self.validation_count:
                 result = validation_result.result
@@ -142,27 +169,32 @@ class QAAgent(BaseAgent):
 
             # update intermidiate belief for round
             self.belief.update_internal(EventType.result, self.name, result)
-            if count == self.validation_count:
-                result = (
-                    result
-                    + "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible."
-                )
-
-        self.belief.update_internal(EventType.result, self.name, result)
+        if count == self.validation_count:
+            result = result + "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible."
         return result
+    
+    
 
-    def process_output(self, generated: str) -> ValidationResult:
-        if self.perform_number_validation:
-            internal_history = self.belief.get_histories_excluding_types(
-                token_counter=self.llm.get_num_tokens,
-                exclude_type=[EventType.feedback, EventType.result],
-            )
-            num_val = NumberValidation(internal_history)
-            result = num_val.process_output(generated)
-
+    def process_output_for_number_validation(self, generated: str) -> tuple[bool, str]:
+        internal_history = self.belief.get_histories_excluding_types(token_counter=self.llm.get_num_tokens ,exclude_type=[EventType.feedback, EventType.result])
+        num_val = NumberValidation(internal_history)
+        result = num_val.process_output(generated)
         if self.require_meta:
             result = self.add_citation(generated)
         return result
+    
+    def process_output_for_entity_validation(self, generated: str , stage:int) -> tuple[bool, str]:
+        internal_history = self.belief.get_histories_excluding_types(token_counter=self.llm.get_num_tokens ,exclude_type=[EventType.feedback, EventType.result , EventType.action])
+        num_val = EntityValidation(internal_history ,stage)
+        result = num_val.process_output(generated)
+        print('++++++++++++_________________+++++++++++++++______________++++++++++++++')
+        print(stage)
+        print(result)
+        print('++++++++++++_________________+++++++++++++++______________++++++++++++++')
+        if self.require_meta:
+            result = self.add_citation(result)
+        return result
+
 
     def add_citation(self, text) -> ValidationResult:
         google = None

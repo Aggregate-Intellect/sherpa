@@ -13,7 +13,11 @@ from loguru import logger
 from pypdf import PdfReader
 
 import sherpa_ai.config as cfg
+from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
+from nltk.metrics import edit_distance
+from nltk.metrics import jaccard_distance
+import spacy
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -325,3 +329,124 @@ def check_if_number_exist(result: str, source: str):
         message = f"Don't use the numbers {message} to answer the question instead stick to the numbers mentioned in the context."
         return {"number_exists": False, "messages": message}
     return {"number_exists": True, "messages": message}
+
+
+def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_constant):
+    word1_set = set(word1)
+    word2_set = set(word2)
+
+    lev_distance = edit_distance(word1, word2)
+    jaccard_sim = 1 - jaccard_distance(word1_set, word2_set)
+    long_len = max(len(word1), len(word2))
+    normalized_levenshtein = 1 - (lev_distance / long_len)
+
+    combined_metric = (levenshtein_constant * normalized_levenshtein) + (
+        (1 - levenshtein_constant) * jaccard_sim
+    )
+
+    print(f"word 1:: {word1}")
+    print(f"word 2:: {word2}")
+    print("--------------------------")
+    print(f"Levenshtein distance:: {lev_distance}")
+    print(f"Jaccard similarity:: {jaccard_sim}")
+    print(f"long_len:: {long_len}")
+    print(f"levenshtein constant :: {levenshtein_constant}")
+    print(f"normalized_levenshtein:: {normalized_levenshtein}")
+    print(f"combined_metric:: {combined_metric}")
+
+    print("***********************")
+
+    return combined_metric
+
+
+def extract_entities(text):
+    # text = """
+    #        In a bustling metropolis like New York City, where the eclectic mix of cultures converges on vibrant street corners, the diligent detective, Detective Rodriguez, skillfully navigated through the crowded thoroughfares, his sharp eyes discerning the subtle nuances of behavior, as he pursued a mysterious figure, the elusive and enigmatic Mr. Thompson, a notorious art thief known for his cunning disguises and unparalleled ability to blend into the urban tapestry, weaving a complex web of intrigue that stretched from the posh galleries of Chelsea to the gritty alleyways of Brooklyn, leaving a trail of perplexing clues that only the astute detective, armed with the cutting-edge Spacy entity recognition tool, could decipher and follow to uncover the truth behind the daring heists that had captivated the city's imagination.
+    #         """
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    entity_types = ["NORP", "ORG", "GPE", "LAW"]
+    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
+
+    print("############# Entities gathered ##########################")
+    print(text)
+    print(filtered_entities)
+    print("#######################################")
+
+    return filtered_entities
+
+
+def is_subset(str1, str2):
+    set1 = set(str1)
+    set2 = set(str2)
+    return set1.issubset(set2)
+
+
+def text_similarity_by_llm(check_entity: [str], source_entity: [str]):
+    return {"entity_exisist": True, "messages": ""}
+
+
+def text_similarity_by_metrics(check_entity: [str], source_entity: [str]):
+    error_entity = []
+    message = ""
+    levenshtein_constant = 0.5
+
+    print("********************************************")
+    print("********************************************")
+    print(source_entity)
+    print(check_entity)
+    print("********************************************")
+    print("********************************************")
+    for entity in source_entity:
+        metrics_value = 0
+        for sub_entitiy in check_entity:
+            word1 = entity
+            word2 = sub_entitiy
+
+            combined_similarity = string_comparison_with_jaccard_and_levenshtein(
+                word1=word1, word2=word2, levenshtein_constant=levenshtein_constant
+            )
+
+            print("========================================================")
+            if metrics_value < combined_similarity:
+                metrics_value = combined_similarity
+        if metrics_value < 0.75:
+            return error_entity.append(entity)
+
+    if len(error_entity) > 0:
+        for entity in error_entity:
+            message += entity + ", "
+        message = f"remember to address these entities {message} in final the answer."
+        return {"entity_exisist": False, "messages": message}
+    return {"entity_exisist": True, "messages": message}
+
+
+def text_similarity(check_entity: [str], source_entity: [str]):
+    error_entity = []
+    message = ""
+    for entity in source_entity:
+        print(entity)
+        if entity not in check_entity:
+            error_entity.append(entity)
+    if len(error_entity) > 0:
+        for entity in error_entity:
+            message += entity + ", "
+        message = f"remember to address these entities {message} in final the answer."
+        return {"entity_exisist": False, "messages": message}
+    return {"entity_exisist": True, "messages": message}
+
+
+def check_entities_match(result: str, source: str, stage: int):
+    source_entity = extract_entities(source)
+    check_entity = extract_entities(result)
+
+    if stage == 0:
+        return text_similarity(check_entity=check_entity, source_entity=source_entity)
+    elif stage == 1:
+        return text_similarity_by_metrics(
+            check_entity=check_entity, source_entity=source_entity
+        )
+    else:
+        return text_similarity_by_llm(
+            check_entity=check_entity, source_entity=source_entity
+        )

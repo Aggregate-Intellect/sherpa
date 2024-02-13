@@ -44,12 +44,14 @@ class SynthesizeOutput(BaseAction):
         self.llm = llm
 
     def execute(self, task: str, context: str, history: str) -> str:
+        print('::::::::: :::::::::::: PROMPT :::::::::: ::::::::::::')
         prompt = self.description.format(
             task=task,
             context=context,
             history=history,
             role_description=self.role_description,
         )
+        print('::::::::: :::::::::::: :::::::::: ::::::::::::')
 
         logger.debug("Prompt: {}", prompt)
 
