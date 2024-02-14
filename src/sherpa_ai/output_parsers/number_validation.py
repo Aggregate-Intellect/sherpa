@@ -4,7 +4,7 @@ from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
-from sherpa_ai.utils import check_if_number_exist
+from sherpa_ai.utils import verify_numbers_against_source
 
 
 class NumberValidation(BaseOutputProcessor):
@@ -28,19 +28,21 @@ class NumberValidation(BaseOutputProcessor):
     """
     def process_output(self, text: str, belief: Belief) -> ValidationResult:
         """
-        Process the output to check if the number exists in the source
+        Verifies that all numbers within `text` exist in the `belief` source text.
         Args:
             text: The text to be processed
-            belief: The belief object of the agent generated the output
+            belief: The belief object of the agent that generated the output
         Returns:
-            ValidationResult: The result of the validation, it is not valid if the
-            number does not exist in the source while a feedback will be given
+            ValidationResult: The result of the validation. If any number in the
+            text to be processed doesn't exist in the source text,
+            validation is invalid and contains a feedback string. 
+            Otherwise validation is valid.
         """
         source = belief.get_histories_excluding_types(
             exclude_type=[EventType.feedback, EventType.result],
         )
-        check_validation = check_if_number_exist(text, source)
-        if check_validation["number_exists"]:
+        numbers_exist_in_source, error_message = verify_numbers_against_source(text, source)
+        if numbers_exist_in_source:
             return ValidationResult(
                 is_valid=True,
                 result=text,
@@ -50,7 +52,7 @@ class NumberValidation(BaseOutputProcessor):
             return ValidationResult(
                 is_valid=False,
                 result=text,
-                feedback=check_validation["messages"],
+                feedback=error_message,
             )
 
     def get_failure_message(self) -> str:
