@@ -150,42 +150,97 @@ def test_log_formatter_formats_correctly_2(logs_with_final_response):
     assert log_formatter(logs_with_final_response) == expected_output
 
 
-@pytest.fixture
-def source_data():
-    return " Cillum labore et culpa elit irure labore nostrud 12.45 minim cupidatat. Nulla nisi aliquip do duis elit tempor magna. Occaecat sunt nisi aliqua officia fugiat. Dolor ea ad mollit nulla ullamco sit voluptate cillum id laboris et proident anim. Culpa officia incididunt sit qui exercitation magna voluptate Lorem duis eu occaecat. Non occaecat deserunt voluptate cillum aliquip voluptate veniam. Ullamco commodo eiusmod consequat dolor cillum quis Lorem $45,000 labore tempor cupidatat  7 elit quis deserunt.  "
+@pytest.mark.parametrize(
+    "source_text,source_numbers",
+    [
+        (
+            "nostrud 12.45 minim cupidatat Lorem $45,000 labore7 elit.",
+            ["12.45", "45000", "7"],
+        ),
+        (
+            "123something12minim jammed together $45 abore 7 elit123",
+            ["123", "12", "45", "7", "123"],
+        ),
+        ("42 is a 42 with 42plus42 and 42", ["42", "42", "42", "42", "42"]),
+        (
+            "No numbers to see here",
+            [],
+        ),
+        (
+            None,
+            [],
+        ),
+    ],
+)
+def test_extract_numbers_from_text(source_text, source_numbers):
+    extracted_numbers = extract_numbers_from_text(source_text)
+    for number in extracted_numbers:
+        assert number in source_numbers, number + " is not in source_numbers"
+    assert len(extracted_numbers) == len(
+        source_numbers
+    ), f"Incorrect extraction from #{ source_text }, expected #{ source_numbers } but got #{ extracted_numbers }"
 
 
-@pytest.fixture
-def correct_result_data():
-    return "Labore deserunt 12.45 $45,000 ,7 sit velit nulla. Sint ipsum reprehenderit sint cupidatat amet est id anim exercitation fugiat adipisicing elit. Id est dolore minim magna occaecat aute. Est dolore culpa laborum non esse nostrud."
+@pytest.mark.parametrize(
+    "text_to_test,source_text",
+    [
+        (
+            "nostrud 12.45 minim cupidatat Lorem $45,000 labore7 elit.",
+            "nostrud 12.45 minim cupidatat Lorem $45,000 labore7 elit.",
+        ),
+        (
+            "123something12minim jammed together $45 abore 7 elit123",
+            "45 7 123 12 45 7 123",
+        ),
+        (
+            "42 is a 42 with 42plus42 and 42",
+            "99999 with a 42 does not add to 991232",
+        ),
+        (
+            "No numbers to see here",
+            "99999 with a 42 does not add to 991232",
+        ),
+        (
+            None,
+            "This can be anything",
+        ),
+        (None, None),
+    ],
+)
+def test_verify_numbers_against_source_succeeds(text_to_test, source_text):
+    result, msg = verify_numbers_against_source(text_to_test, source_text)
+    assert (
+        result is True
+    ), f"Expected '{ source_text}' to contain all numbers in '{text_to_test}'"
+    assert msg is None, f"Expected return message to be None, got { msg } instead"
 
 
-@pytest.fixture
-def incorrect_result_data():
-    return "Labore deserunt 12.45 $45,000 ,7 ,56 , 65 sit velit nulla. Sint ipsum reprehenderit sint cupidatat amet est id anim exercitation fugiat adipisicing elit. Id est dolore minim magna occaecat aute. Est dolore culpa laborum non esse nostrud."
-
-
-def test_extract_numbers_from_text(source_data):
-    extracted_number = extract_numbers_from_text(source_data)
-
-    # source data has these numbers in it
-    numbers_in_source_data = ["12.45", "45000", "7"]
-    assert len(numbers_in_source_data) == len(
-        extracted_number
-    ), "failed to extract a number"
-    for number in extracted_number:
-        assert number in numbers_in_source_data, (
-            number + " is not in numbers_in_source_data"
-        )
-
-
-def test_extract_numbers_from_text_pass(source_data, correct_result_data):
-    # test aganist a text with the same numbers within it
-    check_result = check_if_number_exist(source_data, correct_result_data)
-    assert check_result["number_exists"]
-
-
-def test_extract_numbers_from_text_fails(source_data, incorrect_result_data):
-    # test aganist a text which don't have the same numers as the source
-    check_result = check_if_number_exist(incorrect_result_data, source_data)
-    assert not check_result["number_exists"]
+@pytest.mark.parametrize(
+    "text_to_test,source_text",
+    [
+        (
+            "nostrud 12.45 minim cupidatat Lorem $45,000 labore7 elit.",
+            "nostrud minim cupidatat Lorem $45,000 labore7 elit.",
+        ),
+        (
+            "123something12minim jammed together $45 abore 7 elit123",
+            "45 7 12",
+        ),
+        (
+            "42 is a 42 with 42plus42 and 42",
+            "99999 plus 991232",
+        ),
+        (
+            "42",
+            None,
+        ),
+    ],
+)
+def test_verify_numbers_against_source_fails(text_to_test, source_text):
+    result, msg = verify_numbers_against_source(text_to_test, source_text)
+    assert (
+        result is False
+    ), f"Expected '{ source_text}' NOT to contain all numbers in '{text_to_test}'"
+    assert (
+        "Don't use the numbers" in msg
+    ), f"Return message { msg } doesn't contain expected text"
