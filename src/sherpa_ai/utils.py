@@ -302,26 +302,23 @@ def check_url(url):
 
 
 def extract_numbers_from_text(text):
-    # remove , and number mentioned inside []
-    text = re.sub(",", "", text)
+    """Returns a list, possibly empty, of the strings of digits within text"""
+    if text is not None:
+        text_without_commas = re.sub(",", "", text)
+        pattern = r"\d+\.\d+|\d+"
+        matches = re.findall(pattern, text_without_commas)
+        return matches
+    else:
+        return []
 
-    pattern = r"\d+\.\d+|\d+"
-    matches = re.findall(pattern, text)
-    return matches
 
-
-def check_if_number_exist(result: str, source: str):
-    check_numbers = extract_numbers_from_text(result)
-    source_numbers = extract_numbers_from_text(source)
-    error_numbers = []
-    message = ""
-    for data in check_numbers:
-        if data not in source_numbers:
-            error_numbers.append(data)
-    error_numbers = set(error_numbers)
-    if len(error_numbers) > 0:
-        for numbers in error_numbers:
-            message += numbers + ", "
-        message = f"Don't use the numbers {message} to answer the question instead stick to the numbers mentioned in the context."
-        return {"number_exists": False, "messages": message}
-    return {"number_exists": True, "messages": message}
+def verify_numbers_against_source(text_to_test: str, source_text: str):
+    """Verifies that all numbers in text_to_test exist in source_text. Returns True on success. Returns False and a feedback string on failure."""
+    candidate_numbers = set(extract_numbers_from_text(text_to_test))
+    source_numbers = set(extract_numbers_from_text(source_text))
+    incorrect_candidates = candidate_numbers - source_numbers
+    if len(incorrect_candidates) > 0:
+        joined_numbers = ", ".join(incorrect_candidates)
+        message = f"Don't use the numbers {joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context."
+        return False, message
+    return True, None
