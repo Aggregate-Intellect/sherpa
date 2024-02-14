@@ -1,20 +1,22 @@
-from typing import List
-import pal
-from pal.prompt import colored_object_prompt, math_prompts
-from pal.core.interface import timeout
+import os
+import re
+import types
 from collections import Counter
+from typing import List
+
+import openai
+import pal
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
-import types
-import openai
-import os
+from pal.core.interface import timeout
+from pal.prompt import colored_object_prompt, math_prompts
+
 from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-import re
 
 MATH_DESCRIPTION = "You are a Mathematician with a deep-rooted expertise in understanding and analyzing the fundamental principles of math. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex math-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."  # noqa: E501
 
