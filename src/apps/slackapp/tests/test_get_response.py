@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import pytest
 from langchain.llms.fake import FakeListLLM
 from loguru import logger
-from omegaconf import OmegaConf
 from slackapp.bolt_app import get_response
 
 import sherpa_ai.config as cfg

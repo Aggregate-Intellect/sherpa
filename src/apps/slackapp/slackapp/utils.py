@@ -7,7 +7,7 @@ from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.config.task_config import AgentConfig
 
 
-def get_agent(config_path, user_id=None, team_id=None, llm=None) -> QAAgent:
+def get_qa_agent_from_config_file(config_path, user_id=None, team_id=None, llm=None) -> QAAgent:
     config = OmegaConf.load(config_path)
 
     agent_config: AgentConfig = instantiate(config.agent_config)

@@ -35,8 +35,7 @@ class CitationValidation(BaseOutputProcessor):
     result = citation_parser.parse_output(generated_text, list_of_resources)
     ```
     """
-
-    def __init__(self, seq_thresh=0.7, jaccard_thresh=0.7, token_overlap=0.7):
+    def __init__(self, sequence_threshold=0.7, jaccard_threshold=0.7, token_overlap=0.7):
         """
         Initialize the CitationValidation object.
 
@@ -45,8 +44,9 @@ class CitationValidation(BaseOutputProcessor):
         - jaccard_thresh (float): Jaccard similarity threshold. Default is 0.7.
         - token_overlap (float): Token overlap threshold. Default is 0.7.
         """
-        self.seq_thresh = seq_thresh  # threshold for common longest subsequece / text
-        self.jaccard_thresh = jaccard_thresh
+        # threshold
+        self.sequence_threshold = sequence_threshold  # threshold for common longest subsequece / text
+        self.jaccard_threshold = jaccard_threshold
         self.token_overlap = token_overlap
 
     def calculate_token_overlap(self, sentence1, sentence2) -> tuple:
@@ -248,9 +248,9 @@ class CitationValidation(BaseOutputProcessor):
                             # print(jaccard)
 
                             if (
-                                (seq / len(sentence)) > self.seq_thresh
+                                (seq / len(sentence)) > self.sequence_threshold
                                 or contained
-                                or jaccard > self.jaccard_thresh
+                                or jaccard > self.jaccard_threshold
                             ):
                                 links.append(link)
                                 ids.append(index + 1)
@@ -274,5 +274,5 @@ class CitationValidation(BaseOutputProcessor):
             feedback="",
         )
 
-    def get_timeout_message(self) -> str:
-        return "Citations was not able to be added to the generated text. Please pay attention to the cited sources."
+    def get_failure_message(self) -> str:
+        return "Unable to add citations to the generated text. Please pay attention to the cited sources."

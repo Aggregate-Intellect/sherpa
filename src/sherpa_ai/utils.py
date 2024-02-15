@@ -120,7 +120,7 @@ def chunk_and_summarize(
     user_id: str = None,
 ):
     llm = SherpaOpenAI(
-        temperature=cfg.TEMPRATURE,
+        temperature=cfg.TEMPERATURE,
         openai_api_key=cfg.OPENAI_API_KEY,
         user_id=user_id,
         team_id=team_id,
@@ -159,7 +159,7 @@ def chunk_and_summarize_file(
     user_id: str = None,
 ):
     llm = SherpaOpenAI(
-        temperature=cfg.TEMPRATURE,
+        temperature=cfg.TEMPERATURE,
         openai_api_key=cfg.OPENAI_API_KEY,
         user_id=user_id,
         team_id=team_id,

@@ -32,7 +32,7 @@ SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
 SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
 SLACK_PORT = environ.get("SLACK_PORT", 3000)
 OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
-TEMPRATURE = environ.get("TEMPRATURE") or 0
+TEMPERATURE = environ.get("TEMPERATURE") or 0
 
 # Pinecone settings
 PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
