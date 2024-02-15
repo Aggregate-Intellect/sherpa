@@ -159,9 +159,7 @@ def test_number_citation_succeeds_in_qa(
         task_agent = QAAgent(
             llm=llm,
             shared_memory=shared_memory,
-            require_meta=False,
             num_runs=1,
-            perform_number_validation=True,
             validations=[number_validation],
             validation_steps=3
         )
