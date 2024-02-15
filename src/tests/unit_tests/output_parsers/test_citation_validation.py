@@ -35,7 +35,6 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
     task_agent = QAAgent(
         llm=llm,
         shared_memory=shared_memory,
-        require_meta=True,
         validations=[citation_module],
     )
 

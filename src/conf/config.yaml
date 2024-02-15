@@ -55,5 +55,5 @@ qa_agent:
   actions:
     - ${google_search}
   validations:
-    - ${citation_validatoin}
     - ${number_validation}
+    - ${citation_validatoin}
