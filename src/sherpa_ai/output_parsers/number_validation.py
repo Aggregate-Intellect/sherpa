@@ -53,5 +53,5 @@ class NumberValidation(BaseOutputProcessor):
                 feedback=check_validation["messages"],
             )
 
-    def get_timeout_message(self) -> str:
+    def get_failure_message(self) -> str:
         return "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible."

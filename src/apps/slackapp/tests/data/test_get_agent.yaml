@@ -15,10 +15,10 @@ llm:
 agent_config:
   _target_: sherpa_ai.config.task_config.AgentConfig
 
-citation_validatoin:
+citation_validation:
   _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
-  seq_thresh: 0.8
-  jaccard_thresh: 0.7
+  sequence_threshold: 0.8
+  jaccard_threshold: 0.7
   token_overlap: 0.6
 
 arxiv_search:
@@ -26,14 +26,14 @@ arxiv_search:
   role_description: Act as a question answering agent
   task: Question answering
   llm: ${llm}
-  n: 3
+  max_results: 3
 
 google_search:
   _target_: sherpa_ai.actions.GoogleSearch
   role_description: Act as a question answering agent
   task: Question answering
   llm: ${llm}
-  require_meta: true
+  include_metadata: true
   config: ${agent_config}
 
 qa_agent:
@@ -44,12 +44,8 @@ qa_agent:
   description: Act as a question answering agent
   agent_config: ${agent_config}
   num_runs: 1
-  citation_thresh:
-    - 0.5
-    - 0.5
-    - 0.7
   actions:
     - ${arxiv_search}
     - ${google_search}
   validations:
-    - ${citation_validatoin}
+    - ${citation_validation}
