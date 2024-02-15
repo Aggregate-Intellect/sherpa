@@ -15,6 +15,7 @@ from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
 from sherpa_ai.output_parsers.number_validation import NumberValidation
 from sherpa_ai.output_parsers.validation_result import ValidationResult
+from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 # TODO: QA Agent only contains partial implementation from the original
@@ -41,34 +42,26 @@ class QAAgent(BaseAgent):
         belief: Optional[Belief] = None,
         agent_config: AgentConfig = AgentConfig(),
         num_runs: int = 3,
-        verbose_logger=DummyVerboseLogger(),
-        citation_thresh=[
-            0.65,
-            0.65,
-            0.65,
-        ],  # threshold for citations seq_thresh, jaccard_thresh, token_overlap,
+        verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
         actions: List[BaseAction] = [],
         validation_steps: int = 1,
         validations: List[BaseOutputProcessor] = [],
     ):
         """
-        The QA agent is the agent handles a single task.
+        The QA agent handles a single question-answering task.
 
         Args:
             llm (BaseLanguageModel): The language model used to generate text
             name (str, optional): The name of the agent. Defaults to "QA Agent".
-            description (str, optional): The description of the agent. Defaults
-                to TASK_AGENT_DESRIPTION.
-            shared_memory (SharedMemory, optional): The shared memory used to
-                store the context shared with all other agents. Defaults to None.
-            belief (Belief, optional): The belief of the agent. Defaults to Belief().
-            num_runs (int, optional): The number of runs the agent will run. Defaults
-                to 3.
-            verbose_logger (BaseVerboseLogger, optional): The verbose logger used to
-                log the agent's internal state. Defaults to DummyVerboseLogger().
-            require_meta (bool, optional): Whether the agent requires meta information
-                during Google search. True means the search will use metadata and
-                citation validation will be performed.
+            description (str, optional): The description of the agent. Defaults to TASK_AGENT_DESRIPTION.
+            shared_memory (SharedMemory, optional): The shared memory used to store information and shared with other agents. Defaults to None.
+            belief (Optional[Belief], optional): The belief of the agent. Defaults to None.
+            agent_config (AgentConfig, optional): The agent configuration. Defaults to AgentConfig.
+            num_runs (int, optional): The number of runs the agent will perform. Defaults to 3.
+            verbose_logger (BaseVerboseLogger, optional): The verbose logger used to log information. Defaults to DummyVerboseLogger().
+            actions (List[BaseAction], optional): The list of actions the agent can perform. Defaults to [].
+            validation_steps (int, optional): The number of validation steps the agent will perform. Defaults to 1.
+            validations (List[BaseOutputProcessor], optional): The list of validations the agent will perform. Defaults to [].
         """
         super().__init__(
             name,
@@ -83,7 +76,6 @@ class QAAgent(BaseAgent):
             validations,
         )
         self.llm = llm
-        self.citation_thresh = citation_thresh
         self.config = agent_config
 
         if belief is None:
@@ -102,7 +94,7 @@ class QAAgent(BaseAgent):
                 self.belief.current_task,
                 self.llm,
                 config=self.config,
-                require_meta=self.citation_enabled,
+                include_metadata=self.citation_enabled,
             ),
         ]
 

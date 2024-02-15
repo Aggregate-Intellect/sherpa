@@ -38,7 +38,7 @@ class GoogleSearch(BaseAction):
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         config: AgentConfig = AgentConfig(),
         n: int = 5,
-        require_meta=False,
+        include_metadata=False,
     ):
         self.role_description = role_description
         self.task = task
@@ -49,11 +49,11 @@ class GoogleSearch(BaseAction):
 
         self.search_tool = SearchTool(config=config)
         self.meta = []
-        self.require_meta = require_meta
+        self.include_metadata = include_metadata
 
     def execute(self, query) -> str:
-        if self.require_meta:
-            result, meta = self.search_tool._run(query, self.require_meta)
+        if self.include_metadata:
+            result, meta = self.search_tool._run(query, self.include_metadata)
             self.meta.append(meta)
         else:
             result = self.search_tool._run(query)

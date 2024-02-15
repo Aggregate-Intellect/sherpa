@@ -30,6 +30,7 @@ class BaseAgent(ABC):
         actions: List[BaseAction] = [],
         validation_steps: int = 1,
         validations: List[BaseOutputProcessor] = [],
+        feedback_agent_name: str = "critic",
     ):
         self.name = name
         self.description = description
@@ -44,6 +45,7 @@ class BaseAgent(ABC):
         self.actions = actions
         self.validation_steps = validation_steps
         self.validations = validations
+        self.feedback_agent_name = feedback_agent_name
 
     @abstractmethod
     def create_actions(self) -> List[BaseAction]:
@@ -95,14 +97,14 @@ class BaseAgent(ABC):
                 EventType.action_output, self.name, action_output
             )
 
-        result = self.validation_and_output()
+        result = self.validate_output()
 
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
         self.shared_memory.add(EventType.result, self.name, result)
         return result
 
-    def validation_and_output(self):
+    def validate_output(self):
         last_failed_validation = None
 
         for _ in range(self.validation_steps):
@@ -115,7 +117,7 @@ class BaseAgent(ABC):
                 if not validation_result.is_valid:
                     is_valid = False
                     self.belief.update_internal(
-                        EventType.feedback, "critic", validation_result.feedback
+                        EventType.feedback, self.feedback_agent_name, validation_result.feedback
                     )
                     last_failed_validation = validation
                     break
@@ -124,8 +126,8 @@ class BaseAgent(ABC):
                 return result
 
         if last_failed_validation is not None:
-            # if the validation failed after all steps, apped the result with the timeout message
-            result = result + "\n" + last_failed_validation.get_timeout_message()
+            # if the validation failed after all steps, append the error messages to the result
+            result = result + "\n" + last_failed_validation.get_failure_message()
         self.belief.update_internal(EventType.result, self.name, result)
         return result
 

@@ -13,7 +13,7 @@ from omegaconf import OmegaConf
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 from slackapp.routes.whitelist import whitelist_blueprint
-from slackapp.utils import get_agent
+from slackapp.utils import get_qa_agent_from_config_file
 
 import sherpa_ai.config as cfg
 from sherpa_ai.agents import QAAgent
@@ -130,7 +130,7 @@ def get_response(
             openai_api_key=cfg.OPENAI_API_KEY,
             user_id=user_id,
             team_id=team_id,
-            temperature=cfg.TEMPRATURE,
+            temperature=cfg.TEMPERATURE,
         )
 
         verbose_logger.log("⚠️🤖 Use task agent (obsolete)...")
@@ -148,7 +148,7 @@ def get_response(
 
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
     else:
-        agent = get_agent("conf/config.yaml", team_id, user_id, llm)
+        agent = get_qa_agent_from_config_file("conf/config.yaml", team_id, user_id, llm)
         for message in previous_messages:
             agent.shared_memory.add(EventType.result, message.type, message.content)
         agent.shared_memory.add(EventType.task, "human", question)

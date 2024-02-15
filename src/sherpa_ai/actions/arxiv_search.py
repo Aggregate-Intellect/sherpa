@@ -22,14 +22,14 @@ class ArxivSearch(BaseAction):
         task: str,
         llm: BaseLanguageModel,
         description: str = SEARCH_SUMMARY_DESCRIPTION,
-        n: int = 5,
+        max_results: int = 5,
     ):
         self.role_description = role_description
         self.task = task
 
         self.description = description
         self.llm = llm
-        self.n = n
+        self.max_results = max_results
 
         self.search_tool = SearchArxivTool()
 
@@ -39,7 +39,7 @@ class ArxivSearch(BaseAction):
         prompt = self.description.format(
             task=self.task,
             paper_title_summary=result,
-            n=self.n,
+            n=self.max_results,
             role_description=self.role_description,
         )
 
