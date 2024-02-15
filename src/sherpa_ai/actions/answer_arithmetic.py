@@ -98,7 +98,17 @@ class AnswerArithmetic(BaseAction):
         config: AgentConfig = AgentConfig(),
         MODEL="gpt-3.5-turbo",
         PAL_verbose=True,  # TODO
+        placeholder=False,
     ):
+        """_summary_
+
+        Args:
+            config (AgentConfig, optional): _description_. Defaults to AgentConfig().
+            MODEL (str, optional): _description_. Defaults to "gpt-3.5-turbo".
+            PAL_verbose (bool, optional): _description_. Defaults to True.
+            placeholder (bool, optional): If True, use placeholder to replace numeric values in generating Python code.
+                Defaults to False.
+        """
         openai.api_key = os.getenv("OPENAI_API_KEY")
         interface = pal.interface.ProgramInterface(
             model=MODEL, get_answer_expr="solution()", verbose=PAL_verbose
@@ -107,15 +117,14 @@ class AnswerArithmetic(BaseAction):
         interface.run_with_dict = types.MethodType(run_with_dict, interface)
 
         self.interface = interface
+        self.placeholder = placeholder
 
-    def execute(self, question, placeholder=False) -> str:
+    def execute(self, question) -> str:
         """
         Answer a math arithmetic question
 
         Parameters:
             question (str): The mathematical question to be processed.
-            placeholder (bool, optional): If True, use placeholder to replace numeric values in generating Python code.
-                                             Defaults to False.
 
         Returns:
             str: The answer to the mathematical question.
@@ -124,7 +133,7 @@ class AnswerArithmetic(BaseAction):
             instance.execute("What is 2 + 2?", replace_numeric=True)
         """
 
-        if not placeholder:
+        if not self.placeholder:
             prompt = math_prompts.MATH_PROMPT.format(question=question)
             answer = self.interface.run(prompt)
 
