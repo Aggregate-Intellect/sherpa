@@ -1,12 +1,12 @@
 from typing import Tuple
 
 from sherpa_ai.memory import Belief
-from sherpa_ai.output_parsers.base import BaseOutputParser
+from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
 from sherpa_ai.utils import check_if_number_exist
 
 
-class NumberValidation(BaseOutputParser):
+class NumberValidation(BaseOutputProcessor):
 
     """
     Process and validate numerical information in the generated text.
