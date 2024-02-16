@@ -1,10 +1,13 @@
 import time
-
+from anyio import Path
+import boto3
 from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 import sherpa_ai.config as cfg
+from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 Base = declarative_base()
 
@@ -18,6 +21,7 @@ class UsageTracker(Base):
     token = Column(Integer)
     timestamp = Column(Integer)
     reset_timestamp = Column(Boolean)
+    reminded_timestamp = Column(Boolean)
 
 
 class Whitelist(Base):
@@ -31,17 +35,22 @@ class UserUsageTracker:
     def __init__(
         self,
         db_name=cfg.DB_NAME,
-        max_daily_token=20000,
+        verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         self.engine = create_engine(db_name)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         self.create_table()
-        self.max_daily_token = int(max_daily_token)
+        self.max_daily_token = cfg.DAILY_TOKEN_LIMIT
+        self.verbose_logger = verbose_logger
+        self.is_reminded = False
+        self.usage_percentage_allowed = 75
 
     def download_from_s3(self, bucket_name, s3_file_key, local_file_path):
-        s3 = boto3.client("s3")
-        s3.download_file(bucket_name, s3_file_key, local_file_path)
+        file_path = Path("./token_counter.db")
+        if not file_path.exists():
+            s3 = boto3.client("s3")
+            s3.download_file(bucket_name, s3_file_key, local_file_path)
 
     def upload_to_s3(self, local_file_path, bucket_name, s3_file_key):
         s3 = boto3.client("s3")
@@ -70,15 +79,54 @@ class UserUsageTracker:
     def is_in_whitelist(self, user_id):
         return bool(self.get_whitelist_by_user_id(user_id))
 
-    def add_data(self, combined_id, token, reset_timestamp=False):
+    def add_and_check_data(
+        self, combined_id, token, reset_timestamp=False, reminded_timestamp=False
+    ):
+        self.add_data(
+            combined_id=combined_id,
+            token=token,
+            reset_timestamp=reset_timestamp,
+            reminded_timestamp=reminded_timestamp,
+        )
+        self.remind_user_of_daily_token_limit(combined_id=combined_id)
+
+    def add_data(
+        self, combined_id, token, reset_timestamp=False, reminded_timestamp=False
+    ):
         data = UsageTracker(
             user_id=combined_id,
             token=token,
             timestamp=int(time.time()),
             reset_timestamp=reset_timestamp,
+            reminded_timestamp=reminded_timestamp,
         )
         self.session.add(data)
         self.session.commit()
+
+    def percentage_used(self, combined_id):
+        total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
+            user_id=combined_id
+        )
+        return (total_token_since_last_reset * 100) / self.max_daily_token
+
+    def remind_user_of_daily_token_limit(self, combined_id):
+        split_parts = combined_id.split("_")
+        user_id = ""
+        if len(split_parts) > 0:
+            user_id = split_parts[0]
+
+        user_is_whitelisted = self.is_in_whitelist(user_id)
+        self.is_reminded = self.check_if_reminded(combined_id=combined_id)
+        if not user_is_whitelisted and not self.is_reminded:
+            if (
+                self.percentage_used(combined_id=combined_id) > self.usage_percentage_allowed
+                and not self.is_reminded
+            ):
+                self.add_data(combined_id=combined_id, token=0, reminded_timestamp=True)
+
+                self.verbose_logger.log(
+                    f"Hi friend, you have used up {self.usage_percentage_allowed}% of your daily token limit. once you go over the limit there will be a 24 hour cool down period after which you can continue using Sherpa! be awesome!"
+                )
 
     def get_data_since_last_reset(self, user_id):
         last_reset_info = self.get_last_reset_info(user_id)
@@ -92,6 +140,7 @@ class UserUsageTracker:
                     "token": item.token,
                     "timestamp": item.timestamp,
                     "reset_timestamp": item.reset_timestamp,
+                    "reminded_timestamp": item.reminded_timestamp,
                 }
                 for item in data
             ]
@@ -111,9 +160,18 @@ class UserUsageTracker:
                 "token": item.token,
                 "timestamp": item.timestamp,
                 "reset_timestamp": item.reset_timestamp,
+                "reminded_timestamp": item.reminded_timestamp,
             }
             for item in data
         ]
+
+    def check_if_reminded(self, combined_id):
+        data_list = self.get_data_since_last_reset(combined_id)
+        is_reminded_true = any(
+            item.get("reminded_timestamp", False) for item in data_list
+        )
+
+        return is_reminded_true
 
     def get_sum_of_tokens_since_last_reset(self, user_id):
         data_since_last_reset = self.get_data_since_last_reset(user_id)
@@ -125,7 +183,9 @@ class UserUsageTracker:
         return token_sum
 
     def reset_usage(self, combined_id, token_amount):
-        self.add_data(combined_id=combined_id, token=token_amount, reset_timestamp=True)
+        self.add_and_check_data(
+            combined_id=combined_id, token=token_amount, reset_timestamp=True
+        )
 
     def get_last_reset_info(self, combined_id):
         data = (
@@ -192,7 +252,7 @@ class UserUsageTracker:
                         "time_left": self.seconds_to_hms(time_since_last_reset),
                     }
                 else:
-                    self.add_data(combined_id=combined_id, token=token_amount)
+                    self.add_and_check_data(combined_id=combined_id, token=token_amount)
                     return {
                         "token-left": self.max_daily_token
                         - total_token_since_last_reset,
