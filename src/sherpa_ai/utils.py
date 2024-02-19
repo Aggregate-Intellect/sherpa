@@ -1,3 +1,4 @@
+import json
 import re
 from typing import List, Union
 from urllib.parse import urlparse
@@ -13,7 +14,11 @@ from loguru import logger
 from pypdf import PdfReader
 
 import sherpa_ai.config as cfg
+from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
+from nltk.metrics import edit_distance
+from nltk.metrics import jaccard_distance
+import spacy
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -325,3 +330,217 @@ def check_if_number_exist(result: str, source: str):
         message = f"Don't use the numbers {message} to answer the question instead stick to the numbers mentioned in the context."
         return {"number_exists": False, "messages": message}
     return {"number_exists": True, "messages": message}
+
+def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_constant):
+    """
+        Calculate a combined similarity metric using Jaccard similarity and normalized Levenshtein distance.
+
+        Args:
+        - word1 (str): First input string.
+        - word2 (str): Second input string.
+        - levenshtein_constant (float): Weight for the Levenshtein distance in the combined metric.
+
+        Returns:
+        float: Combined similarity metric.
+    """
+
+    word1_set = set(word1)
+    word2_set = set(word2)
+
+    lev_distance = edit_distance(word1, word2)
+    jaccard_sim = 1 - jaccard_distance(word1_set, word2_set)
+    long_len = max(len(word1), len(word2))
+    normalized_levenshtein = 1 - (lev_distance / long_len)
+
+    combined_metric = (levenshtein_constant * normalized_levenshtein) + (
+        (1 - levenshtein_constant) * jaccard_sim
+    )
+
+    return combined_metric
+
+def extract_entities(text): 
+    """
+        Extract entities of specific types 
+            NORP (Nationalities or Religious or Political Groups),
+            ORG (Organization),
+            GPE (Geopolitical Entity),
+            LOC (Location) using spaCy.
+        Args:
+        - text (str): Input text.
+
+        Returns:
+        List[str]: List of extracted entities.
+    """
+     
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    entity_types = ["NORP", "ORG", "GPE" , "LOC"]
+    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
+
+    return filtered_entities
+
+
+def json_extractor(text):
+    """
+        Extract and parse JSON data from a text.
+
+        Args:
+        - text (str): Input text containing JSON data.
+
+        Returns:
+        dict: Parsed JSON data.
+    """
+
+    json_pattern = r"\{.*\}"
+    json_match = re.search(json_pattern, text)
+
+    if json_match:
+        json_data = json_match.group()
+        try:
+            parsed_json = json.loads(json_data)
+            return parsed_json
+        except json.JSONDecodeError as e:
+            return {}
+    else:
+        return {}
+
+
+def text_similarity_by_llm(
+    source_entity: List[str],
+    source,
+    result,
+    user_id=None,
+    team_id=None,
+):
+    """
+        Check if entities from a question are mentioned in some form inside the answer using a language model.
+
+        Args:
+        - source_entity (List[str]): List of entities from the question.
+        - source (str): Question text.
+        - result (str): Answer text.
+        - user_id (str): User ID (optional).
+        - team_id (str): Team ID (optional).
+
+        Returns:
+        dict: Result of the check containing 'entity_exist' and 'messages'.
+    """
+
+    llm = SherpaOpenAI(
+        temperature=cfg.TEMPRATURE,
+        openai_api_key=cfg.OPENAI_API_KEY,
+        user_id=user_id,
+        team_id=team_id,
+    )
+
+    instruction = f"""
+        I have a question and an answer. I want you to confirm if the entities from the question has been in some form inside the answer. 
+        Answer = {result}
+        Question = {source}
+        Entities inside the question = {source_entity}
+       """
+    instruction = (
+        instruction
+        + """
+           only return { entity_exist: 'true' , messages:"" } if entities are mentioned inside the answer in  
+           only return {entity_exist: 'false' , messages: " Entity x hasn't been mentioned inside the answer"} if the entity is not mentioned properly .
+          """
+    )
+
+    llm_result = llm.predict(instruction)
+
+    checkup_json = json_extractor(llm_result)
+    return checkup_json
+
+
+def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]):
+    """
+        Check entity similarity based on Jaccard and Levenshtein metrics.
+
+        Args:
+        - check_entity (List[str]): List of entities to check.
+        - source_entity (List[str]): List of reference entities.
+
+        Returns:
+        dict: Result of the check containing 'entity_exist' and 'messages'.
+    """
+
+    threshold = 0.75
+    error_entity = []
+    message = ""
+    levenshtein_constant = 0.5
+    for entity in source_entity:
+        metrics_value = 0
+        for sub_entitiy in check_entity:
+            word1 = entity
+            word2 = sub_entitiy
+
+            combined_similarity = string_comparison_with_jaccard_and_levenshtein(
+                word1=word1, word2=word2, levenshtein_constant=levenshtein_constant
+            )
+            if metrics_value < combined_similarity:
+                metrics_value = combined_similarity
+        if metrics_value < threshold:
+            error_entity.append(entity)
+
+    if len(error_entity) > 0:
+        for entity in error_entity:
+            message += entity + ", "
+        message = f"remember to address these entities {message} in final the answer."
+        return {"entity_exist": False, "messages": message}
+    return {"entity_exist": True, "messages": message}
+
+
+def text_similarity(check_entity: List[str], source_entity: List[str]):
+    """
+        Check if entities from a reference list are present in another list.
+
+        Args:
+        - check_entity ([str]): List of entities to check.
+        - source_entity ([str]): List of reference entities.
+
+        Returns:
+        dict: Result of the check containing 'entity_exist' and 'messages'.
+    """
+
+    error_entity = []
+    message = ""
+    for entity in source_entity:
+        print(entity)
+        if entity not in check_entity:
+            error_entity.append(entity)
+    if len(error_entity) > 0:
+        for entity in error_entity:
+            message += entity + ", "
+        message = f"remember to address these entities {message} in final the answer."
+        return {"entity_exist": False, "messages": message}
+    return {"entity_exist": True, "messages": message}
+
+
+def check_entities_match(result: str, source: str, stage: int):
+    """
+        Check if entities extracted from a question are present in an answer.
+
+        Args:
+        - result (str): Answer text.
+        - source (str): Question text.
+        - stage (int): Stage of the check (0, 1, or 2).
+
+        Returns:
+        dict: Result of the check containing
+    """
+
+    source_entity = extract_entities(source)
+    check_entity = extract_entities(result)
+    if stage == 0:
+        return text_similarity(check_entity=check_entity, source_entity=source_entity)
+    elif stage == 1:
+        return text_similarity_by_metrics(
+            check_entity=check_entity, source_entity=source_entity
+        )
+    else:
+        return text_similarity_by_llm(
+            source_entity=source_entity,
+            result=result,
+            source=source,
+        )
