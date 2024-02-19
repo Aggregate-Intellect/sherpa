@@ -4,47 +4,63 @@ from typing import Tuple
 
 class BaseOutputParser(ABC):
     """
-    An abstract base class for output parsers.
+    Abstract base class for output parsers.
 
-    All concrete output parser classes should inherit from this base class
-    and implement the abstract method 'parse_output'.
+    Defines the interface for parsing output text.
 
     Attributes:
-    - None
+        None
+
+    Methods:
+        parse_output(text: str) -> str:
+            This method should be implemented by subclasses to parse the input text.
+
+    """
 
     @abstractmethod
     def parse_output(self, text: str) -> str:
+        """
+        Abstract method to be implemented by subclasses for parsing output text.
+
+        Parameters:
+            text (str): The input text to be parsed.
+
+        Returns:
+            str: The parsed output text.
+        """
         pass
 
-    Methods:
-    - parse_output(text: str) -> str:
-        This abstract method must be implemented by subclasses to define
-        the logic for parsing the given text and returning the parsed output.
 
-    Example Usage:
-    ```python
-    class MyOutputParser(BaseOutputParser):
-        def parse_output(self, text: str) -> str:
-            # Implement custom logic to parse the output from 'text'
-            # and return the parsed result.
-            pass
-    ```
+class BaseOutputProcessor(ABC):
+    """
+    Abstract base class for output processors.
+
+    Defines the interface for processing output text.
+
+    Attributes:
+        None
+
+    Methods:
+        process_output(text: str) -> Tuple[bool, str]:
+            This method should be implemented by subclasses to process the input text.
+
+        __call__(text: str) -> Tuple[bool, str]:
+            This method is a convenient shorthand for calling process_output.
+            It is implemented to call process_output and return the result.
+
     """
 
     @abstractmethod
     def process_output(self, text: str) -> Tuple[bool, str]:
         """
-        Parse the output from the given text.
-
-        This method should be implemented by concrete subclasses to define
-        the logic for parsing the output from the provided 'text' and returning
-        the parsed result.
+        Abstract method to be implemented by subclasses for processing output text.
 
         Parameters:
-        - text (str): The raw text to be parsed.
+            text (str): The input text to be processed.
 
         Returns:
-        - str: The parsed output.
+            Tuple[bool, str]: A tuple containing a boolean indicating success or failure,
+                             and the processed output text.
         """
         pass
 
