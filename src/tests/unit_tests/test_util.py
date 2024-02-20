@@ -3,7 +3,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 from sherpa_ai.utils import (
-    check_if_number_exist,
     extract_numbers_from_text,
     get_base_url,
     get_links_from_string,
@@ -11,6 +10,7 @@ from sherpa_ai.utils import (
     rewrite_link_references,
     scrape_with_url,
     show_commands_only,
+    verify_numbers_against_source,
 )
 
 
