@@ -95,17 +95,8 @@ class Belief:
 
     def get_histories_excluding_types(
         self,
-<<<<<<< HEAD
-<<<<<<< HEAD
-        token_counter: Callable[[str], int],
-        exclude_type: [EventType],
-=======
-        exclude_type: [EventType],
-=======
-        exclude_type: list[EventType],
->>>>>>> dc19ee0 (Improve naming of variable and documentation)
+        exclude_types: list[EventType],
         token_counter: Optional[Callable[[str], int]] = None,
->>>>>>> bf5015c (Refactor th agents to modularize validation)
         max_tokens=4000,
     ):
         """
@@ -114,7 +105,7 @@ class Belief:
         Args:
             token_counter: Token counter
             max_tokens: Maximum number of tokens
-            exclude_type: List of events to be excluded
+            exclude_types: List of events to be excluded
 
         Returns:
             str: Internal history of the agent
@@ -128,7 +119,7 @@ class Belief:
         feedback = []
         current_tokens = 0
         for event in reversed(self.internal_events):
-            if event.event_type not in exclude_type:
+            if event.event_type not in exclude_types:
                 if event.event_type == EventType.feedback:
                     feedback.append(event.content)
                 else:
