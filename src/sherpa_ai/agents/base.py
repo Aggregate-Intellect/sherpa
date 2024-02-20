@@ -117,7 +117,9 @@ class BaseAgent(ABC):
                 if not validation_result.is_valid:
                     is_valid = False
                     self.belief.update_internal(
-                        EventType.feedback, self.feedback_agent_name, validation_result.feedback
+                        EventType.feedback,
+                        self.feedback_agent_name,
+                        validation_result.feedback,
                     )
                     last_failed_validation = validation
                     break

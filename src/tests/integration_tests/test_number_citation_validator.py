@@ -161,7 +161,7 @@ def test_number_citation_succeeds_in_qa(
             shared_memory=shared_memory,
             num_runs=1,
             validations=[number_validation],
-            validation_steps=3
+            validation_steps=3,
         )
 
         shared_memory.add(

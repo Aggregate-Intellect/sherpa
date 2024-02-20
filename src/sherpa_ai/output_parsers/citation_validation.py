@@ -5,6 +5,8 @@ from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
 
+# download the punkt tokenizer. This is necessary for the sent_tokenize in NLTK.
+# The download will only happen once and the result will be cached.
 nltk.download("punkt")
 
 
@@ -35,7 +37,10 @@ class CitationValidation(BaseOutputProcessor):
     result = citation_parser.parse_output(generated_text, list_of_resources)
     ```
     """
-    def __init__(self, sequence_threshold=0.7, jaccard_threshold=0.7, token_overlap=0.7):
+
+    def __init__(
+        self, sequence_threshold=0.7, jaccard_threshold=0.7, token_overlap=0.7
+    ):
         """
         Initialize the CitationValidation object.
 
@@ -45,7 +50,9 @@ class CitationValidation(BaseOutputProcessor):
         - token_overlap (float): Token overlap threshold. Default is 0.7.
         """
         # threshold
-        self.sequence_threshold = sequence_threshold  # threshold for common longest subsequece / text
+        self.sequence_threshold = (
+            sequence_threshold  # threshold for common longest subsequece / text
+        )
         self.jaccard_threshold = jaccard_threshold
         self.token_overlap = token_overlap
 

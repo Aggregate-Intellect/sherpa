@@ -4,7 +4,7 @@
 ##############################################
 
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from flask import Flask, request
 from langchain.schema import AIMessage, BaseMessage, HumanMessage
@@ -95,8 +95,8 @@ def get_response(
     verbose_logger: BaseVerboseLogger,
     bot_info: Dict[str, str],
     llm=None,
-    team_id: str = "",
-    user_id: str = "",
+    team_id: Optional[str] = None,
+    user_id: Optional[str] = None,
 ) -> str:
     """
     Get response from the task agent for the question
