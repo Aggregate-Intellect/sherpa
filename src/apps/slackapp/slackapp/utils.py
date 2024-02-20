@@ -1,13 +1,19 @@
 from typing import Optional
 
 from hydra.utils import instantiate
-from omegaconf import DictConfig, OmegaConf
+from langchain.base_language import BaseLanguageModel
+from omegaconf import OmegaConf
 
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.config.task_config import AgentConfig
 
 
-def get_qa_agent_from_config_file(config_path, user_id=None, team_id=None, llm=None) -> QAAgent:
+def get_qa_agent_from_config_file(
+    config_path: str,
+    user_id: Optional[str] = None,
+    team_id: Optional[str] = None,
+    llm: Optional[BaseLanguageModel] = None,
+) -> QAAgent:
     config = OmegaConf.load(config_path)
 
     agent_config: AgentConfig = instantiate(config.agent_config)

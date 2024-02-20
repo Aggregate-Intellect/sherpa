@@ -26,6 +26,7 @@ class NumberValidation(BaseOutputProcessor):
     ```
 
     """
+
     def process_output(self, text: str, belief: Belief) -> ValidationResult:
         """
         Verifies that all numbers within `text` exist in the `belief` source text.
@@ -35,13 +36,15 @@ class NumberValidation(BaseOutputProcessor):
         Returns:
             ValidationResult: The result of the validation. If any number in the
             text to be processed doesn't exist in the source text,
-            validation is invalid and contains a feedback string. 
+            validation is invalid and contains a feedback string.
             Otherwise validation is valid.
         """
         source = belief.get_histories_excluding_types(
             exclude_type=[EventType.feedback, EventType.result],
         )
-        numbers_exist_in_source, error_message = verify_numbers_against_source(text, source)
+        numbers_exist_in_source, error_message = verify_numbers_against_source(
+            text, source
+        )
         if numbers_exist_in_source:
             return ValidationResult(
                 is_valid=True,
