@@ -1,20 +1,16 @@
 from typing import List, Optional
 
 from langchain.base_language import BaseLanguageModel
-from loguru import logger
 
 from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.config import AgentConfig
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
-from sherpa_ai.output_parsers.number_validation import NumberValidation
-from sherpa_ai.output_parsers.validation_result import ValidationResult
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
@@ -25,7 +21,7 @@ from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 ACTION_PLAN_DESCRIPTION = "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."  # noqa: E501
 
-TASK_AGENT_DESRIPTION = "You are a **question answering assistant** who solves user questions and offers a detailed solution."  # noqa: E501
+TASK_AGENT_DESCRIPTION = "You are a **question answering assistant** who solves user questions and offers a detailed solution."  # noqa: E501
 
 
 class QAAgent(BaseAgent):
@@ -37,7 +33,7 @@ class QAAgent(BaseAgent):
         self,
         llm: BaseLanguageModel,
         name: str = "QA Agent",
-        description: str = TASK_AGENT_DESRIPTION,
+        description: str = TASK_AGENT_DESCRIPTION,
         shared_memory: SharedMemory = None,
         belief: Optional[Belief] = None,
         agent_config: AgentConfig = AgentConfig(),
@@ -53,7 +49,7 @@ class QAAgent(BaseAgent):
         Args:
             llm (BaseLanguageModel): The language model used to generate text
             name (str, optional): The name of the agent. Defaults to "QA Agent".
-            description (str, optional): The description of the agent. Defaults to TASK_AGENT_DESRIPTION.
+            description (str, optional): The description of the agent. Defaults to TASK_AGENT_DESCRIPTION.
             shared_memory (SharedMemory, optional): The shared memory used to store information and shared with other agents. Defaults to None.
             belief (Optional[Belief], optional): The belief of the agent. Defaults to None.
             agent_config (AgentConfig, optional): The agent configuration. Defaults to AgentConfig.
