@@ -1,26 +1,32 @@
 import json
-
 import boto3
-
-destination_bucket = "transcriptslangchain"
+import os
+destination_bucket = os.environ['destination_bucket']
 import tiktoken
-from langchain import LLMChain, PromptTemplate
 from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import (AIMessagePromptTemplate,
-                                    ChatPromptTemplate,
-                                    HumanMessagePromptTemplate,
-                                    SystemMessagePromptTemplate)
-from langchain.schema import AIMessage, HumanMessage, SystemMessage
+from langchain import PromptTemplate, LLMChain
+import time
+#import docx
 from langchain.text_splitter import MarkdownTextSplitter
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    AIMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
+from langchain.schema import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage
+)
 
-imoprt config as cfg
 import json
 
 #import api_keys
 
 # instantiate chat model
 chat = ChatOpenAI(
-  openai_api_key=cfg.OPENAI_API_KEY,
+  openai_api_key=os.environ['openaikey'] ,
   temperature=0,
   model='gpt-3.5-turbo')
 
@@ -34,7 +40,6 @@ def num_tokens_from_string(string: str, encoding_name="cl100k_base") -> int:
   return num_tokens
 
 """## Splitting raw transcript
-
 ChatGPT models have a token limit. For GPT3.5-turbo, the limit is 4096 tokens [(docs)](https://platform.openai.com/docs/models/gpt-3-5). Most transcripts exceed that, so it must be split into chunks.
 """
 def transcript_splitter(raw_transcript, chunk_size=10000, chunk_overlap=200):
@@ -60,10 +65,10 @@ def transcript2essay(transcript, chat_model=chat):
   result = chat_model(chat_prompt.format_prompt(transcript=transcript).to_messages())
   return result.content
 
-def create_essay_parts(transcript_docs):
+def create_essay_parts(transcript_docs,chat_model=chat):
   essay_response = ''
   for i, text in enumerate(transcript_docs):
-      essay = transcript2essay(text.page_content)
+      essay = transcript2essay(text.page_content,chat_model=chat)
       essay_response = f'\n\n#Part {i+1}\n'.join([essay_response, essay])
 
   return essay_response
@@ -156,11 +161,11 @@ def extract_metadata_as_json(essay, chat_model=chat):
   }}\
   ]\
   }}"""
-  
+
   system_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
   human_template = """Essay: ```{text}```"""
-  
+
   human_prompt = HumanMessagePromptTemplate.from_template(human_template)
   chat_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
 
@@ -173,9 +178,10 @@ def extract_metadata_as_json(essay, chat_model=chat):
   return metadata_json
 
 def json2rst(metadata, rst_filepath):
+  print(metadata)
   if not isinstance(metadata, dict):
       metadata = json.loads(metadata)
-  
+  print(metadata)
   # rst_filepath = './essays/test.rst'
   with open(rst_filepath, 'a') as the_file:
       the_file.write("\n\n")
@@ -204,35 +210,60 @@ def json2rst(metadata, rst_filepath):
 
 def lambda_handler(event,context):
   # TODO implement
-    
+
+
+
      #Retrieve the source and destination bucket names from the event
     source_bucket = event['Records'][0]['s3']['bucket']['name']
-    
+
     # Retrieve the key (filename) of the object that triggered the Lambda function
     source_key = event['Records'][0]['s3']['object']['key']
-    
-    
+
+
+    ACCESS_KEY	= os.environ['ACCESS_KEY'] 
+    SECRET_KEY	= os.environ['SECRET_KEY'] 
     #s3_client = boto3.client('s3')
     s3_client = boto3.client(
-      's3',
-      aws_access_key_id=cfg.AWS_ACCESS_KEY,
-      aws_secret_access_key=cfg.AWS_SECRET_KEY
+    's3',
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRET_KEY
     )
-    
+
     print(source_bucket)
     print(source_key)
-    
+
+
+    # response = s3_client.get_object(Bucket=source_bucket, Key=source_key)
+    # docx_file = response['Body'].read()
+
+    # # Load the DOCX file using the python-docx library
+    # document = Document(io.BytesIO(docx_file))
+
+    # # Extract text from the document
+    # text = '\n'.join([paragraph.text for paragraph in document.paragraphs])
+
+    # return {
+    #     'statusCode': 200,
+    #     'body': json.dumps(text)
+    # }
+
     # Read the file content from the source bucket
     response = s3_client.get_object(Bucket=source_bucket, Key=source_key)
+    print("Response :",response)
     #file_content = response['Body'].read().decode('utf-8')
     try:
+        print("In Try")
         raw_transcript = response['Body'].read().decode('utf-8')
     except UnicodeDecodeError as e:
+        print("In exception")
         raw_transcript = response['Body'].read().decode('utf-8', errors='replace')
-        
+
+
+    print("Raw Transcript : ",raw_transcript)
         # takes about 2-3 minutes to run
     summary= full_transcript2essay(raw_transcript)
 
+    print("Summary : ",summary)
     # 17 seconds to run
     print('Extracting metadata...')
     metadata = extract_metadata_as_json(summary, chat_model=chat)
@@ -254,13 +285,13 @@ def lambda_handler(event,context):
       print("Parsing error from Json to Rst for file :", source_key)
       destination_key = source_key.split(".")[0] +".json"
       file_path = metadata_filepath
-    
+
     s3_client.upload_file(file_path, destination_bucket, destination_key)
 
-    
+
     print(destination_key)
-    
-    
+
+
     return {
         'statusCode': 200,
         'body': json.dumps('Rst file comversion successful !!!')
@@ -269,25 +300,27 @@ def lambda_handler(event,context):
 
 def lambda_handler_bkp(event, context):
     # TODO implement
-    
+
      #Retrieve the source and destination bucket names from the event
     source_bucket = event['Records'][0]['s3']['bucket']['name']
 
-    
+
     # Retrieve the key (filename) of the object that triggered the Lambda function
     source_key = event['Records'][0]['s3']['object']['key']
-    
-    
+
+
+    ACCESS_KEY	= os.environ['ACCESS_KEY'] 
+    SECRET_KEY	= os.environ['SECRET_KEY'] 
     #s3_client = boto3.client('s3')
     s3_client = boto3.client(
-      's3',
-      aws_access_key_id=cfg.AWS_ACCESS_KEY,
-      aws_secret_access_key=cfg.AWS_SECRET_KEY
+    's3',
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRET_KEY
     )
-    
+
     print(source_bucket)
     print(source_key)
-    
+
     # Read the file content from the source bucket
     response = s3_client.get_object(Bucket=source_bucket, Key=source_key)
     #file_content = response['Body'].read().decode('utf-8')
@@ -295,39 +328,39 @@ def lambda_handler_bkp(event, context):
         raw_transcript = response['Body'].read().decode('utf-8')
     except UnicodeDecodeError as e:
         raw_transcript = response['Body'].read().decode('utf-8', errors='replace')
-    
+
     # takes about 2-3 minutes to run
     final_essay = full_transcript2essay(raw_transcript)
-    
+
     print('Extracting metadata...')
     metadata = extract_metadata_as_json(final_essay)
-    
+
     print("Extracting metadata completed")
     #print(metadata)
-    
-    
-    
+
+
+
      # Convert the metadata dictionary to JSON string
     metadata_json = json.dumps(metadata)
-    
+
     # Convert the JSON string to bytes
     metadata_bytes = metadata_json.encode('utf-8')
-    
+
 
     print(type(metadata_json))
     print(metadata_json)
-    
+
     rst_filepath = r'/tmp/test.rst'
     json2rst(metadata, rst_filepath)
-    
+
 
     destination_key = "transcript_" + source_key.split(".")[0] +".rst"
     print(destination_key)
-    
+
     s3_client.upload_file(rst_filepath, destination_bucket, destination_key)
-    
-  
-    
+
+
+
     return {
         'statusCode': 200,
         'body': json.dumps('Rst file comversion successful !!!')
