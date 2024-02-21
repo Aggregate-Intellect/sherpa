@@ -22,7 +22,6 @@ boto3 = "^1.28.77"
 pypdf = "^3.17.0"
 transformers = "^4.35.2"
 pydantic = "^2.5.3"
-pal = { git = "https://github.com/luyug/pal" }
 
 
 
