@@ -1,3 +1,23 @@
+# This file is cited from 
+#
+#   https://github.com/reasoning-machines/pal/blob/main/pal/prompt/math_prompts.py
+# 
+# We have made some modifications to the end of the MATH_PROMPT.
+
+# Copyright 2022 PAL Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 MATH_PROMPT = (
     '''
 Q: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?
