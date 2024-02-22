@@ -1,6 +1,7 @@
 import time
-from anyio import Path
+
 import boto3
+from anyio import Path
 from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -119,7 +120,8 @@ class UserUsageTracker:
         self.is_reminded = self.check_if_reminded(combined_id=combined_id)
         if not user_is_whitelisted and not self.is_reminded:
             if (
-                self.percentage_used(combined_id=combined_id) > self.usage_percentage_allowed
+                self.percentage_used(combined_id=combined_id)
+                > self.usage_percentage_allowed
                 and not self.is_reminded
             ):
                 self.add_data(combined_id=combined_id, token=0, reminded_timestamp=True)
