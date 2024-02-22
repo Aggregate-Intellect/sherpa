@@ -1,6 +1,7 @@
+import pytest
+
 from sherpa_ai.actions import AnswerArithmetic
 from sherpa_ai.test_utils.llms import get_llm
-import pytest
 
 
 @pytest.mark.external_api
