@@ -1,14 +1,13 @@
-from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
-from sherpa_ai.memory import SharedMemory
 from typing import List, Optional
 
 from langchain.embeddings.openai import OpenAIEmbeddings
 
 from sherpa_ai.actions.planning import Plan
 from sherpa_ai.agents import AgentPool
+from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
 from sherpa_ai.events import Event, EventType
+from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
-
 
 
 class SharedMemoryWithVectorDB(SharedMemory):
@@ -19,7 +18,7 @@ class SharedMemoryWithVectorDB(SharedMemory):
 
     Attributes:
         session_id (str): Unique identifier for the current session.
-                                                                                          
+
     """
 
     def __init__(
@@ -42,7 +41,7 @@ class SharedMemoryWithVectorDB(SharedMemory):
 
         task = tasks[-1] if len(tasks) > 0 else None
 
-        # based on the current task search similarity on the context and add it as an 
+        # based on the current task search similarity on the context and add it as an
         # event type user_input which is going to be used as a context on the prompt
         contexts = vec_db.similarity_search(task.content, session_id=self.session_id)
 
@@ -54,10 +53,12 @@ class SharedMemoryWithVectorDB(SharedMemory):
                 content=context.page_content,
             )
 
-
         belief.set_current_task(task)
 
-
         for event in self.events:
-            if event.event_type in [EventType.task, EventType.result, EventType.user_input]:
+            if event.event_type in [
+                EventType.task,
+                EventType.result,
+                EventType.user_input,
+            ]:
                 belief.update(event)
