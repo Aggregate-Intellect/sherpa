@@ -1,13 +1,16 @@
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 
-from sherpa_ai.output_parsers.base import BaseOutputParser
+from sherpa_ai.memory import Belief
+from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
 
+# download the punkt tokenizer. This is necessary for the sent_tokenize in NLTK.
+# The download will only happen once and the result will be cached.
 nltk.download("punkt")
 
 
-class CitationValidation(BaseOutputParser):
+class CitationValidation(BaseOutputProcessor):
     """
     A class for adding citations to generated text based on a list of resources.
 
@@ -35,7 +38,9 @@ class CitationValidation(BaseOutputParser):
     ```
     """
 
-    def __init__(self, seq_thresh=0.7, jaccard_thresh=0.7, token_overlap=0.7):
+    def __init__(
+        self, sequence_threshold=0.7, jaccard_threshold=0.7, token_overlap=0.7
+    ):
         """
         Initialize the CitationValidation object.
 
@@ -44,8 +49,11 @@ class CitationValidation(BaseOutputParser):
         - jaccard_thresh (float): Jaccard similarity threshold. Default is 0.7.
         - token_overlap (float): Token overlap threshold. Default is 0.7.
         """
-        self.seq_thresh = seq_thresh  # threshold for common longest subsequece / text
-        self.jaccard_thresh = jaccard_thresh
+        # threshold
+        self.sequence_threshold = (
+            sequence_threshold  # threshold for common longest subsequece / text
+        )
+        self.jaccard_threshold = jaccard_threshold
         self.token_overlap = token_overlap
 
     def calculate_token_overlap(self, sentence1, sentence2) -> tuple:
@@ -164,16 +172,20 @@ class CitationValidation(BaseOutputParser):
         sentences = sent_tokenize(paragraph)
         return sentences
 
+    def find_used_resources(self, belief: Belief) -> list[dict]:
+        resources = []
+        for action in belief.actions:
+            if hasattr(action, "meta") and action.meta is not None:
+                resources.extend(action.meta[-1])
+        return resources
+
     # add citation to the generated text
-    def parse_output(self, generated: str, resources: list[dict]) -> ValidationResult:
+    def process_output(self, generated: str, belief: Belief) -> ValidationResult:
         """
-        Add citation to each sentence in the generated text based on fact-checking methdod.
-
+        Add citation to each sentence in the generated text from resources based on fact checking model.
         Args:
-        - generated (str): The generated content where citations/references need to be added.
-        - resources (list[dict]): A list of dictionaries containing reference text and links.
-            Each dictionary in the list should have the format {"Document": str, "Source": str}.
-
+            generated (str): The generated content where we need to add citation/reference
+            agent (BaseAgent): Belief of the agents generated the content
         Returns:
         - ValidationResult: An object containing the result of citation addition and feedback.
         The ValidationResult has attributes 'is_valid' indicating success, 'result' containing
@@ -190,9 +202,21 @@ class CitationValidation(BaseOutputParser):
         ```
 
         """
-
         # resources type
         # resources = [{"Document":, "Source":...}, {}]
+        resources = self.find_used_resources(belief)
+
+        if len(resources) == 0:
+            # no resources used, return the original text
+            return ValidationResult(
+                is_valid=True,
+                result=generated,
+                feedback="",
+            )
+
+        return self.add_citations(generated, resources)
+
+    def add_citations(self, generated: str, resources: list[dict]) -> ValidationResult:
         paragraph = generated.split("\n")
         paragraph = [p for p in paragraph if len(p.strip()) > 0]
 
@@ -231,9 +255,9 @@ class CitationValidation(BaseOutputParser):
                             # print(jaccard)
 
                             if (
-                                (seq / len(sentence)) > self.seq_thresh
+                                (seq / len(sentence)) > self.sequence_threshold
                                 or contained
-                                or jaccard > self.jaccard_thresh
+                                or jaccard > self.jaccard_threshold
                             ):
                                 links.append(link)
                                 ids.append(index + 1)
@@ -256,3 +280,6 @@ class CitationValidation(BaseOutputParser):
             result="".join(new_paragraph),
             feedback="",
         )
+
+    def get_failure_message(self) -> str:
+        return "Unable to add citations to the generated text. Please pay attention to the cited sources."

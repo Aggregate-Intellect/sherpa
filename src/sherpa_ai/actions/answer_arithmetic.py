@@ -1,14 +1,16 @@
-from loguru import logger
 import os
 import re
 import types
 from collections import Counter
-from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.config.task_config import AgentConfig
+
 import openai
 import pal
+from loguru import logger
 from pal.core.interface import timeout
 from pal.prompt import math_prompts
+
+from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.config.task_config import AgentConfig
 
 
 def changePlaceholder(question, number_dict):
