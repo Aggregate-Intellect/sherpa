@@ -1,0 +1,55 @@
+shared_memory:
+  _target_: sherpa_ai.memory.shared_memory.SharedMemory
+  objective: Answer the question
+
+user_id: none
+team_id: none
+
+llm:
+  _target_: sherpa_ai.models.sherpa_base_chat_model.SherpaChatOpenAI
+  model_name: gpt-3.5-turbo
+  temperature: 0
+  user_id: ${user_id}
+  team_id: ${team_id}
+
+agent_config:
+  _target_: sherpa_ai.config.task_config.AgentConfig
+
+citation_validation:
+  _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
+  sequence_threshold: 0.5
+  jaccard_threshold: 0.5
+  token_overlap: 0.5
+
+number_validation:
+  _target_: sherpa_ai.output_parsers.number_validation.NumberValidation
+
+arxiv_search:
+  _target_: sherpa_ai.actions.arxiv_search.ArxivSearch
+  role_description: Act as a question answering agent
+  task: Question answering
+  llm: ${llm}
+  max_results: 3
+
+google_search:
+  _target_: sherpa_ai.actions.GoogleSearch
+  role_description: Act as a question answering agent
+  task: Question answering
+  llm: ${llm}
+  include_metadata: true
+  config: ${agent_config}
+
+qa_agent:
+  _target_: sherpa_ai.agents.qa_agent.QAAgent
+  llm: ${llm}
+  shared_memory: ${shared_memory}
+  name: QA Sherpa
+  description: Act as a question answering agent
+  agent_config: ${agent_config}
+  num_runs: 1
+  validation_steps: 1
+  actions:
+    - ${google_search}
+  validations:
+    - ${number_validation}
+    - ${citation_validation}
