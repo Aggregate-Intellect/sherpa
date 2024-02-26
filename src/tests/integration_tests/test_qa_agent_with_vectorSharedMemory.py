@@ -6,11 +6,9 @@ from loguru import logger
 
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
-
 from sherpa_ai.events import EventType
 from sherpa_ai.memory.shared_memory_with_vectordb import SharedMemoryWithVectorDB
 from sherpa_ai.test_utils.llms import get_llm
-
 
 data = """Avocados are a fruit, not a vegetable. They're technically considered a single-seeded berry, believe it or not.
 The Eiffel Tower can be 15 cm taller during the summer, due to thermal expansion meaning the iron heats up, the particles gain kinetic energy and take up more space.
@@ -34,7 +32,13 @@ Venus is the only planet to spin clockwise. It travels around the sun once every
 Nutmeg is a hallucinogen. The spice contains myristicin, a natural compound that has mind-altering effects if ingested in large doses.
 A 73-year-old bottle of French Burgundy became the most expensive bottle of wine ever sold at auction in 2018, going for $558,000 (approx £439,300). The bottle of 1945 Romanee-Conti sold at Sotheby for more than 17 times its original estimate of $32,000."""
 session_id = "6"
-meta_data = {"session_id": f"{session_id}","file_name":"rtgfqq", "file_type":"pdf", "title":"NoMeaning",  "data_type": "user_input"}
+meta_data = {
+    "session_id": f"{session_id}",
+    "file_name": "rtgfqq",
+    "file_type": "pdf",
+    "title": "NoMeaning",
+    "data_type": "user_input",
+}
 
 
 @pytest.fixture
@@ -42,18 +46,19 @@ def config_logger():
     logger.remove()
     logger.add(sys.stderr, level="DEBUG")
 
+
 @pytest.mark.external_api
-def test_shared_memory_with_vector(config_logger ,get_llm ):
-    llm = ChatOpenAI(model_name='gpt-3.5-turbo')
+def test_shared_memory_with_vector(config_logger, get_llm):
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo")
     # llm = get_llm(__file__, test_shared_memory_with_vector.__name__)
-    #store text as a scraped text from a file with meta_data session_id 
-    split_data = ChromaVectorStore.file_text_splitter(data=data ,meta_data=meta_data)
-    ChromaVectorStore.chroma_from_texts(texts= split_data['texts'] ,  meta_datas=split_data['meta_datas'])
+    # store text as a scraped text from a file with meta_data session_id
+    split_data = ChromaVectorStore.file_text_splitter(data=data, meta_data=meta_data)
+    ChromaVectorStore.chroma_from_texts(
+        texts=split_data["texts"], meta_datas=split_data["meta_datas"]
+    )
 
     shared_memory = SharedMemoryWithVectorDB(
-        objective="summerize the file rtgfqq",
-        agent_pool=None,
-        session_id=session_id
+        objective="summerize the file rtgfqq", agent_pool=None, session_id=session_id
     )
 
     task_agent = QAAgent(
