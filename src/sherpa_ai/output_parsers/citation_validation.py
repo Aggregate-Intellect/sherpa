@@ -216,6 +216,61 @@ class CitationValidation(BaseOutputProcessor):
 
         return self.add_citations(generated, resources)
 
+    def add_citation_to_sentence(self, sentence: str, resources: list[dict]):
+        """
+        This function add a citation to a sentence based on a list of resources
+
+        """
+        # ids and links of the cited resources
+        ids = []
+        links = []
+
+        for index, source in enumerate(resources):
+            cited = False  # if this resource is cited
+            text = source["Document"]
+            one_sentences = text.split(".")
+            sub_string = [s.split("\n") for s in one_sentences]
+            split_texts = self.unfoldList(sub_string)
+
+            link = source["Source"]
+
+            for j in split_texts:
+                if len(sentence) > 5 and not cited and not (link in links):
+                    seq = self.longestCommonSubsequence(sentence, j)
+
+                    contained = False
+                    if sentence in j:
+                        # print("contained", s, j)
+                        contained = True
+                    jaccard = self.jaccard_index(sentence, j)
+                    # print(jaccard)
+
+                    if (
+                        (seq / len(sentence)) > self.sequence_threshold
+                        or contained
+                        or jaccard > self.jaccard_threshold
+                    ):
+                        links.append(link)
+                        ids.append(index + 1)
+        return ids, links
+
+    def format_sentence_with_citations(self, sentence, ids, links):
+        """
+        This function append citations to sentence
+        """
+
+        citations = []
+        for id, url in zip(ids, links):
+            reference = f"[{id}]({url})"
+            citations.append(reference)
+
+        if len(citations) > 0:
+            new_sentence = sentence[:-1] + " " + ", ".join(citations) + "."
+
+        else:
+            new_sentence = sentence
+        return new_sentence
+
     def add_citations(self, generated: str, resources: list[dict]) -> ValidationResult:
         paragraph = generated.split("\n")
         paragraph = [p for p in paragraph if len(p.strip()) > 0]
@@ -225,55 +280,23 @@ class CitationValidation(BaseOutputProcessor):
         ]  # nested list
 
         new_paragraph = []
+        # iterate through each paragraph
         for one_paragraph in paragraphs:
-            new_sentence = []
+            new_sentences = []
+
+            # for each sentence in each paragraph
             for _, sentence in enumerate(one_paragraph):
-                links = []
-                ids = []
                 sentence = sentence.strip()
                 if len(sentence) == 0:
                     continue
 
-                for index, source in enumerate(resources):
-                    cited = False  # if this resource is cited
-                    text = source["Document"]
-                    one_sentences = text.split(".")
-                    sub_string = [s.split("\n") for s in one_sentences]
-                    split_texts = self.unfoldList(sub_string)
+                ids, links = self.add_citation_to_sentence(sentence, resources)
+                formated_sentence = self.format_sentence_with_citations(
+                    sentence, ids, links
+                )
+                new_sentences.append(formated_sentence)
 
-                    link = source["Source"]
-
-                    for j in split_texts:
-                        if len(sentence) > 5 and not cited and not (link in links):
-                            seq = self.longestCommonSubsequence(sentence, j)
-
-                            contained = False
-                            if sentence in j:
-                                # print("contained", s, j)
-                                contained = True
-                            jaccard = self.jaccard_index(sentence, j)
-                            # print(jaccard)
-
-                            if (
-                                (seq / len(sentence)) > self.sequence_threshold
-                                or contained
-                                or jaccard > self.jaccard_threshold
-                            ):
-                                links.append(link)
-                                ids.append(index + 1)
-                citations = []
-                for id, url in zip(ids, links):
-                    reference = f"[{id}]({url})"
-                    citations.append(reference)
-
-                if len(citations) > 0:
-                    new_sentence.append(
-                        sentence[:-1] + " " + ", ".join(citations) + "."
-                    )
-                else:
-                    new_sentence.append(sentence)
-
-            new_paragraph.append(" ".join(new_sentence) + "\n")
+            new_paragraph.append(" ".join(new_sentences) + "\n")
 
         return ValidationResult(
             is_valid=True,
