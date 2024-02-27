@@ -380,7 +380,7 @@ def extract_entities(text):
     return filtered_entities
 
 
-def json_extractor(text):
+def json_from_text(text):
     """
         Extract and parse JSON data from a text.
 
@@ -434,7 +434,7 @@ def text_similarity_by_llm(
     )
 
     instruction = f"""
-        I have a question and an answer. I want you to confirm if the entities from the question has been in some form inside the answer. 
+        I have a question and an answer. I want you to confirm whether the entities from the question are mentioned in some form within the answer.
         Answer = {result}
         Question = {source}
         Entities inside the question = {source_entity}
@@ -449,7 +449,11 @@ def text_similarity_by_llm(
 
     llm_result = llm.predict(instruction)
 
-    checkup_json = json_extractor(llm_result)
+    print('################################################################', flush=True)
+    print(llm_result, flush=True)
+    print('################################################################' , flush=True)
+
+    checkup_json = json_from_text(llm_result)
     return checkup_json
 
 
@@ -478,6 +482,11 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
             combined_similarity = string_comparison_with_jaccard_and_levenshtein(
                 word1=word1, word2=word2, levenshtein_constant=levenshtein_constant
             )
+            print('************************************')
+            print(word1)
+            print(word2)
+            print('************************************')
+            print(combined_similarity)
             if metrics_value < combined_similarity:
                 metrics_value = combined_similarity
         if metrics_value < threshold:
@@ -505,9 +514,19 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
 
     error_entity = []
     message = ""
+    print('+++++++++++++++++++++++++++++++++++++++++++++' ,flush=True)
+    print(check_entity , flush=True)
+    print(source_entity , flush=True)
+    print('+++++++++++++++++++++++++++++++++++++++++++++',flush=True)
     for entity in source_entity:
-        print(entity)
+
+        print(entity , flush=True)
         if entity not in check_entity:
+            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
+            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
+            print(entity)
+            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
+            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
             error_entity.append(entity)
     if len(error_entity) > 0:
         for entity in error_entity:
@@ -530,8 +549,15 @@ def check_entities_match(result: str, source: str, stage: int):
         dict: Result of the check containing
     """
 
-    source_entity = extract_entities(source)
-    check_entity = extract_entities(result)
+    source_entity =[s.lower() for s in extract_entities(source)]  
+    check_entity =[s.lower() for s in extract_entities(result)] 
+    
+    
+
+    print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]' , flush=True)
+    print(source_entity , flush=True)
+    print(check_entity , flush=True)
+    print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]' , flush=True)
     if stage == 0:
         return text_similarity(check_entity=check_entity, source_entity=source_entity)
     elif stage == 1:

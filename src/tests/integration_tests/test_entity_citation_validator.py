@@ -18,10 +18,10 @@ from nltk.metrics import jaccard_distance
     "objective , input_data, expected_entities",
     [
         (
-            "what is unique about Ethiopia calendar?  based on USA calendar assosation.",
+            "what is unique about Ethiopia calendar?  based on USA calendar assosation. ",
             (
                 """
-                According to Ethiopian calendar Assosation (ECA) , Ethiopia has thirteen months.""",
+                According to Ethiopian calendar Assosation (ECA) , Ethiopia has thirteen months. Canada and Kenya also mentioned this. also recognized by World Calendar Assosation (WCA) """,
                 [
                     {
                         "Document": "Ethiopian calendar",
@@ -29,7 +29,7 @@ from nltk.metrics import jaccard_distance
                     }
                 ],
             ),
-            ['Ethiopian' , 'Ethiopian Calendar Association'],
+            ['Ethiopian' , 'Ethiopian Calendar Association' ,'kenya'],
         ),
          (
             "Tell me a fact about Star Trek: The Next Generation?",
@@ -75,7 +75,8 @@ def test_entity_citation_succeeds_in_qa(
 
         results = shared_memory.get_by_type(EventType.result)
         logger.error(results[0].content)
-        result_entities = extract_entities(results[0].content)
+        result_entities =[s.lower() for s in extract_entities(results[0].content)]  
+        expected_entities = [s.lower() for s in expected_entities] 
         for entitity in expected_entities:
             set_a = set(entitity.split())  # Convert each string in a to a set of words
             match_found = any( 1 - jaccard_distance(set_a, result_entity.split()) >= 0.7 for result_entity in result_entities)
