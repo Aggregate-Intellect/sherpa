@@ -12,7 +12,8 @@ from sherpa_ai.utils import (
 class PromptReconstructor:
 
     """
-    Class to reconstruct prompts based on a question and links with in it.
+    Scrapes the content of URLs mentioned in the given Slack message,
+    and rewrites the question to incorporate a summary of the scraped URLs.
     """
 
     def __init__(self, question, slack_message):
