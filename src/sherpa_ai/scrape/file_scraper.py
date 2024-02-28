@@ -21,7 +21,7 @@ class QuestionWithFileHandler:
         Args:
             question (str): The user's question.
             files (list): List of files associated with the question.
-            token (str): Authorization token.
+            token (str): OAuth token.
             user_id (str): User ID.
             team_id (str): Team ID.
         """
@@ -54,7 +54,7 @@ class QuestionWithFileHandler:
 
     def download_file(self, file):
         """
-        Downloads the specified file and return the content of the file.
+        Gets the specified file via HTTP and returns the file content.
 
         Args:
             file (dict): Information about the file to be downloaded. Example name, title, filetype etc

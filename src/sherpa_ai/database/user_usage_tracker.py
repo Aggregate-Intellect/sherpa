@@ -17,7 +17,7 @@ import boto3
 
 class UsageTracker(Base):
 
-    """Class representing the 'usage_tracker' table in the database."""
+    """SQLAlchemy base model for tracking LLM token usage on per-user basis"""
 
     __tablename__ = "usage_tracker"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -30,7 +30,7 @@ class UsageTracker(Base):
 
 class Whitelist(Base):
 
-    """Class representing the 'whitelist' table in the database."""
+    """Represents a trusted list of users whose usage is not tracked"""
 
     __tablename__ = "whitelist"
 
@@ -40,7 +40,7 @@ class Whitelist(Base):
 
 class UserUsageTracker:
 
-    """Class for tracking user usage in the application."""
+    """Enables an app to track LLM token usage on per-user basis"""
 
     def __init__(
         self,
@@ -190,7 +190,7 @@ class UserUsageTracker:
 
     def percentage_used(self, combined_id):
         """
-        Calculate the percentage of daily tokens used by a user.
+        Calculate the percentage of daily token quota used by a user.
 
         Args:
             combined_id (str): Combined ID of the user.
@@ -232,7 +232,7 @@ class UserUsageTracker:
 
     def get_data_since_last_reset(self, user_id):
         """
-        Get usage data since the last reset is true for a user.
+        Get usage since the user's usage data was last reset.
 
         Args:
             user_id (str): ID of the user.
@@ -306,7 +306,7 @@ class UserUsageTracker:
 
     def reset_usage(self, combined_id, token_amount):
         """
-        Reset the usage data for a user. By changing the the reset_timestamp to true.
+        Reset the usage data for a user to zero.
 
         Args:
             combined_id (str): Combined ID of the user.
@@ -318,7 +318,7 @@ class UserUsageTracker:
 
     def get_last_reset_info(self, combined_id):
         """
-        Get information about the last reset for a user.
+        Get information about the most recent usage data reset for a user.
 
         Args:
             combined_id (str): Combined ID of the user.
@@ -361,7 +361,7 @@ class UserUsageTracker:
 
     def check_usage(self, user_id, combined_id, token_amount):
         """
-        Check user usage and determine if an action is allowed.
+        Check user usage and determine whether user is allowed to consume more tokens.
 
         Args:
             user_id (str): ID of the user.
@@ -369,7 +369,8 @@ class UserUsageTracker:
             token_amount (int): Number of tokens to check.
 
         Returns:
-            dict: Result containing information about token left, whether the action can be executed,
+            dict: Result containing information about tokens remaining,
+                  whether more tokens can be consumed (can_excute),
                   any associated message, and the time left.
         """
 
