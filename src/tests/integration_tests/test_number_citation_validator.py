@@ -11,7 +11,7 @@ from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.output_parsers.number_validation import NumberValidation
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.tools import SearchTool
-from sherpa_ai.utils import extract_numbers_from_text
+from sherpa_ai.utils import combined_number_extractor
 
 
 @pytest.mark.parametrize(
@@ -61,10 +61,6 @@ from sherpa_ai.utils import extract_numbers_from_text
                 """
                 Soccer, also known as association football, is a sport played between two teams of 33 players on a rectangular field. The goal is to score more goals than the other team by kicking or heading the ball into the opponent's goal. Players can't use their hands or arms, except for the goalie, to touch the ball. Instead, they can use their legs, head, and torso to pass the ball. Soccer is the world's most popular sport, with 250 million players in over 200 countries. Outside of the United States and Australia, soccer is known as football. The term "soccer" originated in the 1880s when Oxford University students distinguished between "rugger" (rugby football) and "assoccer" (association football). The term was later shortened to 'soccer'.
                 """,
-                # """Soccer, or football, is a globally adored sport played by two teams of 33 players on a rectangular pitch. The goal is to score more goals than the opposing team by kicking a ball into their net. With over 250 million players in 200+ countries, soccer transcends borders, becoming a universal language of competition and passion. The term "soccer" originated in 19th-century England, distinguishing it from rugby. Today, major tournaments like the FIFA World Cup unite nations and foster cultural pride, highlighting the sport's profound impact on societies worldwide.""",
-                # """
-                # Association football, commonly referred to as soccer, involves a game between two teams, each comprised of 33 players, on a rectangular field. The primary objective is to outscore the opposing team by propelling the ball into their goal through kicking or heading. Players, excluding the goalie, are restricted from using their hands or arms to handle the ball; instead, they utilize their legs, head, and torso for ball control and passing. Soccer boasts global popularity, with 250 million participants spanning over 200 countries. Beyond the United States and Australia, the sport is recognized as football. The term "soccer" originated in the 1880s when Oxford University students differentiated between 'rugger' (rugby football) and 'assoccer' (association football), eventually evolving into the abbreviated term 'soccer.'
-                # """
                 [
                     {
                         "Document": "soccer",
@@ -111,10 +107,9 @@ from sherpa_ai.utils import extract_numbers_from_text
             "how many players are in a field of a soccer game? and how many referees are there ? ",
             (
                 """
-                One intriguing fact about soccer is that, unlike many other team sports, there are no strict regulations regarding the size or weight of the soccer ball. According to the Laws of the Game set by the International Football Association Board (IFAB), a soccer ball should have a circumference of 68-70 cm (27-28 inches) and a weight of 410-450 grams (14-16 ounces).
+                intriguing fact about soccer is that, unlike many other team sports, there are no strict regulations regarding the size or weight of the soccer ball. According to the Laws of the Game set by the International Football Association Board (IFAB), a soccer ball should have a circumference of 68-70 cm (27-28 inches) and a weight of 410-450 grams (14-16 ounces).
                 In terms of the number of players, a standard soccer match is played with 16.5 players on each team, including one goalkeeper. This configuration has been widely adopted globally, contributing to the sport's balance of strategy, teamwork, and individual skill. The dynamic interplay of 33 players on .
                 """,
-                # """Soccer, or football, is a globally adored sport played by two teams of 33 players on a rectangular pitch. The goal is to score more goals than the opposing team by kicking a ball into their net. With over 250 million players in 200+ countries, soccer transcends borders, becoming a universal language of competition and passion. The term "soccer" originated in 19th-century England, distinguishing it from rugby. Today, major tournaments like the FIFA World Cup unite nations and foster cultural pride, highlighting the sport's profound impact on societies worldwide.""",
                 [
                     {
                         "Document": "soccer",
@@ -139,13 +134,47 @@ from sherpa_ai.utils import extract_numbers_from_text
             ),
             [],
         ),
+        (
+            7,
+            (
+                "One Thousand Two Hundred Thirty-Four feet also  567 and there are 56.45 others 123,345",
+                [
+                    {
+                        "Document": "soccer",
+                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+                    }
+                ],
+            ),
+            ["1234", "567", "56.45", "123345"],
+        )(
+            7,
+            "how many dogs are going to be in the rally GGH?",
+            (
+                """
+                In the rally GGH there are going to be One Thousand Two Hundred Thirty-Four dogs. and also one thousand cats. 
+                there are going to be also event for wolves and lions.
+                """,
+                [
+                    {
+                        "Document": "soccer",
+                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+                    }
+                ],
+            ),
+            ["1234"],
+        ),
     ],
 )
 def test_number_citation_succeeds_in_qa(
     get_llm, test_id, input_data, expected_numbers, objective
 ):  # noqa: F811
-    llm = get_llm(
-        __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
+    # llm = get_llm(
+    #     __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
+    # )
+
+    llm = SherpaChatOpenAI(
+        openai_api_key=cfg.OPENAI_API_KEY,
+        temperature=cfg.TEMPERATURE,
     )
 
     data = input_data[0]
@@ -175,8 +204,9 @@ def test_number_citation_succeeds_in_qa(
         results = shared_memory.get_by_type(EventType.result)
         data_numbers = expected_numbers
         logger.debug(results[0].content)
-        for number in extract_numbers_from_text(results[0].content):
-            if number in data_numbers or len(data_numbers) == 0:
+
+        for number in data_numbers:
+            if number in combined_number_extractor(results[0].content):
                 pass
             else:
                 assert False, number + " was not found in resource"
