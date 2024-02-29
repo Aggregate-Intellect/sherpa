@@ -8,7 +8,7 @@ from sherpa_ai.utils import (
     extract_numbers_from_text,
     get_base_url,
     get_links_from_string,
-    json_extractor,
+    json_from_text,
     log_formatter,
     rewrite_link_references,
     scrape_with_url,
@@ -282,27 +282,28 @@ def test_extract_numbers_from_text_fails(source_data, incorrect_result_data):
 
 def test_json_extractor_valid_json():
     text = "This is some text with {\"key\": \"value\"} JSON data."
-    result = json_extractor(text)
+
+    result = json_from_text(text)
     assert result == {"key": "value"}
 
 def test_json_extractor_invalid_json():
     text = "This is some text with invalid JSON data: {\"key\": \"value\",}."
-    result = json_extractor(text)
+    result = json_from_text(text)
     assert result == {}
 
 def test_json_extractor_no_json():
     text = "This text does not contain any JSON data."
-    result = json_extractor(text)
+    result = json_from_text(text)
     assert result == {}
 
 def test_json_extractor_empty_string():
     text = ""
-    result = json_extractor(text)
+    result = json_from_text(text)
     assert result == {}
 
 def test_json_extractor_nested_json():
     text = "Nested JSON: {\"key1\": {\"key2\": \"value\"}}"
-    result = json_extractor(text)
+    result = json_from_text(text)
     assert result == {"key1": {"key2": "value"}}
 
 
@@ -367,7 +368,4 @@ def test_text_similarity_with_entities_not_exist():
     result = text_similarity_by_metrics(check_entity, source_entity)
     assert result["entity_exist"] is False
     expected_message = "remember to address these entities pear, grape, kiwi,  in final the answer."
-    print(result["messages"])
-    print(result["messages"])
-    print(result["messages"])
     assert result["messages"] == expected_message
