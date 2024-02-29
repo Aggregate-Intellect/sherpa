@@ -282,13 +282,21 @@ def test_extract_numbers_from_text_fails(source_data, incorrect_result_data):
 
 def test_json_extractor_valid_json():
     text = "This is some text with {\"key\": \"value\"} JSON data."
-
     result = json_from_text(text)
     assert result == {"key": "value"}
 
-def test_json_extractor_invalid_json():
-    text = "This is some text with invalid JSON data: {\"key\": \"value\",}."
-    result = json_from_text(text)
+
+@pytest.mark.parametrize(
+    "invalid_text",
+    [
+        "This is some text with invalid JSON data: {\"key\": \"value\",}.",
+        None,
+        "",
+        "hi there!"
+    ])
+
+def test_json_extractor_invalid_json(invalid_text):
+    result = json_from_text(invalid_text)
     assert result == {}
 
 def test_json_extractor_no_json():

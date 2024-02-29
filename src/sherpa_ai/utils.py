@@ -486,7 +486,7 @@ def extract_entities(text):
     return filtered_entities
 
 
-def json_from_text(text):
+def json_from_text(text:str):
     """
         Extract and parse JSON data from a text.
 
@@ -496,19 +496,23 @@ def json_from_text(text):
         Returns:
         dict: Parsed JSON data.
     """
-    text = text.replace('\n', '')
-    json_pattern = r"\{.*\}"
-    json_match = re.search(json_pattern, text)
+    if type(text) == str:
 
-    if json_match:
-        json_data = json_match.group()
-        try:
-            parsed_json = json.loads(json_data)
-            return parsed_json
-        except json.JSONDecodeError as e:
+        text = text.replace('\n', '')
+        json_pattern = r"\{.*\}"
+        json_match = re.search(json_pattern, text)
+
+        if json_match:
+            json_data = json_match.group()
+            try:
+                parsed_json = json.loads(json_data)
+                return parsed_json
+            except json.JSONDecodeError as e:
+                return {}
+        else:
             return {}
     else:
-        return {}
+            return {}
 
 
 def text_similarity_by_llm(
