@@ -2,7 +2,9 @@ import re
 from typing import List, Union
 from urllib.parse import urlparse
 
+import nltk
 import requests
+import spacy
 import tiktoken
 from bs4 import BeautifulSoup
 from langchain.docstore.document import Document
@@ -10,10 +12,20 @@ from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredP
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 from loguru import logger
+from nltk import ne_chunk, pos_tag, word_tokenize
 from pypdf import PdfReader
 
 import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
+
+# from word2number import w2n
+
+
+nltk.download("punkt")
+nltk.download("maxent_ne_chunker")
+nltk.download("words")
+
+from word2number import w2n
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -312,11 +324,92 @@ def extract_numbers_from_text(text):
         return []
 
 
+def word_to_float(text):
+    """
+    Converts a textual representation of a number to a float.
+
+    Parameters:
+    - text (str): The input text containing a textual representation of a number.
+
+    Returns:
+    dict: A dictionary with keys:
+        - 'success' (bool): True if the conversion was successful, False otherwise.
+        - 'data' (float): The converted float value if 'success' is True.
+        - 'message' (str): An error message if 'success' is False.
+    """
+
+    try:
+        result = w2n.word_to_num(text)
+        return {"success": True, "data": result}
+    except ValueError as e:
+        # print(float(ent.text.replace(',' ,'')))
+        return {"success": False, "message": e}
+
+
+def extract_numeric_entities(
+    text: str, entity_types: List[str] = ["DATE", "CARDINAL", "QUANTITY", "MONEY"]
+):
+    """
+    Extracts numeric entities from the given text using spaCy and converts textual
+    representations of numbers to floats using the word_to_float function.
+
+    Parameters:
+    - text (str): The input text from which numeric entities will be extracted.
+    - entity_types (List[str]): A list of spaCy entity types to consider for extraction.
+                                Default is ["DATE", "CARDINAL", "QUANTITY", "MONEY"].
+
+    Returns:
+    List[str]: A list of numeric values extracted from the text.
+    """
+
+    text = text.lower()
+    text = re.sub(r"\s+", " ", text)
+
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    numbers = []
+    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
+    for entity in filtered_entities:
+        if any(char.isdigit() for char in entity):
+            result = extract_numbers_from_text(entity)
+            numbers.extend(result)
+            print(result)
+            print("The string contains a number.")
+        else:
+            print(entity)
+            print("The string does not contain a number.")
+            result = word_to_float(entity)
+            if result["success"]:
+                numbers.append(str(result["data"]))
+
+    return numbers
+
+
+def combined_number_extractor(text: str):
+    """
+    Extracts unique numeric values from the given text by combining results
+    from two different extraction methods.
+
+    Parameters:
+    - text (str): The input text from which numeric values are to be extracted.
+
+    Returns:
+    - set: A set containing unique numeric values extracted from the input text.
+    """
+    result = set()
+    result.update(extract_numbers_from_text(text))
+    result.update(extract_numeric_entities(text))
+
+    return list(result)
+
+
 def verify_numbers_against_source(text_to_test: str, source_text: str):
     """Verifies that all numbers in text_to_test exist in source_text. Returns True on success. Returns False and a feedback string on failure."""
-    candidate_numbers = set(extract_numbers_from_text(text_to_test))
-    source_numbers = set(extract_numbers_from_text(source_text))
+    candidate_numbers = set(combined_number_extractor(text_to_test))
+    source_numbers = set(combined_number_extractor(source_text))
+
     incorrect_candidates = candidate_numbers - source_numbers
+
     if len(incorrect_candidates) > 0:
         joined_numbers = ", ".join(incorrect_candidates)
         message = f"Don't use the numbers {joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context."
