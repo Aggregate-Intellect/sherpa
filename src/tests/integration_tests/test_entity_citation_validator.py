@@ -1,19 +1,19 @@
+from unittest.mock import patch
+
 import pytest
 from loguru import logger
+from nltk.metrics import jaccard_distance
+
+import sherpa_ai.config as cfg
 from sherpa_ai.agents.qa_agent import QAAgent
-
-
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
+from sherpa_ai.output_parsers.entity_validation import EntityValidation
 
 # from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.tools import SearchTool
-import sherpa_ai.config as cfg
-from unittest.mock import patch
 from sherpa_ai.utils import extract_entities
-from nltk.metrics import jaccard_distance
-from sherpa_ai.output_parsers.entity_validation import EntityValidation
 
 
 @pytest.mark.parametrize(
@@ -31,9 +31,9 @@ from sherpa_ai.output_parsers.entity_validation import EntityValidation
                     }
                 ],
             ),
-            ['Ethiopian' , 'Ethiopian Calendar Association' ,'kenya'],
+            ["Ethiopian", "Ethiopian Calendar Association", "kenya"],
         ),
-         (
+        (
             "Tell me a fact about Star Trek: The Next Generation?",
             (
                 """Fact: In Star Trek: The Next Generation (STNG), the United Federation of Planets, a coalition of various planetary governments working for peace and cooperation, establishes a set of interstellar laws known as the "Federation Charter." This document outlines the principles and regulations governing member worlds and their interactions. """,
@@ -44,13 +44,11 @@ from sherpa_ai.output_parsers.entity_validation import EntityValidation
                     }
                 ],
             ),
-            ['STNG' , 'Star Trek' ,'the United Federation of Planets'],
+            ["STNG", "Star Trek", "the United Federation of Planets"],
         ),
     ],
 )
-def test_entity_citation_succeeds_in_qa(
-    input_data, expected_entities, objective
-):  
+def test_entity_citation_succeeds_in_qa(input_data, expected_entities, objective):
     # noqa: F811
     # llm = get_llm(__file__, test_number_citation_succeeds_in_qa.__name__)
     llm = SherpaChatOpenAI(
@@ -85,12 +83,15 @@ def test_entity_citation_succeeds_in_qa(
 
         results = shared_memory.get_by_type(EventType.result)
         logger.error(results[0].content)
-        result_entities =[s.lower() for s in extract_entities(results[0].content)]  
-        expected_entities = [s.lower() for s in expected_entities] 
+        result_entities = [s.lower() for s in extract_entities(results[0].content)]
+        expected_entities = [s.lower() for s in expected_entities]
         for entitity in expected_entities:
             set_a = set(entitity.split())  # Convert each string in a to a set of words
-            match_found = any( 1 - jaccard_distance(set_a, result_entity.split()) >= 0.7 for result_entity in result_entities)
-            
+            match_found = any(
+                1 - jaccard_distance(set_a, result_entity.split()) >= 0.7
+                for result_entity in result_entities
+            )
+
             if match_found:
                 pass
             else:
