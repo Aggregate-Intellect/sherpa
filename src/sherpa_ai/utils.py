@@ -22,6 +22,12 @@ from nltk.metrics import edit_distance
 from nltk.metrics import jaccard_distance
 import spacy
 
+from enum import Enum
+
+class TextSimilarityState(Enum):
+    BASIC = 0
+    BY_METRICS = 1
+    BY_LLM = 2
 
 def load_files(files: List[str]) -> List[Document]:
     documents = []
@@ -490,7 +496,7 @@ def json_from_text(text):
         Returns:
         dict: Parsed JSON data.
     """
-
+    text = text.replace('\n', '')
     json_pattern = r"\{.*\}"
     json_match = re.search(json_pattern, text)
 
@@ -527,33 +533,31 @@ def text_similarity_by_llm(
     """
 
     llm = SherpaOpenAI(
-        temperature=cfg.TEMPRATURE,
+        temperature=cfg.TEMPERATURE,
         openai_api_key=cfg.OPENAI_API_KEY,
         user_id=user_id,
         team_id=team_id,
     )
 
     instruction = f"""
-        I have a question and an answer. I want you to confirm whether the entities from the question are mentioned in some form within the answer.
-        Answer = {result}
+        I have a question and an answer. I want you to confirm whether the entities from the question are all mentioned in some form within the answer.
+
         Question = {source}
         Entities inside the question = {source_entity}
+
+        Answer = {result}
        """
-    instruction = (
+    prompt = (
         instruction
         + """
-           only return { entity_exist: 'true' , messages:"" } if entities are mentioned inside the answer in  
-           only return {entity_exist: 'false' , messages: " Entity x hasn't been mentioned inside the answer"} if the entity is not mentioned properly .
+           only return {"entity_exist": true , "messages":"" } if all entities are mentioned inside the answer in  
+           only return {"entity_exist": false , "messages": " Entity x hasn't been mentioned inside the answer"} if the entity is not mentioned properly .
           """
     )
 
-    llm_result = llm.predict(instruction)
-
-    print('################################################################', flush=True)
-    print(llm_result, flush=True)
-    print('################################################################' , flush=True)
-
+    llm_result = llm.predict(prompt)
     checkup_json = json_from_text(llm_result)
+
     return checkup_json
 
 
@@ -569,28 +573,27 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
         dict: Result of the check containing 'entity_exist' and 'messages'.
     """
 
+    check_entity_lower = [s.lower() for s in check_entity]
+    source_entity_lower = [s.lower() for s in source_entity]
+
     threshold = 0.75
     error_entity = []
     message = ""
     levenshtein_constant = 0.5
-    for entity in source_entity:
+    for entity in source_entity_lower:
         metrics_value = 0
-        for sub_entitiy in check_entity:
+        for sub_entitiy in check_entity_lower:
             word1 = entity
             word2 = sub_entitiy
 
             combined_similarity = string_comparison_with_jaccard_and_levenshtein(
                 word1=word1, word2=word2, levenshtein_constant=levenshtein_constant
             )
-            print('************************************')
-            print(word1)
-            print(word2)
-            print('************************************')
-            print(combined_similarity)
             if metrics_value < combined_similarity:
                 metrics_value = combined_similarity
         if metrics_value < threshold:
-            error_entity.append(entity)
+            index_of_entity = source_entity_lower.index(entity)
+            error_entity.append(source_entity[index_of_entity])
 
     if len(error_entity) > 0:
         for entity in error_entity:
@@ -614,20 +617,13 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
 
     error_entity = []
     message = ""
-    print('+++++++++++++++++++++++++++++++++++++++++++++' ,flush=True)
-    print(check_entity , flush=True)
-    print(source_entity , flush=True)
-    print('+++++++++++++++++++++++++++++++++++++++++++++',flush=True)
-    for entity in source_entity:
+    check_entity_lower = [s.lower() for s in check_entity]
+    source_entity_lower = [s.lower() for s in source_entity]
+    for entity in source_entity_lower:
 
-        print(entity , flush=True)
-        if entity not in check_entity:
-            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
-            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
-            print(entity)
-            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
-            print('YAWZAYASXKCJASDKJHASKDJHAKSJDHKASJD',flush=True)
-            error_entity.append(entity)
+        if entity not in check_entity_lower:
+            index_of_entity = source_entity_lower.index(entity)
+            error_entity.append(source_entity[index_of_entity])
     if len(error_entity) > 0:
         for entity in error_entity:
             message += entity + ", "
@@ -636,7 +632,7 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
     return {"entity_exist": True, "messages": message}
 
 
-def check_entities_match(result: str, source: str, stage: int):
+def check_entities_match(result: str, source: str, stage: TextSimilarityState):
     """
         Check if entities extracted from a question are present in an answer.
 
@@ -649,15 +645,10 @@ def check_entities_match(result: str, source: str, stage: int):
         dict: Result of the check containing
     """
 
-    source_entity =[s.lower() for s in extract_entities(source)]  
-    check_entity =[s.lower() for s in extract_entities(result)] 
-    
-    
+    stage = stage.value
+    source_entity = extract_entities(source)
+    check_entity = extract_entities(result)
 
-    print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]' , flush=True)
-    print(source_entity , flush=True)
-    print(check_entity , flush=True)
-    print('[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]' , flush=True)
     if stage == 0:
         return text_similarity(check_entity=check_entity, source_entity=source_entity)
     elif stage == 1:

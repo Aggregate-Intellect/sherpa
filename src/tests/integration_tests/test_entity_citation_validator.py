@@ -13,6 +13,8 @@ import sherpa_ai.config as cfg
 from unittest.mock import patch
 from sherpa_ai.utils import extract_entities
 from nltk.metrics import jaccard_distance
+from sherpa_ai.output_parsers.entity_validation import EntityValidation
+
 
 @pytest.mark.parametrize(
     "objective , input_data, expected_entities",
@@ -53,7 +55,7 @@ def test_entity_citation_succeeds_in_qa(
     # llm = get_llm(__file__, test_number_citation_succeeds_in_qa.__name__)
     llm = SherpaChatOpenAI(
         openai_api_key=cfg.OPENAI_API_KEY,
-        temperature=cfg.TEMPRATURE,
+        temperature=0,
     )
 
     data = input_data[0]
@@ -62,8 +64,16 @@ def test_entity_citation_succeeds_in_qa(
         objective=objective,
         agent_pool=None,
     )
+
+    entity_validation = EntityValidation()
     with patch.object(SearchTool, "_run", return_value=data):
-        task_agent = QAAgent(llm=llm, shared_memory=shared_memory, require_meta=False)
+        task_agent = QAAgent(
+            llm=llm,
+            shared_memory=shared_memory,
+            num_runs=3,
+            validations=[entity_validation],
+            validation_steps=3,
+        )
 
         shared_memory.add(
             EventType.task,
