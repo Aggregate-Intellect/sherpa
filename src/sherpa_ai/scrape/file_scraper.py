@@ -114,7 +114,7 @@ class QuestionWithFileHandler:
                 "status": "error",
                 "message": "token ammount of a file has to be less than {}",
             }
-        elif data_token_size > 3000:
+        else:
             chunk_summary = chunk_and_summarize_file(
                 file_format=file_info["filetype"],
                 file_name=file_info["name"],
