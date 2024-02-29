@@ -9,7 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, ChatResult
 from pydantic import BaseModel
-from langchain.chat_models import ChatOpenAI
+
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 
 

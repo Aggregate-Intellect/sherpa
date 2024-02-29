@@ -20,7 +20,7 @@ class EntityValidation(BaseOutputProcessor):
 
     - get_failure_message() -> str:
         Returns a failure message to be displayed when the validation fails.
-        
+
     """
 
     def process_output(self, text: str, belief: Belief) -> ValidationResult:
@@ -35,11 +35,13 @@ class EntityValidation(BaseOutputProcessor):
             validation is invalid and contains a feedback string.
             Otherwise, validation is valid.
         """
-        
+
         source = belief.get_histories_excluding_types(
             exclude_types=[EventType.feedback, EventType.result],
         )
-        entity_exist_in_source, error_message  = check_entities_match(text, source, TextSimilarityState.BY_METRICS)
+        entity_exist_in_source, error_message = check_entities_match(
+            text, source, TextSimilarityState.BY_METRICS
+        )
         if entity_exist_in_source:
             return ValidationResult(
                 is_valid=True,
@@ -52,7 +54,6 @@ class EntityValidation(BaseOutputProcessor):
                 result=text,
                 feedback=error_message,
             )
-        
+
     def get_failure_message(self) -> str:
         return "Some enitities from the source might not be mentioned."
-

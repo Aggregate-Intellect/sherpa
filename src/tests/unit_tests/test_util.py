@@ -13,10 +13,10 @@ from sherpa_ai.utils import (
     rewrite_link_references,
     scrape_with_url,
     show_commands_only,
-    verify_numbers_against_source,
     string_comparison_with_jaccard_and_levenshtein,
     text_similarity,
     text_similarity_by_metrics,
+    verify_numbers_against_source,
 )
 
 
@@ -250,6 +250,8 @@ def test_verify_numbers_against_source_fails(text_to_test, source_text):
     assert (
         "Don't use the numbers" in msg
     ), f"Return message { msg } doesn't contain expected text"
+
+
 @pytest.fixture
 def incorrect_result_data():
     return "Labore deserunt 12.45 $45,000 ,7 ,56 , 65 sit velit nulla. Sint ipsum reprehenderit sint cupidatat amet est id anim exercitation fugiat adipisicing elit. Id est dolore minim magna occaecat aute. Est dolore culpa laborum non esse nostrud."
@@ -280,8 +282,9 @@ def test_extract_numbers_from_text_fails(source_data, incorrect_result_data):
     check_result = check_if_number_exist(incorrect_result_data, source_data)
     assert not check_result["number_exists"]
 
+
 def test_json_extractor_valid_json():
-    text = "This is some text with {\"key\": \"value\"} JSON data."
+    text = 'This is some text with {"key": "value"} JSON data.'
     result = json_from_text(text)
     assert result == {"key": "value"}
 
@@ -289,32 +292,33 @@ def test_json_extractor_valid_json():
 @pytest.mark.parametrize(
     "invalid_text",
     [
-        "This is some text with invalid JSON data: {\"key\": \"value\",}.",
+        'This is some text with invalid JSON data: {"key": "value",}.',
         None,
         "",
-        "hi there!"
-    ])
-
+        "hi there!",
+    ],
+)
 def test_json_extractor_invalid_json(invalid_text):
     result = json_from_text(invalid_text)
     assert result == {}
+
 
 def test_json_extractor_no_json():
     text = "This text does not contain any JSON data."
     result = json_from_text(text)
     assert result == {}
 
+
 def test_json_extractor_empty_string():
     text = ""
     result = json_from_text(text)
     assert result == {}
 
+
 def test_json_extractor_nested_json():
-    text = "Nested JSON: {\"key1\": {\"key2\": \"value\"}}"
+    text = 'Nested JSON: {"key1": {"key2": "value"}}'
     result = json_from_text(text)
     assert result == {"key1": {"key2": "value"}}
-
-
 
 
 def test_extract_entities_with_entities():
@@ -322,21 +326,25 @@ def test_extract_entities_with_entities():
     result = extract_entities(text)
     assert result == ["The United Nations", "NORP"]
 
+
 def test_extract_entities_without_entities():
     text = "This text does not contain any relevant entities."
     result = extract_entities(text)
     assert result == []
+
 
 def test_extract_entities_empty_string():
     text = ""
     result = extract_entities(text)
     assert result == []
 
+
 def test_string_comparison_function():
     assert string_comparison_with_jaccard_and_levenshtein("hello", "hello", 0.5) == 1.0
-    assert string_comparison_with_jaccard_and_levenshtein("hello", "world", 0.5) <= 0.3 
+    assert string_comparison_with_jaccard_and_levenshtein("hello", "world", 0.5) <= 0.3
     assert string_comparison_with_jaccard_and_levenshtein("openai", "open", 0.5) > 0.7
     assert string_comparison_with_jaccard_and_levenshtein("car", "bat", 0.5) == 0.0
+
 
 def test_text_similarity_entities_present():
     check_entity = ["apple", "banana", "orange"]
@@ -345,12 +353,15 @@ def test_text_similarity_entities_present():
     assert result["entity_exist"] == True
     assert result["messages"] == ""
 
+
 def test_text_similarity_entities_not_present():
     check_entity = ["apple", "banana", "orange"]
     source_entity = ["grape", "kiwi", "pear"]
     result = text_similarity(check_entity, source_entity)
     assert result["entity_exist"] == False
-    expected_message = "remember to address these entities grape, kiwi, pear,  in final the answer."
+    expected_message = (
+        "remember to address these entities grape, kiwi, pear,  in final the answer."
+    )
     assert result["messages"] == expected_message
 
 
@@ -375,5 +386,7 @@ def test_text_similarity_with_entities_not_exist():
     source_entity = ["pear", "grape", "kiwi"]
     result = text_similarity_by_metrics(check_entity, source_entity)
     assert result["entity_exist"] is False
-    expected_message = "remember to address these entities pear, grape, kiwi,  in final the answer."
+    expected_message = (
+        "remember to address these entities pear, grape, kiwi,  in final the answer."
+    )
     assert result["messages"] == expected_message
