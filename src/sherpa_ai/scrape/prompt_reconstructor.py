@@ -10,11 +10,36 @@ from sherpa_ai.utils import (
 
 
 class PromptReconstructor:
+
+    """
+    Scrapes the content of URLs mentioned in the given Slack message,
+    and rewrites the question to incorporate a summary of the scraped URLs.
+    """
+
     def __init__(self, question, slack_message):
+        """
+        Initialize the PromptReconstructor with a question and a Slack message.
+
+        Parameters:
+        - question (str): question is a prompt to be used for prompt reconstruction.
+        - slack_message (dict): The Slack message from which information is extracted.
+        """
+
         self.question = question
         self.slack_message = slack_message
 
     def reconstruct_prompt(self, user_id=None, team_id=None):
+        """
+        Reconstruct the prompt based on the question and the last Slack message.
+
+        Parameters:
+        - user_id (str, optional): User ID for context in prompt reconstruction.
+        - team_id (str, optional): Team ID for context in prompt reconstruction.
+
+        Returns:
+        str: The reconstructed prompt .
+        """
+
         question = self.question
         last_message = self.slack_message
         last_message_links = get_link_from_slack_client_conversation(last_message)

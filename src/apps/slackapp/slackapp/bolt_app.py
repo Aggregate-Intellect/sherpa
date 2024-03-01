@@ -4,14 +4,16 @@
 ##############################################
 
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from flask import Flask, request
 from langchain.schema import AIMessage, BaseMessage, HumanMessage
 from loguru import logger
+from omegaconf import OmegaConf
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 from slackapp.routes.whitelist import whitelist_blueprint
+from slackapp.utils import get_qa_agent_from_config_file
 
 import sherpa_ai.config as cfg
 from sherpa_ai.agents import QAAgent
@@ -92,7 +94,9 @@ def get_response(
     previous_messages: List[BaseMessage],
     verbose_logger: BaseVerboseLogger,
     bot_info: Dict[str, str],
-    llm: SherpaChatOpenAI = None,
+    llm=None,
+    team_id: Optional[str] = None,
+    user_id: Optional[str] = None,
 ) -> str:
     """
     Get response from the task agent for the question
@@ -103,6 +107,8 @@ def get_response(
         verbose_logger (BaseVerboseLogger): verbose logger to be used
         bot_info (Dict[str, str]): information of the Slack bot
         llm (SherpaChatOpenAI, optional): LLM to be used. Defaults to None.
+        team_id (str, optional): team id of the Slack workspace. Defaults to "".
+        user_id (str, optional): user id of the Slack user. Defaults to "".
 
     Returns:
         str: response from the task agent
@@ -120,6 +126,13 @@ def get_response(
     tools = get_tools(memory, agent_config)
 
     if agent_config.use_task_agent:
+        llm = SherpaChatOpenAI(
+            openai_api_key=cfg.OPENAI_API_KEY,
+            user_id=user_id,
+            team_id=team_id,
+            temperature=cfg.TEMPERATURE,
+        )
+
         verbose_logger.log("⚠️🤖 Use task agent (obsolete)...")
         task_agent = TaskAgent.from_llm_and_tools(
             ai_name=ai_name,
@@ -135,21 +148,11 @@ def get_response(
 
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
     else:
-        memory = SharedMemory(objective="Answer the question")
-
+        agent = get_qa_agent_from_config_file("conf/config.yaml", team_id, user_id, llm)
         for message in previous_messages:
-            memory.add(EventType.result, message.type, message.content)
-        memory.add(EventType.task, "human", question)
-
-        agent = QAAgent(
-            llm=llm,
-            name=ai_name,
-            num_runs=1,
-            shared_memory=memory,
-            agent_config=agent_config,
-            require_meta=True,
-            verbose_logger=verbose_logger,
-        )
+            agent.shared_memory.add(EventType.result, message.type, message.content)
+        agent.shared_memory.add(EventType.task, "human", question)
+        agent.verbose_logger = verbose_logger
 
         error_handler = AgentErrorHandler()
         response = error_handler.run_with_error_handling(agent.run)
@@ -242,20 +245,13 @@ def event_test(client, say, event):
             )
             question = reconstructor.reconstruct_prompt()
 
-        llm = SherpaChatOpenAI(
-            openai_api_key=cfg.OPENAI_API_KEY,
-            user_id=user_id,
-            team_id=team_id,
-            verbose_logger = slack_verbose_logger,
-            temperature=cfg.TEMPRATURE,
-        )
-
         results = get_response(
             question,
             previous_messages,
             verbose_logger=slack_verbose_logger,
             bot_info=bot,
-            llm=llm,
+            team_id=team_id,
+            user_id=user_id,
         )
 
         say(results, thread_ts=thread_ts)

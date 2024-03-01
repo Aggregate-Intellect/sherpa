@@ -5,8 +5,6 @@ from sherpa_ai.output_parsers.md_to_slack_parse import MDToSlackParse
 from sherpa_ai.output_parsers.number_validation import NumberValidation
 
 __all__ = [
-    "BaseOutputParser",
-    "BaseOutputProcessor",
     "LinkParser",
     "MDToSlackParse",
     "CitationValidation",

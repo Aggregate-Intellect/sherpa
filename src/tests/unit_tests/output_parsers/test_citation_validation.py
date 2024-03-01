@@ -18,7 +18,7 @@ def test_citation_validation():
     data_2 = {"Document": text, "Source": "www.wiki_2.com"}
     resource = [data, data_2]
     module = CitationValidation()
-    result = module.parse_output(text, resource)
+    result = module.add_citations(text, resource)
     assert data["Source"] in result.result
 
 
@@ -30,7 +30,13 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
         agent_pool=None,
     )
 
-    task_agent = QAAgent(llm=llm, shared_memory=shared_memory, require_meta=True)
+    citation_module = CitationValidation(0.65, 0.65, 0.65)
+
+    task_agent = QAAgent(
+        llm=llm,
+        shared_memory=shared_memory,
+        validations=[citation_module],
+    )
 
     shared_memory.add(
         EventType.task,

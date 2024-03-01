@@ -12,11 +12,31 @@ from sherpa_ai.connectors.vectorstores import ConversationStore
 
 
 def get_owner_and_repo(url):
+    """
+    Extracts the owner and repository name from a GitHub repository URL.
+
+    Parameters:
+    - url (str): The GitHub repository URL.
+
+    Returns:
+    Tuple[str, str]: A tuple containing the owner and repository name.
+    """
+
     url_content_list = url.split("/")
     return url_content_list[3], url_content_list[4].split("#")[0]
 
 
 def extract_github_readme(repo_url):
+    """
+    Extracts the content of the README file from a GitHub repository.
+
+    Parameters:
+    - repo_url (str): The GitHub repository URL.
+
+    Returns:
+    str or None: The content of the README file, or None if the file is not found.
+    """
+
     pattern = r"(?:https?://)?(?:www\.)?github\.com/.*"
     match = re.match(pattern, repo_url)
     if match:
@@ -32,7 +52,7 @@ def extract_github_readme(repo_url):
         response = requests.get(github_api_url, headers=headers)
 
         files = response.json()
-        if type(files) is dict and files.message == "Bad Credentials":
+        if type(files) is dict and files["message"].lower() == "bad credentials":
             return None
         matching_files = [
             file["name"]
@@ -64,6 +84,14 @@ def extract_github_readme(repo_url):
 
 
 def save_to_pine_cone(content, metadatas):
+    """
+    Saves the content and metadata to Pinecone vector store.
+
+    Parameters:
+    - content (str): The content to be saved.
+    - metadatas (list): List of metadata associated with the content.
+    """
+
     pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
     index = pinecone.Index("langchain")
     embeddings = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY)

@@ -12,6 +12,7 @@ flask-cors = "^4.0.0"
 flask = "^2.3.3"
 loguru = "^0.7.0"
 sherpa-ai = {path = "../..", develop = true}
+hydra-core = "^1.3.2"
 
 [tool.poetry.scripts]
 sherpa_slack = 'slackapp.bolt_app:main'
