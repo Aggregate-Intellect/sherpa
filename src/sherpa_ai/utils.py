@@ -302,11 +302,9 @@ def check_url(url):
     # exception
     # and identify error
     except HTTPError as e:
-        print("HTTP error", e)
         return False
 
     except URLError as e:
-        print("Opps ! Page not found!", e)
         return False
 
     else:
@@ -563,7 +561,7 @@ def text_similarity_by_llm(
     llm_result = llm.predict(prompt)
     checkup_json = json_from_text(llm_result)
 
-    return checkup_json
+    return checkup_json.get("entity_exist", False), checkup_json.get("messages", "")
 
 
 def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]):
@@ -604,8 +602,8 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
         for entity in error_entity:
             message += entity + ", "
         message = f"remember to address these entities {message} in final the answer."
-        return {"entity_exist": False, "messages": message}
-    return {"entity_exist": True, "messages": message}
+        return False, message
+    return True, message
 
 
 def text_similarity(check_entity: List[str], source_entity: List[str]):
@@ -632,8 +630,8 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
         for entity in error_entity:
             message += entity + ", "
         message = f"remember to address these entities {message} in final the answer."
-        return {"entity_exist": False, "messages": message}
-    return {"entity_exist": True, "messages": message}
+        return False, message
+    return True, message
 
 
 def check_entities_match(result: str, source: str, stage: TextSimilarityState):
