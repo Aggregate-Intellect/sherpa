@@ -7,12 +7,10 @@ from langchain.callbacks.manager import (
 )
 from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
-from langchain.llms.openai import OpenAI
 from langchain.schema import BaseMessage, ChatResult
-from pydantic import BaseModel
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
-
+from langchain.chat_models import ChatOpenAI
 
 class SherpaOpenAI(ChatOpenAI):
     team_id: typing.Optional[str] = None
