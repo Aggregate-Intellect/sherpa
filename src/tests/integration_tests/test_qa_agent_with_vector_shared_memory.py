@@ -41,16 +41,9 @@ meta_data = {
 }
 
 
-@pytest.fixture
-def config_logger():
-    logger.remove()
-    logger.add(sys.stderr, level="DEBUG")
-
-
 @pytest.mark.external_api
-def test_shared_memory_with_vector(config_logger, get_llm):
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo")
-    # llm = get_llm(__file__, test_shared_memory_with_vector.__name__)
+def test_shared_memory_with_vector(get_llm):
+    llm = get_llm(__file__, test_shared_memory_with_vector.__name__)
     # store text as a scraped text from a file with meta_data session_id
     split_data = ChromaVectorStore.file_text_splitter(data=data, meta_data=meta_data)
     ChromaVectorStore.chroma_from_texts(
@@ -58,7 +51,9 @@ def test_shared_memory_with_vector(config_logger, get_llm):
     )
 
     shared_memory = SharedMemoryWithVectorDB(
-        objective="summerize the file rtgfqq", agent_pool=None, session_id=session_id
+        objective="summerize the file rtgfqq start with hi there.",
+        agent_pool=None,
+        session_id=session_id,
     )
 
     task_agent = QAAgent(
@@ -75,6 +70,6 @@ def test_shared_memory_with_vector(config_logger, get_llm):
     task_agent.run()
 
     results = shared_memory.get_by_type(EventType.result)
-
-    assert len(results) == 1
+    print(results[0].content)
     logger.debug(results[0].content)
+    assert len(results) == 1
