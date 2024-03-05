@@ -81,36 +81,14 @@ def transcript2essay(transcript, chat_model=chat):
   return result.content
 
 
-
-def qa2essay_bkp(transcript,summarized_essay, chat_model=chat):
-  system_template = "You are a helpful assistant that summarizes a transcript of QA section of podcasts or lectures."
-  system_prompt = SystemMessagePromptTemplate.from_template(system_template)
-  # human_template = "Summarize the main points of this presentation's transcript: {transcript}"
-#   human_template = """Rewrite the contents and information of the presentation into a well written essay.\
-#   Write the essay as if the speaker wrote it himself from the same knowledge he used to create the presentation. \
-#   Include the speaker's full name in the essay and refer to him/her with the full name. \
-#   Also include the names of the people who asked questions and the questions they asked. \
-#   The transcript of this presentation is delimited in triple backticks:
-#   ```{transcript}```"""
-  human_template = """Rewrite the Questions and answers section of the presentation that outputs the same number of questions and answers in a summarized way.\
-  Make sure you keep the same number of question and answers. Assume that the only one asking questions is the host, and the only one answering is speakers.\
-  sometimes the same answer is broken down in few lines. Below is the question and answers section \
-  ```{transcript}``` The next section is the summarized section on which question and answers \
-  are been discussed, use this for summarizing the question and answers \
-  section """ + summarized_essay
-  human_prompt = HumanMessagePromptTemplate.from_template(human_template)
-  chat_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
-  result = chat_model(chat_prompt.format_prompt(transcript=transcript).to_messages())
-  return result.content
-
 def qa2essay(transcript,summarized_essay, chat_model=chat):
-  system_template = "You are a helpful assistant that summarizes a transcript of QA section of podcasts or lectures."
+  system_template = "You are a helpful assistant that summarizes a transcript of Questions and Answers section of podcasts or lectures."
   system_prompt = SystemMessagePromptTemplate.from_template(system_template)
-  human_template = """ You are given a transcript that is a conversation of the question and answer. \
+  human_template = """ You are given a transcript that is a conversation consisting questions from a host and answer from a speaker. \
   Create a list of question and answeres from it with the following instructions:\
   Some questions might be spread across multiple lines, so summarise them.\
-  Do not use numbers instead use the format Question and Answer/speaker to list them down. \
-  The transcript of this presentation is delimited in triple backticks: ```{transcript}```Use the summary to elaborate on the answers """ + summarized_essay
+  Write a list of questions and answers by respectively tagging Question: and Answer: and do not use numbers.. \
+  The transcript of this presentation is delimited in triple backticks: ```{transcript}``` Use the summary to elaborate on the answers """ + summarized_essay
   human_prompt = HumanMessagePromptTemplate.from_template(human_template)
   chat_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
   result = chat_model(chat_prompt.format_prompt(transcript=transcript).to_messages())
