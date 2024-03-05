@@ -51,7 +51,7 @@ def test_shared_memory_with_vector(get_llm):
     )
 
     shared_memory = SharedMemoryWithVectorDB(
-        objective="summerize the file rtgfqq start with hi there.",
+        objective="summerize the file rtgfqq.",
         agent_pool=None,
         session_id=session_id,
     )
