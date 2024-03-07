@@ -44,10 +44,7 @@ def test_reconstruct_prompt_with_link_inside_succeeds(
         "sherpa_ai.scrape.prompt_reconstructor.get_link_from_slack_client_conversation",
         return_value=mock_get_link_from_slack_client_conversation,
     ), patch(
-        "sherpa_ai.utils.chunk_and_summarize",
-        return_value=mock_get_link_from_slack_client_conversation,
-    ), patch(
-        "sherpa_ai.utils.scrape_with_url",
+        "sherpa_ai.scrape.prompt_reconstructor.scrape_with_url",
         return_value=mock_scrape_with_url,
     ):
         reconstructed_prompt = reconstructor.reconstruct_prompt()
