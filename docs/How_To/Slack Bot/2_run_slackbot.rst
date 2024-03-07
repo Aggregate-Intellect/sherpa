@@ -86,7 +86,7 @@ Run with Virtual Environment
 
        conda activate slackbot
 
-5. Install the dependencies of the slackbote: 
+5. Install the dependencies of the slackbot: 
    
    * Install dependency with `Poetry <https://python-poetry.org/>`__ (recommended, this will give you the ability to edit the code in `sherpa_ai` without rebuild) 
 
@@ -94,7 +94,14 @@ Run with Virtual Environment
 
          cd src/apps/slackapp
          poetry install
-      
+
+     Followed by:
+
+      .. code:: bash
+
+         cd ../..
+         poetry install
+
    * Install dependency with `pip <https://pip.pypa.io/en/stable/>`__
 
       .. code:: bash
