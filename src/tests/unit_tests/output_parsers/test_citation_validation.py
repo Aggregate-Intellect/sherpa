@@ -1,3 +1,5 @@
+from unittest import mock
+
 from loguru import logger
 
 from sherpa_ai.agents import QAAgent
@@ -22,6 +24,7 @@ def test_citation_validation():
     assert data["Source"] in result.result
 
 
+
 def test_task_agent_succeeds(get_llm):  # noqa: F811
     llm = get_llm(__file__, test_task_agent_succeeds.__name__)
 
@@ -44,7 +47,20 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
         "What is AutoGPT?",
     )
 
-    task_agent.run()
+    # get the last response from the LLM as the search mock to simulate the scenario while the LLM uses resources
+    GOOGLE_SEARCH_MOCK = {
+    "organic": [
+        {
+            "title": "AutoGPT ",
+            "snippet": llm.responses[-1],
+            "link": "https://www.google.com",
+        }
+    ],
+}
+
+    with mock.patch("langchain.utilities.GoogleSerperAPIWrapper._google_serper_api_results") as mock_search:
+        mock_search.return_value = GOOGLE_SEARCH_MOCK
+        task_agent.run()
 
     results = shared_memory.get_by_type(EventType.result)
     logger.error(results[-1].content)
