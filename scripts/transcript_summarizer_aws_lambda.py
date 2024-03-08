@@ -116,13 +116,11 @@ def merge_essays(essays, chat_model=chat):
     processes large text information."""
     system_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
-    human_template = """Consolidate the multiple parts of the text into one \
-  coherent essay or article that accurately captures the content of the multiple\
-  parts without losing any information. Make sure to include the speaker's full name \
-  and the questions asked by the audience as well as the response to those questions. \
-  The entire text is delimited in triple backticks and the parts are divided by
-  #heading:\n
-  ```{essays}```"""
+    human_template = """Consolidate the multiple parts of the text into one \ 
+     coherent essay or article that accurately captures the content of the\ 
+     multiple parts without losing any information. The entire text is\ 
+     delimited in triple backticks and the parts are divided by\   
+     #heading:\n ```{essays}```"""
     human_prompt = HumanMessagePromptTemplate.from_template(human_template)
     chat_prompt = ChatPromptTemplate.from_messages([system_prompt, human_prompt])
 
