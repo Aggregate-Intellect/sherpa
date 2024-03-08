@@ -17,7 +17,7 @@ from sherpa_ai.tools import ContextTool, SearchTool
 def config_task_agent(
     tools: List[BaseTool],
     memory: VectorStoreRetriever,
-    llm=ChatOpenAI(model_name="gpt-3.5-turbo"),
+    llm=None,
 ) -> TaskAgent:
     task_agent = TaskAgent.from_llm_and_tools(
         ai_name="Sherpa",
@@ -37,10 +37,6 @@ def test_task_solving_with_search_succeeds(get_llm):  # noqa: F811
     """Test task solving with search"""
     question = "What is the date today, using the following format: YYYY-MM-DD?"
 
-    if cfg.SERPER_API_KEY is None:
-        pytest.skip(
-            "SERPER_API_KEY not found in environment variables, skipping this test"
-        )
     memory = get_vectordb()
     tools = [SearchTool()]
 
