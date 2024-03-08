@@ -10,7 +10,6 @@ from sherpa_ai.utils import (
 
 
 class PromptReconstructor:
-
     """
     Scrapes the content of URLs mentioned in the given Slack message,
     and rewrites the question to incorporate a summary of the scraped URLs.
@@ -43,7 +42,7 @@ class PromptReconstructor:
         question = self.question
         last_message = self.slack_message
         last_message_links = get_link_from_slack_client_conversation(last_message)
-        print(last_message_links)
+
         # if there is a link inside the question scrape then summarize based
         # on question and then aggregate to the question
 
