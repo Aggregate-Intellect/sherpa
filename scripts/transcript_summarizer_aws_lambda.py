@@ -12,7 +12,7 @@ destination_bucket = os.environ["destination_bucket"]
 ACCESS_KEY = environ.get("ACCESS_KEY")
 SECRET_KEY = environ.get("SECRET_KEY")
 REGION_NAME = environ.get("REGION_NAME")
-OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
+OPENAI_API_KEY = environ.get("openaikey")
 
 
 import tiktoken
@@ -263,7 +263,7 @@ def extract_metadata_as_json(essay, chat_model=chat):
     return metadata_json
 
 
-def json2rst(metadata, rst_filepath):
+def json2rst(metadata, rst_filepath, talk_summary):
     print(metadata)
     if not isinstance(metadata, dict):
         metadata = json.loads(metadata)
@@ -300,6 +300,9 @@ def json2rst(metadata, rst_filepath):
                 the_file.write("Answer: \n")
                 the_file.write(title_mark + "\n")
                 the_file.write(f"{value}\n\n")
+        the_file.write("Talk Summary \n")
+        the_file.write(title_mark + '\n')
+        the_file.write(talk_summary)
 
 
 def lambda_handler(event, context):
@@ -364,7 +367,8 @@ def lambda_handler(event, context):
 
     # takes about 2-3 minutes to run
     # summary= full_transcript2essay(raw_transcript)
-    summary = full_transcript2essay(first_part)  # considering only talk part
+    summary = full_transcript2essay(first_part)
+    talk_summary = summary  # considering only talk part
 
     print("Summary : ", summary)
 
@@ -427,7 +431,7 @@ def lambda_handler(event, context):
         with open(output_json, "r") as file:
             output_to_json = json.load(file)
         print("outputJson", output_json)
-        json2rst(output_to_json, rst_filepath)
+        json2rst(output_to_json, rst_filepath, talk_summary)
         destination_key = source_key.split(".")[0] + ".rst"
         file_path = rst_filepath
     except Exception as e:
