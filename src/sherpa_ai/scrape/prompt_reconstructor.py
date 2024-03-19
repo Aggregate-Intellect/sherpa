@@ -10,7 +10,6 @@ from sherpa_ai.utils import (
 
 
 class PromptReconstructor:
-
     """
     Scrapes the content of URLs mentioned in the given Slack message,
     and rewrites the question to incorporate a summary of the scraped URLs.
