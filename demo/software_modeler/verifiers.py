@@ -7,10 +7,28 @@ from sherpa_ai.output_parsers.validation_result import ValidationResult
 
 
 class OutputModel(BaseOutputProcessor):
+    """
+    Validate the generated model and save it to a file
+
+    Attributes:
+        filename: The name of the file to save the model
+    """
+
     def __init__(self, filename: str):
         self.filename = filename
 
     def process_output(self, text: str, belief: Belief) -> ValidationResult:
+        """
+        Filtering the generated text to extract the Umple model and save it to a file
+
+        Args:
+            text: The generated text
+            belief: The belief of the agent
+
+        Returns:
+            ValidationResult: The result of the validation, since the main purpose is to save the model,
+            the result is always valid
+        """
         lines = text.split("\n")
         line_num = 0
         print(text)
@@ -45,17 +63,39 @@ class OutputModel(BaseOutputProcessor):
 
 
 class UmpleGeneration(BaseOutputProcessor):
-    def __init__(self, umple_process="umple.jar"):
-        self.umple_process = umple_process
-        self.fail_count=0
+    """
+    Use Umple to validate the model and generate a class diagram
+
+    Attributes:
+        umple_path: The path to the umple jar file
+        fail_count: The number of times the model generation failed
+        last_error: The last error message received
+    """
+
+    def __init__(self, umple_path="umple.jar"):
+        self.umple_path = umple_path
+        self.fail_count = 0
         self.last_error = ""
 
     def process_output(self, text: str, belief: Belief) -> ValidationResult:
+        """
+        Validate the model and generate a class diagram
+
+        Args:
+            text: The generated model in Umple format
+            belief: The belief of the agent
+
+        Returns:
+            ValidationResult: The result of the validation, true if model text passes Umple validation and is able to used
+            to generate a class diagram, false otherwise
+        """
         if self.fail_count >= 3:
-            input(f"Unable to fix the model. Please help me to fix  the intermediate representation. Last error received: \n {self.last_error} \n Press Enter to continue...")
+            input(
+                f"Unable to fix the model. Please help me to fix  the intermediate representation. Last error received: \n {self.last_error} \n Press Enter to continue..."
+            )
 
         result = subprocess.run(
-            ["java", "-jar", self.umple_process, "-g", "java", "model.ump"],
+            ["java", "-jar", self.umple_path, "-g", "java", "model.ump"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -74,7 +114,7 @@ class UmpleGeneration(BaseOutputProcessor):
 
         # generate Class Diagram
         subprocess.check_output(
-            ["java", "-jar", self.umple_process, "-g", "GvClassDiagram", "model.ump"],
+            ["java", "-jar", self.umple_path, "-g", "GvClassDiagram", "model.ump"],
         )
 
         subprocess.check_output(
