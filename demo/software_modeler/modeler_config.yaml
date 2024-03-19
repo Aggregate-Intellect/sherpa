@@ -1,6 +1,6 @@
 shared_memory:
   _target_: sherpa_ai.memory.shared_memory.SharedMemory
-  objective: Answer the question
+  objective: Generate a domain model from the user's description
 
 user_id: none
 team_id: none
@@ -21,7 +21,8 @@ deliberation:
   role_description: You are a software modeler capable of creating a domain model from the user's description. Output the result in Umple code.
   llm: ${llm}
 
-output_file:
+# The following customized actions are defined in verifiers.py
+output_file:  
   _target_: verifiers.OutputModel
   filename: model.ump
 
@@ -29,7 +30,7 @@ generation:
   _target_: verifiers.UmpleGeneration
 
 
-qa_agent:
+qa_agent:  # QA Agent customized to perform softwaare modeling with custom prompts
   _target_: sherpa_ai.agents.qa_agent.QAAgent
   llm: ${llm}
   shared_memory: ${shared_memory}
