@@ -4,6 +4,14 @@ sherpa\_ai.actions package
 Submodules
 ----------
 
+sherpa\_ai.actions.answer\_arithmetic module
+--------------------------------------------
+
+.. automodule:: sherpa_ai.actions.answer_arithmetic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 sherpa\_ai.actions.arxiv\_search module
 ---------------------------------------
 
