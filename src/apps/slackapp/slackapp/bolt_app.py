@@ -96,7 +96,6 @@ def get_response(
     verbose_logger: BaseVerboseLogger,
     bot_info: Dict[str, str],
     llm=None,
-    team_id: Optional[str] = None,
     user_id: Optional[str] = None,
 ) -> str:
     """
@@ -108,7 +107,6 @@ def get_response(
         verbose_logger (BaseVerboseLogger): verbose logger to be used
         bot_info (Dict[str, str]): information of the Slack bot
         llm (SherpaChatOpenAI, optional): LLM to be used. Defaults to None.
-        team_id (str, optional): team id of the Slack workspace. Defaults to "".
         user_id (str, optional): user id of the Slack user. Defaults to "".
 
     Returns:
@@ -130,7 +128,6 @@ def get_response(
         llm = SherpaChatOpenAI(
             openai_api_key=cfg.OPENAI_API_KEY,
             user_id=user_id,
-            team_id=team_id,
             temperature=cfg.TEMPERATURE,
         )
 
@@ -149,7 +146,7 @@ def get_response(
 
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
     else:
-        agent = get_qa_agent_from_config_file("conf/config.yaml", team_id, user_id, llm)
+        agent = get_qa_agent_from_config_file("conf/config.yaml", user_id, llm)
         for message in previous_messages:
             agent.shared_memory.add(EventType.result, message.type, message.content)
         agent.shared_memory.add(EventType.task, "human", question)
@@ -162,7 +159,7 @@ def get_response(
     return response
 
 
-def file_event_handler(say, files, team_id, user_id, thread_ts, question):
+def file_event_handler(say, files, user_id, thread_ts, question):
     if files[0]["size"] > cfg.FILE_SIZE_LIMIT:
         say(
             "Sorry, the file you attached is larger than 2mb. Please try again with a smaller file",  # noqa E501
@@ -171,7 +168,6 @@ def file_event_handler(say, files, team_id, user_id, thread_ts, question):
         return {"status": "error"}
     file_prompt = QuestionWithFileHandler(
         question=question,
-        team_id=team_id,
         user_id=user_id,
         files=files,
         token=cfg.SLACK_OAUTH_TOKEN,
@@ -203,7 +199,7 @@ def event_test(client, say, event):
         if "files" in input_message
         else input_message["team"]
     )
-    combined_id = user_id + "_" + team_id
+    combined_id = user_id + team_id
 
     slack_verbose_logger = SlackVerboseLogger(say, thread_ts)
     if cfg.FLASK_DEBUG:
@@ -229,9 +225,8 @@ def event_test(client, say, event):
             file_event = file_event_handler(
                 files=files,
                 say=say,
-                team_id=team_id,
                 thread_ts=thread_ts,
-                user_id=user_id,
+                user_id=combined_id,
                 question=question,
             )
             if file_event["status"] == "error":
@@ -244,15 +239,14 @@ def event_test(client, say, event):
             reconstructor = PromptReconstructor(
                 question=question, slack_message=[replies["messages"][-1]]
             )
-            question = reconstructor.reconstruct_prompt()
+            question = reconstructor.reconstruct_prompt(user_id=combined_id)
 
         results = get_response(
             question,
             previous_messages,
             verbose_logger=slack_verbose_logger,
             bot_info=bot,
-            team_id=team_id,
-            user_id=user_id,
+            user_id=combined_id,
         )
 
         say(results, thread_ts=thread_ts)

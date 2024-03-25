@@ -10,7 +10,6 @@ llm:
   model_name: gpt-3.5-turbo
   temperature: 0
   user_id: ${user_id}
-  team_id: ${team_id}
 
 agent_config:
   _target_: sherpa_ai.config.task_config.AgentConfig

@@ -14,7 +14,6 @@ from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 
 
 class SherpaOpenAI(ChatOpenAI):
-    team_id: typing.Optional[str] = None
     user_id: typing.Optional[str] = None
 
     def _agenerate(
@@ -41,11 +40,9 @@ class SherpaOpenAI(ChatOpenAI):
 
         total_token = response.llm_output["token_usage"]["total_tokens"]
 
-        if self.team_id and self.user_id:
-            combined_id = self.user_id + "_" + self.team_id
+        if self.user_id:
             user_db = UserUsageTracker()
-            user_db.add_data(combined_id=combined_id, token=total_token)
+            user_db.add_data(combined_id=self.user_id, token=total_token)
             user_db.close_connection()
 
-        self.team_id
         return response
