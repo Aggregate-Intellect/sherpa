@@ -14,7 +14,6 @@ from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 
 
 class SherpaBaseChatModel(BaseChatModel):
-    team_id: typing.Optional[str] = None
     user_id: typing.Optional[str] = None
     verbose_logger: BaseVerboseLogger = None
 
@@ -44,17 +43,15 @@ class SherpaBaseChatModel(BaseChatModel):
         for result_message in response.generations:
             token_after += super().get_num_tokens(result_message.text)
         total_token = token_before + token_after
-        if self.team_id and self.user_id:
-            combined_id = self.user_id + "_" + self.team_id
+        if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            user_db.add_data(combined_id=combined_id, token=total_token)
+            user_db.add_data(combined_id=self.user_id, token=total_token)
             user_db.close_connection()
 
         return response
 
 
 class SherpaChatOpenAI(ChatOpenAI):
-    team_id: typing.Optional[str] = None
     user_id: typing.Optional[str] = None
     verbose_logger: BaseVerboseLogger = None
 
@@ -84,10 +81,9 @@ class SherpaChatOpenAI(ChatOpenAI):
         for result_message in response.generations:
             token_after += super().get_num_tokens(result_message.text)
         total_token = token_before + token_after
-        if self.team_id and self.user_id:
-            combined_id = self.user_id + "_" + self.team_id
+        if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            user_db.add_data(combined_id=combined_id, token=total_token)
+            user_db.add_data(combined_id=self.user_id, token=total_token)
             user_db.close_connection()
 
         return response
