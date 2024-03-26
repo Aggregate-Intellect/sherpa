@@ -2,7 +2,6 @@ import re
 from typing import List, Union
 from urllib.parse import urlparse
 
-import nltk
 import requests
 import spacy
 import tiktoken
@@ -12,18 +11,10 @@ from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredP
 from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 from loguru import logger
-from nltk import ne_chunk, pos_tag, word_tokenize
 from pypdf import PdfReader
 
 import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
-
-# from word2number import w2n
-
-
-nltk.download("punkt")
-nltk.download("maxent_ne_chunker")
-nltk.download("words")
 
 from word2number import w2n
 
@@ -316,6 +307,7 @@ def check_url(url):
 def extract_numbers_from_text(text):
     """Returns a list, possibly empty, of the strings of digits within text"""
     if text is not None:
+        text = text.lower()
         text_without_commas = re.sub(",", "", text)
         pattern = r"\d+\.\d+|\d+"
         matches = re.findall(pattern, text_without_commas)
@@ -373,11 +365,7 @@ def extract_numeric_entities(
         if any(char.isdigit() for char in entity):
             result = extract_numbers_from_text(entity)
             numbers.extend(result)
-            print(result)
-            print("The string contains a number.")
         else:
-            print(entity)
-            print("The string does not contain a number.")
             result = word_to_float(entity)
             if result["success"]:
                 numbers.append(str(result["data"]))
