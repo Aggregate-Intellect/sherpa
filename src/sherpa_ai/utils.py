@@ -12,11 +12,10 @@ from langchain.llms import OpenAI
 from langchain.text_splitter import TokenTextSplitter
 from loguru import logger
 from pypdf import PdfReader
+from word2number import w2n
 
 import sherpa_ai.config as cfg
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
-
-from word2number import w2n
 
 
 def load_files(files: List[str]) -> List[Document]:
