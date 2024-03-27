@@ -19,19 +19,11 @@ class CitationValidation(BaseOutputProcessor):
     reference texts and links provided in the 'resources' list.
 
     Attributes:
-    - seq_thresh (float): Threshold for common longest subsequence / text. Default is 0.7.
-    - jaccard_thresh (float): Jaccard similarity threshold. Default is 0.7.
-    - token_overlap (float): Token overlap threshold. Default is 0.7.
+        sequence_threshold (float): Threshold for common longest subsequence / text. Default is 0.7.
+        jaccard_threshold (float): Jaccard similarity threshold. Default is 0.7.
+        token_overlap (float): Token overlap threshold. Default is 0.7.
 
-    Methods:
-    - calculate_token_overlap(sentence1, sentence2): Calculate token overlap between two sentences.
-    - jaccard_index(sentence1, sentence2): Calculate Jaccard similarity index between two sentences.
-    - longestCommonSubsequence(text1, text2): Calculate the length of the longest common subsequence between two texts.
-    - unfoldList(nestedList): Flatten a nested list of strings.
-    - split_paragraph_into_sentences(paragraph): Tokenize a paragraph into sentences.
-    - parse_output(generated, resources): Add citation to each sentence in the generated text from resources based on fact-checking model.
-
-    Example Usage:
+    Typical usage example:
     ```python
     citation_parser = CitationValidation(seq_thresh=0.7, jaccard_thresh=0.7, token_overlap=0.7)
     result = citation_parser.parse_output(generated_text, list_of_resources)
@@ -41,36 +33,25 @@ class CitationValidation(BaseOutputProcessor):
     def __init__(
         self, sequence_threshold=0.7, jaccard_threshold=0.7, token_overlap=0.7
     ):
-        """
-        Initialize the CitationValidation object.
-
-        Args:
-        - seq_thresh (float): Threshold for common longest subsequence / text. Default is 0.7.
-        - jaccard_thresh (float): Jaccard similarity threshold. Default is 0.7.
-        - token_overlap (float): Token overlap threshold. Default is 0.7.
-        """
-        # threshold
-        self.sequence_threshold = (
-            sequence_threshold  # threshold for common longest subsequece / text
-        )
+        self.sequence_threshold = sequence_threshold
         self.jaccard_threshold = jaccard_threshold
         self.token_overlap = token_overlap
 
     def calculate_token_overlap(self, sentence1, sentence2) -> tuple:
         """
-        Calculate the percentage of token overlap between two sentences.
+        Calculates the percentage of token overlap between two sentences.
 
         Tokenizes the input sentences and calculates the percentage of token overlap
         by finding the intersection of the token sets and dividing it by the length
         of each sentence's token set.
 
         Args:
-        - sentence1 (str): The first sentence for token overlap calculation.
-        - sentence2 (str): The second sentence for token overlap calculation.
+            sentence1 (str): The first sentence for token overlap calculation.
+            sentence2 (str): The second sentence for token overlap calculation.
 
         Returns:
-        - tuple: A tuple containing two float values representing the percentage
-        of token overlap for sentence1 and sentence2, respectively.
+            tuple: A tuple containing two float values representing the percentage
+            of token overlap for sentence1 and sentence2, respectively.
         """
         # Tokenize the sentences
         tokens1 = word_tokenize(sentence1)
@@ -91,17 +72,17 @@ class CitationValidation(BaseOutputProcessor):
 
     def jaccard_index(sself, sentence1, sentence2) -> float:
         """
-        Calculate the Jaccard index between two sentences.
+        Calculates the Jaccard index between two sentences.
 
         The Jaccard index is a measure of similarity between two sets, defined as the
         size of the intersection divided by the size of the union of the sets.
 
         Args:
-        - sentence1 (str): The first sentence for Jaccard index calculation.
-        - sentence2 (str): The second sentence for Jaccard index calculation.
+            sentence1 (str): The first sentence for Jaccard index calculation.
+            sentence2 (str): The second sentence for Jaccard index calculation.
 
         Returns:
-        - float: The Jaccard index representing the similarity between the two sentences.
+            float: The Jaccard index representing the similarity between the two sentences.
         """
         # Convert the sentences to sets of words
         set1 = set(word_tokenize(sentence1))
@@ -115,9 +96,9 @@ class CitationValidation(BaseOutputProcessor):
 
         return jaccard_index
 
-    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+    def longest_common_subsequence(self, text1: str, text2: str) -> int:
         """
-        Calculate the length of the longest common subsequence between two texts.
+        Calculates the length of the longest common subsequence between two texts.
 
         A subsequence of a string is a new string generated from the original
         string with some characters (can be none) deleted without changing
@@ -140,18 +121,18 @@ class CitationValidation(BaseOutputProcessor):
                 dp[i][j] = max(diagnoal, dp[i - 1][j], dp[i][j - 1])
         return dp[-1][-1]
 
-    def unfoldList(self, nestedList: list[list[str]]) -> list[str]:
+    def flatten_nested_list(self, nested_list: list[list[str]]) -> list[str]:
         """
-        Flatten a nested list of strings into a single list of strings.
+        Flattens a nested list of strings into a single list of strings.
 
         Args:
-        - nestedList (list[list[str]]): The nested list of strings to be flattened.
+            nested_list (list[list[str]]): The nested list of strings to be flattened.
 
         Returns:
-        - list[str]: A flat list containing all non-empty strings from the nested list.
+            list[str]: A flat list containing all non-empty strings from the nested list.
         """
         sentences = []
-        for sublist in nestedList:
+        for sublist in nested_list:
             for item in sublist:
                 if len(item) > 0:
                     sentences.append(item)
@@ -159,142 +140,138 @@ class CitationValidation(BaseOutputProcessor):
 
     def split_paragraph_into_sentences(self, paragraph: str) -> list[str]:
         """
-        Tokenize a paragraph into a list of sentences.
-
-        Uses NLTK's sent_tokenize to split a given paragraph into a list of sentences.
+        Uses NLTK's sent_tokenize to split the given paragraph into a list of sentences.
 
         Args:
-        - paragraph (str): The input paragraph to be tokenized into sentences.
+            paragraph (str): The input paragraph to be tokenized into sentences.
 
         Returns:
-        - list[str]: A list of sentences extracted from the input paragraph.
+            list[str]: A list of sentences extracted from the input paragraph.
         """
         sentences = sent_tokenize(paragraph)
         return sentences
 
-    def find_used_resources(self, belief: Belief) -> list[dict]:
+    def resources_from_belief(self, belief: Belief) -> list[dict]:
+        """
+        Returns a list of all resources within belief.actions.
+        """
         resources = []
         for action in belief.actions:
             if hasattr(action, "meta") and action.meta is not None:
                 resources.extend(action.meta[-1])
         return resources
 
-    # add citation to the generated text
-    def process_output(self, generated: str, belief: Belief) -> ValidationResult:
+    def process_output(self, text: str, belief: Belief) -> ValidationResult:
         """
-        Add citation to each sentence in the generated text from resources based on fact checking model.
-        Args:
-            generated (str): The generated content where we need to add citation/reference
-            agent (BaseAgent): Belief of the agents generated the content
-        Returns:
-        - ValidationResult: An object containing the result of citation addition and feedback.
-        The ValidationResult has attributes 'is_valid' indicating success, 'result' containing
-        the formatted text with citations, and 'feedback' providing additional information.
+         Add citations to sentences in the generated text using resources based on fact checking model.
 
-        Note:
-        - The 'resources' list should contain dictionaries with "Document" and "Source" keys.
+         Args:
+             text (str): The text which needs citations/references added
+             belief (Belief): Belief of the agent that generated `text`
 
-        Example:
-        ```python
-        resources = [{"Document": "Some reference text.", "Source": "http://example.com/source1"}]
-        citation_parser = CitationValidation()
-        result = citation_parser.parse_output("Generated text.", resources)
-        ```
+         Returns:
+             ValidationResult: The result of citation processing.
+             `is_valid` is True when citation processing succeeds or no citation resources are provided,
+             False otherwise.
+             `result` contains the formatted text with citations.
+             `feedback` providing additional optional information.
 
+         Note:
+             The 'resources' list should contain dictionaries with "Document" and "Source" keys.
+
+        Typical usage example:
+         ```python
+         resources = [{"Document": "Some reference text.", "Source": "http://example.com/source1"}]
+         citation_parser = CitationValidation()
+         result = citation_parser.parse_output("Text needing citations.", resources)
+         ```
         """
-        # resources type
-        # resources = [{"Document":, "Source":...}, {}]
-        resources = self.find_used_resources(belief)
+        resources = self.resources_from_belief(belief)
 
         if len(resources) == 0:
             # no resources used, return the original text
             return ValidationResult(
                 is_valid=True,
-                result=generated,
+                result=text,
                 feedback="",
             )
 
-        return self.add_citations(generated, resources)
+        return self.add_citations(text, resources)
 
     def add_citation_to_sentence(self, sentence: str, resources: list[dict]):
         """
-        This function add a citation to a sentence based on a list of resources
+        Uses a list of resources to add citations to a sentence
 
+        Returns:
+            citation_ids: a list of citation identifiers
+            citation_links: a list of citation links (URLs)
         """
-        # ids and links of the cited resources
-        ids = []
-        links = []
+        citation_ids = []
+        citation_links = []
 
-        for index, source in enumerate(resources):
-            cited = False  # if this resource is cited
-            text = source["Document"]
-            one_sentences = text.split(".")
-            sub_string = [s.split("\n") for s in one_sentences]
-            split_texts = self.unfoldList(sub_string)
+        if len(sentence) <= 5:
+            return citation_ids, citation_links
 
-            link = source["Source"]
+        for index, resource in enumerate(resources):
+            cited = False
+            resource_link = resource["Source"]
+            resource_text = resource["Document"]
+            resource_sentences = resource_text.split(".")
+            # TODO: verify that splitting each sentence on newlines improves citation results
+            nested_sentence_lines = [s.split("\n") for s in resource_sentences]
+            resource_lines = self.flatten_nested_list(nested_sentence_lines)
 
-            for j in split_texts:
-                if len(sentence) > 5 and not cited and not (link in links):
-                    seq = self.longestCommonSubsequence(sentence, j)
-
-                    contained = False
-                    if sentence in j:
-                        # print("contained", s, j)
-                        contained = True
-                    jaccard = self.jaccard_index(sentence, j)
-                    # print(jaccard)
-
+            for resource_line in resource_lines:
+                if not cited and not (resource_link in citation_links):
+                    seq = self.longest_common_subsequence(sentence, resource_line)
                     if (
                         (seq / len(sentence)) > self.sequence_threshold
-                        or contained
-                        or jaccard > self.jaccard_threshold
+                        or sentence in resource_line
+                        or self.jaccard_index(sentence, resource_line)
+                        > self.jaccard_threshold
                     ):
-                        links.append(link)
-                        ids.append(index + 1)
-        return ids, links
+                        citation_links.append(resource_link)
+                        citation_ids.append(index + 1)
+                        cited = True
+
+        return citation_ids, citation_links
 
     def format_sentence_with_citations(self, sentence, ids, links):
         """
-        This function append citations to sentence
+        Appends citations to sentence
         """
+        if len(ids) == 0:
+            return sentence
 
         citations = []
         for id, url in zip(ids, links):
             reference = f"[{id}]({url})"
             citations.append(reference)
 
-        if len(citations) > 0:
-            new_sentence = sentence[:-1] + " " + ", ".join(citations) + "."
-
-        else:
-            new_sentence = sentence
+        new_sentence = sentence[:-1] + " " + ", ".join(citations) + "."
         return new_sentence
 
-    def add_citations(self, generated: str, resources: list[dict]) -> ValidationResult:
-        paragraph = generated.split("\n")
+    def add_citations(self, text: str, resources: list[dict]) -> ValidationResult:
+        paragraph = text.split("\n")
         paragraph = [p for p in paragraph if len(p.strip()) > 0]
 
-        paragraphs = [
-            self.split_paragraph_into_sentences(s) for s in paragraph
-        ]  # nested list
+        paragraphs = [self.split_paragraph_into_sentences(s) for s in paragraph]
 
         new_paragraph = []
-        # iterate through each paragraph
-        for one_paragraph in paragraphs:
+        for paragraph in paragraphs:
             new_sentences = []
 
             # for each sentence in each paragraph
-            for _, sentence in enumerate(one_paragraph):
+            for _, sentence in enumerate(paragraph):
                 sentence = sentence.strip()
                 if len(sentence) == 0:
                     continue
 
                 ids, links = self.add_citation_to_sentence(sentence, resources)
-                formated_sentence = self.format_sentence_with_citations(
+                formatted_sentence = self.format_sentence_with_citations(
                     sentence, ids, links
                 )
-                new_sentences.append(formated_sentence)
+                new_sentences.append(formatted_sentence)
 
             new_paragraph.append(" ".join(new_sentences) + "\n")
 
