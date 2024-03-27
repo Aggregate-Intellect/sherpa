@@ -24,7 +24,6 @@ def mock_context_search(external_api):
 
 @pytest.mark.external_api
 def test_context_search_succeeds(get_llm, mock_context_search):  # noqa: F811
-
     role_description = (
         "The programmer receives requirements about a program and write it"
     )
