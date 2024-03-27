@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+from loguru import logger
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.output_parsers import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
@@ -8,10 +9,10 @@ from sherpa_ai.output_parsers.validation_result import ValidationResult
 
 class OutputModel(BaseOutputProcessor):
     """
-    Validate the generated model and save it to a file
+    Validates the generated model and saves it to a file
 
     Attributes:
-        filename: The name of the file to save the model
+        filename: The name of the file in which to save the model
     """
 
     def __init__(self, filename: str):
@@ -19,19 +20,18 @@ class OutputModel(BaseOutputProcessor):
 
     def process_output(self, text: str, belief: Belief) -> ValidationResult:
         """
-        Filtering the generated text to extract the Umple model and save it to a file
+        Extracts an Umple model from `text` and saves the model to a file
 
         Args:
-            text: The generated text
-            belief: The belief of the agent
+            text: A string of text containing an Umple model (https://cruise.umple.org/umple/)
+            belief: The belief of the agent that generated the text
 
         Returns:
-            ValidationResult: The result of the validation, since the main purpose is to save the model,
-            the result is always valid
+            ValidationResult: The result of the validation
         """
         lines = text.split("\n")
         line_num = 0
-        print(text)
+        logger.debug(text)
         for line in lines:
             if line.startswith("namespace") or line.startswith("class"):
                 break
@@ -64,12 +64,12 @@ class OutputModel(BaseOutputProcessor):
 
 class UmpleGeneration(BaseOutputProcessor):
     """
-    Use Umple to validate the model and generate a class diagram
+    Uses Umple to validate the model and generate a class diagram
 
     Attributes:
-        umple_path: The path to the umple jar file
-        fail_count: The number of times the model generation failed
-        last_error: The last error message received
+        umple_path: local filesystem path to the umple jar file
+        fail_count: The number of times process_output calls fail
+        last_error: The last error message received from Umple
     """
 
     def __init__(self, umple_path="umple.jar"):
@@ -83,11 +83,13 @@ class UmpleGeneration(BaseOutputProcessor):
 
         Args:
             text: The generated model in Umple format
-            belief: The belief of the agent
+            belief: The belief of the agent that generated `text`
 
         Returns:
-            ValidationResult: The result of the validation, true if model text passes Umple validation and is able to used
-            to generate a class diagram, false otherwise
+            ValidationResult: The result of the validation. 
+            `is_valid` is true if model text passes Umple validation and can be used
+            to generate a class diagram, false otherwise.
+            `result` contains the generated model diagram.
         """
         if self.fail_count >= 3:
             input(
