@@ -5,11 +5,12 @@ from langchain.callbacks.manager import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
+from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, ChatResult
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
-from langchain.chat_models import ChatOpenAI
+
 
 class SherpaOpenAI(ChatOpenAI):
     team_id: typing.Optional[str] = None
