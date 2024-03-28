@@ -8,6 +8,7 @@ class EventType(Enum):
     feedback = 4
     action = 5
     action_output = 6
+    user_input = 7
 
 
 class Event:

@@ -52,10 +52,11 @@ class Belief:
         """
         context = ""
         for event in reversed(self.events):
-            if (
-                event.event_type == EventType.task
-                or event.event_type == EventType.result
-            ):
+            if event.event_type in [
+                EventType.task,
+                EventType.result,
+                EventType.user_input,
+            ]:
                 context = event.content + "\n" + context
 
                 if token_counter(context) > max_tokens:
