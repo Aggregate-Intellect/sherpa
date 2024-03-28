@@ -105,31 +105,48 @@ class BaseAgent(ABC):
         return result
 
     def validate_output(self):
-        last_failed_validation = None
+        """
+        Validate the synthesized output through a series of validation steps.
 
-        for _ in range(self.validation_steps):
-            result = self.synthesize_output()
-            self.belief.update_internal(EventType.result, self.name, result)
-            is_valid = True
-            for validation in self.validations:
-                validation_result = validation.process_output(result, self.belief)
+        This method iterates through each validation in the 'validations' list, and for each validation,
+        it performs 'validation_steps' attempts to synthesize output using 'synthesize_output' method.
+        If the output doesn't pass validation, feedback is incorporated into the belief system.
 
-                if not validation_result.is_valid:
-                    is_valid = False
+        If a validation fails after all attempts, the error messages from the last failed validation
+        are appended to the final result.
+
+        Returns:
+            str: The synthesized output after validation.
+        """
+        last_failed_validation = []
+        result = ""
+        for validation in self.validations:
+            for count in range(self.validation_steps):
+                result = self.synthesize_output()
+                self.belief.update_internal(EventType.result, self.name, result)
+
+                validation_result = validation.process_output(
+                    text=result, belief=self.belief, iteration_count=count
+                )
+                if validation_result.is_valid:
+                    break
+                else:
                     self.belief.update_internal(
                         EventType.feedback,
                         self.feedback_agent_name,
                         validation_result.feedback,
                     )
-                    last_failed_validation = validation
-                    break
-                result = validation_result.result
-            if is_valid:
-                return result
 
-        if last_failed_validation is not None:
+            if count >= self.validation_steps:
+                last_failed_validation.append(validation)
+
+        if len(last_failed_validation) > 0:
             # if the validation failed after all steps, append the error messages to the result
-            result = result + "\n" + last_failed_validation.get_failure_message()
+            result += "\n".join(
+                failed_validation.get_failure_message()
+                for failed_validation in last_failed_validation
+            )
+
         self.belief.update_internal(EventType.result, self.name, result)
         return result
 
