@@ -42,9 +42,11 @@ class NumberValidation(BaseOutputProcessor):
         source = belief.get_histories_excluding_types(
             exclude_types=[EventType.feedback, EventType.result],
         )
+
         numbers_exist_in_source, error_message = verify_numbers_against_source(
             text, source
         )
+
         if numbers_exist_in_source:
             return ValidationResult(
                 is_valid=True,
