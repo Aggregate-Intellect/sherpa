@@ -3,19 +3,16 @@ from pydantic import BaseModel
 
 class ValidationResult(BaseModel):
     """
-    Represents the result of a validation process.
-
-    This class inherits from the Pydantic BaseModel and includes fields
-    for indicating the validity of the result, the actual result, and optional feedback.
+    Represents the result of validating a string of content.
 
     Attributes:
-    - is_valid (bool): Indicates whether the validation result is valid (True) or not (False).
-    - result (str): The actual result of the validation process.
-    - feedback (str, optional): Additional feedback or information about the validation result. Default is an empty string.
+        is_valid (bool): Indicates whether the validation result is valid (True) or not (False).
+        result (str): The output of the validation process. A string of validated content.
+        feedback (str, optional): Additional feedback or information about the validation result. Default is an empty string.
 
     Example Usage:
     ```python
-    validation_result = ValidationResult(is_valid=True, result="Validated successfully", feedback="No issues found.")
+    validation_result = ValidationResult(is_valid=True, result="Some validated text", feedback="No issues found.")
     ```
 
     """
