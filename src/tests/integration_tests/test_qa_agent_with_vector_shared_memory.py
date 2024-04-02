@@ -40,6 +40,58 @@ meta_data = {
     "data_type": "user_input",
 }
 
+data2 = """
+    Comets are celestial objects that orbit the sun along an elongated path. They are made up of dust, rock, and ices, and can range in width from a few miles to tens of miles. When comets get closer to the sun, they heat up and release gases and dust into a glowing head that can be bigger than a planet. Comets have two separate tails, one white and made of dust, and one bluish and made of electrically charged gas molecules, or ions.
+    """
+session_id2 = "5"
+meta_data2 = {
+    "session_id": f"{session_id}",
+    "file_name": "kk",
+}
+
+def test_chroma_vector_store_from_texts():
+    """
+    Test to create a Chroma Vector Store from texts and
+    """
+    split_data = ChromaVectorStore.file_text_splitter(data=data, meta_data=meta_data)
+    chroma = ChromaVectorStore.chroma_from_texts(
+        texts=split_data["texts"], meta_datas=split_data["meta_datas"]
+    )
+    result = chroma.similarity_search(
+        query="avocado",
+    )
+    result_content = result[0].page_content
+    logger.debug(result_content)
+    assert len(result_content) > 0, "Failed to do similarity search from text"
+
+
+def test_chroma_vector_store_from_existing_store():
+    """
+    Test to create a Chroma Vector Store from an existing store and
+    check if the similarity search is working as expected by checking where the chunk comes from
+    """
+    split_data = ChromaVectorStore.file_text_splitter(data=data2, meta_data=meta_data2)
+    ChromaVectorStore.chroma_from_texts(
+        texts=split_data["texts"], meta_datas=split_data["meta_datas"]
+    )
+    split_data_two = ChromaVectorStore.file_text_splitter(
+        data=data, meta_data=meta_data
+    )
+    ChromaVectorStore.chroma_from_texts(
+        texts=split_data_two["texts"], meta_datas=split_data_two["meta_datas"]
+    )
+
+    chroma = ChromaVectorStore.chroma_from_existing()
+    result = chroma.similarity_search(
+        query="comets",
+    )
+
+    result_content = result[0].page_content
+    logger.debug(result[0])
+
+    assert len(result_content) > 0, "Failed to do similarity search from exsiting store"
+    assert result[0].metadata["file_name"] == "kk", "Chunk is not from the correct file"
+
 
 @pytest.mark.external_api
 def test_shared_memory_with_vector(get_llm):

@@ -9,60 +9,87 @@ import sherpa_ai.config as cfg
 
 
 class ChromaVectorStore:
-    def __init__(self, db) -> None:
+    """
+    A class used to represent a Chroma Vector Store.
+
+    This class provides methods to create a Chroma Vector Store from texts or from an existing store, 
+    split file text, and perform a similarity search.
+
+    ...
+
+    Attributes
+    ----------
+    db : chromadb.PersistentClient
+        a persistent client to interact with the ChromaDB
+
+    Methods
+    -------
+    chroma_from_texts(texts, embedding, meta_datas)
+        Class method to create a Chroma Vector Store from given texts.
+    chroma_from_existing(embedding)
+        Class method to create a Chroma Vector Store from an existing store.
+    file_text_splitter(data, meta_data)
+        Class method to split file text into chunks.
+    similarity_search(query, session_id)
+        Method to perform a similarity search in the Chroma Vector Store.
+    """
+    def __init__(self, db , path="./db") -> None:
         self.db = db
+        self.path = path
 
     @classmethod
-    def chroma_from_texts(cls, texts, embedding=None, meta_datas=None):
-        openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+    def chroma_from_texts(
+        cls,
+        texts,
+        embedding=embedding_functions.OpenAIEmbeddingFunction(
             model_name="text-embedding-ada-002"
-        )
-        embeded_data = openai_ef(texts)
+        ),
+        meta_datas=None,
+        path="./db",
+    ):
+
+        embeded_data = embedding(texts)
         meta_datas = [] if meta_datas is None else meta_datas
-        client = chromadb.PersistentClient(path="./db")
+        client = chromadb.PersistentClient(path=path)
         db = client.get_or_create_collection(
-            name=cfg.INDEX_NAME_FILE_STORAGE, embedding_function=openai_ef
+            name=cfg.INDEX_NAME_FILE_STORAGE, embedding_function=embedding
         )
         db.add(
             embeddings=embeded_data,
             documents=texts,
             metadatas=meta_datas,
-            ids=[str(uuid.uuid1()) for text in texts],
+            ids=[str(uuid.uuid1()) for _ in texts],
         )
 
-        return cls(db)
+        return cls(db , path)
 
     @classmethod
-    def chroma_from_existing(cls):
-        openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-            model_name="text-embedding-ada-002"
-        )
+    def chroma_from_existing(cls , embedding=embedding_functions.OpenAIEmbeddingFunction(model_name="text-embedding-ada-002"),path="./db"):
 
-        client = chromadb.PersistentClient(path="./db")
+        client = chromadb.PersistentClient(path=path)
         db = client.get_or_create_collection(
-            name=cfg.INDEX_NAME_FILE_STORAGE, embedding_function=openai_ef
+            name=cfg.INDEX_NAME_FILE_STORAGE, embedding_function=embedding
         )
 
         return cls(db)
 
     @classmethod
-    def file_text_splitter(cls, data, meta_data):
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    def file_text_splitter(cls, data, meta_data, content_key='file_content', chunk_size=1000, chunk_overlap=0):
+        text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         texts = text_splitter.split_text(data)
         metadatas = []
         temp_texts = []
         for doc in texts:
             metadatas.append(meta_data)
-            temp_texts.append(f"""'file_content': '{doc}' ,{meta_data}""")
-        texts = temp_texts
+            temp_texts.append(f"'{content_key}': '{doc}', {meta_data}")
 
-        return {"texts": texts, "meta_datas": metadatas}
+        return {"texts": temp_texts, "meta_datas": metadatas}
 
-    def similarity_search(self, query: str = "", session_id: str = None):
+    def similarity_search(self, query: str = "", session_id: str = None , number_of_results=2):
         filter = {} if session_id is None else {"session_id": session_id}
         results = self.db.query(
             query_texts=[query],
-            n_results=2,
+            n_results=number_of_results,
             where=filter,
             include=["documents", "metadatas"],
         )
