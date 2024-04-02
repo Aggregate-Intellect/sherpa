@@ -49,6 +49,7 @@ meta_data2 = {
     "file_name": "kk",
 }
 
+
 def test_chroma_vector_store_from_texts():
     """
     Test to create a Chroma Vector Store from texts and
