@@ -1,11 +1,29 @@
+from unittest import mock
+
 import pytest
 
 from sherpa_ai.actions.context_search import ContextSearch
 from sherpa_ai.test_utils.llms import get_llm
 
 
+@pytest.fixture
+def mock_context_search(external_api):
+    if external_api:
+        return
+
+    with mock.patch(
+        "langchain.schema.vectorstore.VectorStoreRetriever.get_relevant_documents"
+    ) as mock_retrival:
+        mock_doc = mock.MagicMock()
+        mock_doc.page_content = "mock"
+        mock_doc.source = "mock"
+
+        mock_retrival.return_value = [mock_doc]
+        yield
+
+
 @pytest.mark.external_api
-def test_context_search_succeeds(get_llm):  # noqa: F811
+def test_context_search_succeeds(get_llm, mock_context_search):  # noqa: F811
     role_description = (
         "The programmer receives requirements about a program and write it"
     )
