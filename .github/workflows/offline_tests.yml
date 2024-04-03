@@ -1,6 +1,9 @@
-name: Run online tests
+name: Run offline tests
 
-on: workflow_dispatch
+on:
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
   tests:
@@ -31,18 +34,6 @@ jobs:
           poetry run python -m spacy download en_core_web_sm 
 
       - name: Run tests
-        env:
-          SLACK_SIGNING_SECRET: ${{ secrets.SLACKSIGNINGSECRET }}
-          SLACK_OAUTH_TOKEN: ${{ secrets.SLACKOAUTHTOKEN }}
-          SLACK_VERIFICATION_TOKEN: ${{ secrets.SLACKVERIFICATIONTOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAIKEY }}
-          PINECONE_INDEX: ${{ secrets.PINCONEID }}
-          PINECONE_ENV: ${{ secrets.PINECONEENV }}
-          SLACK_PORT: ${{ secrets.SLACKPORT }}
-          SERPER_API_KEY: ${{ secrets.SERPAAPIKEY }}
-          GITHUB_AUTH_TOKEN: ${{ secrets.GITHUBOATHKEY }}
-          DAILY_TOKEN_LIMIT: ${{ secrets.TOKENLIMIT }}
-          TEMPRATURE: ${{ secrets.TEMPRATURE }}
         run: |
           cd src
-          poetry run pytest --external_api --cov=sherpa_ai tests
+          poetry run pytest --cov=sherpa_ai tests
