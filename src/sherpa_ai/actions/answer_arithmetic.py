@@ -145,8 +145,9 @@ class AnswerArithmetic(BaseAction):
             prompt = math_prompts.MATH_PROMPT.format(question=scaled_question)
             answer = self.interface.run_with_dict(prompt, number_dict)
 
-        reasoning = self.interface.history[-1][0]
-        logger.info(reasoning)
+        if len(self.interface.history) > 0:
+            reasoning = self.interface.history[-1][0]
+            logger.info(reasoning)
         return answer
 
     @property

@@ -37,7 +37,7 @@ def num_tokens_from_string(string: str, encoding_name="cl100k_base") -> int:
 
 ChatGPT models have a token limit. For GPT3.5-turbo, the limit is 4096 tokens [(docs)](https://platform.openai.com/docs/models/gpt-3-5). Most transcripts exceed that, so it must be split into chunks.
 """
-def transcript_splitter(raw_transcript, chunk_size=10000, chunk_overlap=200):
+def transcript_splitter(raw_transcript, chunk_size=3000, chunk_overlap=200):
   markdown_splitter = MarkdownTextSplitter(
       chunk_size=chunk_size, chunk_overlap=chunk_overlap)
   transcript_docs = markdown_splitter.create_documents([raw_transcript])
