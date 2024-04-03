@@ -1,5 +1,5 @@
 import re
-from typing import List, Union
+from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -338,7 +338,8 @@ def word_to_float(text):
 
 
 def extract_numeric_entities(
-    text: str, entity_types: List[str] = ["DATE", "CARDINAL", "QUANTITY", "MONEY"]
+    text: Optional[str],
+    entity_types: List[str] = ["DATE", "CARDINAL", "QUANTITY", "MONEY"],
 ):
     """
     Extracts numeric entities from the given text using spaCy and converts textual
@@ -352,6 +353,9 @@ def extract_numeric_entities(
     Returns:
     List[str]: A list of numeric values extracted from the text.
     """
+
+    if text is None:
+        return []
 
     text = text.lower()
     text = re.sub(r"\s+", " ", text)
@@ -390,7 +394,9 @@ def combined_number_extractor(text: str):
     return list(result)
 
 
-def verify_numbers_against_source(text_to_test: str, source_text: str):
+def verify_numbers_against_source(
+    text_to_test: Optional[str], source_text: Optional[str]
+):
     """Verifies that all numbers in text_to_test exist in source_text. Returns True on success. Returns False and a feedback string on failure."""
     candidate_numbers = set(combined_number_extractor(text_to_test))
     source_numbers = set(combined_number_extractor(source_text))
