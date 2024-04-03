@@ -360,6 +360,7 @@ def extract_numeric_entities(
     text = text.lower()
     text = re.sub(r"\s+", " ", text)
 
+    # This loading requires running python -m spacy download en_core_web_sm first
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     numbers = []
