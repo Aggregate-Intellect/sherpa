@@ -3,16 +3,16 @@ import time
 import boto3
 from anyio import Path
 from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
-Base = declarative_base()
 
 import boto3
+import sqlalchemy.orm
+Base = sqlalchemy.orm.declarative_base()
 
 
 class UsageTracker(Base):
