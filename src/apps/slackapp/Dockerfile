@@ -24,7 +24,7 @@ RUN poetry install
 RUN cd apps/slackapp && poetry install
 
 # Download the spaCy trained pipeline for English
-RUN python -m spacy download en_core_web_sm
+RUN poetry run python -m spacy download en_core_web_sm
 
 # Expose the port that the Flask app will listen on
 EXPOSE 80
