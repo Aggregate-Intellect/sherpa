@@ -5,7 +5,7 @@ The `Sherpa repository <https://github.com/Aggregate-Intellect/sherpa>`__ contai
 including a chatbot built using Flask and Slack.
 The chatbot leverages the Langchain library for question-answering and
 text processing tasks. While you can :doc:`talk to Sherpa in the AISC Slack workspace<0_slack_bot_intro>`,
-if you want to go deeper and contribute to code or run Sherpa in your own Slack workspace then 
+if you want to go deeper and contribute to code or run Sherpa in your own Slack workspace then
 this section is for you.
 
 Video tutorial
@@ -27,7 +27,7 @@ Preparation
 1. Clone the repository:
 
    .. code:: bash
-   
+
       git clone
 
 2. Create new app in slack workspace following the :doc:`setup
@@ -86,9 +86,9 @@ Run with Virtual Environment
 
        conda activate slackbot
 
-5. Install the dependencies of the slackbot: 
-   
-   * Install dependencies with `Poetry <https://python-poetry.org/>`__ (recommended, this will give you the ability to edit the code in `sherpa_ai` without rebuild) 
+5. Install the dependencies of the slackbot:
+
+   * Install dependencies with `Poetry <https://python-poetry.org/>`__ (recommended, this will give you the ability to edit the code in `sherpa_ai` without rebuild)
 
       .. code:: bash
 
@@ -109,7 +109,13 @@ Run with Virtual Environment
          cd src/apps/slackapp
          pip install -e .
 
-6. Run the server:
+6. Download the spaCy trained pipeline for English.
+
+    .. code:: bash
+
+        python -m spacy download en_core_web_sm
+
+7. Run the server:
 
    * Run with `Poetry <https://python-poetry.org/>`__
 
@@ -208,7 +214,7 @@ and `Flask: Debugging Application Errors <https://flask.palletsprojects.com/en/2
 Reference
 ~~~~~~~~~
 
-Once you have the chatbot running you can start interacting with it by mentioning the app in a Slack 
+Once you have the chatbot running you can start interacting with it by mentioning the app in a Slack
 channel. See :doc:`Talk to Sherpa <0_slack_bot_intro>` for how to do this.
 
 You can also configure a local vector database for the chatbot to use as a context search tool. See :doc:`Setup Local VectorDB with Production Data <4_local_vectordb>`
