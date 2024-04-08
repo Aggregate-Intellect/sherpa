@@ -128,7 +128,7 @@ Next, we will create a configuration file for the agent. This configuration file
     llm:  # Configuration for the llm, here we are using the OpenAI GPT-3.5-turbo model
         _target_: langchain.chat_models.ChatOpenAI
         model_name: gpt-3.5-turbo
-        temperature: 0.7
+        temperature: 0
 
     embedding_func: 
         _target_: langchain.embeddings.SentenceTransformerEmbeddings
@@ -251,3 +251,78 @@ Finally, to view more detailed logs, you can set the log level to debug by chang
 .. code-block:: bash
 
     LOG_LEVEL=DEBUG
+
+
+Add more components
+********************
+
+Now we have a PDF reader that can help us answer questions about the content of a PDF file. We can add more component to the agent to also expose it to the Internet using Google search. To add Google Search, we simply need to use the built-in Sherpa action called `Google Search` and add it to the configuration. Add the following code to the `agent_config.yml` file (before the `qa_agent` section):
+
+.. code-block:: yaml
+
+    google_search:  
+        _target_: sherpa_ai.actions.GoogleSearch
+        role_description: Act as a question answering agent
+        task: Question answering
+        llm: ${llm}
+        include_metadata: true
+        config: ${agent_config}
+
+
+Then, add the `google_search` action to the `qa_agent` section:
+
+We can also add a verification step to provide more reliable citation from the Google Search results. Add the following code to the `agent_config.yml` file (before the `qa_agent` section):
+
+.. code-block:: yaml
+    citation_validation:  # The tool used to validate and add citation to the answer
+        _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
+        sequence_threshold: 0.5
+        jaccard_threshold: 0.5
+        token_overlap: 0.5
+
+Then, add the `citation_validation` to the `validations` property in `qa_agent` section, and change the number of runs to 2 so that both actions have a chance to be selected by the agent.
+
+Finally we need to modify the agent description to include the new capabilities. Then final `qa_agent` section should look like this:
+
+.. code-block:: yaml
+
+    qa_agent:
+        _target_: sherpa_ai.agents.qa_agent.QAAgent
+        llm: ${llm}
+        shared_memory: ${shared_memory}
+        name: QA Sherpa
+        description: You are a research for natural language processing question for answers to questions. Do not answering any question not related to NLP
+        agent_config: ${agent_config}
+        num_runs: 1
+        validation_steps: 1
+        actions:
+            - ${google_search}
+        validations:
+            - ${citation_validation}
+
+
+Before running the agent, you need to add an Serper API key to the environment variable to enable the Google Search action. You can get the API key from the Serper website: https://serper.dev/. Add the following code to the `.env` file:
+
+.. code-block:: bash
+
+    SERPER_API_KEY=<YOUR_API_KEY>
+
+
+Now, you can run the PDF reader with Google Search by running the following command:
+
+.. code-block:: bash
+
+    python main.py --config agent_config.yml
+
+You should now be able to ask questions about the content of the PDF file and get answers from the content of the PDF file and Google Search results.
+
+.. image:: imgs/pdf_reader_plus.png
+    :width: 800
+
+Notice how the agent now provides citations for the answers from the Google Search results. 
+
+
+Conclusion
+***********
+
+In this tutorial, we created a simple PDF reader using Sherpa. We used the SentenceTransformer library to convert text into vectors, the Chroma in-memory vector database to store the text embeddings of the PDF file, and the QAAgent from Sherpa to answer questions about the content of the PDF file. We also added the Google Search action to the agent to enable the agent to search the Internet for answers to questions. Finally, we added a citation validation step to provide more reliable citations for the answers from the Google Search results.
