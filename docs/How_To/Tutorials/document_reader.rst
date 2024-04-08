@@ -268,7 +268,6 @@ Now we have a PDF reader that can help us answer questions about the content of 
         include_metadata: true
         config: ${agent_config}
 
-
 Then, add the `google_search` action to the `qa_agent` section:
 
 We can also add a verification step to provide more reliable citation from the Google Search results. Add the following code to the `agent_config.yml` file (before the `qa_agent` section):
@@ -291,15 +290,15 @@ Finally we need to modify the agent description to include the new capabilities.
         llm: ${llm}
         shared_memory: ${shared_memory}
         name: QA Sherpa
-        description: You are a research for natural language processing question for answers to questions. Do not answering any question not related to NLP
+        description: You are a Question answering assistant helping users to find answers based on the document. For each question, first try to collection information it by DocumentSearch. Then, use Google Search to find the answer in the next step.
         agent_config: ${agent_config}
-        num_runs: 1
+        num_runs: 2
         validation_steps: 1
         actions:
+            - ${doc_search}
             - ${google_search}
         validations:
             - ${citation_validation}
-
 
 Before running the agent, you need to add an Serper API key to the environment variable to enable the Google Search action. You can get the API key from the Serper website: https://serper.dev/. Add the following code to the `.env` file:
 
