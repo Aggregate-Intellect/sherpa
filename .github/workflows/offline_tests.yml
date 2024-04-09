@@ -1,0 +1,39 @@
+name: Run offline tests
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      # Install poetry with virtualenvs disabled for tests
+      - name: Install poetry and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install poetry
+          cd src
+          poetry config virtualenvs.create false
+          poetry install
+      
+      # en_core_web_sm required by spacy needs to be installed separately
+      - name: Install extra dependencies
+        run: |
+          cd src
+          poetry run python -m spacy download en_core_web_sm 
+
+      - name: Run tests
+        run: |
+          cd src
+          poetry run pytest --cov=sherpa_ai tests

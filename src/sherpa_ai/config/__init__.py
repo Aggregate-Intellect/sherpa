@@ -101,14 +101,12 @@ if None in [
     this.SLACK_OAUTH_TOKEN,
     this.SLACK_PORT,
 ]:
-    logger.info("Config: Slack environment variables not set, unable to run")
-    raise SystemExit(1)
+    logger.warning("Config: Slack environment variables not set")
 else:
     logger.info("Config: Slack environment variables are set")
 
 if this.OPENAI_API_KEY is None:
-    logger.info("Config: OpenAI environment variables not set, unable to run")
-    raise SystemExit(1)
+    logger.warning("Config: OpenAI environment variables not set")
 else:
     logger.info("Config: OpenAI environment variables are set")
 
