@@ -1,30 +1,47 @@
 Create a PDF Reader with Sherpa
 ===============================
 
-In this tutorial, we will create a simple PDF reader using Sherpa. The PDF reader will be able to open a PDF file, load its content into a vector database and then use a question answering agent to answer questions about the content of the PDF file.
+In this tutorial we will create a simple PDF reader using Sherpa. The PDF reader will be able to open a PDF file, load its content into a vector database and then use a question-answering agent and a web search agent to answer questions about the content of the PDF file.
 
 
 Overview
 ********
 
-To create the PDF reader, there are three main components to define:
-1. A text embedding tool to convert text and queries into vectors (We will use the SentenceTransformer library)
-2. A vector database to store the text embeddings of the PDF file (We will use Chroma in-memory vector database)
-3. An customized Sherpa Action to enable searching the vector database and can be used by an agent from Sherpa
-4. A question answering agent to answer questions about the content of the PDF file (We will use the QAAgent from Sherpa)
+To create the PDF reader we will define four components:
+
+1. A text embedding tool to convert text and queries into vectors. We will use the SentenceTransformer library to meet this need.
+2. A vector database to store the text embeddings of the PDF file. We will use Chroma in-memory vector database.
+3. A customized Sherpa Action to enable a Sherpa agent to search the vector database.
+4. A question answering agent to answer questions about the content of the PDF file. We will Sherpa's built-in QAAgent to do this.
 
 Install dependencies
 *********************
-First, install Sherpa 
+
+Step 1. Install Python **v3.9** using your preferred installation method.
+
+Step 2. Create a folder for storing your tutorial code and PDF files:
+
+.. code-block:: bash
+
+    cd <your development directory>
+    mkdir sherpa_tutorial
+    cd sherpa_tutorial
+
+Step 3. You may wish to create a virtual environment to isolate the Python libraries used 
+for this tutorial from your other Python code. This step is optional. 
+
+.. code-block:: bash
+
+    python -m venv myvenv
+    source myvenv/bin/activate
+
+Step 4: Install the Sherpa library.
 
 .. code-block:: bash
 
     pip install sherpa_ai
 
-
-Then, install the following dependencies:
-- pdfminer.six for extracting text from PDF files
-- sentence-transformers for text embedding
+Step 5: install pdfminer.six for extracting text from PDF files and sentence-transformers for creating text embeddings:
 
 .. code-block:: bash
 
@@ -92,7 +109,7 @@ Create a folder for this tutorial. In this folder, create a file called `actions
                 "query": "string"
             }
 
-The action is a crucial part of Sherpa enabling the agent to interact with any other systems. In this case, the action is used for searching the vector database containing PDF content for the query.
+The action is a crucial part of Sherpa enabling the agent to interact with other systems. In this case, the action we are creating is used for searching the vector database containing PDF content for the query.
 
 This action will be passed to the QAAgent to enable the agent to search the vector database for the query.
 
@@ -102,18 +119,21 @@ There are three main parts in this action class:
 
 2. `execute`: This method executes the action by searching the vector database for the query and returning the search results.
 
-3. `name` and `args`: These properties are used to describe the action to the agent.
+3. `name` and `args`: These properties describe the action to agents that want to use it.
 
 
 Find a PDF file
 ****************
 
-Next, you can find a PDF file to use with the PDF reader. For this tutorial, we will use a paper PDF as an example. You can download the PDF file from the following link: https://arxiv.org/pdf/2401.07930.pdf. You can also use any other PDF file you have. Save the PDF file in the same folder as the `actions.py` file. For simplicity, we will use the filename `paper.pdf` in this tutorial.
+Next, locate a PDF file to use with the PDF reader. For example, we could use a research
+paper like this one: https://arxiv.org/pdf/2401.07930.pdf. You can use any other PDF file you have. Save the PDF file in the same folder as the `actions.py` file. For simplicity, we will use the filename `paper.pdf` in this tutorial to refer to your PDF file.
 
 Defining the agent configuration
 *********************************
 
-Next, we will create a configuration file for the agent. This configuration file will be directly parsed to create the agent such that no additional code is required. Create a file called `agent_config.yml` and add the following code:
+Next, we will create a configuration file for the agent. This configuration file will be directly parsed by Sherpa to create the agent such that no additional code is required. 
+
+Create a file called `agent_config.yml` and add the following code:
 
 .. code-block:: yaml
 
@@ -152,11 +172,11 @@ Next, we will create a configuration file for the agent. This configuration file
             - ${doc_search}
 
 
-The `_target_` key is used to define the class to be used when instantiating the object. 
+The _target_ keys tell Sherpa which classes to use to instantiate various objects.
 
-The DocumentSearch action is defined in the `doc_search` field, you can change the `filename` attribute to the PDF file you want to use. The `embedding_function` attribute is set to the SentenceTransformerEmbeddings class, which is used to convert text into vectors. The `k` attribute is set to 4, which is the number of search results to return. 
+The DocumentSearch action is defined in the `doc_search` field. You can change the `filename` attribute to the PDF file you want to use. The `embedding_function` attribute is set to the SentenceTransformerEmbeddings class, which is used to convert text into vectors. The `k` attribute is set to 4, which is the number of search results to return. 
 
-The agent is defined in the last section of this configuration file called `qa_agent.` It has the following parts:
+The last section of this configuration file defines the agent, called `qa_agent.` This section has the following parts:
 
 1. `llm`: This is the language model used by the agent. In this case, we are using the OpenAI GPT-3.5-turbo model.
 
@@ -166,7 +186,7 @@ The agent is defined in the last section of this configuration file called `qa_a
 
 4. `agent_config`: This is the configuration for the agent. The default configuration is used in this tutorial.
 
-5. `num_runs`: This is the number of runs the agent will execute an action. In this tutorial, the agent will execute only once.
+5.  `num_runs`: This is the number of times the agent will execute an action. In this tutorial, the agent will execute only once.
 
 6. `actions`: This is the list of actions that the agent can execute. In this case, the agent can execute the `doc_search` action.
 
@@ -174,7 +194,7 @@ The agent is defined in the last section of this configuration file called `qa_a
 Put it all together
 ********************
 
-Now, we can put everything together to create the PDF reader. Create a file called `main.py` and add the following code:
+Now, let's put everything together to create the PDF reader. Create a file called `main.py` and add the following code:
 
 .. code-block:: python
 
@@ -229,7 +249,7 @@ In this code, we define a function `get_qa_agent_from_config_file` that reads th
 Run the PDF reader
 ******************
 
-Before we can run the PDF reader, we need to add a environment variable for OpenAI API key. You can get the API key from the OpenAI website. Create a file called `.env` and add the following code:
+Before we can run the PDF reader, we need to add a environment variable for OpenAI API key. You can get thane API key from the OpenAI website. Once you have your key, create a file called `.env` and add the following code:
 
 .. code-block:: bash
 
@@ -241,7 +261,9 @@ Now, you can run the PDF reader by running the following command:
 
     python main.py --config agent_config.yml
 
-You will be prompted to ask a question. You can ask any question about the content of the PDF file. The agent will then answer the question based on the content of the PDF file.
+Sherpa should now print out several lines of debug information as it starts up. The first time it runs, Sherpa will also download and install several components for the AI models it is using.
+
+Sherpa will then prompt you to ask a question. You can ask any question about the content of the PDF file. Sherpa uses your agent to answer the question based on the content of the PDF file you provided.
 
 .. image:: imgs/pdf_reader.png
     :width: 800
@@ -256,7 +278,9 @@ Finally, to view more detailed logs, you can set the log level to debug by chang
 Add more components
 ********************
 
-Now we have a PDF reader that can help us answer questions about the content of a PDF file. We can add more component to the agent to also expose it to the Internet using Google search. To add Google Search, we simply need to use the built-in Sherpa action called `Google Search` and add it to the configuration. Add the following code to the `agent_config.yml` file (before the `qa_agent` section):
+So far we have created a PDF reader (an "agent") that can answer our questions about the content of a PDF file. Now let's go a step further and add additional capabilities.
+
+We can enhance our agent to use knowledge from the Internet via Google search. To add Google Search, we simply add the built-in Sherpa action called `GoogleSearch` to the configuration. Add the following code to the `agent_config.yml` file (before the `qa_agent` section):
 
 .. code-block:: yaml
 
@@ -270,9 +294,19 @@ Now we have a PDF reader that can help us answer questions about the content of 
 
 Then, add the `google_search` action to the `qa_agent` section:
 
-We can also add a verification step to provide more reliable citation from the Google Search results. Add the following code to the `agent_config.yml` file (before the `qa_agent` section):
+.. code-block:: yaml
+
+    qa_agent:
+        ...
+        actions:
+            - ${doc_search}
+            - ${google_search}
+
+            
+We can also add a verification step to provide more reliable citations from the Google Search results. Add the following code to the `agent_config.yml` file (before the `qa_agent` section):
 
 .. code-block:: yaml
+
     citation_validation:  # The tool used to validate and add citation to the answer
         _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
         sequence_threshold: 0.5
@@ -281,7 +315,9 @@ We can also add a verification step to provide more reliable citation from the G
 
 Then, add the `citation_validation` to the `validations` property in `qa_agent` section, and change the number of runs to 2 so that both actions have a chance to be selected by the agent.
 
-Finally we need to modify the agent description to include the new capabilities. Then final `qa_agent` section should look like this:
+Finally we need to modify the agent description to include the new capabilities. 
+
+The final `qa_agent` section should look like this:
 
 .. code-block:: yaml
 
@@ -290,7 +326,7 @@ Finally we need to modify the agent description to include the new capabilities.
         llm: ${llm}
         shared_memory: ${shared_memory}
         name: QA Sherpa
-        description: You are a Question answering assistant helping users to find answers based on the document. For each question, first try to collection information it by DocumentSearch. Then, use Google Search to find the answer in the next step.
+        description: You are a question-answering assistant helping users to find answers based on the document. For each question, first try to collection relevant information by DocumentSearch. Then, use Google Search to find the answer in the next step.
         agent_config: ${agent_config}
         num_runs: 2
         validation_steps: 1
@@ -300,14 +336,14 @@ Finally we need to modify the agent description to include the new capabilities.
         validations:
             - ${citation_validation}
 
-Before running the agent, you need to add an Serper API key to the environment variable to enable the Google Search action. You can get the API key from the Serper website: https://serper.dev/. Add the following code to the `.env` file:
+Before running the agent, you need to add an Serper API key to the environment variable to enable the Google Search action. You can get an API key from the Serper website: https://serper.dev/. Add the following code to the `.env` file:
 
 .. code-block:: bash
 
     SERPER_API_KEY=<YOUR_API_KEY>
 
 
-Now, you can run the PDF reader with Google Search by running the following command:
+Now you can run the PDF reader with Google Search by running the following command:
 
 .. code-block:: bash
 
