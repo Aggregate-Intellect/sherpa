@@ -1,5 +1,8 @@
 # SHERPA - THINKING COMPANION
 
+![PyPI - Version](https://img.shields.io/pypi/v/sherpa-ai)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 To see the documentation, visit: https://sherpa-ai.readthedocs.io/
 
 ## Contributions Guideline
