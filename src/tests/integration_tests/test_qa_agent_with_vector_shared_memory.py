@@ -1,4 +1,5 @@
 import sys
+from unittest.mock import MagicMock, patch
 
 import pytest
 from langchain.chat_models import ChatOpenAI
@@ -50,7 +51,31 @@ meta_data2 = {
 }
 
 
-def test_chroma_vector_store_from_texts():
+def fake_embedding(input, default_dimension=1536):
+    results = []
+    for text in input:
+        # The word comet is used to distinguish two different texts in the tests
+        print(1111)
+        if "comets" in text.lower():
+            results.append([1] * default_dimension)
+        else:
+            results.append([0] * default_dimension)
+    return results
+
+
+@pytest.fixture
+def mock_chroma_vector_store(external_api):
+    if external_api:
+        return
+
+    with patch("chromadb.api.models.Collection.validate_embedding_function"), patch(
+        "chromadb.utils.embedding_functions.OpenAIEmbeddingFunction",
+    ) as mock_embedding:
+        mock_embedding.return_value = fake_embedding
+        yield
+
+
+def test_chroma_vector_store_from_texts(mock_chroma_vector_store):
     """
     Test to create a Chroma Vector Store from texts and
     """
@@ -66,7 +91,7 @@ def test_chroma_vector_store_from_texts():
     assert len(result_content) > 0, "Failed to do similarity search from text"
 
 
-def test_chroma_vector_store_from_existing_store():
+def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store):
     """
     Test to create a Chroma Vector Store from an existing store and
     check if the similarity search is working as expected by checking where the chunk comes from
@@ -95,7 +120,7 @@ def test_chroma_vector_store_from_existing_store():
 
 
 @pytest.mark.external_api
-def test_shared_memory_with_vector(get_llm):
+def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):
     llm = get_llm(__file__, test_shared_memory_with_vector.__name__)
     # store text as a scraped text from a file with meta_data session_id
     split_data = ChromaVectorStore.file_text_splitter(data=data, meta_data=meta_data)

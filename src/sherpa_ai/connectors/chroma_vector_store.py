@@ -42,12 +42,17 @@ class ChromaVectorStore:
     def chroma_from_texts(
         cls,
         texts,
-        embedding=embedding_functions.OpenAIEmbeddingFunction(
-            model_name="text-embedding-ada-002"
-        ),
+        embedding=None,
         meta_datas=None,
         path="./db",
     ):
+        # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in the
+        # method signature for mocking purposes
+        if embedding is None:
+            embedding = embedding_functions.OpenAIEmbeddingFunction(
+                model_name="text-embedding-ada-002"
+            )
+
         embeded_data = embedding(texts)
         meta_datas = [] if meta_datas is None else meta_datas
         client = chromadb.PersistentClient(path=path)
@@ -66,11 +71,16 @@ class ChromaVectorStore:
     @classmethod
     def chroma_from_existing(
         cls,
-        embedding=embedding_functions.OpenAIEmbeddingFunction(
-            model_name="text-embedding-ada-002"
-        ),
+        embedding=None,
         path="./db",
     ):
+        # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in the
+        # method signature for mocking purposes
+        if embedding is None:
+            embedding = embedding_functions.OpenAIEmbeddingFunction(
+                model_name="text-embedding-ada-002"
+            )
+
         client = chromadb.PersistentClient(path=path)
         db = client.get_or_create_collection(
             name=cfg.INDEX_NAME_FILE_STORAGE, embedding_function=embedding
