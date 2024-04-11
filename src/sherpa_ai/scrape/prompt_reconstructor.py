@@ -33,7 +33,6 @@ class PromptReconstructor:
 
         Parameters:
         - user_id (str, optional): User ID for context in prompt reconstruction.
-        - team_id (str, optional): Team ID for context in prompt reconstruction.
 
         Returns:
         str: The reconstructed prompt .

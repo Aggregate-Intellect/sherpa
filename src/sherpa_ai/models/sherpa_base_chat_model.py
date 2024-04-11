@@ -45,7 +45,7 @@ class SherpaBaseChatModel(BaseChatModel):
         total_token = token_before + token_after
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            user_db.add_data(combined_id=self.user_id, token=total_token)
+            user_db.add_data(user_id=self.user_id, token=total_token)
             user_db.close_connection()
 
         return response
@@ -83,7 +83,7 @@ class SherpaChatOpenAI(ChatOpenAI):
         total_token = token_before + token_after
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            user_db.add_data(combined_id=self.user_id, token=total_token)
+            user_db.add_data(user_id=self.user_id, token=total_token)
             user_db.close_connection()
 
         return response

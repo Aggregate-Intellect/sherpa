@@ -3,7 +3,6 @@ shared_memory:
   objective: Answer the question
 
 user_id: none
-team_id: none
 
 llm:
   _target_: sherpa_ai.models.sherpa_base_chat_model.SherpaChatOpenAI

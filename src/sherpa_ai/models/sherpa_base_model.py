@@ -42,7 +42,7 @@ class SherpaOpenAI(ChatOpenAI):
 
         if self.user_id:
             user_db = UserUsageTracker()
-            user_db.add_data(combined_id=self.user_id, token=total_token)
+            user_db.add_data(user_id=self.user_id, token=total_token)
             user_db.close_connection()
 
         return response

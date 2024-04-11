@@ -141,40 +141,38 @@ class UserUsageTracker:
         return bool(self.get_whitelist_by_user_id(user_id))
 
     def add_and_check_data(
-        self, combined_id, token, reset_timestamp=False, reminded_timestamp=False
+        self, user_id, token, reset_timestamp=False, reminded_timestamp=False
     ):
         """
         Add usage data for a user and check for reminders.
 
         Args:
-            combined_id (str): Combined ID of the user.
+            user_id (str): ID of the user.
             token (int): Number of tokens used.
             reset_timestamp (bool): Whether to reset the timestamp.
             reminded_timestamp (bool): Set reminded_timestamp.
         """
         self.add_data(
-            combined_id=combined_id,
+            user_id=user_id,
             token=token,
             reset_timestamp=reset_timestamp,
             reminded_timestamp=reminded_timestamp,
         )
-        self.remind_user_of_daily_token_limit(combined_id=combined_id)
+        self.remind_user_of_daily_token_limit(user_id=user_id)
 
-    def add_data(
-        self, combined_id, token, reset_timestamp=False, reminded_timestamp=False
-    ):
+    def add_data(self, user_id, token, reset_timestamp=False, reminded_timestamp=False):
         """
         Add usage data for a user.
 
         Args:
-            combined_id (str): Combined ID of the user.
+            user_id (str): ID of the user.
             token (int): Number of tokens used.
             reset_timestamp (bool): Whether to reset the timestamp.
             reminded_timestamp (bool): Set reminded_timestamp.
 
         """
         data = UsageTracker(
-            user_id=combined_id,
+            user_id=user_id,
             token=token,
             timestamp=int(time.time()),
             reset_timestamp=reset_timestamp,
@@ -183,43 +181,42 @@ class UserUsageTracker:
         self.session.add(data)
         self.session.commit()
 
-    def percentage_used(self, combined_id):
+    def percentage_used(self, user_id):
         """
         Calculate the percentage of daily token quota used by a user.
 
         Args:
-            combined_id (str): Combined ID of the user.
+            user_id (str): ID of the user.
 
         Returns:
             float: Percentage of daily tokens used since last reset.
         """
 
         total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
-            user_id=combined_id
+            user_id=user_id
         )
         return (total_token_since_last_reset * 100) / self.max_daily_token
 
-    def remind_user_of_daily_token_limit(self, combined_id):
+    def remind_user_of_daily_token_limit(self, user_id):
         """
         Remind the user when their token usage exceeds a certain percentage.
 
         Args:
-            combined_id (str): Combined ID of the user.
+            user_id (str): ID of the user.
         """
-        split_parts = combined_id.split("_")
+        split_parts = user_id.split("_")
         user_id = ""
         if len(split_parts) > 0:
             user_id = split_parts[0]
 
         user_is_whitelisted = self.is_in_whitelist(user_id)
-        self.is_reminded = self.check_if_reminded(combined_id=combined_id)
+        self.is_reminded = self.check_if_reminded(user_id=user_id)
         if not user_is_whitelisted and not self.is_reminded:
             if (
-                self.percentage_used(combined_id=combined_id)
-                > self.usage_percentage_allowed
+                self.percentage_used(user_id=user_id) > self.usage_percentage_allowed
                 and not self.is_reminded
             ):
-                self.add_data(combined_id=combined_id, token=0, reminded_timestamp=True)
+                self.add_data(user_id=user_id, token=0, reminded_timestamp=True)
 
                 self.verbose_logger.log(
                     f"Hi friend, you have used up {self.usage_percentage_allowed}% of your daily token limit. once you go over the limit there will be a 24 hour cool down period after which you can continue using Sherpa! be awesome!"
@@ -272,8 +269,8 @@ class UserUsageTracker:
             for item in data
         ]
 
-    def check_if_reminded(self, combined_id):
-        data_list = self.get_data_since_last_reset(combined_id)
+    def check_if_reminded(self, user_id):
+        data_list = self.get_data_since_last_reset(user_id)
         is_reminded_true = any(
             item.get("reminded_timestamp", False) for item in data_list
         )
@@ -299,24 +296,24 @@ class UserUsageTracker:
         token_sum = sum(item["token"] for item in data_since_last_reset[1:])
         return token_sum
 
-    def reset_usage(self, combined_id, token_amount):
+    def reset_usage(self, user_id, token_amount):
         """
         Reset the usage data for a user to zero.
 
         Args:
-            combined_id (str): Combined ID of the user.
+            user_id (str): ID of the user.
             token_amount (int): Number of tokens to reset.
         """
         self.add_and_check_data(
-            combined_id=combined_id, token=token_amount, reset_timestamp=True
+            user_id=user_id, token=token_amount, reset_timestamp=True
         )
 
-    def get_last_reset_info(self, combined_id):
+    def get_last_reset_info(self, user_id):
         """
         Get information about the most recent usage data reset for a user.
 
         Args:
-            combined_id (str): Combined ID of the user.
+            user_id (str): ID of the user.
 
         Returns:
             dict or None: Dictionary containing last reset information or None if not found.
@@ -324,12 +321,11 @@ class UserUsageTracker:
 
         data = (
             self.session.query(UsageTracker.id, UsageTracker.timestamp)
-            .filter(
-                UsageTracker.user_id == combined_id, UsageTracker.reset_timestamp == 1
-            )
+            .filter(UsageTracker.user_id == user_id, UsageTracker.reset_timestamp == 1)
             .order_by(UsageTracker.timestamp.desc())
             .first()
         )
+
         if data:
             last_reset_id, last_reset_timestamp = data
             return {"id": last_reset_id, "timestamp": last_reset_timestamp}
@@ -354,13 +350,12 @@ class UserUsageTracker:
 
         return f"{hours} hours : {minutes} min : {seconds} sec"
 
-    def check_usage(self, user_id, combined_id, token_amount):
+    def check_usage(self, user_id, token_amount):
         """
         Check user usage and determine whether user is allowed to consume more tokens.
 
         Args:
             user_id (str): ID of the user.
-            combined_id (str): Combined ID of the user.
             token_amount (int): Number of tokens to check.
 
         Returns:
@@ -378,7 +373,7 @@ class UserUsageTracker:
                 "time_left": "",
             }
         else:
-            last_reset_info = self.get_last_reset_info(combined_id=combined_id)
+            last_reset_info = self.get_last_reset_info(user_id=user_id)
             time_since_last_reset = 99999
 
             if last_reset_info is not None and last_reset_info["timestamp"] is not None:
@@ -388,7 +383,7 @@ class UserUsageTracker:
                 cfg.LIMIT_TIME_SIZE_IN_HOURS
             ):
                 print(f"TIMESTAMP DIFFERENT: {time_since_last_reset}")
-                self.reset_usage(combined_id=combined_id, token_amount=token_amount)
+                self.reset_usage(user_id=user_id, token_amount=token_amount)
                 return {
                     "token-left": self.max_daily_token,
                     "can_excute": True,
@@ -397,7 +392,7 @@ class UserUsageTracker:
                 }
             else:
                 total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
-                    user_id=combined_id
+                    user_id=user_id
                 )
 
                 if self.max_daily_token - total_token_since_last_reset <= 0:
@@ -409,7 +404,7 @@ class UserUsageTracker:
                         "time_left": self.seconds_to_hms(time_since_last_reset),
                     }
                 else:
-                    self.add_and_check_data(combined_id=combined_id, token=token_amount)
+                    self.add_and_check_data(user_id=user_id, token=token_amount)
                     return {
                         "token-left": self.max_daily_token
                         - total_token_since_last_reset,

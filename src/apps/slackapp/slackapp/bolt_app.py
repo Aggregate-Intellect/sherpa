@@ -194,22 +194,21 @@ def event_test(client, say, event):
 
     # teamid is found on different places depending on the message from slack
     # if file exist it will be inside one of the files other wise on the parent message
-    team_id = (
+    slack_team_id = (
         input_message["files"][0]["user_team"]
         if "files" in input_message
         else input_message["team"]
     )
-    combined_id = user_id + team_id
+    combined_id = slack_team_id + "_" + slack_team_id
 
     slack_verbose_logger = SlackVerboseLogger(say, thread_ts)
-    if cfg.FLASK_DEBUG:
+    if cfg.FLASK_DEBUG == False:
         can_excute = True
     else:
         user_db = UserUsageTracker(verbose_logger=slack_verbose_logger)
 
         usage_cheker = user_db.check_usage(
-            user_id=user_id,
-            combined_id=combined_id,
+            user_id=combined_id,
             token_amount=count_string_tokens(question, "gpt-3.5-turbo"),
         )
         can_excute = usage_cheker["can_excute"]
