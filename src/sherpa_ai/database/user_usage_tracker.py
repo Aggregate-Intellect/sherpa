@@ -2,9 +2,8 @@ import time
 
 import boto3
 from anyio import Path
-from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Boolean, Column, Integer, String, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
@@ -12,11 +11,8 @@ from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 Base = declarative_base()
 
-import boto3
-
 
 class UsageTracker(Base):
-
     """SQLAlchemy base model for tracking LLM token usage on per-user basis"""
 
     __tablename__ = "usage_tracker"
@@ -29,7 +25,6 @@ class UsageTracker(Base):
 
 
 class Whitelist(Base):
-
     """Represents a trusted list of users whose usage is not tracked"""
 
     __tablename__ = "whitelist"
@@ -39,7 +34,6 @@ class Whitelist(Base):
 
 
 class UserUsageTracker:
-
     """Enables an app to track LLM token usage on per-user basis"""
 
     def __init__(
@@ -114,7 +108,6 @@ class UserUsageTracker:
 
     def get_all_whitelisted_ids(self):
         """Get a list of all user IDs in the whitelist."""
-
         whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]
         return whitelisted_ids
 
@@ -375,7 +368,6 @@ class UserUsageTracker:
         """
 
         user_is_whitelisted = self.is_in_whitelist(user_id)
-
         if user_is_whitelisted:
             return {
                 "token-left": self.max_daily_token,
