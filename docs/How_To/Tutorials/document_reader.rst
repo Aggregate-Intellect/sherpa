@@ -167,7 +167,7 @@ Create a file called `agent_config.yml` and add the following code:
         llm: ${llm}
         shared_memory: ${shared_memory}
         name: QA Sherpa
-        description: You are a question answering assistant helping users to find answers to to their questions. Based on the input question, you will provide the answer from the text ONLY.
+        description: You are a question answering assistant helping users to find answers to their questions. Based on the input question, you will provide the answer from the text ONLY.
         agent_config: ${agent_config}
         num_runs: 1
         actions:
