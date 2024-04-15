@@ -18,7 +18,7 @@ There is a lot of information that you can leverage about this project in the fo
 - Step 1: skim through :doc:`About Sherpa<About_Sherpa/index>` to get a better sense of what the project is trying to achieve. 
 - Step 2: skim through / watch the :doc:`recent project updates<About_Sherpa/Updates/index>` to get a sense of what is currently happening in the project.
 - Step 3: check out the instructions for :doc:`contributing via GitHub<How_To/Contribute/contribute>` and make your first pull request improving something, even very small, about these documentations.
-- Step 4: :doc:`talk to Sherpa on our community slack<How_To/Slack Bot/0_slack_bot_intro>` and then :doc:`set it up in your own environment<How_To/Slack Bot/1_slackbot_workspace>` and :doc:`run it<How_To/Slack Bot/2_run_slackbot>`.
+- Step 4: :doc:`talk to Sherpa on our community slack<How_To/Slack Bot/0_slack_bot_intro>` or `create your custom Sherpa locally<How_To/Tutorials/document_reader>`
 - Step 5: `Join Slack <https://join.slack.com/t/aisc-to/shared_invite/zt-f5zq5l35-PSIJTFk4v60FML177PgsPg>`__, say hi in `#sherpa-dev channel <https://aisc-to.slack.com/archives/C056RU8PEJ0>`__, and add `sherpa dev weekly Meeting <https://lu.ma/sherpa-weekly>`__ to your calendar. See more :doc:`here<How_To/index>`.
 
 .. toctree::
