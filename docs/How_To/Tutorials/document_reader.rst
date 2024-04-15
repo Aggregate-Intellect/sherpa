@@ -49,7 +49,9 @@ Step 5: install pdfminer.six for extracting text from PDF files and sentence-tra
 
 Define the custom action
 ************************
-Create a folder for this tutorial. In this folder, create a file called `actions.py` and add the following code:
+An action is an interface to tools that the agent can use to interact with data. In this case, we will create a custom action to enable the agent to search the vector database containing the content of the PDF file.
+
+In the tutorial folder, create a file called `actions.py` and add the following code:
 
 .. code-block:: python
 
@@ -165,14 +167,14 @@ Create a file called `agent_config.yml` and add the following code:
         llm: ${llm}
         shared_memory: ${shared_memory}
         name: QA Sherpa
-        description: You are a Question answering assistant helping users to find answers to the text. Based on the input question, you will provide the answer from the text ONLY.
+        description: You are a question answering assistant helping users to find answers to to their questions. Based on the input question, you will provide the answer from the text ONLY.
         agent_config: ${agent_config}
         num_runs: 1
         actions:
             - ${doc_search}
 
 
-The _target_ keys tell Sherpa which classes to use to instantiate various objects.
+The `_target_` keys tell Sherpa which classes to use to instantiate various objects.
 
 The DocumentSearch action is defined in the `doc_search` field. You can change the `filename` attribute to the PDF file you want to use. The `embedding_function` attribute is set to the SentenceTransformerEmbeddings class, which is used to convert text into vectors. The `k` attribute is set to 4, which is the number of search results to return. 
 
@@ -268,7 +270,7 @@ Sherpa will then prompt you to ask a question. You can ask any question about th
 .. image:: imgs/pdf_reader.png
     :width: 800
 
-Finally, to view more detailed logs, you can set the log level to debug by changing the `LOG_LEVEL` environment variable to the `.env` file:
+Finally, to view more detailed logs, you can set the log level to debug by changing the `LOG_LEVEL` environment variable in the `.env` file:
 
 .. code-block:: bash
 
@@ -326,7 +328,7 @@ The final `qa_agent` section should look like this:
         llm: ${llm}
         shared_memory: ${shared_memory}
         name: QA Sherpa
-        description: You are a question-answering assistant helping users to find answers based on the document. For each question, first try to collection relevant information by DocumentSearch. Then, use Google Search to find the answer in the next step.
+        description: You are a question-answering assistant helping users to find answers based on the document. For each question, first try to collect relevant information by DocumentSearch. Then, use Google Search to find the answer in the next step.
         agent_config: ${agent_config}
         num_runs: 2
         validation_steps: 1
