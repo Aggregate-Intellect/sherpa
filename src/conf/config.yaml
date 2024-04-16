@@ -25,7 +25,7 @@ number_validation:
   _target_: sherpa_ai.output_parsers.number_validation.NumberValidation
 
 entity_validation:
-  _target_: from sherpa_ai.output_parsers.entity_validation.EntityValidation
+  _target_: sherpa_ai.output_parsers.entity_validation.EntityValidation
 
 arxiv_search:
   _target_: sherpa_ai.actions.arxiv_search.ArxivSearch

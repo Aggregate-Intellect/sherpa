@@ -1,7 +1,6 @@
 import json
 import re
 from typing import List, Optional, Union
-from enum import Enum
 from urllib.parse import urlparse
 
 import requests
@@ -20,12 +19,6 @@ from word2number import w2n
 import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
-
-
-class TextSimilarityState(Enum):
-    BASIC = 0
-    BY_METRICS = 1
-    BY_LLM = 2
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -455,8 +448,12 @@ def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_con
     lev_distance = edit_distance(word1, word2)
     jaccard_sim = 1 - jaccard_distance(word1_set, word2_set)
     long_len = max(len(word1), len(word2))
+    # This will give a value between 0 and 1, where 0 represents identical words and 1 represents completely different words.
     normalized_levenshtein = 1 - (lev_distance / long_len)
-
+    # The weight is determined by the levenshtein_constant variable,
+    # which should be a value between 0 and 1.
+    # A higher weight gives more importance to the Levenshtein distance,
+    # while a lower weight gives more importance to the Jaccard similarity.
     combined_metric = (levenshtein_constant * normalized_levenshtein) + (
         (1 - levenshtein_constant) * jaccard_sim
     )
@@ -583,25 +580,33 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
     error_entity = []
     message = ""
     levenshtein_constant = 0.5
-    for entity in source_entity_lower:
-        metrics_value = 0
-        for sub_entitiy in check_entity_lower:
-            word1 = entity
-            word2 = sub_entitiy
 
+    # for each entity in the source entity list, check if it is similar to any entity in the check entity list
+    # if similarity is below the threshold, add the entity to the error_entity list
+    # else return True means all entities are similar
+    for source_entity_val in source_entity_lower:
+        metrics_value = 0
+        for check_entity_val in check_entity_lower:
+            word1 = source_entity_val
+            word2 = check_entity_val
+
+            # Calculate the combined similarity metric using Jaccard similarity and normalized Levenshtein distance
             combined_similarity = string_comparison_with_jaccard_and_levenshtein(
                 word1=word1, word2=word2, levenshtein_constant=levenshtein_constant
             )
+
             if metrics_value < combined_similarity:
                 metrics_value = combined_similarity
         if metrics_value < threshold:
-            index_of_entity = source_entity_lower.index(entity)
+            # If the metrics value is below the threshold, add the entity to the error_entity list
+            index_of_entity = source_entity_lower.index(source_entity_val)
             error_entity.append(source_entity[index_of_entity])
 
     if len(error_entity) > 0:
+        # If there are error entities, create a message to address them in the final answer
         for entity in error_entity:
             message += entity + ", "
-        message = f"remember to address these entities {message} in final the answer."
+        message = f"Remember to address these entities {message} in the final answer."
         return False, message
     return True, message
 
@@ -632,34 +637,3 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
         message = f"remember to address these entities {message} in final the answer."
         return False, message
     return True, message
-
-
-def check_entities_match(result: str, source: str, stage: TextSimilarityState):
-    """
-    Check if entities extracted from a question are present in an answer.
-
-    Args:
-    - result (str): Answer text.
-    - source (str): Question text.
-    - stage (int): Stage of the check (0, 1, or 2).
-
-    Returns:
-    dict: Result of the check containing
-    """
-
-    stage = stage.value
-    source_entity = extract_entities(source)
-    check_entity = extract_entities(result)
-
-    if stage == 0:
-        return text_similarity(check_entity=check_entity, source_entity=source_entity)
-    elif stage == 1:
-        return text_similarity_by_metrics(
-            check_entity=check_entity, source_entity=source_entity
-        )
-    else:
-        return text_similarity_by_llm(
-            source_entity=source_entity,
-            result=result,
-            source=source,
-        )

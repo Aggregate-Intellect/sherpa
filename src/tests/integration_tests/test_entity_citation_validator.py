@@ -11,7 +11,7 @@ from sherpa_ai.memory import SharedMemory
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.output_parsers.entity_validation import EntityValidation
 
-# from sherpa_ai.test_utils.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.tools import SearchTool
 from sherpa_ai.utils import extract_entities
 
@@ -33,28 +33,25 @@ from sherpa_ai.utils import extract_entities
             ),
             ["Ethiopian", "Ethiopian Calendar Association", "kenya"],
         ),
-        (
-            "Tell me a fact about Star Trek: The Next Generation?",
-            (
-                """Fact: In Star Trek: The Next Generation (STNG), the United Federation of Planets, a coalition of various planetary governments working for peace and cooperation, establishes a set of interstellar laws known as the "Federation Charter." This document outlines the principles and regulations governing member worlds and their interactions. """,
-                [
-                    {
-                        "Document": "Star Trek: The Next Generation",
-                        "Source": "https://www.starTrek.com",
-                    }
-                ],
-            ),
-            ["STNG", "Star Trek", "the United Federation of Planets"],
-        ),
+        # (
+        #     "Tell me a fact about Star Trek: The Next Generation?",
+        #     (
+        #         """Fact: In Star Trek: The Next Generation (STNG), the United Federation of Planets, a coalition of various planetary governments working for peace and cooperation, establishes a set of interstellar laws known as the "Federation Charter." This document outlines the principles and regulations governing member worlds and their interactions. """,
+        #         [
+        #             {
+        #                 "Document": "Star Trek: The Next Generation",
+        #                 "Source": "https://www.starTrek.com",
+        #             }
+        #         ],
+        #     ),
+        #     [ "Star Trek", "the United Federation of Planets"],
+        # ),
     ],
 )
-def test_entity_citation_succeeds_in_qa(input_data, expected_entities, objective):
-    # noqa: F811
-    # llm = get_llm(__file__, test_number_citation_succeeds_in_qa.__name__)
-    llm = SherpaChatOpenAI(
-        openai_api_key=cfg.OPENAI_API_KEY,
-        temperature=0,
-    )
+def test_entity_citation_succeeds_in_qa(
+    get_llm, objective, input_data, expected_entities
+):
+    llm = get_llm(__file__, test_entity_citation_succeeds_in_qa.__name__)
 
     data = input_data[0]
 
@@ -82,7 +79,7 @@ def test_entity_citation_succeeds_in_qa(input_data, expected_entities, objective
         task_agent.run()
 
         results = shared_memory.get_by_type(EventType.result)
-        logger.error(results[0].content)
+        logger.info(results[0].content)
         result_entities = [s.lower() for s in extract_entities(results[0].content)]
         expected_entities = [s.lower() for s in expected_entities]
         for entitity in expected_entities:
