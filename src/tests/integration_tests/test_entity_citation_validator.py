@@ -10,7 +10,6 @@ from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.output_parsers.entity_validation import EntityValidation
-
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.tools import SearchTool
 from sherpa_ai.utils import extract_entities

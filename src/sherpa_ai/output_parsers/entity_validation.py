@@ -54,7 +54,6 @@ class EntityValidation(BaseOutputProcessor):
             Otherwise, validation is valid.
         """
 
-
         source = belief.get_histories_excluding_types(
             exclude_types=[EventType.feedback, EventType.result],
         )
@@ -93,7 +92,9 @@ class EntityValidation(BaseOutputProcessor):
     def get_failure_message(self) -> str:
         return "Some enitities from the source might not be mentioned."
 
-    def check_entities_match(self, result: str, source: str, stage: TextSimilarityMethod):
+    def check_entities_match(
+        self, result: str, source: str, stage: TextSimilarityMethod
+    ):
         """
         Check if entities extracted from a question are present in an answer.
 
