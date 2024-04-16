@@ -16,9 +16,10 @@ from sherpa_ai.utils import extract_entities
 
 
 @pytest.mark.parametrize(
-    "objective , input_data, expected_entities",
+    "test_id ,objective , input_data, expected_entities",
     [
         (
+            0,
             "what is unique about Ethiopia calendar?  based on USA calendar assosation. ",
             (
                 """
@@ -32,26 +33,28 @@ from sherpa_ai.utils import extract_entities
             ),
             ["Ethiopian", "Ethiopian Calendar Association", "kenya"],
         ),
-        # (
-        #     "Tell me a fact about Star Trek: The Next Generation?",
-        #     (
-        #         """Fact: In Star Trek: The Next Generation (STNG), the United Federation of Planets, a coalition of various planetary governments working for peace and cooperation, establishes a set of interstellar laws known as the "Federation Charter." This document outlines the principles and regulations governing member worlds and their interactions. """,
-        #         [
-        #             {
-        #                 "Document": "Star Trek: The Next Generation",
-        #                 "Source": "https://www.starTrek.com",
-        #             }
-        #         ],
-        #     ),
-        #     [ "Star Trek", "the United Federation of Planets"],
-        # ),
+        (
+            1,
+            "Tell me a fact about Star Trek: The Next Generation?",
+            (
+                """Fact: In Star Trek: The Next Generation (STNG), the United Federation of Planets, a coalition of various planetary governments working for peace and cooperation, establishes a set of interstellar laws known as the "Federation Charter." This document outlines the principles and regulations governing member worlds and their interactions. """,
+                [
+                    {
+                        "Document": "Star Trek: The Next Generation",
+                        "Source": "https://www.starTrek.com",
+                    }
+                ],
+            ),
+            ["Star Trek", "the United Federation of Planets"],
+        ),
     ],
 )
 def test_entity_citation_succeeds_in_qa(
-    get_llm, objective, input_data, expected_entities
+    get_llm, test_id, objective, input_data, expected_entities
 ):
-    llm = get_llm(__file__, test_entity_citation_succeeds_in_qa.__name__)
-
+    llm = get_llm(
+        __file__, test_entity_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
+    )
     data = input_data[0]
 
     shared_memory = SharedMemory(
