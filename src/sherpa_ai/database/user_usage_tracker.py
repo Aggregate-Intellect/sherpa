@@ -204,11 +204,6 @@ class UserUsageTracker:
         Args:
             user_id (str): ID of the user.
         """
-        split_parts = user_id.split("_")
-        user_id = ""
-        if len(split_parts) > 0:
-            user_id = split_parts[0]
-
         user_is_whitelisted = self.is_in_whitelist(user_id)
         self.is_reminded = self.check_if_reminded(user_id=user_id)
         if not user_is_whitelisted and not self.is_reminded:
@@ -360,7 +355,7 @@ class UserUsageTracker:
 
         Returns:
             dict: Result containing information about tokens remaining,
-                  whether more tokens can be consumed (can_excute),
+                  whether more tokens can be consumed (can_execute),
                   any associated message, and the time left.
         """
 
@@ -368,7 +363,7 @@ class UserUsageTracker:
         if user_is_whitelisted:
             return {
                 "token-left": self.max_daily_token,
-                "can_excute": True,
+                "can_execute": True,
                 "message": "",
                 "time_left": "",
             }
@@ -386,7 +381,7 @@ class UserUsageTracker:
                 self.reset_usage(user_id=user_id, token_amount=token_amount)
                 return {
                     "token-left": self.max_daily_token,
-                    "can_excute": True,
+                    "can_execute": True,
                     "message": "",
                     "time_left": self.seconds_to_hms(time_since_last_reset),
                 }
@@ -399,7 +394,7 @@ class UserUsageTracker:
                     return {
                         "token-left": self.max_daily_token
                         - total_token_since_last_reset,
-                        "can_excute": False,
+                        "can_execute": False,
                         "message": "daily usage limit exceeded. you can try after 24 hours",
                         "time_left": self.seconds_to_hms(time_since_last_reset),
                     }
@@ -409,7 +404,7 @@ class UserUsageTracker:
                         "token-left": self.max_daily_token
                         - total_token_since_last_reset,
                         "current_token": token_amount,
-                        "can_excute": True,
+                        "can_execute": True,
                         "message": "",
                         "time_left": self.seconds_to_hms(time_since_last_reset),
                     }

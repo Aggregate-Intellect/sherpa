@@ -99,18 +99,18 @@ def get_response(
     user_id: Optional[str] = None,
 ) -> str:
     """
-    Get response from the task agent for the question
+    Get a response from the task agent for the question.
 
     Args:
-        question (str): question to be answered
-        previous_messages (List[BaseMessage]): previous messages in the thread
-        verbose_logger (BaseVerboseLogger): verbose logger to be used
-        bot_info (Dict[str, str]): information of the Slack bot
-        llm (SherpaChatOpenAI, optional): LLM to be used. Defaults to None.
-        user_id (str, optional): user id of the Slack user. Defaults to "".
+        question (str): The question to be answered.
+        previous_messages (List[BaseMessage]): The previous messages in the thread.
+        verbose_logger (BaseVerboseLogger): The verbose logger to be used.
+        bot_info (Dict[str, str]): Information of the Slack bot.
+        llm (SherpaChatOpenAI, optional): The LLM to be used. Defaults to None.
+        user_id (str, optional): The team ID combined with the user ID of the Slack user, so that it can be a globally unique value for the usage tracker. Defaults to "".
 
     Returns:
-        str: response from the task agent
+        str: The response from the task agent.
     """
     ai_id = bot_info["user_id"]
     question, agent_config = AgentConfig.from_input(question)
@@ -203,22 +203,22 @@ def event_test(client, say, event):
 
     slack_verbose_logger = SlackVerboseLogger(say, thread_ts)
     if cfg.FLASK_DEBUG == False:
-        can_excute = True
+        can_execute = True
     else:
         user_db = UserUsageTracker(verbose_logger=slack_verbose_logger)
 
-        usage_cheker = user_db.check_usage(
+        usage_checker = user_db.check_usage(
             user_id=combined_id,
             token_amount=count_string_tokens(question, "gpt-3.5-turbo"),
         )
-        can_excute = usage_cheker["can_excute"]
+        can_execute = usage_checker["can_execute"]
         user_db.close_connection()
 
     # only will be excuted if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
     # users with a daily limitation can be allowed to use in a different workspace
 
-    if can_excute:
+    if can_execute:
         if "files" in event:
             files = event["files"]
             file_event = file_event_handler(
@@ -251,7 +251,7 @@ def event_test(client, say, event):
         say(results, thread_ts=thread_ts)
     else:
         say(
-            f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_cheker['time_left']}.Thank you for your patience and understanding.""",  # noqa E501
+            f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_checker['time_left']}.Thank you for your patience and understanding.""",  # noqa E501
             thread_ts=thread_ts,
         )
 
