@@ -55,10 +55,7 @@ line-length = 88
 
 [tool.flake8]
 max-line-length = 88
-ignore  = ['F401', 'W503']
-per-file-ignores = [
-    'bolt_app.py:E402',
-]
+ignore  = ['F401', 'W503', 'E501']
 
 [tool.isort]
 profile = "black"
