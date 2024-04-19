@@ -1,9 +1,7 @@
 import json
 import re
 from typing import List, Optional, Union
-from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-from urllib.request import urlopen
 
 import requests
 import spacy
@@ -291,22 +289,18 @@ def extract_urls(text):
 
 def check_url(url):
     """
-    Opens `url` to test its validity.
+    Performs an HTTP GET request on `url` to test its validity.
 
-    Returns True if `url` can be opened, False otherwise.
+    Returns True if GET succeeds, False otherwise.
     """
 
-    try:
-        _ = urlopen(url)
-
-    except HTTPError as e:
-        logger.info("HTTP error", e)
-        return False
-
-    except URLError as e:
-        logger.info("Opps ! Page not found!", e)
-        return False
-
+    if urlparse(url).scheme in ["http", "https"]:
+        try:
+            _ = requests.get(url, timeout=HTTP_GET_TIMEOUT)
+            return True
+        except Exception as e:
+            logger.info(f"{e} - {url}")
+            return False
     else:
         raise ValueError(f"URL must conform to HTTP(S) scheme: {url}")
 
