@@ -155,7 +155,7 @@ from sherpa_ai.utils import combined_number_extractor
                 """
                 In the rally GGH there are going to be One Thousand Two Hundred Thirty-Four dogs. and also one thousand cats. 
                 there are going to be also event for wolves and lions.
-                """,
+                """,  # noqa W291
                 [
                     {
                         "Document": "soccer",

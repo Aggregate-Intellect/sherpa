@@ -34,7 +34,7 @@ clean:
 lint: $(INSTALL_STAMP)
 	$(POETRY) run isort --check-only --profile=black --lines-after-imports=2 $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS)
 	$(POETRY) run black --check $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS) --diff
-	$(POETRY) run flake8 --ignore=W503,W291,E501,F401 $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS)
+	$(POETRY) run flake8 --ignore=W503,E501,F401 $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS)
 	# $(POETRY) run mypy $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS) --ignore-missing-imports
 
 .PHONY: format

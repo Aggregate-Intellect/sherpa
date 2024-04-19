@@ -121,7 +121,7 @@ def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store):
 
 
 @pytest.mark.external_api
-def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):
+def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):  # noqa F811
     llm = get_llm(__file__, test_shared_memory_with_vector.__name__)
     # store text as a scraped text from a file with meta_data session_id
     split_data = ChromaVectorStore.file_text_splitter(data=data, meta_data=meta_data)
