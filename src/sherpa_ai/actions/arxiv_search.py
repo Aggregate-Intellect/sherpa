@@ -3,6 +3,7 @@ from langchain.base_language import BaseLanguageModel
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.tools import SearchArxivTool, SearchTool
 
+
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
 

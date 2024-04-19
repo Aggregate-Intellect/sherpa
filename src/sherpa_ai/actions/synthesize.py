@@ -3,6 +3,7 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 
+
 SYNTHESIZE_DESCRIPTION = """{role_description}
 
 Context: {context}
