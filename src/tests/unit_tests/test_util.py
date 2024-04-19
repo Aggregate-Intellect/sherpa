@@ -4,6 +4,7 @@ import pytest
 
 from sherpa_ai.utils import (
     check_if_number_exist,
+    check_url,
     extract_entities,
     extract_numbers_from_text,
     get_base_url,
@@ -419,3 +420,34 @@ def test_text_similarity_with_entities_not_exist():
         "remember to address these entities pear, grape, kiwi,  in the final answer."
     )
     assert message.lower() == expected_message.lower()
+
+
+@pytest.mark.parametrize(
+    "bad_uri",
+    [
+        "file://something",
+        "s3://some-file",
+        "javascript:some-code",
+        "garbage",
+        "FILE://something",
+    ],
+)
+def test_check_url_raises_exception_for_unsupported_uri_scheme(bad_uri):
+    with pytest.raises(ValueError):
+        check_url(bad_uri)
+
+
+@pytest.mark.parametrize(
+    "good_uri",
+    ["http://something.com", "https://something.com"],
+)
+def test_check_url_returns_true_for_valid_http_url(good_uri):
+    with patch("requests.get", return_value=True):
+        result = check_url(good_uri)
+    assert result is True
+
+
+def test_check_url_returns_false_on_request_error():
+    with patch("requests.get", side_effect=Exception("problem")):
+        result = check_url("https://anything")
+    assert result is False

@@ -1,10 +1,6 @@
-import os
 import re
-import urllib
 import urllib.parse
-import urllib.request
 from typing import Any, List, Tuple, Union
-from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -19,6 +15,9 @@ from typing_extensions import Literal
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.output_parser import TaskAction
+
+
+HTTP_GET_TIMEOUT = 2.5
 
 
 def get_tools(memory, config):
@@ -56,8 +55,8 @@ class SearchArxivTool(BaseTool):
             + "&start=0&max_results="
             + str(top_k)
         )
-        data = urllib.request.urlopen(url)
-        xml_content = data.read().decode("utf-8")
+        data = requests.get(url, timeout=HTTP_GET_TIMEOUT)
+        xml_content = data.text
 
         summary_pattern = r"<summary>(.*?)</summary>"
         summaries = re.findall(summary_pattern, xml_content, re.DOTALL)

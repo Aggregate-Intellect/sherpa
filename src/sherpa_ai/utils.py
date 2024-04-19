@@ -1,9 +1,7 @@
 import json
 import re
 from typing import List, Optional, Union
-from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-from urllib.request import urlopen
 
 import requests
 import spacy
@@ -21,6 +19,9 @@ from word2number import w2n
 import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
+
+
+HTTP_GET_TIMEOUT = 2.5
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -83,7 +84,7 @@ def get_link_from_slack_client_conversation(data):
 
 
 def scrape_with_url(url: str):
-    response = requests.get(url)
+    response = requests.get(url, timeout=HTTP_GET_TIMEOUT)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)
     status = response.status_code
@@ -288,24 +289,20 @@ def extract_urls(text):
 
 def check_url(url):
     """
-    Opens `url` to test its validity.
+    Performs an HTTP GET request on `url` to test its validity.
 
-    Returns True if `url` can be opened, False otherwise.
+    Returns True if GET succeeds, False otherwise.
     """
 
-    try:
-        _ = urlopen(url)
-
-    except HTTPError as e:
-        logger.info("HTTP error", e)
-        return False
-
-    except URLError as e:
-        logger.info("Oops ! Page not found!", e)
-        return False
-
+    if urlparse(url).scheme in ["http", "https"]:
+        try:
+            _ = requests.get(url, timeout=HTTP_GET_TIMEOUT)
+            return True
+        except Exception as e:
+            logger.info(f"{e} - {url}")
+            return False
     else:
-        return True
+        raise ValueError(f"URL must conform to HTTP(S) scheme: {url}")
 
 
 def extract_numbers_from_text(text):
