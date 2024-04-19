@@ -168,8 +168,8 @@ from sherpa_ai.utils import combined_number_extractor
     ],
 )
 def test_number_citation_succeeds_in_qa(
-    get_llm, test_id, input_data, expected_numbers, objective
-):  # noqa: F811
+    get_llm, test_id, input_data, expected_numbers, objective  # noqa: F811
+):
     llm = get_llm(
         __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
     )
