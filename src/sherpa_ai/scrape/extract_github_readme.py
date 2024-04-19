@@ -11,6 +11,9 @@ import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import ConversationStore
 
 
+GITHUB_REQUEST_TIMEOUT = 2.5
+
+
 def get_owner_and_repo(url):
     """
     Extracts the owner and repository name from a GitHub repository URL.
@@ -49,7 +52,9 @@ def extract_github_readme(repo_url):
             "X-GitHub-Api-Version": "2022-11-28",
         }
 
-        response = requests.get(github_api_url, headers=headers)
+        response = requests.get(
+            github_api_url, headers=headers, timeout=GITHUB_REQUEST_TIMEOUT
+        )
 
         files = response.json()
         if type(files) is dict and files["message"].lower() == "bad credentials":
@@ -72,7 +77,9 @@ def extract_github_readme(repo_url):
             "X-GitHub-Api-Version": "2022-11-28",
         }
 
-        response = requests.get(github_api_url, headers=headers)
+        response = requests.get(
+            github_api_url, headers=headers, timeout=GITHUB_REQUEST_TIMEOUT
+        )
         data = response.json()
         if "content" in data:
             content = base64.b64decode(data["content"]).decode("utf-8")
