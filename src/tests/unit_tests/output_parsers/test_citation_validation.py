@@ -16,7 +16,7 @@ def test_citation_validation():
     He was elected to the New Castle County Council in 1970 and to the U.S. 
     Senate in 1972. As a senator, Biden drafted and led the effort to pass the Violent Crime Control and Law Enforcement Act and the Violence Against Women Act. He also oversaw six U.S. Supreme Court confirmation hearings, including the contentious hearings for Robert Bork and Clarence Thomas. 
     Biden ran unsuccessfully for the Democratic presidential nomination in 1988 and 2008. In 2008, Obama chose Biden as his running mate, and he was a close counselor to Obama during his two terms as vice president. In the 2020 presidential election, Biden and his running mate, Kamala Harris, defeated incumbents Donald Trump and Mike Pence. He became the oldest president in U.S. history, and the first to have a female vice president.
-    """
+    """  # noqa W291
     data_1 = {"Document": text, "Source": "www.wiki_1.com"}
     data_2 = {"Document": text, "Source": "www.wiki_2.com"}
     resources = [data_1, data_2]
