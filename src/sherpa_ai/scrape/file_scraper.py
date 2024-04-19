@@ -11,6 +11,9 @@ from sherpa_ai.utils import (
 )
 
 
+DOWNLOAD_TIMEOUT = 2.5
+
+
 class QuestionWithFileHandler:
     def __init__(self, question, files, token, user_id, team_id):
         """
@@ -66,7 +69,9 @@ class QuestionWithFileHandler:
             "Authorization": f"Bearer {self.token}",
             "Accept": file["mimetype"],
         }
-        response = requests.get(file["url_private_download"], headers=headers)
+        response = requests.get(
+            file["url_private_download"], headers=headers, timeout=DOWNLOAD_TIMEOUT
+        )
         destination = file["id"] + file["filetype"]
 
         # Check if the request was successful (HTTP status code 200)
