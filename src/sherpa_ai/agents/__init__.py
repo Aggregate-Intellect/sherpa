@@ -6,6 +6,7 @@ from sherpa_ai.agents.planner import Planner
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.agents.user import UserAgent
 
+
 __all__ = [
     "AgentPool",
     "Planner",

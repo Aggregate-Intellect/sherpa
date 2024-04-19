@@ -5,6 +5,7 @@ from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.tools import SearchTool
 
+
 # TODO check for prompt that keep orginal snetnences
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}

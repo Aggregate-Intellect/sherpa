@@ -2,6 +2,7 @@ from langchain.base_language import BaseLanguageModel
 
 from sherpa_ai.actions.base import BaseAction
 
+
 DELIBERATION_DESCRIPTION = """Role Description: {role_description}
 Task Description: {task}
 
