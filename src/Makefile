@@ -36,6 +36,8 @@ lint: $(INSTALL_STAMP)
 	$(POETRY) run black --check $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS) --diff
 	$(POETRY) run flake8 --ignore=W503,E501,F401 $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS)
 	# $(POETRY) run mypy $(SHERPA) $(SHERPA_TESTS) $(SLACK_APP) $(SLACK_APP_TESTS) --ignore-missing-imports
+	$(POETRY) run bandit -r $(SHERPA) $(SLACK_APP)
+	$(POETRY) run bandit -r $(SHERPA_TESTS) $(SLACK_APP_TESTS) -s B101
 
 .PHONY: format
 format: $(INSTALL_STAMP)
