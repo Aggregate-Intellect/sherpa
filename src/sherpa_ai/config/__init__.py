@@ -4,11 +4,18 @@ App configuration settings.
 Usage:
 
     First define variables in runtime environment or in your `.env` file.
-    Then, ...
+    See `.env-sample` file for examples and a useful starting point.
+    Then, in your code, use the values like this:
 
-    import Config as cfg
-    secret = cfg.SLACK_SIGNING_SECRET
-    another_variable = cfg.ANOTHER_ENVIRONMENT_VARIABLE
+        import Config as cfg
+        secret = cfg.SLACK_SIGNING_SECRET
+        another_variable = cfg.ANOTHER_ENVIRONMENT_VARIABLE
+
+To add, remove, or change variables, ...
+1. Update this file to create the variables
+2. Update `env-sample` to match
+3. Update your own `.env` file and test the changes
+4. Update corresponding secrets in Github and deployment environments
 """
 
 import sys
@@ -24,33 +31,16 @@ env_path = find_dotenv(usecwd=True)
 load_dotenv(env_path)
 
 
-AWS_ACCESS_KEY = environ.get("AWS_ACCESS_KEY")
-AWS_SECRET_KEY = environ.get("AWS_SECRET_KEY")
-FLASK_DEBUG = environ.get("FLASK_DEBUG", False) == "True"
-GITHUB_AUTH_TOKEN = environ.get("GITHUB_AUTH_TOKEN")
-SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
-SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
-SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
-SLACK_PORT = environ.get("SLACK_PORT", 3000)
-OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
-TEMPERATURE = environ.get("TEMPERATURE") or 0
-
-# Pinecone settings
-PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
-PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
-PINECONE_ENV = environ.get("PINECONE_ENV")
-PINECONE_INDEX = environ.get("PINECONE_INDEX")
-INDEX_NAME_FILE_STORAGE = environ.get("INDEX_NAME_FILE_STORAGE", "sherpa_db")
-
-# Chroma settings
-CHROMA_HOST = environ.get("CHROMA_HOST")
-CHROMA_PORT = environ.get("CHROMA_PORT")
-CHROMA_INDEX = environ.get("CHROMA_INDEX")
-
-SERPER_API_KEY = environ.get("SERPER_API_KEY")
+# Logging configuration. For local development, typically use DEBUG or INFO.
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
 
-# Usage setting
+# Flask debug mode. Optional. Useful for local development.
+# Never enable debug mode in production, as doing so creates security risks.
+FLASK_DEBUG = environ.get("FLASK_DEBUG", False) == "True"
+
+# Language model settings
+OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
+TEMPERATURE = environ.get("TEMPERATURE") or 0
 DAILY_TOKEN_LIMIT = float(environ.get("DAILY_TOKEN_LIMIT") or 20000)
 DAILY_LIMIT_REACHED_MESSAGE = (
     environ.get("DAILY_LIMIT_REACHED_MESSAGE")
@@ -60,6 +50,38 @@ LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
 FILE_SIZE_LIMIT = environ.get("FILE_SIZE_LIMIT") or 2097152
 FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
 DB_NAME = environ.get("DB_NAME") or "sqlite:///token_counter.db"
+
+# Slack integration
+SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
+SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
+SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
+SLACK_PORT = environ.get("SLACK_PORT", 3000)
+
+# Vector database settings, for embeddings. Choose from Pinecone or Chroma.
+# If none is configured, Sherpa uses an in-memory version of Chroma. If you're running
+# Sherpa via docker-compose, Docker settings are used instead of these values.
+
+# Pinecone. Optional. Enables cloud-based storage of vector embeddings.
+PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
+PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
+PINECONE_ENV = environ.get("PINECONE_ENV")
+PINECONE_INDEX = environ.get("PINECONE_INDEX")
+INDEX_NAME_FILE_STORAGE = environ.get("INDEX_NAME_FILE_STORAGE", "sherpa_db")
+
+# Chroma. Optional. Enables local, docker or cloud based storage of vector embeddings.
+CHROMA_HOST = environ.get("CHROMA_HOST")
+CHROMA_PORT = environ.get("CHROMA_PORT")
+CHROMA_INDEX = environ.get("CHROMA_INDEX")
+
+# Serper.dev. Optional. Enables Google web search capability in Sherpa.
+SERPER_API_KEY = environ.get("SERPER_API_KEY")
+
+# Github auth for extracting readme files from GitHub repositories. Optional.
+GITHUB_AUTH_TOKEN = environ.get("GITHUB_AUTH_TOKEN")
+
+# Amazon Web Sevices - for transcript summaries. Optional.
+AWS_ACCESS_KEY = environ.get("AWS_ACCESS_KEY")
+AWS_SECRET_KEY = environ.get("AWS_SECRET_KEY")
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
