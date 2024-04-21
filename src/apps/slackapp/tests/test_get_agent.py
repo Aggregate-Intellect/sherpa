@@ -1,10 +1,10 @@
-from slackapp.utils import get_qa_agent_from_config_file
-
 from sherpa_ai.actions import ArxivSearch, GoogleSearch
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
 from sherpa_ai.output_parsers.entity_validation import EntityValidation
 from sherpa_ai.test_utils.data import get_test_data_file_path
+
+from slackapp.utils import get_qa_agent_from_config_file
 
 
 def test_get_agent(get_test_data_file_path):  # noqa: F811

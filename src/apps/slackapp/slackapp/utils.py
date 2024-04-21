@@ -3,7 +3,6 @@ from typing import Optional
 from hydra.utils import instantiate
 from langchain.base_language import BaseLanguageModel
 from omegaconf import OmegaConf
-
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.config.task_config import AgentConfig
 

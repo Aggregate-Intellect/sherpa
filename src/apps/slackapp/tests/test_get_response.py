@@ -2,13 +2,13 @@ from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
+import sherpa_ai.config as cfg
 from langchain.llms.fake import FakeListLLM
 from loguru import logger
-from slackapp.bolt_app import get_response
-
-import sherpa_ai.config as cfg
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.verbose_loggers import DummyVerboseLogger
+
+from slackapp.bolt_app import get_response
 
 
 @pytest.mark.external_api

@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, create_autospec, patch
 
 from langchain.llms.fake import FakeListLLM
+
 from slackapp.bolt_app import get_response
 
 
