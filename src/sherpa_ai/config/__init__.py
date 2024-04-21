@@ -18,8 +18,9 @@ To add, remove, or change variables, ...
 4. Update corresponding secrets in Github and deployment environments
 """
 
+import subprocess
 import sys
-from os import environ
+from os import environ, path
 
 from dotenv import find_dotenv, load_dotenv
 from loguru import logger
@@ -31,8 +32,28 @@ env_path = find_dotenv(usecwd=True)
 load_dotenv(env_path)
 
 
+# A list of configuration values deemed to be sensitive, e.g. API keys, secrets.
+# These values should not be shared with external tools such as exception reporting services.
+# Make sure to add new variables to this list as appropriate so that it stays up to date.
+SENSITIVE_SETTINGS_AND_SECRETS = [
+    "OPENAI_API_KEY",
+    "SLACK_SIGNING_SECRET",
+    "SLACK_OAUTH_TOKEN",
+    "SLACK_VERIFICATION_TOKEN",
+    "PINECONE_API_KEY",
+    "SERPER_API_KEY",
+    "GITHUB_AUTH_TOKEN",
+    "AWS_ACCESS_KEY",
+    "AWS_SECRET_KEY",
+    "ROLLBAR_ACCESS_TOKEN",
+]
+
+
 # Logging configuration. For local development, typically use DEBUG or INFO.
 LOG_LEVEL = environ.get("LOG_LEVEL", "INFO").upper()
+
+# Sherpa's deployment environment name. development, production, github_actions, etc.
+SHERPA_ENV = environ.get("SHERPA_ENV")
 
 # Flask debug mode. Optional. Useful for local development.
 # Never enable debug mode in production, as doing so creates security risks.
@@ -83,6 +104,10 @@ GITHUB_AUTH_TOKEN = environ.get("GITHUB_AUTH_TOKEN")
 AWS_ACCESS_KEY = environ.get("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = environ.get("AWS_SECRET_KEY")
 
+# Settings for exception tracking with Rollbar https://rollbar.com/. Optional.
+ROLLBAR_ACCESS_TOKEN = environ.get("ROLLBAR_ACCESS_TOKEN")
+
+
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.
 logger.remove(0)  # remove the default handler configuration
@@ -93,7 +118,8 @@ logger.add(sys.stderr, level=LOG_LEVEL, serialize=False)
 this = sys.modules[__name__]
 
 
-def check_vectordb_setting():
+def check_settings_and_warn():
+    """Warns user if important environment variables are not set"""
     if (
         this.PINECONE_API_KEY
         and this.PINECONE_NAMESPACE
@@ -116,25 +142,55 @@ def check_vectordb_setting():
         )
         this.VECTORDB = "in-memory"
 
+    if None in [
+        this.SLACK_VERIFICATION_TOKEN,
+        this.SLACK_SIGNING_SECRET,
+        this.SLACK_OAUTH_TOKEN,
+        this.SLACK_PORT,
+    ]:
+        logger.warning("Config: Slack environment variables not set")
+    else:
+        logger.info("Config: Slack environment variables are set")
 
-# Ensure all mandatory environment variables are set, otherwise exit
-if None in [
-    this.SLACK_VERIFICATION_TOKEN,
-    this.SLACK_SIGNING_SECRET,
-    this.SLACK_OAUTH_TOKEN,
-    this.SLACK_PORT,
-]:
-    logger.warning("Config: Slack environment variables not set")
-else:
-    logger.info("Config: Slack environment variables are set")
+    if this.OPENAI_API_KEY is None:
+        logger.warning("Config: OpenAI environment variables not set")
+    else:
+        logger.info("Config: OpenAI environment variables are set")
 
-if this.OPENAI_API_KEY is None:
-    logger.warning("Config: OpenAI environment variables not set")
-else:
-    logger.info("Config: OpenAI environment variables are set")
 
-check_vectordb_setting()
+check_settings_and_warn()
+
+
+def current_app_revision_from_file_or_git():
+    """Returns current git revision hash, either from a file (preferred) or by calling git"""
+
+    git_commit_hash = None
+
+    # A build process is expected to create this file, e.g. in production
+    if path.exists("./git-sha1.txt"):
+        with open("./git-sha1.txt", "r") as f:
+            git_commit_hash = f.read().strip()
+
+    # Alternaively we expect git to be installed, so we use git directly
+    else:
+        git_commit_hash = current_git_revision_short_hash()
+    return git_commit_hash
+
+
+def current_git_revision_short_hash():
+    """Returns short form of the current git revision hash, or None if it's unavailable"""
+
+    try:
+        return (
+            subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
+            .decode("ascii")
+            .strip()
+        )
+    except Exception:
+        return None
+
 
 __all__ = [
     "AgentConfig",
+    "current_app_revision_from_file_or_git",
 ]

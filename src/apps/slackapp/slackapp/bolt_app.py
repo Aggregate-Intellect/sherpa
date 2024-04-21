@@ -1,7 +1,4 @@
-##############################################
-#  Implementation of the slack app using Bolt
-#  Importing necessary modules
-##############################################
+#  Slack app wrapping Sherpa, implemented with Bolt
 
 import time
 from typing import Dict, List, Optional
@@ -32,12 +29,15 @@ from sherpa_ai.tools import get_tools
 from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_only
 from sherpa_ai.verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
+from slack_bolt import App
+from slack_bolt.adapter.flask import SlackRequestHandler
+
+from slackapp.rollbar_support import enable_rollbar
+from slackapp.routes.whitelist import whitelist_blueprint
+from slackapp.utils import get_qa_agent_from_config_file
 
 
-#######################################################################################
 # Set up Slack client and Chroma database
-#######################################################################################
-
 app = App(
     token=cfg.SLACK_OAUTH_TOKEN,
     signing_secret=cfg.SLACK_SIGNING_SECRET,
@@ -47,10 +47,8 @@ ai_name = "Sherpa"
 logger.info(f"App init: bot auth_test results {bot}")
 
 
-###########################################################################
-# usage tracker database downloader on every deployment:
-###########################################################################
 def before_first_request():
+    # Download usage tracker database downloader on every deployment
     UserUsageTracker().download_from_s3(
         "sherpa-sqlight", "token_counter.db", "./token_counter.db"
     )
@@ -59,9 +57,7 @@ def before_first_request():
 if not cfg.FLASK_DEBUG:
     before_first_request()
 
-###########################################################################
-# Define Slack client functionality:
-###########################################################################
+# Slack client functionality starts here...
 
 
 @app.command("/hello-socket-mode")
@@ -308,10 +304,9 @@ def update_home_tab(client, event):
         logger.error(f"Error publishing home tab: {e}")
 
 
-###########################################################################
 # Setup Flask app:
-###########################################################################
 flask_app = Flask(__name__)
+enable_rollbar(flask_app)
 handler = SlackRequestHandler(app)
 flask_app.register_blueprint(whitelist_blueprint, url_prefix="/auth")
 
