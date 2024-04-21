@@ -4,6 +4,7 @@
 ##############################################
 
 import time
+import os
 from typing import Dict, List, Optional
 
 from flask import Flask, request
@@ -149,7 +150,7 @@ def get_response(
 
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
     else:
-        agent = get_qa_agent_from_config_file("conf/config.yaml", team_id, user_id, llm)
+        agent = get_qa_agent_from_config_file(config_path(), team_id, user_id, llm)
         for message in previous_messages:
             agent.shared_memory.add(EventType.result, message.type, message.content)
         agent.shared_memory.add(EventType.task, "human", question)
@@ -160,6 +161,13 @@ def get_response(
         response = md_link_to_slack(response)
 
     return response
+
+
+def config_path():
+    my_dir = os.path.dirname(__file__)
+    rel_path = "../../../conf/config.yaml"
+    abs_file_path = os.path.join(my_dir, rel_path)
+    return abs_file_path
 
 
 def file_event_handler(say, files, team_id, user_id, thread_ts, question):

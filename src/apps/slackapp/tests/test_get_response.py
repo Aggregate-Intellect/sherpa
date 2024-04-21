@@ -9,7 +9,6 @@ from slackapp.bolt_app import get_response
 import sherpa_ai.config as cfg
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.verbose_loggers import DummyVerboseLogger
-from tests.conftest import external_api
 
 
 @pytest.mark.external_api
