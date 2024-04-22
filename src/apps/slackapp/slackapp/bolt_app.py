@@ -190,7 +190,7 @@ def event_test(client, say, event):
     previous_messages = convert_thread_history_messages(previous_messages)
 
     input_message = replies["messages"][-1]
-    user_id = input_message["user"]
+    slac_user_id = input_message["user"]
 
     # teamid is found on different places depending on the message from slack
     # if file exist it will be inside one of the files other wise on the parent message
@@ -199,7 +199,7 @@ def event_test(client, say, event):
         if "files" in input_message
         else input_message["team"]
     )
-    combined_id = slack_team_id + "_" + slack_team_id
+    combined_id = slac_user_id + "_" + slack_team_id
 
     slack_verbose_logger = SlackVerboseLogger(say, thread_ts)
     if cfg.FLASK_DEBUG == False:
