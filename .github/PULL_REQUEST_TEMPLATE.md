@@ -1,31 +1,35 @@
-# Your checklist for this pull request
-Thank you for submitting a pull request! To speed up the review process, please follow this checklist:
-
-- [ ] My Pull Request is small and focused on one topic so it can be reviewed easily 
-- [ ] My code follows the style guidelines of this project (`make format`)
-- [ ] Commit messages are detailed
-- [ ] I have performed a self-review of my code
-- [ ] I commented hard-to-understand parts of my code
-- [ ] I updated the documentation (docstrings, `/docs`)
-- [ ] My changes generate no new warnings (or explain any new warnings and why they're ok)
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] All tests pass when I run `pytest tests` (offline mode)
-
-Additional steps for code with networking dependencies:
-
-- [ ] I followed the [offline and online testing guidelines](https://sherpa-ai.readthedocs.io/en/latest/How_To/Test/test.html#offline-and-online-testing)
-- [ ] All tests pass when I run `pytest tests --external_api` (online mode, making network calls)
-
 # Description
-Describe your pull request here.
+> Describe your pull request here. What does this change implement or fix? Include motivation and context, e.g. relevant logs, error output, etc.
 
-What does this PR implement or fix? Explain.
+> Add directions for contributors. For example, do developers need to run `poetry install` after picking up these changes?
 
-If this PR resolves any currently open issues then mention them like this: `Closes #xxx`.
-Github will close such issues automatically when your PR is merged into `main`.
+# Type of change
+- [ ] Bug fix (non-breaking change that fixes an issue)
+- [ ] New feature (non-breaking change that adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Maintenance
+- [ ] New release
 
-Any relevant logs, error output, etc?
+# Related issues
+> Mention related GitHub and Linear issues. E.g. Closes #xxx or Fixes #xxx. Otherwise delete this section.
 
-Any other comments? For example, will other contributors need to install new libraries via `poetry install` after picking up these changes?
+# Checklists
+To speed up the review process, please follow these checklists:
 
-💔Thank you!
+## Development
+- [ ] The Pull Request is small and focused on one topic
+- [ ] Lint rules pass locally (`make format && make lint`)
+- [ ] The code changed/added as part of this pull request has been covered with tests
+- [ ] All tests related to the changed code pass in development (`make test`)
+- [ ] The changes generate no new warnings (or explain any new warnings and why they're ok)
+- [ ] Commit messages are detailed
+- [ ] Changed code is self-explanatory and/or I added comments
+- [ ] I updated the documentation (docstrings, /docs)
+See the testing guidelines for help on tests, especially those involving web services.
+
+## Code review
+- [ ] This pull request has a descriptive title and information useful to a reviewer. There may be a screenshot or screencast attached.
+- [ ] I have performed a self-review of my code
+- [ ] Issue from task tracker has a link to this pull request
+
+💔 Thank you for submitting a pull request!
