@@ -161,7 +161,7 @@ class CitationValidation(BaseOutputProcessor):
                 resources.extend(action.meta[-1])
         return resources
 
-    def process_output(self, text: str, belief: Belief) -> ValidationResult:
+    def process_output(self, text: str, belief: Belief , **kwargs) -> ValidationResult:
         """
          Add citations to sentences in the generated text using resources based on fact checking model.
 
