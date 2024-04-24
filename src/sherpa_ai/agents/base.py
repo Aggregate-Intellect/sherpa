@@ -119,16 +119,17 @@ class BaseAgent(ABC):
             str: The synthesized output after validation.
         """
         last_failed_validation = []
-        result = ""
+        result = self.synthesize_output()
         for validation in self.validations:
             for count in range(self.validation_steps):
-                result = self.synthesize_output()
                 self.belief.update_internal(EventType.result, self.name, result)
 
                 validation_result = validation.process_output(
                     text=result, belief=self.belief, iteration_count=count
                 )
+
                 if validation_result.is_valid:
+                    result = validation_result.result
                     break
                 else:
                     self.belief.update_internal(
@@ -136,6 +137,7 @@ class BaseAgent(ABC):
                         self.feedback_agent_name,
                         validation_result.feedback,
                     )
+                    result = self.synthesize_output()
 
             if count >= self.validation_steps:
                 last_failed_validation.append(validation)
