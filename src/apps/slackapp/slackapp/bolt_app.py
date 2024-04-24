@@ -51,9 +51,8 @@ logger.info(f"App init: bot auth_test results {bot}")
 # usage tracker database downloader on every deployment:
 ###########################################################################
 def before_first_request():
-    UserUsageTracker().download_from_s3(
-        "sherpa-sqlight", "token_counter.db", "./token_counter.db"
-    )
+    usage_db = UserUsageTracker(db_name=cfg.DB_NAME)
+    usage_db.download_from_s3()
 
 
 if not cfg.FLASK_DEBUG:
@@ -190,19 +189,19 @@ def event_test(client, say, event):
     previous_messages = convert_thread_history_messages(previous_messages)
 
     input_message = replies["messages"][-1]
-    slac_user_id = input_message["user"]
+    slack_user_id = input_message["user"]
 
-    # teamid is found on different places depending on the message from slack
+    # team_id is found on different places depending on the message from slack
     # if file exist it will be inside one of the files other wise on the parent message
     slack_team_id = (
         input_message["files"][0]["user_team"]
         if "files" in input_message
         else input_message["team"]
     )
-    combined_id = slac_user_id + "_" + slack_team_id
+    combined_id = slack_user_id + "_" + slack_team_id
 
     slack_verbose_logger = SlackVerboseLogger(say, thread_ts)
-    if cfg.FLASK_DEBUG == False:
+    if cfg.FLASK_DEBUG == True:
         can_execute = True
     else:
         user_db = UserUsageTracker(verbose_logger=slack_verbose_logger)
@@ -211,10 +210,11 @@ def event_test(client, say, event):
             user_id=combined_id,
             token_amount=count_string_tokens(question, "gpt-3.5-turbo"),
         )
+
         can_execute = usage_checker["can_execute"]
         user_db.close_connection()
 
-    # only will be excuted if the user don't pass the daily limit
+    # only will be executed if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
     # users with a daily limitation can be allowed to use in a different workspace
 

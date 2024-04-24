@@ -10,8 +10,8 @@ import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
-
-Base = sqlalchemy.orm.declarative_base()
+import boto3
+Base = declarative_base()
 
 
 class UsageTracker(Base):
@@ -41,6 +41,9 @@ class UserUsageTracker:
     def __init__(
         self,
         db_name=cfg.DB_NAME,
+        db_url=cfg.DB_URL,
+        s3_file_key="token_counter.db",
+        bucket_name="sherpa-sqlight",
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         """
@@ -50,8 +53,9 @@ class UserUsageTracker:
             db_name (str): Name of the database.
             max_daily_token (int): Maximum daily token limit.
         """
-
-        self.engine = create_engine(db_name)
+        self.db_name = db_name
+        self.db_url = db_url
+        self.engine = create_engine(self.db_url)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         self.create_table()
@@ -59,8 +63,20 @@ class UserUsageTracker:
         self.verbose_logger = verbose_logger
         self.is_reminded = False
         self.usage_percentage_allowed = 75
+        self.limit_time_size_in_hours = cfg.LIMIT_TIME_SIZE_IN_HOURS
+        self.bucket_name = bucket_name
+        self.s3_file_key = s3_file_key
+        self.local_file_path = f"./{self.db_name}"
 
-    def download_from_s3(self, bucket_name, s3_file_key, local_file_path):
+    @classmethod
+    def download_from_s3(
+        cls,
+        db_name=cfg.DB_NAME,
+        db_url=cfg.DB_URL,
+        s3_file_key="token_counter.db",
+        bucket_name="sherpa-sqlight",
+        verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
+    ):
         """
         Download a file from Amazon S3.
 
@@ -69,12 +85,23 @@ class UserUsageTracker:
             s3_file_key (str): Key of the file in the S3 bucket.
             local_file_path (str): Local path where the file will be downloaded.
         """
-        file_path = Path("./token_counter.db")
-        if not file_path.exists():
-            s3 = boto3.client("s3")
+        local_file_path = f"./{db_name}"
+        # file_path = Path(self.local_file_path)
+        # if not file_path.exists():
+        s3 = boto3.client("s3")
+        try:
             s3.download_file(bucket_name, s3_file_key, local_file_path)
+        except Exception as e:
+            logger.error(f"Error download from s3: {str(e)}")
+        return cls(
+            db_name=db_name,
+            db_url=db_url,
+            s3_file_key=s3_file_key,
+            bucket_name=bucket_name,
+            verbose_logger=verbose_logger,
+        )
 
-    def upload_to_s3(self, local_file_path, bucket_name, s3_file_key):
+    def upload_to_s3(self):
         """
         Upload a file to Amazon S3.
 
@@ -85,7 +112,10 @@ class UserUsageTracker:
         """
 
         s3 = boto3.client("s3")
-        s3.upload_file(local_file_path, bucket_name, s3_file_key)
+        try:
+            s3.upload_file(self.local_file_path, self.bucket_name, self.s3_file_key)
+        except Exception as e:
+            logger.error(f"Error uploading file to S3: {str(e)}")
 
     def create_table(self):
         """Create the necessary tables in the database."""
@@ -104,9 +134,7 @@ class UserUsageTracker:
         self.session.add(user)
         self.session.commit()
         if not cfg.FLASK_DEBUG:
-            self.upload_to_s3(
-                "./token_counter.db", "sherpa-sqlight", "token_counter.db"
-            )
+            self.upload_to_s3()
 
     def get_all_whitelisted_ids(self):
         """Get a list of all user IDs in the whitelist."""
@@ -180,6 +208,7 @@ class UserUsageTracker:
         )
         self.session.add(data)
         self.session.commit()
+        self.upload_to_s3()
 
     def percentage_used(self, user_id):
         """
@@ -212,7 +241,6 @@ class UserUsageTracker:
                 and not self.is_reminded
             ):
                 self.add_data(user_id=user_id, token=0, reminded_timestamp=True)
-
                 self.verbose_logger.log(
                     f"Hi friend, you have used up {self.usage_percentage_allowed}% of your daily token limit. once you go over the limit there will be a 24 hour cool down period after which you can continue using Sherpa! be awesome!"
                 )
@@ -229,7 +257,7 @@ class UserUsageTracker:
         """
 
         last_reset_info = self.get_last_reset_info(user_id)
-
+        # if there is no reset point before all the users interaction will be taken as a data since last reset
         if last_reset_info is None or last_reset_info["id"] is None:
             data = self.session.query(UsageTracker).filter_by(user_id=user_id).all()
             return [
@@ -243,7 +271,8 @@ class UserUsageTracker:
                 }
                 for item in data
             ]
-
+        # return every thing from the last reset point.
+        # since id is incremental everything greater than the earliest reset point
         data = (
             self.session.query(UsageTracker)
             .filter(
@@ -252,6 +281,7 @@ class UserUsageTracker:
             )
             .all()
         )
+
         return [
             {
                 "id": item.id,
@@ -286,9 +316,9 @@ class UserUsageTracker:
         data_since_last_reset = self.get_data_since_last_reset(user_id)
 
         if len(data_since_last_reset) == 1 and "user_id" in data_since_last_reset[0]:
-            return 0
+            return data_since_last_reset[0]["token"]
 
-        token_sum = sum(item["token"] for item in data_since_last_reset[1:])
+        token_sum = sum(item["token"] for item in data_since_last_reset)
         return token_sum
 
     def reset_usage(self, user_id, token_amount):
@@ -338,7 +368,7 @@ class UserUsageTracker:
             str: Formatted string in the format "hours : minutes : seconds".
         """
 
-        remaining_seconds = int(float(cfg.LIMIT_TIME_SIZE_IN_HOURS) * 3600 - seconds)
+        remaining_seconds = int(float(self.limit_time_size_in_hours) * 3600 - seconds)
         hours = remaining_seconds // 3600
         minutes = (remaining_seconds % 3600) // 60
         seconds = remaining_seconds % 60
@@ -369,21 +399,33 @@ class UserUsageTracker:
             }
         else:
             last_reset_info = self.get_last_reset_info(user_id=user_id)
-            time_since_last_reset = 99999
+            #
+            time_since_last_reset = None
 
             if last_reset_info is not None and last_reset_info["timestamp"] is not None:
                 time_since_last_reset = int(time.time()) - last_reset_info["timestamp"]
 
-            if time_since_last_reset != 0 and time_since_last_reset > 3600 * float(
-                cfg.LIMIT_TIME_SIZE_IN_HOURS
+            if int(token_amount) > self.max_daily_token:
+                return {
+                    "token-left": 0,
+                    "can_execute": False,
+                    "message": "your request exceeds token limit. try using smaller context.",
+                    "time_left": "",
+                }
+
+            if time_since_last_reset == None or (
+                time_since_last_reset != 0
+                and time_since_last_reset > 3600 * float(self.limit_time_size_in_hours)
             ):
-                print(f"TIMESTAMP DIFFERENT: {time_since_last_reset}")
+                logger.debug(
+                    f"TIMESTAMP DIFFERENT: {time_since_last_reset}", flush=True
+                )
                 self.reset_usage(user_id=user_id, token_amount=token_amount)
                 return {
                     "token-left": self.max_daily_token,
                     "can_execute": True,
                     "message": "",
-                    "time_left": self.seconds_to_hms(time_since_last_reset),
+                    "time_left": "",
                 }
             else:
                 total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
@@ -411,16 +453,7 @@ class UserUsageTracker:
 
     def get_all_data(self):
         data = self.session.query(UsageTracker).all()
-        return [
-            {
-                "id": item.id,
-                "user_id": item.user_id,
-                "token": item.token,
-                "timestamp": item.timestamp,
-                "reset_timestamp": item.reset_timestamp,
-            }
-            for item in data
-        ]
+        return [item for item in data]
 
     def close_connection(self):
         """Close the database connection."""
