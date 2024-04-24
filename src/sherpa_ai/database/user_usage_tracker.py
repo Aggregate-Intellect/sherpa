@@ -11,6 +11,7 @@ from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
 import boto3
+
 Base = declarative_base()
 
 
