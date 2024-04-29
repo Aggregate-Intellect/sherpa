@@ -1,7 +1,7 @@
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.base import ActionResource, BaseAction
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.tools import SearchTool
 
@@ -39,7 +39,6 @@ class GoogleSearch(BaseAction):
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         config: AgentConfig = AgentConfig(),
         n: int = 5,
-        include_metadata=False,
     ):
         self.role_description = role_description
         self.task = task
@@ -49,32 +48,13 @@ class GoogleSearch(BaseAction):
         self.n = n
 
         self.search_tool = SearchTool(config=config)
-        self.meta = []
-        self.include_metadata = include_metadata
+        self.action_resources = []
 
     def execute(self, query) -> str:
-        if self.include_metadata:
-            result, meta = self.search_tool._run(query, self.include_metadata)
-            self.meta.append(meta)
-        else:
-            result = self.search_tool._run(query)
+        result, resources = self.search_tool._run(query, return_resources=True)
+        self.add_resource(resources)
         logger.debug("Search Result: {}", result)
 
-        return result
-
-        # the code block below is not currently used because the single google search result
-        # is short enough to fit into the context.
-        # Maybe get back to use the LLM to summarize the google search result again if the result beocme
-        # too long to handle in the context.
-
-        # prompt = self.description.format(
-        #     task=self.task,
-        #     documents=result,
-        #     n=self.n,
-        #     role_description=self.role_description,
-        # )
-
-        # result = self.llm.predict(prompt)
         return result
 
     @property
@@ -84,3 +64,13 @@ class GoogleSearch(BaseAction):
     @property
     def args(self) -> dict:
         return {"query": "string"}
+
+    @property
+    def resources(self) -> list[ActionResource]:
+        return self.action_resources
+
+    def add_resource(self, resources: list[dict]):
+        for resource in resources:
+            self.action_resources.append(
+                ActionResource(source=resource["Source"], content=resource["Document"])
+            )

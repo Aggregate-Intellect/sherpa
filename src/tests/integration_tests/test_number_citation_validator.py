@@ -174,14 +174,12 @@ def test_number_citation_succeeds_in_qa(
         __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
     )
 
-    data = input_data[0]
-
     shared_memory = SharedMemory(
         objective=objective,
         agent_pool=None,
     )
     number_validation = NumberValidation()
-    with patch.object(SearchTool, "_run", return_value=data):
+    with patch.object(SearchTool, "_run", return_value=input_data):
         task_agent = QAAgent(
             llm=llm,
             shared_memory=shared_memory,
