@@ -21,7 +21,6 @@ def test_qa_agent_succeeds(get_llm):  # noqa: F811
         role_description="Planner",
         task="What is AutoGPT?",
         llm=llm,
-        include_metadata=True,
     )
 
     task_agent = QAAgent(
@@ -83,7 +82,6 @@ def test_qa_agent_citation_validation_multiple_action(get_llm):
         role_description="Planner",
         task="What is AutoGPT?",
         llm=llm,
-        include_metadata=True,
     )
     arxiv_search = ArxivSearch(
         role_description="Planner",

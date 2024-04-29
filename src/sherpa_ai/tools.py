@@ -88,7 +88,7 @@ class SearchTool(BaseTool):
     )
 
     def _run(
-        self, query: str, require_meta=False
+        self, query: str, return_resources=False
     ) -> Union[str, Tuple[str, List[dict]]]:
         result = ""
         if self.config.search_domains:
@@ -112,19 +112,19 @@ class SearchTool(BaseTool):
             )  # noqa: E501
 
         top_k = int(self.top_k / len(query_list))
-        if require_meta:
+        if return_resources:
             meta = []
 
         for query in query_list:
-            cur_result = self._run_single_query(query, top_k, require_meta)
+            cur_result = self._run_single_query(query, top_k, return_resources)
 
-            if require_meta:
+            if return_resources:
                 result += "\n" + cur_result[0]
                 meta.extend(cur_result[1])
             else:
                 result += "\n" + cur_result
 
-        if require_meta:
+        if return_resources:
             result = (result, meta)
 
         return result
@@ -133,7 +133,7 @@ class SearchTool(BaseTool):
         return query + " site:" + site
 
     def _run_single_query(
-        self, query: str, top_k: int, require_meta=False
+        self, query: str, top_k: int, return_resources=False
     ) -> Union[str, Tuple[str, List[dict]]]:
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
@@ -154,7 +154,7 @@ class SearchTool(BaseTool):
 
             response = "Answer: " + answer
             meta = [{"Document": answer, "Source": link}]
-            if require_meta:
+            if return_resources:
                 return response, meta
             else:
                 return response + "\nLink:" + link
@@ -200,7 +200,7 @@ class SearchTool(BaseTool):
 
             # If the links are not considered explicitly, add it to the search result
             # so that it can be considered by the LLM
-            if not require_meta:
+            if not return_resources:
                 single_result += "\nLink:" + r["link"]
 
             result.append(single_result)
@@ -226,7 +226,7 @@ class SearchTool(BaseTool):
                 + search_results["knowledgeGraph"]["descriptionLink"]
             )
             full_result = answer + "\n\n" + full_result
-        if require_meta:
+        if return_resources:
             return full_result, meta
         else:
             return full_result

@@ -39,7 +39,6 @@ google_search:
   role_description: Act as a question answering agent
   task: Question answering
   llm: ${llm}
-  include_metadata: true
   config: ${agent_config}
 
 qa_agent:
