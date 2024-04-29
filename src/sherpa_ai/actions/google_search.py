@@ -5,7 +5,6 @@ from sherpa_ai.actions.base import ActionResource, BaseAction
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.tools import SearchTool
 
-
 # TODO check for prompt that keep orginal snetnences
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
@@ -52,8 +51,7 @@ class GoogleSearch(BaseAction):
 
     def execute(self, query) -> str:
         result, resources = self.search_tool._run(query, return_resources=True)
-        self.add_resources(resources)
-
+        self.add_resource(resources)
         logger.debug("Search Result: {}", result)
 
         return result
@@ -69,3 +67,9 @@ class GoogleSearch(BaseAction):
     @property
     def resources(self) -> list[ActionResource]:
         return self.action_resources
+
+    def add_resource(self, resources: list[dict]):
+        for resource in resources:
+            self.action_resources.append(
+                ActionResource(source=resource["Source"], content=resource["Document"])
+            )

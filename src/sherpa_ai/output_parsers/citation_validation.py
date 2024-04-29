@@ -159,12 +159,6 @@ class CitationValidation(BaseOutputProcessor):
         """
         resources = []
         for action in belief.actions:
-            if (
-                hasattr(action, "meta")
-                and action.meta is not None
-                and len(action.meta) > 0
-            ):
-                resources.extend(action.meta[-1])
             resources.extend(action.resources)
         return resources
 
