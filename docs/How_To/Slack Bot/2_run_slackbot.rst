@@ -102,7 +102,7 @@ Run with Virtual Environment
          cd apps/slackapp
          poetry install
 
-   * Install dependency with `pip <https://pip.pypa.io/en/stable/>`__
+   * Install dependencies with `pip <https://pip.pypa.io/en/stable/>`__
 
       .. code:: bash
 
@@ -111,7 +111,15 @@ Run with Virtual Environment
 
 6. Download the spaCy trained pipeline for English.
 
-    .. code:: bash
+   * If you installed dependencies with Poetry in the previous step, run:
+
+      .. code:: bash
+
+        poetry run python -m spacy download en_core_web_sm
+
+   * If you installed dependencies with pip, run:
+
+      .. code:: bash
 
         python -m spacy download en_core_web_sm
 
