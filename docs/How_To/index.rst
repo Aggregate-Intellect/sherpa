@@ -37,6 +37,7 @@ contribute changes to Sherpa.
 
     Contribute/*
     Slack Bot/*
+    Tutorials/*
     Test/*
 
 Codebase Overview:
