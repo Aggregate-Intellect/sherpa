@@ -14,7 +14,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.11
-
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock')}}
+          restore-keys: |
+            ${{ runner.os }}-pypoetry-
       # Install poetry with virtualenvs disabled for tests
       - name: Install poetry and dependencies
         run: |
@@ -23,12 +29,12 @@ jobs:
           cd src
           poetry config virtualenvs.create false
           poetry install
-      
+
       # en_core_web_sm required by spacy needs to be installed separately
       - name: Install extra dependencies
         run: |
           cd src
-          poetry run python -m spacy download en_core_web_sm 
+          poetry run python -m spacy download en_core_web_sm
 
       - name: Run tests
         env:
