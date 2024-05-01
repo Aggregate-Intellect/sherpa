@@ -1,8 +1,6 @@
 import json
-import os
 from argparse import ArgumentParser
 
-import pypandoc
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from sherpa_ai.agents import QAAgent

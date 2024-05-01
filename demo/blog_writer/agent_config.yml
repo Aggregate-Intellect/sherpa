@@ -40,7 +40,8 @@ qa_agent:
     llm: ${llm}
     shared_memory: ${shared_memory}
     name: QA Sherpa
-    description: You are a question-answering assistant helping users to find answers based on the document. For each question, first try to collection relevant information by DocumentSearch. Then, use Google Search to find the answer in the next step.
+    # description: You are a question-answering assistant helping users to find answers based on the document. For each question, first try to collection relevant information by DocumentSearch. Then, use Google Search to find the answer in the next step.
+    description: You are a technical writer assistant. You help users to find information based on the document. For each prompt, first try to collect relevant information by DocumentSearch. Then, use Google Search to find information in the next step.
     agent_config: ${agent_config}
     num_runs: 2
     validation_steps: 1
