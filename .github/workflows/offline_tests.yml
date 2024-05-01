@@ -21,7 +21,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install poetry
           cd src
-          poetry config virtualenvs.create false
           poetry install
       
       # en_core_web_sm required by spacy needs to be installed separately
