@@ -44,11 +44,19 @@ class Outliner:
         system_prompt = SystemMessagePromptTemplate.from_template(
             system_template
         )
-        human_template = """From the content of the presentation, extract at least 1 and at most 3 key insight(s). \
-            If a topic is stated to be discussed in detail later on in the presentation, do not include that topic. \
-            Do not explain what you're doing. Do not output anything other than the list of insights. Do not format \
-            the output. The transcript of the presentation is delimited in triple backticks: \
-        ```{transcript}```"""
+        human_template = """From this chunk of a presentation transcript, extract a short list of key insights. \
+            Skip explaining what you're doing, labeling the insights and writing conclusion paragraphs. \
+            The insights have to be phrased as statements of facts with no references to the presentation or the transcript. \
+            Statements have to be full sentences and in terms of words and phrases as close as possible to those used in the transcript. \
+            Keep as much detail as possible. The transcript of the presentation is delimited in triple backticks.
+
+            Desired output format:
+            - [Key insight #1]
+            - [Key insight #2]
+            - [...]
+
+            Transcript:
+            ```{transcript}```"""
         human_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_prompt, human_prompt]
@@ -57,26 +65,40 @@ class Outliner:
         result = self.chat(
             chat_prompt.format_prompt(transcript=transcript).to_messages()
         )
+
         return result.content
 
-    def create_essay_insights(self, transcript_chunks):
+    def create_essay_insights(self, transcript_chunks, verbose=True):
         response = ""
         for i, text in enumerate(transcript_chunks):
             insights = self.transcript2insights(text.page_content)
-            response = f"\n\n**Question {i+1}**: ".join([response, insights])
+            response = "\n".join([response, insights])
+            if verbose:
+                print(
+                    f"\nInsights extracted from chunk {i+1}/{len(transcript_chunks)}:\n {insights}"
+                )
         return response
 
-    def extract_thesis_statement(self, insights):
-        system_template = """You are a helpful assistant that summarizes large text information."""
+    def create_blueprint(self, insights, verbose=True):
+        system_template = """You are a helpful AI blogger who writes essays on technical topics."""
         system_prompt = SystemMessagePromptTemplate.from_template(
             system_template
         )
 
-        human_template = """From the below list of key points discussed in a presentation, extract \
-            a single, coherent, and succinct thesis statement that captures the essence of the \
-            presentation. Your thesis statement must be the combination of a topic and a claim \
-            the presenter is making about that topic. Only output the thesis statement and nothing \
-            else. The list of key points is delimited between triple backticks: \
+        human_template = """Organize the following statements (delimited in triple backticks) to create the outline for \
+            a blog post. Output the outline in a tree structure where the highest level is the most plausible statement \
+            as the thesis statement for the post, the next layers are statements providing supporting arguments for the \
+            thesis statement, and the last layer are pieces of evidence for each of the supporting arguments. Use all of \
+            the provuded statements and keep them as is instead of paraphrasing them. The thesis statement, supporting argument, \
+            and evidences have to be full sentences containing claims. Label each layer with the appropriate level title \
+            like the desired output format below:
+
+            Desired output format:
+            - Thesis Statement: [xxx]
+                - Supporting Argument: [yyy]
+                    - Evidence: [zzz]
+
+            Statements:
             ```{insights}```"""
         human_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
@@ -87,152 +109,73 @@ class Outliner:
             chat_prompt.format_prompt(insights=insights).to_messages()
         )
 
+        if verbose:
+            print(f"\nEssay outline: {outline.content}\n")
         return outline.content
 
-    def create_blueprint(self, thesis_statement, insights):
-        system_template = """You are a helpful AI blogger who writes essays on technical topics."""
+    def convert2JSON(self, outline):
+        system_template = (
+            """You are a helpful assistant that outputs JSON data from text."""
+        )
         system_prompt = SystemMessagePromptTemplate.from_template(
             system_template
         )
 
-        human_template = """Given the provided thesis statement and list of key points, reorganize \
-            and condense the information into a logical, coherent blueprint for an essay. Output a \
-            JSON object where each key is a section heading and each value is a list of key points \
-            to cover relevant to that section. All sections must support the thesis statement. \
-            Do not include any information that has little to do with the thesis statement. \
-            Only output the final JSON object and nothing else. Do not format the output. \
-            The thesis statement is : "{thesis_statement}" and the key insights are delimited \
-            in triple backticks below: \
-            ```{insights}```"""
+        human_template = """Convert the outline below (delimited within triple backticks) to a valid JSON string. \
+            Only output the JSON object and skip explaining what you're doing.
+
+            Desired output format:
+            {{
+            "Thesis Statement": "...",
+            "Supporting Arguments": [
+                {{
+                "Argument": "...",
+                "Evidence": [
+                    "...", "...", "...", ...
+                ]
+                }},
+                {{
+                "Argument": "...",
+                "Evidence": [
+                    "...", "...", "...", ...
+                ]
+                }},
+                ...
+            ]
+            }}
+
+            Outline:
+            ```{outline}```"""
         human_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_prompt, human_prompt]
         )
 
-        outline = self.chat(
-            chat_prompt.format_prompt(
-                thesis_statement=thesis_statement, insights=insights
-            ).to_messages()
+        json = self.chat(
+            chat_prompt.format_prompt(outline=outline).to_messages()
         )
 
-        return outline.content
+        return json.content
 
     # @timer_decorator
-    def full_transcript2blueprint(self, verbose=True):
-        print("Chunking transcript...")
+    def full_transcript2outline_json(self, verbose=True):
+        print("\nChunking transcript...")
         transcript_docs = self.transcript_splitter()
         t1 = time.time()
-        print("Extracting key insights...")
-        essay_insights = self.create_essay_insights(transcript_docs)
+        print("\nExtracting key insights...")
+        essay_insights = self.create_essay_insights(transcript_docs, verbose)
         t2 = time.time() - t1
-        print("Extracting thesis statement...")
+        print("\nCreating essay...")
         t1 = time.time()
-        thesis_statement = self.extract_thesis_statement(essay_insights)
+        blueprint = self.create_blueprint(essay_insights, verbose)
         t3 = time.time() - t1
-        print("Creating essay...")
+        print("\nCreating JSON...")
         t1 = time.time()
-        essay = self.create_blueprint(thesis_statement, essay_insights)
+        blueprint_json = self.convert2JSON(blueprint)
         t4 = time.time() - t1
         if verbose:
-            print(f"Extracted essay insights in {t2:.2f} seconds")
-            print(f"Extracted thesis statement in {t3:.2f} seconds")
-            print(f"Created essay blueprint in {t4:.2f} seconds")
-        return essay
-
-
-# # """# Part 2: Extracting from essay"""
-
-
-# def extract_metadata_as_json(essay, chat_model=chat):
-
-#     system_template = """ Given the essay delimited in triple backticks, generate and extract important \
-#   information such as the title, speaker, summary, a list of key topics, \
-#   and a list of important takeaways for each topic. \
-#   Format the response as a JSON object, with the keys 'Title', 'Topics', 'Speaker', \
-#   'Summary', and 'Topics' as the keys and each topic will be keys for list of takeaways. \
-#   Example of JSON output: \n \
-#  {{\
-#   'Title': 'Title of the presentation',\
-#   'Speaker': 'John Smith',\
-#   'Summary': 'summary of the presentation',\
-#   'Topics': [\
-#   {{\
-#   'Topic': 'topic 1',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }},\
-#   {{\
-#   'Topic': 'topic 2',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }},\
-#   {{\
-#   'Topic': 'topic 3',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }},\
-#   {{\
-#   'Topic': 'topic 4',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }}\
-#   ]\
-#   }}"""
-
-#     system_prompt = SystemMessagePromptTemplate.from_template(system_template)
-
-#     human_template = """Essay: ```{text}```"""
-
-#     human_prompt = HumanMessagePromptTemplate.from_template(human_template)
-#     chat_prompt = ChatPromptTemplate.from_messages(
-#         [system_prompt, human_prompt]
-#     )
-
-#     result = chat_model(chat_prompt.format_prompt(text=essay).to_messages())
-#     try:
-#         metadata_json = json.loads(result.content)
-#     except Exception as e:
-#         print(e)
-#         metadata_json = result.content
-#     return metadata_json
-
-
-# def json2rst(metadata, rst_filepath):
-#     if not isinstance(metadata, dict):
-#         metadata = json.loads(metadata)
-
-#     # rst_filepath = './essays/test.rst'
-#     with open(rst_filepath, "a") as the_file:
-#         the_file.write("\n\n")
-#         for key, value in metadata.items():
-#             if key == "Title":
-#                 title_mark = "=" * len(f"{value}")
-#                 the_file.write(title_mark + "\n")
-#                 the_file.write(f"{value} \n")
-#                 the_file.write(title_mark + "\n")
-#             elif key == "Speaker":
-#                 the_file.write("*" + f"{value}" + "* \n\n")
-#             elif key == "Summary":
-#                 title_mark = "-" * len(f"{key}")
-#                 the_file.write("Summary \n")
-#                 the_file.write(title_mark + "\n")
-#                 the_file.write(f"{value} \n\n")
-#             elif key == "Topics":
-#                 the_file.write("Topics: \n")
-#                 the_file.write(title_mark + "\n")
-#                 for topic in value:
-#                     the_file.write("\t" + f"{topic['Topic']} \n")
-#                     for takeaway in topic["Takeaways"]:
-#                         the_file.write("\t\t" + f"* {takeaway} \n")
+            print()
+            print(f"Extracted essay insights in {t2:.2f} seconds.")
+            print(f"Created essay blueprint in {t3:.2f} seconds.")
+            print(f"Created JSON in {t4:.2f} seconds.")
+        return blueprint_json
