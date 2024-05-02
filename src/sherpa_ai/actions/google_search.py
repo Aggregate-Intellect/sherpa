@@ -52,7 +52,8 @@ class GoogleSearch(BaseAction):
 
     def execute(self, query) -> str:
         result, resources = self.search_tool._run(query, return_resources=True)
-        self.add_resource(resources)
+        self.add_resources(resources)
+
         logger.debug("Search Result: {}", result)
 
         return result
@@ -68,9 +69,3 @@ class GoogleSearch(BaseAction):
     @property
     def resources(self) -> list[ActionResource]:
         return self.action_resources
-
-    def add_resource(self, resources: list[dict]):
-        for resource in resources:
-            self.action_resources.append(
-                ActionResource(source=resource["Source"], content=resource["Document"])
-            )
