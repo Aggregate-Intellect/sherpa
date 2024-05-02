@@ -118,7 +118,7 @@ class BaseAgent(ABC):
         Returns:
             str: The synthesized output after validation.
         """
-        last_failed_validation = []
+        failed_validation = []
         result = self.synthesize_output()
         for validation in self.validations:
             for count in range(self.validation_steps):
@@ -140,13 +140,13 @@ class BaseAgent(ABC):
                     result = self.synthesize_output()
 
             if count >= self.validation_steps:
-                last_failed_validation.append(validation)
+                failed_validation.append(validation)
 
-        if len(last_failed_validation) > 0:
+        if len(failed_validation) > 0:
             # if the validation failed after all steps, append the error messages to the result
             result += "\n".join(
                 failed_validation.get_failure_message()
-                for failed_validation in last_failed_validation
+                for failed_validation in failed_validation
             )
 
         self.belief.update_internal(EventType.result, self.name, result)
