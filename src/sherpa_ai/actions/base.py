@@ -43,3 +43,12 @@ class BaseAction(ABC):
         }
 
         return json.dumps(tool_desc, indent=4)
+
+    def add_resources(self, resources: list[dict]):
+        action_resources = self.resources
+        action_resources.clear()
+
+        for resource in resources:
+            action_resources.append(
+                ActionResource(source=resource["Source"], content=resource["Document"])
+            )

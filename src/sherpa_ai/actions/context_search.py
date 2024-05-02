@@ -1,7 +1,7 @@
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.base import ActionResource, BaseAction
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.tools import ContextTool
 
@@ -33,11 +33,15 @@ class ContextSearch(BaseAction):
         self.description = description
         self.llm = llm
         self.n = n
+        self.action_resources = []
 
         self.context = ContextTool(memory=get_vectordb())
 
     def execute(self, query) -> str:
-        result = self.context._run(query)
+        result, resources = self.context._run(query, return_resources=True)
+
+        self.add_resources(resources)
+
         # result = "Context Search"
         logger.debug("Context Search Result: {}", result)
 
@@ -59,3 +63,7 @@ class ContextSearch(BaseAction):
     @property
     def args(self) -> dict:
         return {"query": "string"}
+
+    @property
+    def resources(self) -> list[ActionResource]:
+        return self.action_resources

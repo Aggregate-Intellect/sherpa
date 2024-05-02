@@ -16,7 +16,7 @@ def mock_context_search(external_api):
     ) as mock_retrival:
         mock_doc = mock.MagicMock()
         mock_doc.page_content = "mock"
-        mock_doc.source = "mock"
+        mock_doc.metadata = {"source": "mock"}
 
         mock_retrival.return_value = [mock_doc]
         yield
@@ -40,3 +40,5 @@ def test_context_search_succeeds(get_llm, mock_context_search):  # noqa: F811
     result = context_search.execute(task)
 
     assert len(result) > 0
+    assert len(context_search.resources) > 0
+    assert context_search.resources[0].source == "mock"
