@@ -494,7 +494,7 @@ def json_from_text(text: str):
     Returns:
     dict: Parsed JSON data.
     """
-    if type(text) == str:
+    if isinstance(text, str):
         text = text.replace("\n", "")
         json_pattern = r"\{.*\}"
         json_match = re.search(json_pattern, text)
@@ -504,7 +504,7 @@ def json_from_text(text: str):
             try:
                 parsed_json = json.loads(json_data)
                 return parsed_json
-            except json.JSONDecodeError as e:
+            except json.JSONDecodeError:
                 return {}
         else:
             return {}
@@ -551,7 +551,7 @@ def text_similarity_by_llm(
     prompt = (
         instruction
         + """
-           only return {"entity_exist": true , "messages":"" } if all entities are mentioned inside the answer in  
+           only return {"entity_exist": true , "messages":"" } if all entities are mentioned inside the answer in
            only return {"entity_exist": false , "messages": " Entity x hasn't been mentioned inside the answer"} if the entity is not mentioned properly .
           """
     )
