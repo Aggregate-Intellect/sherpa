@@ -43,7 +43,7 @@ def test_qa_agent_succeeds(get_llm):  # noqa: F811
     assert len(results) == 1
 
 
-def test_qa_agent_citation_validation_no_action(get_llm):
+def test_qa_agent_citation_validation_no_action(get_llm):  # noqa: F811
     llm = get_llm(__file__, test_qa_agent_citation_validation_no_action.__name__)
 
     shared_memory = SharedMemory(
@@ -69,7 +69,7 @@ def test_qa_agent_citation_validation_no_action(get_llm):
     assert len(results) == 1
 
 
-def test_qa_agent_citation_validation_multiple_action(get_llm):
+def test_qa_agent_citation_validation_multiple_action(get_llm):  # noqa: F811
     # Make sure the citation validation works even when the the action providing citation is not selected
     llm = get_llm(__file__, test_qa_agent_citation_validation_multiple_action.__name__)
 
