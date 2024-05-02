@@ -31,9 +31,9 @@ google_search:
 
 citation_validation:  # The tool used to validate and add citation to the answer
     _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
-    sequence_threshold: 0.5
-    jaccard_threshold: 0.5
-    token_overlap: 0.5
+    sequence_threshold: 0.6
+    jaccard_threshold: 0.6
+    token_overlap: 0.6
 
 qa_agent:
     _target_: sherpa_ai.agents.qa_agent.QAAgent
@@ -41,10 +41,12 @@ qa_agent:
     shared_memory: ${shared_memory}
     name: QA Sherpa
     # description: You are a question-answering assistant helping users to find answers based on the document. For each question, first try to collection relevant information by DocumentSearch. Then, use Google Search to find the answer in the next step.
-    description: You are a technical writer assistant. You help users to find information based on the document. For each prompt, first try to collect relevant information by DocumentSearch. Then, use Google Search to find information in the next step.
+    # description: You are a technical writing assistant. You help users find information based on the document. For each prompt, use Google Search as the first action and Document Search as the second.
+    description: You are a technical writing assistant that helps users find information they need. For each prompt, collect and output relevant information.
     agent_config: ${agent_config}
-    num_runs: 2
+    num_runs: 1
     validation_steps: 1
     actions:
-        - ${doc_search}
         - ${google_search}
+    validations:
+        - ${citation_validation}
