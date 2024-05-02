@@ -20,7 +20,7 @@ class NumberValidation(BaseOutputProcessor):
 
     """
 
-    def process_output(self, text: str, belief: Belief) -> ValidationResult:
+    def process_output(self, text: str, belief: Belief, **kwargs) -> ValidationResult:
         """
         Verifies that all numbers within `text` exist in the `belief` source text.
 
