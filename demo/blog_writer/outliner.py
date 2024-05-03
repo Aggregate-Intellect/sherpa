@@ -75,54 +75,24 @@ class Outliner:
             response = "\n".join([response, insights])
             if verbose:
                 print(
-                    f"\nInsights extracted from chunk {i+1}/{len(transcript_chunks)}:\n {insights}"
+                    f"\nInsights extracted from chunk {i+1}/{len(transcript_chunks)}:\n{insights}"
                 )
         return response
 
-    def create_blueprint(self, insights, verbose=True):
+    def create_blueprint(self, statements, verbose=True):
         system_template = """You are a helpful AI blogger who writes essays on technical topics."""
         system_prompt = SystemMessagePromptTemplate.from_template(
             system_template
         )
 
-        human_template = """Organize the following statements (delimited in triple backticks) to create the outline for \
-            a blog post. Output the outline in a tree structure where the highest level is the most plausible statement \
-            as the thesis statement for the post, the next layers are statements providing supporting arguments for the \
-            thesis statement, and the last layer are pieces of evidence for each of the supporting arguments. Use all of \
-            the provuded statements and keep them as is instead of paraphrasing them. The thesis statement, supporting argument, \
-            and evidences have to be full sentences containing claims. Label each layer with the appropriate level title \
-            like the desired output format below:
-
-            Desired output format:
-            - Thesis Statement: [xxx]
-                - Supporting Argument: [yyy]
-                    - Evidence: [zzz]
-
-            Statements:
-            ```{insights}```"""
-        human_prompt = HumanMessagePromptTemplate.from_template(human_template)
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [system_prompt, human_prompt]
-        )
-
-        outline = self.chat(
-            chat_prompt.format_prompt(insights=insights).to_messages()
-        )
-
-        if verbose:
-            print(f"\nEssay outline: {outline.content}\n")
-        return outline.content
-
-    def convert2JSON(self, outline):
-        system_template = (
-            """You are a helpful assistant that outputs JSON data from text."""
-        )
-        system_prompt = SystemMessagePromptTemplate.from_template(
-            system_template
-        )
-
-        human_template = """Convert the outline below (delimited within triple backticks) to a valid JSON string. \
-            Only output the JSON object and skip explaining what you're doing.
+        human_template = """Organize the following list of statements (delimited in triple backticks) to create the outline \
+            for a blog post in JSON format. The highest level is the most plausible statement as the overarching thesis \
+            statement of the post, the next layers are statements providing supporting arguments for the thesis statement. \
+            The last layer are pieces of evidence for each of the supporting arguments, directly quoted from the provided \
+            list of statements. Use as many of the provided statements as possible. Keep their wording as is without paraphrasing them. \
+            Retain as many technical details as possible. The thesis statement, supporting arguments, and evidences must be \
+            full sentences containing claims. Label each layer with the appropriate level title and create the desired JSON output format below. \
+            Only output the JSON and skip explaining what you're doing:
 
             Desired output format:
             {{
@@ -144,18 +114,20 @@ class Outliner:
             ]
             }}
 
-            Outline:
-            ```{outline}```"""
+            Statements:
+            ```{statements}```"""
         human_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_prompt, human_prompt]
         )
 
-        json = self.chat(
-            chat_prompt.format_prompt(outline=outline).to_messages()
+        outline = self.chat(
+            chat_prompt.format_prompt(statements=statements).to_messages()
         )
 
-        return json.content
+        if verbose:
+            print(f"\nEssay outline: {outline.content}\n")
+        return outline.content
 
     # @timer_decorator
     def full_transcript2outline_json(self, verbose=True):
@@ -165,17 +137,12 @@ class Outliner:
         print("\nExtracting key insights...")
         essay_insights = self.create_essay_insights(transcript_docs, verbose)
         t2 = time.time() - t1
-        print("\nCreating essay...")
+        print("\nCreating essay outline...")
         t1 = time.time()
         blueprint = self.create_blueprint(essay_insights, verbose)
         t3 = time.time() - t1
-        print("\nCreating JSON...")
-        t1 = time.time()
-        blueprint_json = self.convert2JSON(blueprint)
-        t4 = time.time() - t1
         if verbose:
             print()
             print(f"Extracted essay insights in {t2:.2f} seconds.")
             print(f"Created essay blueprint in {t3:.2f} seconds.")
-            print(f"Created JSON in {t4:.2f} seconds.")
-        return blueprint_json
+        return blueprint
