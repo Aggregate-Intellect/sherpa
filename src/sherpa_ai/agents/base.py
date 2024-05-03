@@ -32,6 +32,7 @@ class BaseAgent(ABC):
         validation_steps: int = 1,
         validations: List[BaseOutputProcessor] = [],
         feedback_agent_name: str = "critic",
+        global_regen_max: int = 5,
     ):
         self.name = name
         self.description = description
@@ -45,6 +46,7 @@ class BaseAgent(ABC):
         self.verbose_logger = verbose_logger
         self.actions = actions
         self.validation_steps = validation_steps
+        self.global_regen_max = global_regen_max
         self.validations = validations
         self.feedback_agent_name = feedback_agent_name
 
@@ -112,35 +114,68 @@ class BaseAgent(ABC):
         Returns:
             str: The synthesized output after validation.
         """
-        failed_validation = []
-        result = self.synthesize_output()
-        for validation in self.validations:
-            for count in range(self.validation_steps):
-                self.belief.update_internal(EventType.result, self.name, result)
+        result = ""
+        # create array of instance of validation so that we can keep track of how many times regeneration happened.
+        instantiated_validations = [validation() for validation in self.validations]
 
-                validation_result = validation.process_output(
-                    text=result, belief=self.belief, iteration_count=count
-                )
+        all_valid = False
 
-                if validation_result.is_valid:
-                    result = validation_result.result
-                    break
-                else:
-                    self.belief.update_internal(
-                        EventType.feedback,
-                        self.feedback_agent_name,
-                        validation_result.feedback,
-                    )
+        # this loop will run until max regeneration reached or all validations have failed
+        while (
+            self.global_regen_max > sum(val.count for val in instantiated_validations)
+            and not all_valid
+        ):
+            for x in range(len(instantiated_validations)):
+                validation = instantiated_validations[x]
+
+                if validation.count < self.validation_steps:
                     result = self.synthesize_output()
+                    self.belief.update_internal(EventType.result, self.name, result)
+                    validation_result = validation.process_output(
+                        text=result, belief=self.belief
+                    )
+                    if not validation_result.is_valid:
+                        self.belief.update_internal(
+                            EventType.feedback,
+                            self.feedback_agent_name,
+                            validation_result.feedback,
+                        )
+                        break
+                    elif x == len(instantiated_validations) - 1:
+                        all_valid = True
+                elif (
+                    validation.count >= self.validation_steps
+                    and x == len(instantiated_validations) - 1
+                ):
+                    all_valid = True
+        # if all didn't pass and reached max regeneration run the validation one more time but no regeneration.
 
-            if count >= self.validation_steps:
-                failed_validation.append(validation)
+        if not all_valid and self.global_regen_max >= sum(
+            val.count for val in instantiated_validations
+        ):
+            failed_validations = []
 
-        if len(failed_validation) > 0:
-            # if the validation failed after all steps, append the error messages to the result
+            for validation in self.validations:
+                _validation = validation()
+                validation_result = _validation.process_output(
+                    text=result, belief=self.belief
+                )
+                if not validation_result.is_valid:
+                    failed_validations.append(_validation)
+
             result += "\n".join(
                 failed_validation.get_failure_message()
-                for failed_validation in failed_validation
+                for failed_validation in failed_validations
+            )
+
+        else:
+            result += "\n".join(
+                (
+                    inst_val.get_failure_message()
+                    if inst_val.count == self.validation_steps
+                    else ""
+                )
+                for inst_val in instantiated_validations
             )
 
         self.belief.update_internal(EventType.result, self.name, result)

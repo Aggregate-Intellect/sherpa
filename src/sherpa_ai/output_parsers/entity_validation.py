@@ -36,7 +36,9 @@ class EntityValidation(BaseOutputProcessor):
     """
 
     def process_output(
-        self, text: str, belief: Belief, iteration_count: int = 1
+        self,
+        text: str,
+        belief: Belief,
     ) -> ValidationResult:
         """
         Verifies that entities within `text` exist in the `belief` source text.
@@ -58,7 +60,7 @@ class EntityValidation(BaseOutputProcessor):
             exclude_types=[EventType.feedback, EventType.result],
         )
         entity_exist_in_source, error_message = self.check_entities_match(
-            text, source, self.similarity_picker(iteration_count)
+            text, source, self.similarity_picker(self.count)
         )
         if entity_exist_in_source:
             return ValidationResult(
@@ -67,6 +69,7 @@ class EntityValidation(BaseOutputProcessor):
                 feedback="",
             )
         else:
+            self.count += 1
             return ValidationResult(
                 is_valid=False,
                 result=text,
