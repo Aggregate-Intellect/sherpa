@@ -38,6 +38,7 @@ def guard(*args, **kwargs):
 def mock_env(external_api):
     # if run with external_api, don't mock the environment
     if external_api:
+        yield
         return
 
     # Set a dummy API key to avoid Pydantic validation error from langchain
