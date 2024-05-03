@@ -93,7 +93,8 @@ class SearchTool(BaseTool):
         result = ""
         if self.config.search_domains:
             query_list = [
-                query + " Site: " + str(i) for i in self.config.search_domains
+                self.formulate_site_search(query, str(i))
+                for i in self.config.search_domains
             ]
             if len(query_list) >= 5:
                 query_list = query_list[:5]
@@ -127,6 +128,9 @@ class SearchTool(BaseTool):
             result = (result, meta)
 
         return result
+
+    def formulate_site_search(self, query: str, site: str) -> str:
+        return query + " site:" + site
 
     def _run_single_query(
         self, query: str, top_k: int, require_meta=False

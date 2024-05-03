@@ -3,13 +3,19 @@ from unittest.mock import Mock, patch
 import pytest
 
 from sherpa_ai.utils import (
+    check_if_number_exist,
+    extract_entities,
     extract_numbers_from_text,
     get_base_url,
     get_links_from_string,
+    json_from_text,
     log_formatter,
     rewrite_link_references,
     scrape_with_url,
     show_commands_only,
+    string_comparison_with_jaccard_and_levenshtein,
+    text_similarity,
+    text_similarity_by_metrics,
     verify_numbers_against_source,
 )
 
@@ -216,7 +222,39 @@ def test_verify_numbers_against_source_succeeds(text_to_test, source_text):
 
 
 @pytest.mark.parametrize(
-    "text_to_test,source_text",
+    "text_to_test,expected_data",
+    [
+        (
+            "nostrud 12.45 minim cupidatat Lorem $45,000 labore7 elit.",
+            ["12.45", "45000", "7"],
+        ),
+        (
+            "123something12minim jammed together $45 abore 7 elit123",
+            ["123", "12", "45", "7", "123"],
+        ),
+        ("42 is a 42 with 42plus42 and 42", ["42", "42", "42", "42", "42"]),
+        (
+            "No numbers to see here",
+            [],
+        ),
+        (None, []),
+    ],
+)
+def test_extract_numbers_from_text(text_to_test, expected_data):
+    extracted_number = extract_numbers_from_text(text_to_test)
+    # source data has these numbers in it
+    numbers_in_source_data = expected_data
+    assert len(numbers_in_source_data) == len(
+        extracted_number
+    ), "failed to extract a number"
+    for number in extracted_number:
+        assert number in numbers_in_source_data, (
+            number + " is not in numbers_in_source_data"
+        )
+
+
+@pytest.mark.parametrize(
+    "text_to_test, source_text",
     [
         (
             "nostrud 12.45 minim cupidatat Lorem $45,000 labore7 elit.",
@@ -244,3 +282,140 @@ def test_verify_numbers_against_source_fails(text_to_test, source_text):
     assert (
         "Don't use the numbers" in msg
     ), f"Return message { msg } doesn't contain expected text"
+
+
+@pytest.mark.parametrize(
+    "text_to_test, source_text, expected_result",
+    [
+        (
+            "nostrud minim cupidatat Lorem $45,000 labore7 elit.",
+            "nostrud 12.45 minim cupidatat Lorem $45,000 labore7 elit.",
+            True,
+        ),
+        ("123something12minim jammed together $45 above 7 elit123", "45 7 12", False),
+    ],
+)
+def test_extract_numbers_from_text(text_to_test, source_text, expected_result):
+    # test against a text which don't have the same numbers as the source
+    check_result = check_if_number_exist(text_to_test, source_text)
+
+    assert check_result["number_exists"] == expected_result
+
+
+def test_json_extractor_valid_json():
+    text = 'This is some text with {"key": "value"} JSON data.'
+    result = json_from_text(text)
+    assert result == {"key": "value"}
+
+
+@pytest.mark.parametrize(
+    "invalid_text",
+    [
+        'This is some text with invalid JSON data: {"key": "value",}.',
+        None,
+        "",
+        "hi there!",
+    ],
+)
+def test_json_extractor_invalid_json(invalid_text):
+    result = json_from_text(invalid_text)
+    assert result == {}
+
+
+def test_json_extractor_no_json():
+    text = "This text does not contain any JSON data."
+    result = json_from_text(text)
+    assert result == {}
+
+
+def test_json_extractor_empty_string():
+    text = ""
+    result = json_from_text(text)
+    assert result == {}
+
+
+def test_json_extractor_nested_json():
+    text = 'Nested JSON: {"key1": {"key2": "value"}}'
+    result = json_from_text(text)
+    assert result == {"key1": {"key2": "value"}}
+
+
+def test_extract_entities_with_entities():
+    text = "The United Nations is an international organization. Some countries are members of the UN, while others are not."
+    result = extract_entities(text)
+    assert result == ["The United Nations", "UN"]
+
+
+def test_extract_entities_without_entities():
+    text = "This text does not contain any relevant entities."
+    result = extract_entities(text)
+    assert result == []
+
+
+def test_extract_entities_empty_string():
+    text = ""
+    result = extract_entities(text)
+    assert result == []
+
+
+def test_string_comparison_function():
+    result1 = string_comparison_with_jaccard_and_levenshtein("hello", "hello", 0.5)
+    assert result1 == 1.0
+
+    result2 = string_comparison_with_jaccard_and_levenshtein("hello", "world", 0.5)
+    assert result2 <= 0.3
+
+    result3 = string_comparison_with_jaccard_and_levenshtein(
+        "openai is a", "open is a", 0.5
+    )
+    assert result3 > 0.6
+
+    result4 = string_comparison_with_jaccard_and_levenshtein("dog", "bat", 0.5)
+    assert result4 == 0.0
+
+
+def test_text_similarity_entities_present():
+    check_entity = ["apple", "banana", "orange"]
+    source_entity = ["apple", "orange"]
+    entity_exist, message = text_similarity(check_entity, source_entity)
+    assert entity_exist == True
+    assert message == ""
+
+
+def test_text_similarity_entities_not_present():
+    check_entity = ["apple", "banana", "orange"]
+    source_entity = ["grape", "kiwi", "pear"]
+    entity_exist, message = text_similarity(check_entity, source_entity)
+    assert entity_exist == False
+    expected_message = (
+        "remember to address these entities grape, kiwi, pear,  in final the answer."
+    )
+    assert message == expected_message
+
+
+def test_text_similarity_with_entities_exist():
+    check_entity = ["apple", "banana", "orange"]
+    source_entity = ["apple", "orange"]
+    entity_exist, message = text_similarity_by_metrics(check_entity, source_entity)
+    assert entity_exist is True
+    assert message == ""
+
+
+def test_text_similarity_with_entities_exist():
+    check_entity = ["apple", "banana", "orange"]
+    source_entity = ["apples", "oranges"]
+    entity_exist, message = text_similarity_by_metrics(check_entity, source_entity)
+    assert entity_exist is True
+    assert message == ""
+
+
+def test_text_similarity_with_entities_not_exist():
+    check_entity = ["apple", "orange", "banana"]
+    source_entity = ["pear", "grape", "kiwi"]
+    entity_exist, message = text_similarity_by_metrics(check_entity, source_entity)
+
+    assert entity_exist is False
+    expected_message = (
+        "remember to address these entities pear, grape, kiwi,  in the final answer."
+    )
+    assert message.lower() == expected_message.lower()

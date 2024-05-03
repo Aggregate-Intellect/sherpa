@@ -64,7 +64,7 @@ html_theme_options = {
     "toc_title": "In This Page:",
 }
 html_title = "Sherpa - Thinking Companion"
-html_logo = "Open Book/cover_image.png"
+html_logo = "cover_image.png"
 html_favicon = ""
 
 
