@@ -3,6 +3,16 @@ from sherpa_ai.output_parser import TaskAction
 from sherpa_ai.tools import SearchTool
 
 
+def test_formulate_search_query():
+    config = AgentConfig(verbose=True)
+    search_tool = SearchTool(config=config)
+    query = "What is the weather today?"
+    site = "https://www.google.com"
+
+    search_query = search_tool.formulate_site_search(query, site)
+
+    assert search_query == f"{query} site:{site}"
+
 def test_search_query_includes_gsite_config():
     site = "https://www.google.com"
     config = AgentConfig(verbose=True, gsite=site)
