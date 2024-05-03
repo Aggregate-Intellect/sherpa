@@ -24,6 +24,9 @@ citation_validation:
 number_validation:
   _target_: sherpa_ai.output_parsers.number_validation.NumberValidation
 
+entity_validation:
+  _target_: sherpa_ai.output_parsers.entity_validation.EntityValidation
+
 arxiv_search:
   _target_: sherpa_ai.actions.arxiv_search.ArxivSearch
   role_description: Act as a question answering agent
@@ -51,5 +54,6 @@ qa_agent:
   actions:
     - ${google_search}
   validations:
+    - ${entity_validation}
     - ${number_validation}
     - ${citation_validation}
