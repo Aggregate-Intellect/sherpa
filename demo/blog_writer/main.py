@@ -41,19 +41,19 @@ if __name__ == "__main__":
     writer_agent = get_qa_agent_from_config_file(args.config)
 
     outliner = Outliner(args.transcript)
-    # blueprint = outliner.full_transcript2outline_json(verbose=True)
-    # if blueprint.startswith("```"):
-    #     # The first and last lines are code block delimiters; remove them
-    #     lines = blueprint.split("\n")[1:-1]
-    #     pure_json_str = "\n".join(lines)
-    # else:
-    #     pure_json_str = blueprint
+    blueprint = outliner.full_transcript2outline_json(verbose=True)
+    if blueprint.startswith("```"):
+        # The first and last lines are code block delimiters; remove them
+        lines = blueprint.split("\n")[1:-1]
+        pure_json_str = "\n".join(lines)
+    else:
+        pure_json_str = blueprint
 
-    # with open("blueprint.json", "w") as f:
-    #     f.write(pure_json_str)
+    with open("blueprint.json", "w") as f:
+        f.write(pure_json_str)
 
-    with open("blueprint_10.json", "r") as f:
-        pure_json_str = f.read()
+    # with open("blueprint_manual.json", "r") as f:
+    #     pure_json_str = f.read()
 
     parsed_json = json.loads(pure_json_str)
 
@@ -69,8 +69,6 @@ if __name__ == "__main__":
             result = writer_agent.run()
             # writer_agent.belief = Belief()
             blog += f"{result}\n"
-
-    print(blog)
 
     with open("blog.md", "w") as f:
         f.write(blog)
