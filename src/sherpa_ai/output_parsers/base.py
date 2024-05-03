@@ -40,7 +40,7 @@ class BaseOutputProcessor(ABC):
     Defines the interface for processing output text.
 
     Attributes:
-        None
+        count (int): Abstract global variable representing the count of failed validations.
 
     Methods:
         process_output(text: str) -> Tuple[bool, str]:
@@ -51,6 +51,8 @@ class BaseOutputProcessor(ABC):
             It is implemented to call process_output and return the result.
 
     """
+
+    count: int = 0
 
     @abstractmethod
     def process_output(self, text: str, **kwargs) -> ValidationResult:
