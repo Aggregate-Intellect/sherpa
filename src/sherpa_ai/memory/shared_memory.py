@@ -6,6 +6,7 @@ from sherpa_ai.actions.planning import Plan
 from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory.belief import Belief
 
+
 if TYPE_CHECKING:
     from sherpa_ai.agents import AgentPool
 

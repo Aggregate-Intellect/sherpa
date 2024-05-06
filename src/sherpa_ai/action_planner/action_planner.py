@@ -8,6 +8,7 @@ from loguru import logger
 
 from sherpa_ai.action_planner.base import BaseActionPlanner
 
+
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
 

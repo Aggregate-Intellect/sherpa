@@ -32,10 +32,11 @@ pytest-cov = "^4.1.0"
 
 
 [tool.poetry.group.lint.dependencies]
-black = "23.7.0"
-flake8 = "6.1.0"
-isort = "5.12.0"
-flake8-pyproject = "1.2.3"
+black = "^23.7.0"
+flake8 = "^6.1.0"
+isort = "^5.12.0"
+flake8-pyproject = "^1.2.3"
+mypy = "^1.9.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -54,10 +55,7 @@ line-length = 88
 
 [tool.flake8]
 max-line-length = 88
-ignore  = ['F401', 'W503']
-per-file-ignores = [
-    'bolt_app.py:E402',
-]
+ignore  = ['F401', 'W503', 'E501']
 
 [tool.isort]
 profile = "black"

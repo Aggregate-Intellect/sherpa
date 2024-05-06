@@ -8,6 +8,7 @@ from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
+
 DESCRIPTION_PROMPT = """
 You are a Critic agent that receive a plan from the planner to execuate a task from user.
 Your goal is to output the {} most necessary feedback given the corrent plan to solve the task.
