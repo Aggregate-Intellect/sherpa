@@ -14,7 +14,7 @@ def test_planning_succeeds(get_llm):  # noqa: F811
     resources to achieve this task."""  # noqa: E501
 
     agent_pool_description = """Agent: physicist
-    Info: the physicist can answer question on any physics questions. 
+    Info: the physicist can answer question on any physics questions.
 
     Agent: programmer
     Info: the programmer can write scripts to automate some tasks.

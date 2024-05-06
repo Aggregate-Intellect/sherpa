@@ -4,6 +4,7 @@ from sherpa_ai.verbose_loggers.verbose_loggers import (
     StorageVerboseLogger,
 )
 
+
 __all__ = [
     "DummyVerboseLogger",
     "SlackVerboseLogger",
