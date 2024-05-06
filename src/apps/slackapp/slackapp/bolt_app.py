@@ -33,6 +33,7 @@ from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_on
 from sherpa_ai.verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 
+
 #######################################################################################
 # Set up Slack client and Chroma database
 #######################################################################################
