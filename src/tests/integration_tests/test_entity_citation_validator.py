@@ -55,7 +55,6 @@ def test_entity_citation_succeeds_in_qa(
     llm = get_llm(
         __file__, test_entity_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
     )
-    data = input_data[0]
 
     shared_memory = SharedMemory(
         objective=objective,
@@ -63,7 +62,7 @@ def test_entity_citation_succeeds_in_qa(
     )
 
     entity_validation = EntityValidation()
-    with patch.object(SearchTool, "_run", return_value=data):
+    with patch.object(SearchTool, "_run", return_value=input_data):
         task_agent = QAAgent(
             llm=llm,
             shared_memory=shared_memory,
