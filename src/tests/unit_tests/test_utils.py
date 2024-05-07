@@ -4,6 +4,7 @@ import pytest
 
 from sherpa_ai.utils import (
     check_if_number_exist,
+    check_url,
     extract_entities,
     extract_numbers_from_text,
     get_base_url,
@@ -240,7 +241,7 @@ def test_verify_numbers_against_source_succeeds(text_to_test, source_text):
         (None, []),
     ],
 )
-def test_extract_numbers_from_text(text_to_test, expected_data):
+def test_extract_numbers_from_text_2(text_to_test, expected_data):
     extracted_number = extract_numbers_from_text(text_to_test)
     # source data has these numbers in it
     numbers_in_source_data = expected_data
@@ -295,7 +296,7 @@ def test_verify_numbers_against_source_fails(text_to_test, source_text):
         ("123something12minim jammed together $45 above 7 elit123", "45 7 12", False),
     ],
 )
-def test_extract_numbers_from_text(text_to_test, source_text, expected_result):
+def test_extract_numbers_from_text_3(text_to_test, source_text, expected_result):
     # test against a text which don't have the same numbers as the source
     check_result = check_if_number_exist(text_to_test, source_text)
 
@@ -378,7 +379,7 @@ def test_text_similarity_entities_present():
     check_entity = ["apple", "banana", "orange"]
     source_entity = ["apple", "orange"]
     entity_exist, message = text_similarity(check_entity, source_entity)
-    assert entity_exist == True
+    assert entity_exist is True
     assert message == ""
 
 
@@ -386,7 +387,7 @@ def test_text_similarity_entities_not_present():
     check_entity = ["apple", "banana", "orange"]
     source_entity = ["grape", "kiwi", "pear"]
     entity_exist, message = text_similarity(check_entity, source_entity)
-    assert entity_exist == False
+    assert entity_exist is False
     expected_message = (
         "remember to address these entities grape, kiwi, pear,  in final the answer."
     )
@@ -396,14 +397,6 @@ def test_text_similarity_entities_not_present():
 def test_text_similarity_with_entities_exist():
     check_entity = ["apple", "banana", "orange"]
     source_entity = ["apple", "orange"]
-    entity_exist, message = text_similarity_by_metrics(check_entity, source_entity)
-    assert entity_exist is True
-    assert message == ""
-
-
-def test_text_similarity_with_entities_exist():
-    check_entity = ["apple", "banana", "orange"]
-    source_entity = ["apples", "oranges"]
     entity_exist, message = text_similarity_by_metrics(check_entity, source_entity)
     assert entity_exist is True
     assert message == ""
@@ -419,3 +412,34 @@ def test_text_similarity_with_entities_not_exist():
         "remember to address these entities pear, grape, kiwi,  in the final answer."
     )
     assert message.lower() == expected_message.lower()
+
+
+@pytest.mark.parametrize(
+    "bad_uri",
+    [
+        "file://something",
+        "s3://some-file",
+        "javascript:some-code",
+        "garbage",
+        "FILE://something",
+    ],
+)
+def test_check_url_raises_exception_for_unsupported_uri_scheme(bad_uri):
+    with pytest.raises(ValueError):
+        check_url(bad_uri)
+
+
+@pytest.mark.parametrize(
+    "good_uri",
+    ["http://something.com", "https://something.com"],
+)
+def test_check_url_returns_true_for_valid_http_url(good_uri):
+    with patch("requests.get", return_value=True):
+        result = check_url(good_uri)
+    assert result is True
+
+
+def test_check_url_returns_false_on_request_error():
+    with patch("requests.get", side_effect=Exception("problem")):
+        result = check_url("https://anything")
+    assert result is False

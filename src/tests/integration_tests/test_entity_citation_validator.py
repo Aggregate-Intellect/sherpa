@@ -50,7 +50,7 @@ from sherpa_ai.utils import extract_entities
     ],
 )
 def test_entity_citation_succeeds_in_qa(
-    get_llm, test_id, objective, input_data, expected_entities
+    get_llm, test_id, objective, input_data, expected_entities  # noqa: F811
 ):
     llm = get_llm(
         __file__, test_entity_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
