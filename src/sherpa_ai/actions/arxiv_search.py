@@ -1,8 +1,7 @@
 from langchain.base_language import BaseLanguageModel
 
-from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.tools import SearchArxivTool, SearchTool
-
+from sherpa_ai.actions.base import ActionResource, BaseAction
+from sherpa_ai.tools import SearchArxivTool
 
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
@@ -31,11 +30,13 @@ class ArxivSearch(BaseAction):
         self.description = description
         self.llm = llm
         self.max_results = max_results
+        self.action_resources = []
 
         self.search_tool = SearchArxivTool()
 
     def execute(self, query) -> str:
-        result = self.search_tool._run(query)
+        result, resources = self.search_tool._run(query, return_resources=True)
+        self.add_resources(resources)
 
         prompt = self.description.format(
             task=self.task,
@@ -55,3 +56,7 @@ class ArxivSearch(BaseAction):
     @property
     def args(self) -> dict:
         return {"query": "string"}
+
+    @property
+    def resources(self) -> list:
+        return self.action_resources

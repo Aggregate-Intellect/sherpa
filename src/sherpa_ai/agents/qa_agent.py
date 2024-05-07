@@ -91,7 +91,6 @@ class QAAgent(BaseAgent):
                 self.belief.current_task,
                 self.llm,
                 config=self.config,
-                include_metadata=self.citation_enabled,
             ),
         ]
 

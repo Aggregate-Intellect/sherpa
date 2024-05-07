@@ -4,12 +4,7 @@ import urllib
 import urllib.parse
 import urllib.request
 from typing import Any, List, Tuple, Union
-from urllib.parse import urlparse
 
-import requests
-from bs4 import BeautifulSoup
-from langchain.chains import LLMChain
-from langchain.prompts import Prompt
 from langchain.tools import BaseTool
 from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.vectorstores.base import VectorStoreRetriever
@@ -18,7 +13,6 @@ from typing_extensions import Literal
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
-from sherpa_ai.output_parser import TaskAction
 
 
 def get_tools(memory, config):
@@ -45,7 +39,9 @@ class SearchArxivTool(BaseTool):
         "Only use this tool when you need information in the scientific paper."
     )
 
-    def _run(self, query: str) -> str:
+    def _run(
+        self, query: str, return_resources=False
+    ) -> Union[str, Tuple[str, List[dict]]]:
         top_k = 10
 
         logger.debug(f"Search query: {query}")
@@ -63,16 +59,32 @@ class SearchArxivTool(BaseTool):
         summaries = re.findall(summary_pattern, xml_content, re.DOTALL)
         title_pattern = r"<title>(.*?)</title>"
         titles = re.findall(title_pattern, xml_content, re.DOTALL)
+        id_pattern = r"<id>(.*?)</id>"
+        ids = re.findall(id_pattern, xml_content, re.DOTALL)
 
         result_list = []
         for i in range(len(titles)):
             result_list.append(
-                "Title: " + titles[i] + "\n" + "Summary: " + summaries[i]
+                "Title: " + titles[i] + "\n" + "Summary: " + summaries[i] + "\n"
+            )
+        result = "\n".join(result_list)
+
+        # add resources for citation
+        resources = []
+        for i in range(len(titles)):
+            resources.append(
+                {
+                    "Document": "Title: " + titles[i] + "\nSummary: " + summaries[i],
+                    "Source": ids[i],
+                }
             )
 
         logger.debug(f"Arxiv Search Result: {result_list}")
 
-        return " ".join(result_list)
+        if return_resources:
+            return result, resources
+        else:
+            return result
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("SearchArxivTool does not support async run")
@@ -88,7 +100,7 @@ class SearchTool(BaseTool):
     )
 
     def _run(
-        self, query: str, require_meta=False
+        self, query: str, return_resources=False
     ) -> Union[str, Tuple[str, List[dict]]]:
         result = ""
         if self.config.search_domains:
@@ -112,20 +124,20 @@ class SearchTool(BaseTool):
             )  # noqa: E501
 
         top_k = int(self.top_k / len(query_list))
-        if require_meta:
-            meta = []
+        if return_resources:
+            resources = []
 
         for query in query_list:
-            cur_result = self._run_single_query(query, top_k, require_meta)
+            cur_result = self._run_single_query(query, top_k, return_resources)
 
-            if require_meta:
+            if return_resources:
                 result += "\n" + cur_result[0]
-                meta.extend(cur_result[1])
+                resources.extend(cur_result[1])
             else:
                 result += "\n" + cur_result
 
-        if require_meta:
-            result = (result, meta)
+        if return_resources:
+            result = (result, resources)
 
         return result
 
@@ -133,7 +145,7 @@ class SearchTool(BaseTool):
         return query + " site:" + site
 
     def _run_single_query(
-        self, query: str, top_k: int, require_meta=False
+        self, query: str, top_k: int, return_resources=False
     ) -> Union[str, Tuple[str, List[dict]]]:
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
@@ -154,7 +166,7 @@ class SearchTool(BaseTool):
 
             response = "Answer: " + answer
             meta = [{"Document": answer, "Source": link}]
-            if require_meta:
+            if return_resources:
                 return response, meta
             else:
                 return response + "\nLink:" + link
@@ -193,18 +205,18 @@ class SearchTool(BaseTool):
 
         result = []
 
-        meta = []
+        resources = []
         for i in range(len(search_results["organic"][:top_k])):
             r = search_results["organic"][i]
             single_result = r["title"] + r["snippet"]
 
             # If the links are not considered explicitly, add it to the search result
             # so that it can be considered by the LLM
-            if not require_meta:
+            if not return_resources:
                 single_result += "\nLink:" + r["link"]
 
             result.append(single_result)
-            meta.append(
+            resources.append(
                 {
                     "Document": "Description: " + r["title"] + r["snippet"],
                     "Source": r["link"],
@@ -226,8 +238,8 @@ class SearchTool(BaseTool):
                 + search_results["knowledgeGraph"]["descriptionLink"]
             )
             full_result = answer + "\n\n" + full_result
-        if require_meta:
-            return full_result, meta
+        if return_resources:
+            return full_result, resources
         else:
             return full_result
 
@@ -244,10 +256,12 @@ class ContextTool(BaseTool):
     )
     memory: VectorStoreRetriever
 
-    def _run(self, query: str, need_meta=False) -> str:
+    def _run(
+        self, query: str, return_resources=False
+    ) -> Union[str, Tuple[str, List[dict]]]:
         docs = self.memory.get_relevant_documents(query)
         result = ""
-        metadata = []
+        resources = []
         for doc in docs:
             result += (
                 "Document"
@@ -256,16 +270,16 @@ class ContextTool(BaseTool):
                 + doc.metadata.get("source", "")
                 + "\n"
             )
-            if need_meta:
-                metadata.append(
+            if return_resources:
+                resources.append(
                     {
                         "Document": doc.page_content,
                         "Source": doc.metadata.get("source", ""),
                     }
                 )
 
-        if need_meta:
-            return result, metadata
+        if return_resources:
+            return result, resources
         else:
             return result
 
