@@ -12,6 +12,7 @@ from typing_extensions import Literal
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
 
+
 HTTP_GET_TIMEOUT = 2.5
 
 
