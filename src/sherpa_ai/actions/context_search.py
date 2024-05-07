@@ -5,6 +5,7 @@ from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.tools import ContextTool
 
+
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
 

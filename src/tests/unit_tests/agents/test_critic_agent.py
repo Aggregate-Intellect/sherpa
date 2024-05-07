@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from sherpa_ai.agents.critic import Critic
 from sherpa_ai.test_utils.llms import get_llm
 
+
 task = "Write a hello world program"
 plan = """
 1. Choose a Programming Language:
