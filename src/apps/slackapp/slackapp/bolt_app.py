@@ -337,7 +337,14 @@ def main():
     logger.info(
         "App init: starting HTTP server on port {port}".format(port=cfg.SLACK_PORT)
     )
-    flask_app.run(host="0.0.0.0", port=cfg.SLACK_PORT, debug=cfg.FLASK_DEBUG)
+    # SECURITY host "0.0.0.0" tells Flask to listen on all available IP addresses.
+    # This is handy for development, but unsafe in production.
+    # See https://bandit.readthedocs.io/en/1.7.8/plugins/b104_hardcoded_bind_all_interfaces.html.
+    # In production you would typically place the Flask server behind a WSGI
+    # server like Gunicorn and a reverse proxy, and implement other security measures.
+    flask_app.run(
+        host="0.0.0.0", port=cfg.SLACK_PORT, debug=cfg.FLASK_DEBUG  # nosec B104
+    )
 
 
 # Start the HTTP server
