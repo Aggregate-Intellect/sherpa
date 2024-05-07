@@ -2,6 +2,7 @@ import re
 import urllib.parse
 from typing import Any, List, Tuple, Union
 
+import requests
 from langchain.tools import BaseTool
 from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.vectorstores.base import VectorStoreRetriever
@@ -10,7 +11,6 @@ from typing_extensions import Literal
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
-
 
 HTTP_GET_TIMEOUT = 2.5
 
