@@ -32,7 +32,7 @@ class BaseAgent(ABC):
         validation_steps: int = 1,
         validations: List[BaseOutputProcessor] = [],
         feedback_agent_name: str = "critic",
-        global_regen_max: int = 5,
+        global_regen_max: int = 12,
     ):
         self.name = name
         self.description = description
@@ -118,22 +118,33 @@ class BaseAgent(ABC):
         # create array of instance of validation so that we can keep track of how many times regeneration happened.
         instantiated_validations = [validation() for validation in self.validations]
 
-        all_valid = False
-
+        all_pass = False
+        validation_is_scaped = False
+        while_count = 0
         # this loop will run until max regeneration reached or all validations have failed
         while (
             self.global_regen_max > sum(val.count for val in instantiated_validations)
-            and not all_valid
+            and not all_pass
         ):
+            break_while = False
+            if break_while:
+                break
+            while_count += 1
+            logger.info(f"main_iteration: {while_count}")
+            logger.info(
+                f"regen_count: {sum(val.count for val in instantiated_validations)}"
+            )
             for x in range(len(instantiated_validations)):
                 validation = instantiated_validations[x]
-
+                logger.info(f"validation_running: {validation.__class__.__name__}")
+                logger.info(f"validation_count: {validation.count}")
                 if validation.count < self.validation_steps:
                     result = self.synthesize_output()
                     self.belief.update_internal(EventType.result, self.name, result)
                     validation_result = validation.process_output(
                         text=result, belief=self.belief
                     )
+                    logger.info(f"validation_result: {validation_result.is_valid}")
                     if not validation_result.is_valid:
                         self.belief.update_internal(
                             EventType.feedback,
@@ -142,15 +153,15 @@ class BaseAgent(ABC):
                         )
                         break
                     elif x == len(instantiated_validations) - 1:
-                        all_valid = True
-                elif (
-                    validation.count >= self.validation_steps
-                    and x == len(instantiated_validations) - 1
-                ):
-                    all_valid = True
-        # if all didn't pass and reached max regeneration run the validation one more time but no regeneration.
+                        all_pass = True
+                elif x == len(instantiated_validations) - 1:
+                    validation_is_scaped = True
+                    all_pass = True
+                else:
+                    validation_is_scaped = True
 
-        if not all_valid and self.global_regen_max >= sum(
+        # if all didn't pass and reached max regeneration run the validation one more time but no regeneration.
+        if validation_is_scaped or self.global_regen_max >= sum(
             val.count for val in instantiated_validations
         ):
             failed_validations = []
