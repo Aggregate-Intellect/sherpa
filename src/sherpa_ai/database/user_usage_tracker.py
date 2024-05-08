@@ -418,9 +418,6 @@ class UserUsageTracker:
                 time_since_last_reset != 0
                 and time_since_last_reset > 3600 * float(self.limit_time_size_in_hours)
             ):
-                logger.debug(
-                    f"TIMESTAMP DIFFERENT: {time_since_last_reset}", flush=True
-                )
                 self.reset_usage(user_id=user_id, token_amount=token_amount)
                 return {
                     "token-left": self.max_daily_token,
