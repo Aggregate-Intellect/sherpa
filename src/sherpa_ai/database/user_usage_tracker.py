@@ -9,7 +9,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
+from loguru import logger
 import boto3
 
 Base = declarative_base()
