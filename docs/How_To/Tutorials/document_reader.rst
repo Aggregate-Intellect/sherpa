@@ -291,7 +291,6 @@ We can enhance our agent to use knowledge from the Internet via Google search. T
         role_description: Act as a question answering agent
         task: Question answering
         llm: ${llm}
-        include_metadata: true
         config: ${agent_config}
 
 Then, add the `google_search` action to the `qa_agent` section:

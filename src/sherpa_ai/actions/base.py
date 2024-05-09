@@ -1,6 +1,9 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import cached_property
+
+from loguru import logger
 
 
 @dataclass
@@ -32,7 +35,7 @@ class BaseAction(ABC):
     def args(self) -> dict:
         pass
 
-    @property
+    @cached_property
     def resources(self) -> list:
         return []
 
@@ -46,7 +49,7 @@ class BaseAction(ABC):
 
     def add_resources(self, resources: list[dict]):
         action_resources = self.resources
-        action_resources.clear()
+        # action_resources.clear()
 
         for resource in resources:
             action_resources.append(
