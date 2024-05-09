@@ -1,15 +1,14 @@
-from typing import List
+from typing import List, Optional
 
 from langchain.base_language import BaseLanguageModel
-from loguru import logger
 
-from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief, SharedMemory
+from sherpa_ai.policies import ReactPolicy
+from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
 
 PHYSICIST_DESCRIPTION = "You are a physicist with a deep-rooted expertise in understanding and analyzing the fundamental principles of the universe, spanning from the tiniest subatomic particles to vast cosmic phenomena. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex physics-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."  # noqa: E501
 
@@ -27,6 +26,7 @@ class Physicist(BaseAgent):
         name="Physicist",
         description=PHYSICIST_DESCRIPTION,
         shared_memory: SharedMemory = None,
+        policy: Optional[BasePolicy] = None,
         num_runs=3,
         verbose_logger=DummyVerboseLogger(),
     ):
@@ -35,10 +35,18 @@ class Physicist(BaseAgent):
             description=description,
             shared_memory=shared_memory,
             belief=Belief(),
-            action_planner=ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm),
+            policy=policy,
             num_runs=num_runs,
             verbose_logger=verbose_logger,
         )
+
+        if self.policy is None:
+            self.policy = ReactPolicy(
+                role_description=description,
+                output_instruction=ACTION_PLAN_DESCRIPTION,
+                llm=llm,
+            )
+
         self.llm = llm
 
     def create_actions(self) -> List[BaseAction]:

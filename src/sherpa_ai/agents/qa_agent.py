@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from langchain.base_language import BaseLanguageModel
 
-from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
@@ -11,9 +10,10 @@ from sherpa_ai.memory import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
+from sherpa_ai.policies import ReactPolicy
+from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
 
 # TODO: QA Agent only contains partial implementation from the original
 # task agent, more investigation is needed to add more content to it.
@@ -38,6 +38,7 @@ class QAAgent(BaseAgent):
         shared_memory: SharedMemory = None,
         belief: Optional[Belief] = None,
         agent_config: AgentConfig = AgentConfig(),
+        policy: Optional[BasePolicy] = None,
         num_runs: int = 3,
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
         actions: List[BaseAction] = [],
@@ -65,13 +66,21 @@ class QAAgent(BaseAgent):
             description + "\n\n" + f"Your name is {name}.",
             shared_memory,
             belief,
-            ActionPlanner(description, ACTION_PLAN_DESCRIPTION, llm),
+            policy,
             num_runs,
             verbose_logger,
             actions,
             validation_steps,
             validations,
         )
+
+        if self.policy is None:
+            self.policy = ReactPolicy(
+                role_description=description,
+                output_instruction=ACTION_PLAN_DESCRIPTION,
+                llm=llm,
+            )
+
         self.llm = llm
         self.config = agent_config
 
