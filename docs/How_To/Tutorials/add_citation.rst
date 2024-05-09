@@ -61,8 +61,8 @@ The above example shows how to add citations to the Google search action. Howeve
 
 The `DocumentSearch` action inherit from the `BaseAction` class, which has a method `add_resources` that can be used to add a citation to the response. The `add_resources` method takes a list of dictionaries, each dictionary should contain the following keys:
 
-- `Document`: Content of the resource.
-- `Source`: Source of the resource, such as the URL or paragraph number. 
+- `Document`: Content of the resource. In this case, it is the chunk of the document.
+- `Source`: Source of the resource, such as the URL or paragraph number. In this case, it is the chunk id. 
 
 To include citations in the response, lets's first add the source to each chunk of the document in the metadata. For this, we want to modify the `__init__` method of the `DocumentSearch` action to include the source in the metadata.
 
