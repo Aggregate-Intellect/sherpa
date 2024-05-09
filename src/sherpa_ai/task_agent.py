@@ -19,11 +19,11 @@ from langchain.vectorstores.base import VectorStoreRetriever
 from loguru import logger
 from pydantic import ValidationError
 
-from sherpa_ai.action_planner import SelectiveActionPlanner
-from sherpa_ai.action_planner.base import BaseActionPlanner
 from sherpa_ai.config import AgentConfig
 from sherpa_ai.output_parser import BaseTaskOutputParser, TaskOutputParser
 from sherpa_ai.output_parsers import LinkParser, MDToSlackParse
+from sherpa_ai.policies import SelectiveActionPlanner
+from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.post_processors import md_link_to_slack
 from sherpa_ai.reflection import Reflection
 from sherpa_ai.utils import show_commands_only
@@ -40,7 +40,7 @@ class TaskAgent:
         ai_id: str,
         memory: VectorStoreRetriever,
         llm: BaseLLM,
-        action_planner: BaseActionPlanner,
+        action_planner: BasePolicy,
         output_parser: BaseTaskOutputParser,
         tools: List[BaseTool],
         previous_messages: List[BaseMessage],
@@ -82,7 +82,7 @@ class TaskAgent:
         tools: List[BaseTool],
         llm: BaseChatModel,
         previous_messages,
-        action_planner: BaseActionPlanner = None,
+        action_planner: BasePolicy = None,
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseTaskOutputParser] = None,
         max_iterations: int = 1,

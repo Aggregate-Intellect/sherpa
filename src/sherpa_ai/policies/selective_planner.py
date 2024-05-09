@@ -7,11 +7,11 @@ from langchain.schema import BaseMessage
 from langchain.tools.base import BaseTool
 from langchain.vectorstores.base import VectorStoreRetriever
 
-from sherpa_ai.action_planner.base import BaseActionPlanner
+from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.prompt import SlackBotPrompt
 
 
-class SelectiveActionPlanner(BaseActionPlanner):
+class SelectiveActionPlanner(BasePolicy):
     def __init__(
         self,
         llm: LLM,
