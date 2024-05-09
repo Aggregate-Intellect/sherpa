@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from sherpa_ai.actions.base import BaseAction
 
+
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
 

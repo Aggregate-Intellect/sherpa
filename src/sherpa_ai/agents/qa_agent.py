@@ -15,6 +15,7 @@ from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
+
 # TODO: QA Agent only contains partial implementation from the original
 # task agent, more investigation is needed to add more content to it.
 # Some of the feature may be added to the agent base class, such as
