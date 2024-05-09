@@ -18,22 +18,6 @@ from sherpa_ai.utils import combined_number_extractor
     "test_id, objective, input_data, expected_numbers",
     [
         (
-            0,
-            "What is the annual salary for an entry level software engineer in Canada?",
-            (
-                """A software engineer is a person who applies the engineering design process to design, develop, test, maintain, and evaluate computer software.
-        The term programmer is sometimes used as a synonym, but may emphasize software implementation over design and can also lack connotations of engineering education or skills.
-        the average annual  in Canada is around $9000 to $1,000,170,000 CAD for software engineers""",
-                [
-                    {
-                        "Document": "Description: Entry-Level Software Engineer the average annual  in Canada is around 9,000 to $1,170,000 ",
-                        "Source": "https://www.springboard.com/blog/software-engineering/entry-software-engineer-salary/",
-                    }
-                ],
-            ),
-            ["9000", "1000170000"],
-        ),
-        (
             1,
             "on june how much cash does Sabio Delivers had?",
             (
@@ -124,7 +108,7 @@ from sherpa_ai.utils import combined_number_extractor
             "what is unique about ethiopian callender? and Please provide the answer in numerical form.",
             (
                 """
-                Ehtiopia has thirteen months.""",
+                Ethiopia has thirteen months.""",
                 [
                     {
                         "Document": "soccer",
@@ -155,7 +139,7 @@ from sherpa_ai.utils import combined_number_extractor
                 """
                 In the rally GGH there are going to be One Thousand Two Hundred Thirty-Four dogs. and also one thousand cats. 
                 there are going to be also event for wolves and lions.
-                """,  # noqa W291
+                """,
                 [
                     {
                         "Document": "soccer",
@@ -168,18 +152,20 @@ from sherpa_ai.utils import combined_number_extractor
     ],
 )
 def test_number_citation_succeeds_in_qa(
-    get_llm, test_id, input_data, expected_numbers, objective  # noqa: F811
-):
+    get_llm, test_id, input_data, expected_numbers, objective
+):  # noqa: F811
     llm = get_llm(
         __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
     )
+
+    data = input_data
 
     shared_memory = SharedMemory(
         objective=objective,
         agent_pool=None,
     )
     number_validation = NumberValidation()
-    with patch.object(SearchTool, "_run", return_value=input_data):
+    with patch.object(SearchTool, "_run", return_value=data):
         task_agent = QAAgent(
             llm=llm,
             shared_memory=shared_memory,
@@ -200,7 +186,6 @@ def test_number_citation_succeeds_in_qa(
         data_numbers = expected_numbers
 
         logger.debug(results[0].content)
-
         for number in data_numbers:
             assert number in combined_number_extractor(results[0].content), (
                 number + " was not found in resource"

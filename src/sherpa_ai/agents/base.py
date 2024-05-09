@@ -93,7 +93,11 @@ class BaseAgent(ABC):
                 EventType.action_output, self.name, action_output
             )
 
-        result = self.validate_output()
+        result = (
+            self.validate_output()
+            if len(self.validations) > 0
+            else self.synthesize_output()
+        )
 
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
@@ -116,16 +120,23 @@ class BaseAgent(ABC):
         """
         result = ""
         # create array of instance of validation so that we can keep track of how many times regeneration happened.
-        instantiated_validations = [validation() for validation in self.validations]
+        instantiated_validations = []
+        for validation in self.validations:
+            try:
+                instantiated_validations.append(validation())
+            except Exception as e:
+                instantiated_validations.append(validation)
 
         all_pass = False
         validation_is_scaped = False
         while_count = 0
+
         # this loop will run until max regeneration reached or all validations have failed
         while (
             self.global_regen_max > sum(val.count for val in instantiated_validations)
             and not all_pass
         ):
+            logger.info(f"validations_size: {len(instantiated_validations)}")
             break_while = False
             if break_while:
                 break
@@ -144,7 +155,7 @@ class BaseAgent(ABC):
                     validation_result = validation.process_output(
                         text=result, belief=self.belief
                     )
-                    logger.info(f"validation_result: {validation_result.is_valid}")
+                    logger.info(f"validation_result: {validation_result}")
                     if not validation_result.is_valid:
                         self.belief.update_internal(
                             EventType.feedback,
@@ -166,13 +177,12 @@ class BaseAgent(ABC):
         ):
             failed_validations = []
 
-            for validation in self.validations:
-                _validation = validation()
-                validation_result = _validation.process_output(
+            for validation in instantiated_validations:
+                validation_result = validation.process_output(
                     text=result, belief=self.belief
                 )
                 if not validation_result.is_valid:
-                    failed_validations.append(_validation)
+                    failed_validations.append(validation)
 
             result += "\n".join(
                 failed_validation.get_failure_message()

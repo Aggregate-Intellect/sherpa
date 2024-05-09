@@ -44,7 +44,7 @@ def test_regression_validator_flow(
     llm = get_llm(
         __file__, test_regression_validator_flow.__name__ + f"_{str(test_id)}"
     )
-    data = input_data[0]
+    data = input_data
 
     shared_memory = SharedMemory(
         objective=objective,
