@@ -68,6 +68,10 @@ To include citations in the response, lets's first add the source to each chunk 
 
 .. code-block:: python
 
+    # New optional import if you want to save the resources to a file
+    import json
+    # End of the new optional import
+
     def __init__(self, filename, embedding_function, k=4):
         # file name of the pdf
         self.filename = filename
@@ -84,11 +88,22 @@ To include citations in the response, lets's first add the source to each chunk 
         # This is the new code to add the source to the metadata
         for i in range(len(documents)):
             documents[i].metadata["chunk_id"] = f"chunk_{i}"
+            documents_to_save.append(
+                {
+                    "Document": documents[i].page_content,
+                    "Source": documents[i].metadata["chunk_id"],
+                }
+            )
+
+        with open("resources.json", "w") as f:
+            json.dump(documents_to_save, f)
         # End of the new code
 
         logger.info(f"Adding {len(documents)} documents to the vector store")
         self.chroma.add_documents(documents)
         logger.info("Finished adding documents to the vector store")
+
+In the above code, we also save the resources to a file called `resources.json`. This is not necessary, but it can be helpful so that you can use the cited chunk id to check the source of the citation.
 
 Next, when we execute the search, we will add the resources using the `add_resources` method so that later the `CitationValidation` can aware of these resources.
 
@@ -133,6 +148,9 @@ We are done! Again, to test the citation validation, let's remove the Google sea
     Ask me a question: What is data leakage
     2024-05-09 00:24:57.552 | INFO     | sherpa_ai.agents.base:run:70 - Action selected: ('DocumentSearch', {'query': 'What is data leakage'})
     Data leakage refers to the potential for data to be unintentionally exposed or disclosed to unauthorized parties [1](doc:chunk_5), [3](doc:chunk_45). In the context provided, data leakage is discussed in relation to the presence of inter-dataset code duplication and the implications for the evaluation of language models in software engineering research [1](doc:chunk_5). It is highlighted as a potential threat that researchers need to consider when working with pre-training and fine-tuning datasets for language models [1](doc:chunk_5). By acknowledging the risk of data leakage due to code duplication, researchers can enhance the robustness of their evaluation methodologies and improve the validity of their results [1](doc:chunk_5).
+
+.. note:: 
+    Check the `resources.json` file to see the source of the citation from the chunk ids.
 
 
 Conclusion
