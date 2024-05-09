@@ -3,8 +3,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 
-from loguru import logger
-
 
 @dataclass
 class ActionResource:
@@ -49,7 +47,7 @@ class BaseAction(ABC):
 
     def add_resources(self, resources: list[dict]):
         action_resources = self.resources
-        # action_resources.clear()
+        action_resources.clear()
 
         for resource in resources:
             action_resources.append(
