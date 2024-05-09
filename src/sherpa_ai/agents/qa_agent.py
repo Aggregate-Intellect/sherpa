@@ -91,12 +91,6 @@ class QAAgent(BaseAgent):
             belief = Belief()
         self.belief = belief
         self.citation_enabled = False
-        print("#################################", flush=True)
-        print("#################################", flush=True)
-        print(self.global_regen_max)
-        print(self.validations, flush=True)
-        print("#################################", flush=True)
-        print("#################################", flush=True)
 
         for validation in self.validations:
             if isinstance(validation, CitationValidation):
