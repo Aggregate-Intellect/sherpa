@@ -8,9 +8,7 @@ from sherpa_ai.test_utils.llms import get_llm
 
 @pytest.fixture
 def mock_context_search(external_api):
-    if external_api:
-        return
-
+    # Always mock VectorStoreRetriever to simulate the vector database
     with mock.patch(
         "langchain.schema.vectorstore.VectorStoreRetriever.get_relevant_documents"
     ) as mock_retrival:
@@ -22,7 +20,6 @@ def mock_context_search(external_api):
         yield
 
 
-@pytest.mark.external_api
 def test_context_search_succeeds(get_llm, mock_context_search):  # noqa: F811
     role_description = (
         "The programmer receives requirements about a program and write it"

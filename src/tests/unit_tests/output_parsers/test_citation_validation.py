@@ -39,7 +39,7 @@ def test_citation_succeeds_for_jaccard_similarity():
     pass
 
 
-def test_task_agent_succeeds(get_llm):  # noqa: F811
+def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
     llm = get_llm(__file__, test_task_agent_succeeds.__name__)
 
     shared_memory = SharedMemory(
@@ -61,21 +61,24 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
         "What is AutoGPT?",
     )
 
-    GOOGLE_SEARCH_MOCK = {
-        "organic": [
-            {
-                "title": "AutoGPT ",
-                # use the last response from the mock LLM as the search mock to simulate the scenario
-                "snippet": llm.responses[-1],
-                "link": "https://www.google.com",
-            }
-        ],
-    }
+    if not external_api:
+        GOOGLE_SEARCH_MOCK = {
+            "organic": [
+                {
+                    "title": "AutoGPT ",
+                    # use the last response from the mock LLM as the search mock to simulate the scenario
+                    "snippet": llm.responses[-1],
+                    "link": "https://www.google.com",
+                }
+            ],
+        }
 
-    with mock.patch(
-        "langchain.utilities.GoogleSerperAPIWrapper._google_serper_api_results"
-    ) as mock_search:
-        mock_search.return_value = GOOGLE_SEARCH_MOCK
+        with mock.patch(
+            "langchain.utilities.GoogleSerperAPIWrapper._google_serper_api_results"
+        ) as mock_search:
+            mock_search.return_value = GOOGLE_SEARCH_MOCK
+            task_agent.run()
+    else:
         task_agent.run()
 
     results = shared_memory.get_by_type(EventType.result)
