@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import cached_property
 
 
 @dataclass
@@ -32,7 +33,7 @@ class BaseAction(ABC):
     def args(self) -> dict:
         pass
 
-    @property
+    @cached_property
     def resources(self) -> list:
         return []
 
