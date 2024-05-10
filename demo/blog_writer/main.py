@@ -1,4 +1,5 @@
 import json
+import os
 from argparse import ArgumentParser
 
 from hydra.utils import instantiate
@@ -8,8 +9,17 @@ from sherpa_ai.events import EventType
 
 from outliner import Outliner
 
-# from sherpa_ai.memory import Belief
+#create Output folder
+directory_name = "Output"
 
+# Create the directory
+try:
+    os.mkdir(directory_name)
+    print(f"Directory '{directory_name}' created successfully.")
+except FileExistsError:
+    print(f"Directory '{directory_name}' already exists.")
+    
+# from sherpa_ai.memory import Belief
 
 def get_qa_agent_from_config_file(
     config_path: str,
@@ -49,7 +59,7 @@ if __name__ == "__main__":
     else:
         pure_json_str = blueprint
 
-    with open("blueprint.json", "w") as f:
+    with open("Output/blueprint.json", "w") as f:
         f.write(pure_json_str)
 
     # with open("blueprint_manual.json", "r") as f:
@@ -70,7 +80,7 @@ if __name__ == "__main__":
             # writer_agent.belief = Belief()
             blog += f"{result}\n"
 
-    with open("blog.md", "w") as f:
+    with open("Output/blog.md", "w") as f:
         f.write(blog)
 
     print("\nBlog generated successfully!\n")
