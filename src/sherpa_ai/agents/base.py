@@ -130,6 +130,7 @@ class BaseAgent(ABC):
         all_pass = False
         validation_is_scaped = False
         while_count = 0
+        result = self.synthesize_output()
 
         # this loop will run until max regeneration reached or all validations have failed
         while (
@@ -150,7 +151,6 @@ class BaseAgent(ABC):
                 logger.info(f"validation_running: {validation.__class__.__name__}")
                 logger.info(f"validation_count: {validation.count}")
                 if validation.count < self.validation_steps:
-                    result = self.synthesize_output()
                     self.belief.update_internal(EventType.result, self.name, result)
                     validation_result = validation.process_output(
                         text=result, belief=self.belief
@@ -162,15 +162,18 @@ class BaseAgent(ABC):
                             self.feedback_agent_name,
                             validation_result.feedback,
                         )
+                        result = self.synthesize_output()
                         break
                     elif x == len(instantiated_validations) - 1:
+                        result = validation_result.result
                         all_pass = True
+                    else :
+                        result = validation_result.result
                 elif x == len(instantiated_validations) - 1:
                     validation_is_scaped = True
                     all_pass = True
                 else:
                     validation_is_scaped = True
-
         # if all didn't pass and reached max regeneration run the validation one more time but no regeneration.
         if validation_is_scaped or self.global_regen_max >= sum(
             val.count for val in instantiated_validations
@@ -183,6 +186,8 @@ class BaseAgent(ABC):
                 )
                 if not validation_result.is_valid:
                     failed_validations.append(validation)
+                else:
+                    result = validation_result.result
 
             result += "\n".join(
                 failed_validation.get_failure_message()
