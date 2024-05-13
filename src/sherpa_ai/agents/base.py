@@ -21,7 +21,6 @@ if TYPE_CHECKING:
 class BaseAgent(ABC):
     def __init__(
         self,
-        llm: BaseLanguageModel,
         name: str,
         description: str,
         shared_memory: SharedMemory = None,
@@ -34,6 +33,7 @@ class BaseAgent(ABC):
         validations: List[BaseOutputProcessor] = [],
         feedback_agent_name: str = "critic",
         global_regen_max: int = 12,
+        llm: BaseLanguageModel = None
     ):
         self.llm = llm
         self.name = name
