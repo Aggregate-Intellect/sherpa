@@ -19,7 +19,7 @@ from word2number import w2n
 import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
-
+from langchain.text_splitter import CharacterTextSplitter
 
 HTTP_GET_TIMEOUT = 2.5
 
@@ -638,3 +638,16 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
         message = f"remember to address these entities {message} in final the answer."
         return False, message
     return True, message
+
+def file_text_splitter(data, meta_data):
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    texts = text_splitter.split_text(data)
+    metadatas = []
+    temp_texts = []
+    for doc in texts:
+        metadatas.append(meta_data)
+        temp_texts.append(f"""'file_content': '{doc}' ,{meta_data}""")
+    texts = temp_texts
+
+    return {"texts": texts, "meta_datas": metadatas}
+
