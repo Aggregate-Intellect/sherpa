@@ -26,7 +26,6 @@ google_search:
     role_description: Act as a question answering agent
     task: Question answering
     llm: ${llm}
-    include_metadata: true
     config: ${agent_config}
 
 citation_validation:  # The tool used to validate and add citation to the answer
