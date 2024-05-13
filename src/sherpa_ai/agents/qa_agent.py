@@ -64,6 +64,7 @@ class QAAgent(BaseAgent):
             validations (List[BaseOutputProcessor], optional): The list of validations the agent will perform. Defaults to [].
         """
         super().__init__(
+            llm=llm,
             name=name,
             description=description + "\n\n" + f"Your name is {name}.",
             shared_memory=shared_memory,

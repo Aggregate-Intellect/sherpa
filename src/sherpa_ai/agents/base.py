@@ -11,7 +11,7 @@ from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
+from langchain.base_language import BaseLanguageModel
 
 # Avoid circular import
 if TYPE_CHECKING:
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 class BaseAgent(ABC):
     def __init__(
         self,
+        llm: BaseLanguageModel,
         name: str,
         description: str,
         shared_memory: SharedMemory = None,
@@ -34,6 +35,7 @@ class BaseAgent(ABC):
         feedback_agent_name: str = "critic",
         global_regen_max: int = 12,
     ):
+        self.llm = llm
         self.name = name
         self.description = description
         self.shared_memory = shared_memory
@@ -153,7 +155,7 @@ class BaseAgent(ABC):
                 if validation.count < self.validation_steps:
                     self.belief.update_internal(EventType.result, self.name, result)
                     validation_result = validation.process_output(
-                        text=result, belief=self.belief
+                        text=result, belief=self.belief, llm=self.llm
                     )
                     logger.info(f"validation_result: {validation_result}")
                     if not validation_result.is_valid:
@@ -167,7 +169,7 @@ class BaseAgent(ABC):
                     elif x == len(instantiated_validations) - 1:
                         result = validation_result.result
                         all_pass = True
-                    else :
+                    else:
                         result = validation_result.result
                 elif x == len(instantiated_validations) - 1:
                     validation_is_scaped = True
@@ -182,7 +184,7 @@ class BaseAgent(ABC):
 
             for validation in instantiated_validations:
                 validation_result = validation.process_output(
-                    text=result, belief=self.belief
+                    text=result, belief=self.belief , llm=self.llm
                 )
                 if not validation_result.is_valid:
                     failed_validations.append(validation)
