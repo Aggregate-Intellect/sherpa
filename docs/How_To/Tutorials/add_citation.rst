@@ -64,44 +64,42 @@ The `DocumentSearch` action inherit from the `BaseAction` class, which has a met
 - `Document`: Content of the resource. In this case, it is the chunk of the document.
 - `Source`: Source of the resource, such as the URL or paragraph number. In this case, it is the chunk id. 
 
-To include citations in the response, lets's first add the source to each chunk of the document in the metadata. For this, we want to modify the `__init__` method of the `DocumentSearch` action to include the source in the metadata.
+To include citations in the response, lets's first add the source to each chunk of the document in the metadata. For this, we want to modify the `__init__` method of the `DocumentSearch` action to include the source in the metadata. The DocumentSearch action will also need to inherit from the `BaseRetrievalAction` class to use the `add_resources` method.
 
 .. code-block:: python
 
     # New optional import if you want to save the resources to a file
     import json
+    from sherpa_ai.actions.base import BaseRetrievalAction
     # End of the new optional import
 
-    def __init__(self, filename, embedding_function, k=4):
-        # file name of the pdf
-        self.filename = filename
-        # the embedding function to use
-        self.embedding_function = embedding_function
-        # number of results to return in search
-        self.k = k
+    class DocumentSearch(BaseRetrievalAction):  # Note the parent class is now BaseRetrievalAction
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
 
-        # load the pdf and create the vector store
-        self.chroma = Chroma(embedding_function = embedding_function)
-        documents = PDFMinerLoader(self.filename).load()
-        documents = SentenceTransformersTokenTextSplitter(chunk_overlap=0).split_documents(documents)
+            # load the pdf and create the vector store
+            self._chroma = Chroma(embedding_function = self.embedding_function)
+            documents = PDFMinerLoader(self.filename).load()
+            documents = SentenceTransformersTokenTextSplitter(chunk_overlap=0).split_documents(documents)
 
-        # This is the new code to add the source to the metadata
-        for i in range(len(documents)):
-            documents[i].metadata["chunk_id"] = f"chunk_{i}"
-            documents_to_save.append(
-                {
-                    "Document": documents[i].page_content,
-                    "Source": documents[i].metadata["chunk_id"],
-                }
-            )
+            documents_to_save = []
+            # This is the new code to add the source to the metadata
+            for i in range(len(documents)):
+                documents[i].metadata["chunk_id"] = f"chunk_{i}"
+                documents_to_save.append(
+                    {
+                        "Document": documents[i].page_content,
+                        "Source": documents[i].metadata["chunk_id"],
+                    }
+                )
 
-        with open("resources.json", "w") as f:
-            json.dump(documents_to_save, f)
-        # End of the new code
+            with open("resources.json", "w") as f:
+                json.dump(documents_to_save, f)
+            # End of the new code
 
-        logger.info(f"Adding {len(documents)} documents to the vector store")
-        self.chroma.add_documents(documents)
-        logger.info("Finished adding documents to the vector store")
+            logger.info(f"Adding {len(documents)} documents to the vector store")
+            self._chroma.add_documents(documents)
+            logger.info("Finished adding documents to the vector store")
 
 In the above code, we also save the resources to a file called `resources.json`. This is not necessary, but it can be helpful so that you can use the cited chunk id to check the source of the citation.
 
@@ -120,7 +118,7 @@ Next, when we execute the search, we will add the resources using the `add_resou
             str: The search results combined into a single string
         """
 
-        results = self.chroma.search(query, search_type="mmr", k=self.k)
+        results = self._chroma.search(query, search_type="mmr", k=self.k)
 
         # This is the new code to add the resources
         resources = [

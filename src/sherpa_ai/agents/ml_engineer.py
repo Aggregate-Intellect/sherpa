@@ -10,7 +10,6 @@ from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
-
 ACTION_PLAN_DESCRIPTION = "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."  # noqa: E501
 
 
@@ -48,13 +47,23 @@ class MLEngineer(BaseAgent):
 
     def create_actions(self) -> List[BaseAction]:
         return [
-            Deliberation(self.description, self.llm),
-            GoogleSearch(self.description, self.belief.current_task, self.llm),
-            ArxivSearch(self.description, self.belief.current_task, self.llm),
+            Deliberation(role_description=self.description, llm=self.llm),
+            GoogleSearch(
+                role_description=self.description,
+                task=self.belief.current_task.content,
+                llm=self.llm,
+            ),
+            ArxivSearch(
+                role_description=self.description,
+                task=self.belief.current_task.content,
+                llm=self.llm,
+            ),
         ]
 
     def synthesize_output(self) -> str:
-        synthesize_action = SynthesizeOutput(self.description, self.llm)
+        synthesize_action = SynthesizeOutput(
+            role_description=self.description, llm=self.llm
+        )
         result = synthesize_action.execute(
             self.belief.current_task.content,
             self.belief.get_context(self.llm.get_num_tokens),

@@ -1,10 +1,10 @@
-from langchain.base_language import BaseLanguageModel
+from typing import Any
+
 from loguru import logger
 
-from sherpa_ai.actions.base import ActionResource, BaseAction
+from sherpa_ai.actions.base import BaseRetrievalAction
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.tools import ContextTool
-
 
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
@@ -18,27 +18,24 @@ Only use the information given. Do not add any additional information. The summa
 """  # noqa: E501
 
 
-class ContextSearch(BaseAction):
-    def __init__(
-        self,
-        role_description: str,
-        task: str,
-        llm: BaseLanguageModel,
-        description: str = SEARCH_SUMMARY_DESCRIPTION,
-        n: int = 5,
-    ):
-        self.role_description = role_description
-        self.task = task
+class ContextSearch(BaseRetrievalAction):
+    role_description: str
+    task: str
+    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    description: str = SEARCH_SUMMARY_DESCRIPTION
+    n: int = 5
+    _context: Any
 
-        self.description = description
-        self.llm = llm
-        self.n = n
-        self.action_resources = []
+    # Override the name and args from BaseAction
+    name: str = "Context Search"
+    args: dict = {"query": "string"}
 
-        self.context = ContextTool(memory=get_vectordb())
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._context = ContextTool(memory=get_vectordb())
 
     def execute(self, query) -> str:
-        result, resources = self.context._run(query, return_resources=True)
+        result, resources = self._context._run(query, return_resources=True)
 
         self.add_resources(resources)
 
@@ -55,15 +52,3 @@ class ContextSearch(BaseAction):
         result = self.llm.predict(prompt)
 
         return result
-
-    @property
-    def name(self) -> str:
-        return "Context Search"
-
-    @property
-    def args(self) -> dict:
-        return {"query": "string"}
-
-    @property
-    def resources(self) -> list[ActionResource]:
-        return self.action_resources
