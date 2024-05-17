@@ -2,6 +2,7 @@ from typing import Any
 
 from sherpa_ai.actions.base import BaseAction
 
+
 DELIBERATION_DESCRIPTION = """Role Description: {role_description}
 Task Description: {task}
 
