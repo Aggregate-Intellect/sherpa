@@ -4,6 +4,7 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 
+
 PLANNING_PROMPT = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
 By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
 Your adaptability ensures customized solutions for diverse needs.
