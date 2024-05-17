@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 
+from pydantic import BaseModel, Field
 
-@dataclass
-class ActionResource:
+
+class ActionResource(BaseModel):
     """
     Resource used for an action.
 
@@ -18,24 +19,13 @@ class ActionResource:
     content: str
 
 
-class BaseAction(ABC):
+class BaseAction(ABC, BaseModel):
+    name: str
+    args: dict
+
     @abstractmethod
     def execute(self, **kwargs):
         pass
-
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def args(self) -> dict:
-        pass
-
-    @cached_property
-    def resources(self) -> list:
-        return []
 
     def __str__(self):
         tool_desc = {
@@ -44,6 +34,10 @@ class BaseAction(ABC):
         }
 
         return json.dumps(tool_desc, indent=4)
+
+
+class BaseRetrievalAction(BaseAction, ABC):
+    resources: list[ActionResource] = Field(default_factory=list)
 
     def add_resources(self, resources: list[dict]):
         action_resources = self.resources
