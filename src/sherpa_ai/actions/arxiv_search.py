@@ -24,6 +24,7 @@ class ArxivSearch(BaseAction):
         llm: BaseLanguageModel,
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         max_results: int = 5,
+        action_usage: str = "Search paper on the Arxiv website",
     ):
         self.role_description = role_description
         self.task = task
@@ -34,6 +35,7 @@ class ArxivSearch(BaseAction):
         self.action_resources = []
 
         self.search_tool = SearchArxivTool()
+        self.action_usage = action_usage
 
     def execute(self, query) -> str:
         result, resources = self.search_tool._run(query, return_resources=True)
@@ -57,6 +59,10 @@ class ArxivSearch(BaseAction):
     @property
     def args(self) -> dict:
         return {"query": "string"}
+
+    @property
+    def usage(self) -> str:
+        return self.action_usage
 
     @property
     def resources(self) -> list:
