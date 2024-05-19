@@ -26,16 +26,16 @@ class ContextSearch(BaseAction):
         llm: BaseLanguageModel,
         description: str = SEARCH_SUMMARY_DESCRIPTION,
         n: int = 5,
+        action_usage: str = "Search the conversation history with the user",
     ):
         self.role_description = role_description
         self.task = task
-
         self.description = description
         self.llm = llm
         self.n = n
         self.action_resources = []
-
         self.context = ContextTool(memory=get_vectordb())
+        self.action_usage = action_usage
 
     def execute(self, query) -> str:
         result, resources = self.context._run(query, return_resources=True)
@@ -63,6 +63,10 @@ class ContextSearch(BaseAction):
     @property
     def args(self) -> dict:
         return {"query": "string"}
+
+    @property
+    def usage(self) -> str:
+        return self.action_usage
 
     @property
     def resources(self) -> list[ActionResource]:
