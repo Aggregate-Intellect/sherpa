@@ -1,14 +1,14 @@
 import json
-import os
 from argparse import ArgumentParser
 
-import pypandoc
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 
 from outliner import Outliner
+
+# from sherpa_ai.memory import Belief
 
 
 def get_qa_agent_from_config_file(
@@ -38,10 +38,10 @@ if __name__ == "__main__":
     parser.add_argument("--transcript", type=str, default="transcript.txt")
     args = parser.parse_args()
 
-    qa_agent = get_qa_agent_from_config_file(args.config)
+    writer_agent = get_qa_agent_from_config_file(args.config)
 
     outliner = Outliner(args.transcript)
-    blueprint = outliner.full_transcript2blueprint()
+    blueprint = outliner.full_transcript2outline_json(verbose=True)
     if blueprint.startswith("```"):
         # The first and last lines are code block delimiters; remove them
         lines = blueprint.split("\n")[1:-1]
@@ -52,18 +52,23 @@ if __name__ == "__main__":
     with open("blueprint.json", "w") as f:
         f.write(pure_json_str)
 
+    # with open("blueprint_manual.json", "r") as f:
+    #     pure_json_str = f.read()
+
     parsed_json = json.loads(pure_json_str)
 
     blog = ""
-    for key in parsed_json:
-        blog += "# " + key + "\n"
-        for question in parsed_json[key]:
-            # Add the question to the shared memory. By default, the agent will take the last
-            # message in the shared memory as the task.
-            qa_agent.shared_memory.add(EventType.task, "human", question)
-            result = qa_agent.run()
-            blog += result + "\n"
-        blog += "\n"
+    thesis = parsed_json.get("Thesis Statement", "")
+    blog += f"# Introduction\n{thesis}\n"
+    arguments = parsed_json.get("Supporting Arguments", [])
+    for argument in arguments:
+        blog += f"## {argument['Argument']}\n"
+        evidences = argument.get("Evidence", [])
+        for evidence in evidences:
+            writer_agent.shared_memory.add(EventType.task, "human", evidence)
+            result = writer_agent.run()
+            # writer_agent.belief = Belief()
+            blog += f"{result}\n"
 
     with open("blog.md", "w") as f:
         f.write(blog)

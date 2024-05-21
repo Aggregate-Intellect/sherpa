@@ -3,6 +3,7 @@ from unittest import mock
 from loguru import logger
 from pytest import mark
 
+from sherpa_ai.actions.base import ActionResource
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
@@ -17,15 +18,15 @@ def test_citation_validation():
     Senate in 1972. As a senator, Biden drafted and led the effort to pass the Violent Crime Control and Law Enforcement Act and the Violence Against Women Act. He also oversaw six U.S. Supreme Court confirmation hearings, including the contentious hearings for Robert Bork and Clarence Thomas. 
     Biden ran unsuccessfully for the Democratic presidential nomination in 1988 and 2008. In 2008, Obama chose Biden as his running mate, and he was a close counselor to Obama during his two terms as vice president. In the 2020 presidential election, Biden and his running mate, Kamala Harris, defeated incumbents Donald Trump and Mike Pence. He became the oldest president in U.S. history, and the first to have a female vice president.
     """
-    data_1 = {"Document": text, "Source": "www.wiki_1.com"}
-    data_2 = {"Document": text, "Source": "www.wiki_2.com"}
+    data_1 = ActionResource(source="www.wiki_1.com", content=text)
+    data_2 = ActionResource(source="www.wiki_2.com", content=text)
     resources = [data_1, data_2]
     module = CitationValidation()
     result = module.add_citations(text, resources)
     assert result.is_valid
     assert result.feedback == ""
-    assert data_1["Source"] in result.result
-    assert data_1["Source"] in result.result
+    assert data_1.source in result.result
+    assert data_1.source in result.result
 
 
 @mark.skip("Placeholder for test we should implement")

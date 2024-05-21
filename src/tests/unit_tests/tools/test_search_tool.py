@@ -13,6 +13,7 @@ def test_formulate_search_query():
 
     assert search_query == f"{query} site:{site}"
 
+
 def test_search_query_includes_gsite_config():
     site = "https://www.google.com"
     config = AgentConfig(verbose=True, gsite=site)

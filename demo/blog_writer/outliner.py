@@ -39,16 +39,24 @@ class Outliner:
         )
         return transcript_chunks
 
-    def transcript2question(self, transcript):
-        system_template = "You are a helpful assistant that reflects on a transcript of podcasts or lectures."
+    def transcript2insights(self, transcript):
+        system_template = "You are a helpful assistant that summarizes transcripts of podcasts or lectures."
         system_prompt = SystemMessagePromptTemplate.from_template(
             system_template
         )
-        human_template = """From the contents and information of the presentation, extract a single, \
-        succinct and clear question which the presentation attempts to answer. Write the question as though \
-        the speaker wrote it himself when outlining the presentation prior to creating it. Only output the question itself and nothing else. \
-        The transcript of this presentation is delimited in triple backticks:
-        ```{transcript}```"""
+        human_template = """From this chunk of a presentation transcript, extract a short list of key insights. \
+            Skip explaining what you're doing, labeling the insights and writing conclusion paragraphs. \
+            The insights have to be phrased as statements of facts with no references to the presentation or the transcript. \
+            Statements have to be full sentences and in terms of words and phrases as close as possible to those used in the transcript. \
+            Keep as much detail as possible. The transcript of the presentation is delimited in triple backticks.
+
+            Desired output format:
+            - [Key insight #1]
+            - [Key insight #2]
+            - [...]
+
+            Transcript:
+            ```{transcript}```"""
         human_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_prompt, human_prompt]
@@ -57,158 +65,84 @@ class Outliner:
         result = self.chat(
             chat_prompt.format_prompt(transcript=transcript).to_messages()
         )
+
         return result.content
 
-    def create_essay_questions(self, transcript_chunks):
-        essay_response = ""
+    def create_essay_insights(self, transcript_chunks, verbose=True):
+        response = ""
         for i, text in enumerate(transcript_chunks):
-            essay = self.transcript2question(text.page_content)
-            essay_response = f"\n\n**Question {i+1}**: ".join(
-                [essay_response, essay]
-            )
-        return essay_response
+            insights = self.transcript2insights(text.page_content)
+            response = "\n".join([response, insights])
+            if verbose:
+                print(
+                    f"\nInsights extracted from chunk {i+1}/{len(transcript_chunks)}:\n{insights}"
+                )
+        return response
 
-    def organize_questions(self, questions):
-        # system_template = """You are a helpful assistant that summarizes and \
-        # processes large text information."""
-        system_template = """You are a helpful technical writer that processes and \
-        organizes large text information."""
+    def create_blueprint(self, statements, verbose=True):
+        system_template = """You are a helpful AI blogger who writes essays on technical topics."""
         system_prompt = SystemMessagePromptTemplate.from_template(
             system_template
         )
 
-        # human_template = """Given the list of questions below (enclosed in triple backticks), come up \
-        #     with a list of topics covered by them, and then output a valid JSON string where each key is a \
-        #     topic and its value is a list of questions from the list below which are relevant to that \
-        #     topic. Sort the topics in a logical order and number the topics (the JSON keys) accordingly. \
-        #     Only output the final JSON object and nothing else.\n
-        human_template = """Given the list of questions below (enclosed in triple backticks), come up with the list of \
-            topics covered by them, sort the topics in a logical order, and then output a valid JSON string where each \
-            key is an enumerated topic (e.g. "1. Topic Name") and the corresponding value is a list of questions from \
-            the list below which are relevant to that topic. Only output the final JSON object and nothing else.\n
-        #     ```{questions}```"""
+        human_template = """Organize the following list of statements (delimited in triple backticks) to create the outline \
+            for a blog post in JSON format. The highest level is the most plausible statement as the overarching thesis \
+            statement of the post, the next layers are statements providing supporting arguments for the thesis statement. \
+            The last layer are pieces of evidence for each of the supporting arguments, directly quoted from the provided \
+            list of statements. Use as many of the provided statements as possible. Keep their wording as is without paraphrasing them. \
+            Retain as many technical details as possible. The thesis statement, supporting arguments, and evidences must be \
+            full sentences containing claims. Label each layer with the appropriate level title and create the desired JSON output format below. \
+            Only output the JSON and skip explaining what you're doing:
+
+            Desired output format:
+            {{
+            "Thesis Statement": "...",
+            "Supporting Arguments": [
+                {{
+                "Argument": "...",
+                "Evidence": [
+                    "...", "...", "...", ...
+                ]
+                }},
+                {{
+                "Argument": "...",
+                "Evidence": [
+                    "...", "...", "...", ...
+                ]
+                }},
+                ...
+            ]
+            }}
+
+            Statements:
+            ```{statements}```"""
         human_prompt = HumanMessagePromptTemplate.from_template(human_template)
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_prompt, human_prompt]
         )
 
         outline = self.chat(
-            chat_prompt.format_prompt(questions=questions).to_messages()
+            chat_prompt.format_prompt(statements=statements).to_messages()
         )
 
+        if verbose:
+            print(f"\nEssay outline: {outline.content}\n")
         return outline.content
 
     # @timer_decorator
-    def full_transcript2blueprint(self, verbose=True):
-        print("Chunking transcript...")
+    def full_transcript2outline_json(self, verbose=True):
+        print("\nChunking transcript...")
         transcript_docs = self.transcript_splitter()
         t1 = time.time()
-        print("Creating essay parts...")
-        chunk_questions = self.create_essay_questions(transcript_docs)
+        print("\nExtracting key insights...")
+        essay_insights = self.create_essay_insights(transcript_docs, verbose)
         t2 = time.time() - t1
-        print("Merging essay parts...")
+        print("\nCreating essay outline...")
         t1 = time.time()
-        blueprint = self.organize_questions(chunk_questions)
+        blueprint = self.create_blueprint(essay_insights, verbose)
         t3 = time.time() - t1
         if verbose:
-            print(f"Created essay parts in {t2:.2f} seconds")
-            print(f"Merged essay parts in {t3:.2f} seconds")
+            print()
+            print(f"Extracted essay insights in {t2:.2f} seconds.")
+            print(f"Created essay blueprint in {t3:.2f} seconds.")
         return blueprint
-
-
-# # """# Part 2: Extracting from essay"""
-
-
-# def extract_metadata_as_json(essay, chat_model=chat):
-
-#     system_template = """ Given the essay delimited in triple backticks, generate and extract important \
-#   information such as the title, speaker, summary, a list of key topics, \
-#   and a list of important takeaways for each topic. \
-#   Format the response as a JSON object, with the keys 'Title', 'Topics', 'Speaker', \
-#   'Summary', and 'Topics' as the keys and each topic will be keys for list of takeaways. \
-#   Example of JSON output: \n \
-#  {{\
-#   'Title': 'Title of the presentation',\
-#   'Speaker': 'John Smith',\
-#   'Summary': 'summary of the presentation',\
-#   'Topics': [\
-#   {{\
-#   'Topic': 'topic 1',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }},\
-#   {{\
-#   'Topic': 'topic 2',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }},\
-#   {{\
-#   'Topic': 'topic 3',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }},\
-#   {{\
-#   'Topic': 'topic 4',\
-#   'Takeaways': [\
-#   'takeaway 1',\
-#   'takeaway 2',\
-#   'takeaway 3'\
-#   ]\
-#   }}\
-#   ]\
-#   }}"""
-
-#     system_prompt = SystemMessagePromptTemplate.from_template(system_template)
-
-#     human_template = """Essay: ```{text}```"""
-
-#     human_prompt = HumanMessagePromptTemplate.from_template(human_template)
-#     chat_prompt = ChatPromptTemplate.from_messages(
-#         [system_prompt, human_prompt]
-#     )
-
-#     result = chat_model(chat_prompt.format_prompt(text=essay).to_messages())
-#     try:
-#         metadata_json = json.loads(result.content)
-#     except Exception as e:
-#         print(e)
-#         metadata_json = result.content
-#     return metadata_json
-
-
-# def json2rst(metadata, rst_filepath):
-#     if not isinstance(metadata, dict):
-#         metadata = json.loads(metadata)
-
-#     # rst_filepath = './essays/test.rst'
-#     with open(rst_filepath, "a") as the_file:
-#         the_file.write("\n\n")
-#         for key, value in metadata.items():
-#             if key == "Title":
-#                 title_mark = "=" * len(f"{value}")
-#                 the_file.write(title_mark + "\n")
-#                 the_file.write(f"{value} \n")
-#                 the_file.write(title_mark + "\n")
-#             elif key == "Speaker":
-#                 the_file.write("*" + f"{value}" + "* \n\n")
-#             elif key == "Summary":
-#                 title_mark = "-" * len(f"{key}")
-#                 the_file.write("Summary \n")
-#                 the_file.write(title_mark + "\n")
-#                 the_file.write(f"{value} \n\n")
-#             elif key == "Topics":
-#                 the_file.write("Topics: \n")
-#                 the_file.write(title_mark + "\n")
-#                 for topic in value:
-#                     the_file.write("\t" + f"{topic['Topic']} \n")
-#                     for takeaway in topic["Takeaways"]:
-#                         the_file.write("\t\t" + f"* {takeaway} \n")
