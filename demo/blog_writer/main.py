@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from sherpa_ai.agents import QAAgent
+from sherpa_ai.agents import UserAgent
 from sherpa_ai.events import EventType
 
 from outliner import Outliner
@@ -32,6 +33,29 @@ def get_qa_agent_from_config_file(
     return qa_agent
 
 
+
+def get_user_agent_from_config_file(
+    config_path: str,
+) -> UserAgent:
+    """
+    Create a UserAgent from a config file.
+
+    Args:
+        config_path: Path to the config file
+
+    Returns:
+        UserAgent: A UserAgent instance
+    """
+
+    config = OmegaConf.load(config_path)
+
+    agent_config = instantiate(config.agent_config)
+    user: UserAgent = instantiate(config.user)
+
+    return user
+
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, default="agent_config.yaml")
@@ -39,6 +63,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     writer_agent = get_qa_agent_from_config_file(args.config)
+    reviewer_agent = get_user_agent_from_config_file(args.config)
 
     outliner = Outliner(args.transcript)
     blueprint = outliner.full_transcript2outline_json(verbose=True)
@@ -52,8 +77,8 @@ if __name__ == "__main__":
     with open("blueprint.json", "w") as f:
         f.write(pure_json_str)
 
-    # with open("blueprint_manual.json", "r") as f:
-    #     pure_json_str = f.read()
+    #with open("blueprint.json", "r") as f:
+    #    pure_json_str = f.read()
 
     parsed_json = json.loads(pure_json_str)
 
@@ -67,6 +92,23 @@ if __name__ == "__main__":
         for evidence in evidences:
             writer_agent.shared_memory.add(EventType.task, "human", evidence)
             result = writer_agent.run()
+
+
+            reviewer_input= "\n" + "Please review the above para generated. Type yes, y and enter if everything looks good. Else tell us what do want to edit." + "\n" + result
+            reviewer_agent.shared_memory.add(EventType.task, "human", reviewer_input)
+            
+            decision = reviewer_agent.run()
+            decision_event= reviewer_agent.shared_memory.get_by_type(EventType.result)
+            decision_content=decision_event[-1].content
+
+            if decision_content == []:
+                break
+            #
+            if decision_content.lower() in ["yes", "y", ""]:
+                pass
+            else:
+                writer_agent.shared_memory.add(EventType.task, "human", decision_content)
+                result = writer_agent.run()
             # writer_agent.belief = Belief()
             blog += f"{result}\n"
 
