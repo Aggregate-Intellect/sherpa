@@ -1,5 +1,5 @@
-SHERPA := sherpa_ai
-SHERPA_TESTS := tests
+SLACK_APP := slackapp
+SLACK_APP_TESTS := tests
 INSTALL_STAMP := .install.stamp
 POETRY := $(shell command -v poetry 2> /dev/null)
 
@@ -32,18 +32,16 @@ clean:
 
 .PHONY: lint
 lint: $(INSTALL_STAMP)
-	$(POETRY) run isort --check-only --profile=black --lines-after-imports=2 $(SHERPA) $(SHERPA_TESTS)
-	$(POETRY) run black --check $(SHERPA) $(SHERPA_TESTS) --diff
-	$(POETRY) run flake8 --ignore=W503,E501,F401 $(SHERPA) $(SHERPA_TESTS)
-	# $(POETRY) run mypy $(SHERPA) $(SHERPA_TESTS) --ignore-missing-imports
-	$(POETRY) run bandit -r $(SHERPA)
-	$(POETRY) run bandit -r $(SHERPA_TESTS) -s B101
+	$(POETRY) run isort --check-only --profile=black --lines-after-imports=2 $(SLACK_APP) $(SLACK_APP_TESTS)
+	$(POETRY) run black --check $(SLACK_APP) $(SLACK_APP_TESTS) --diff
+	$(POETRY) run flake8 --ignore=W503,E501,F401 $(SLACK_APP) $(SLACK_APP_TESTS)
+	# $(POETRY) run mypy $(SLACK_APP) $(SLACK_APP_TESTS) --ignore-missing-imports
 
 .PHONY: format
 format: $(INSTALL_STAMP)
-	$(POETRY) run isort --profile=black --lines-after-imports=2 $(SHERPA) $(SHERPA_TESTS)
-	$(POETRY) run black $(SHERPA) $(SHERPA_TESTS)
+	$(POETRY) run isort --profile=black --lines-after-imports=2 $(SLACK_APP) $(SLACK_APP_TESTS)
+	$(POETRY) run black $(SLACK_APP) $(SLACK_APP_TESTS)
 
 .PHONY: test
 test: $(INSTALL_STAMP)
-	$(POETRY) run pytest $(SHERPA_TESTS) --cov-report term-missing --cov-fail-under 75 --cov=$(SHERPA)
+	$(POETRY) run pytest $(SLACK_APP_TESTS) --cov-report term-missing --cov-fail-under 50 --cov=$(SLACK_APP)

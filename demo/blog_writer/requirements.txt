@@ -1,4 +1,7 @@
+pdfminer.six
+sentence-transformers
 langchain==0.0.332
 python-dotenv>=1.0.0
 openai>=0.28.0
 tiktoken>=0.4.0
+sherpa-ai >= 0.2.1

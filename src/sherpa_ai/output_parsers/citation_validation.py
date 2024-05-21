@@ -1,6 +1,8 @@
 import nltk
+from loguru import logger
 from nltk.tokenize import sent_tokenize, word_tokenize
 
+from sherpa_ai.actions.base import ActionResource
 from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
@@ -151,17 +153,16 @@ class CitationValidation(BaseOutputProcessor):
         sentences = sent_tokenize(paragraph)
         return sentences
 
-    def resources_from_belief(self, belief: Belief) -> list[dict]:
+    def resources_from_belief(self, belief: Belief) -> list[ActionResource]:
         """
         Returns a list of all resources within belief.actions.
         """
         resources = []
         for action in belief.actions:
-            if hasattr(action, "meta") and action.meta is not None and len(action.meta) > 0:
-                resources.extend(action.meta[-1])
+            resources.extend(action.resources)
         return resources
 
-    def process_output(self, text: str, belief: Belief) -> ValidationResult:
+    def process_output(self, text: str, belief: Belief, **kwargs) -> ValidationResult:
         """
          Add citations to sentences in the generated text using resources based on fact checking model.
 
@@ -176,12 +177,9 @@ class CitationValidation(BaseOutputProcessor):
              `result` contains the formatted text with citations.
              `feedback` providing additional optional information.
 
-         Note:
-             The 'resources' list should contain dictionaries with "Document" and "Source" keys.
-
         Typical usage example:
          ```python
-         resources = [{"Document": "Some reference text.", "Source": "http://example.com/source1"}]
+         resources = ActionResource(source="http://example.com/source1", content="Some reference text.")]
          citation_parser = CitationValidation()
          result = citation_parser.parse_output("Text needing citations.", resources)
          ```
@@ -198,7 +196,7 @@ class CitationValidation(BaseOutputProcessor):
 
         return self.add_citations(text, resources)
 
-    def add_citation_to_sentence(self, sentence: str, resources: list[dict]):
+    def add_citation_to_sentence(self, sentence: str, resources: list[ActionResource]):
         """
         Uses a list of resources to add citations to a sentence
 
@@ -214,8 +212,8 @@ class CitationValidation(BaseOutputProcessor):
 
         for index, resource in enumerate(resources):
             cited = False
-            resource_link = resource["Source"]
-            resource_text = resource["Document"]
+            resource_link = resource.source
+            resource_text = resource.content
             resource_sentences = resource_text.split(".")
             # TODO: verify that splitting each sentence on newlines improves citation results
             nested_sentence_lines = [s.split("\n") for s in resource_sentences]

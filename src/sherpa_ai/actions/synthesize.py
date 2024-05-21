@@ -3,6 +3,7 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 
+
 SYNTHESIZE_DESCRIPTION = """{role_description}
 
 Context: {context}
@@ -52,7 +53,6 @@ class SynthesizeOutput(BaseAction):
         )
 
         logger.debug("Prompt: {}", prompt)
-
         result = self.llm.predict(prompt)
         return result
 
