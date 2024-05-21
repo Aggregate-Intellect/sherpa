@@ -33,7 +33,7 @@ class BaseAgent(ABC):
         validations: List[BaseOutputProcessor] = [],
         feedback_agent_name: str = "critic",
         global_regen_max: int = 12,
-        llm: BaseLanguageModel = None
+        llm: BaseLanguageModel = None,
     ):
         self.llm = llm
         self.name = name
@@ -131,25 +131,17 @@ class BaseAgent(ABC):
 
         all_pass = False
         validation_is_scaped = False
-        while_count = 0
+        iteration_count = 0
         result = self.synthesize_output()
-
+        global_regen_count = 0
         # this loop will run until max regeneration reached or all validations have failed
-        while (
-            self.global_regen_max > sum(val.count for val in instantiated_validations)
-            and not all_pass
-        ):
+        while self.global_regen_max > global_regen_count and not all_pass:
             logger.info(f"validations_size: {len(instantiated_validations)}")
-            break_while = False
-            if break_while:
-                break
-            while_count += 1
-            logger.info(f"main_iteration: {while_count}")
-            logger.info(
-                f"regen_count: {sum(val.count for val in instantiated_validations)}"
-            )
-            for x in range(len(instantiated_validations)):
-                validation = instantiated_validations[x]
+            iteration_count += 1
+            logger.info(f"main_iteration: {iteration_count}")
+            logger.info(f"regen_count: {global_regen_count}")
+            for i in range(len(instantiated_validations)):
+                validation = instantiated_validations[i]
                 logger.info(f"validation_running: {validation.__class__.__name__}")
                 logger.info(f"validation_count: {validation.count}")
                 if validation.count < self.validation_steps:
@@ -165,26 +157,29 @@ class BaseAgent(ABC):
                             validation_result.feedback,
                         )
                         result = self.synthesize_output()
+                        global_regen_count += 1
                         break
-                    elif x == len(instantiated_validations) - 1:
+
+                    # if all validations passed then set all_pass to True
+                    elif i == len(instantiated_validations) - 1:
                         result = validation_result.result
                         all_pass = True
                     else:
                         result = validation_result.result
-                elif x == len(instantiated_validations) - 1:
+                # if validation is the last one and surpassed the validation steps limit then finish the loop with all_pass and mention there is a scaped validation.
+                elif i == len(instantiated_validations) - 1:
                     validation_is_scaped = True
                     all_pass = True
                 else:
                     validation_is_scaped = True
-        # if all didn't pass and reached max regeneration run the validation one more time but no regeneration.
-        if validation_is_scaped or self.global_regen_max >= sum(
-            val.count for val in instantiated_validations
-        ):
+
+        # if all didn't pass or validation reached max regeneration run the validation one more time but no regeneration.
+        if validation_is_scaped or self.global_regen_max >= global_regen_count:
             failed_validations = []
 
             for validation in instantiated_validations:
                 validation_result = validation.process_output(
-                    text=result, belief=self.belief , llm=self.llm
+                    text=result, belief=self.belief, llm=self.llm
                 )
                 if not validation_result.is_valid:
                     failed_validations.append(validation)
@@ -197,6 +192,8 @@ class BaseAgent(ABC):
             )
 
         else:
+
+            # check if validation is not passed after all the attempts if so return the error message.
             result += "\n".join(
                 (
                     inst_val.get_failure_message()
