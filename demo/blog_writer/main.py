@@ -3,8 +3,7 @@ from argparse import ArgumentParser
 
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
-from sherpa_ai.agents import QAAgent
-from sherpa_ai.agents import UserAgent
+from sherpa_ai.agents import QAAgent, UserAgent
 from sherpa_ai.events import EventType
 
 from outliner import Outliner
@@ -94,9 +93,11 @@ if __name__ == "__main__":
             result = writer_agent.run()
 
 
-            reviewer_input= "\n" + "Please review the above para generated. Type yes, y and enter if everything looks good. Else tell us what do want to edit." + "\n" + result
+            reviewer_input= "\n" + "Please review the paragraph generated below. Type 'yes', 'y' or simply press Enter \
+                if everything looks good. Else provide feedback on how you would like the paragraph modified." \
+                + "\n\n" + result
             reviewer_agent.shared_memory.add(EventType.task, "human", reviewer_input)
-            
+
             decision = reviewer_agent.run()
             decision_event= reviewer_agent.shared_memory.get_by_type(EventType.result)
             decision_content=decision_event[-1].content
