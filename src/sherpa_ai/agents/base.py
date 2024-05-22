@@ -106,6 +106,57 @@ class BaseAgent(ABC):
         self.shared_memory.add(EventType.result, self.name, result)
         return result
 
+
+    # The validation_iterator function is responsible for iterating through each instantiated validation in the 'instantiated_validations' list.
+    # It performs the necessary validation steps for each validation, updating the belief system and synthesizing output if needed.
+    # It keeps track of the global regeneration count, whether all validations have passed, and if any validation has been escaped.
+    # The function returns the updated global regeneration count, the status of all validations, whether any validation has been escaped, and the synthesized output.
+    def validation_iterator(
+        self,
+        instantiated_validations,
+        global_regen_count,
+        all_pass,
+        validation_is_scaped,
+        result,
+    ):
+    
+        for i in range(len(instantiated_validations)):
+            validation = instantiated_validations[i]
+            logger.info(f"validation_running: {validation.__class__.__name__}")
+            logger.info(f"validation_count: {validation.count}")
+            # this checks if the validator has already exceeded the validation steps limit.
+            if validation.count < self.validation_steps:
+                self.belief.update_internal(EventType.result, self.name, result)
+                validation_result = validation.process_output(
+                    text=result, belief=self.belief, llm=self.llm
+                )
+                logger.info(f"validation_result: {validation_result}")
+                if not validation_result.is_valid:
+                    self.belief.update_internal(
+                        EventType.feedback,
+                        self.feedback_agent_name,
+                        validation_result.feedback,
+                    )
+                    result = self.synthesize_output()
+                    global_regen_count += 1
+                    break
+
+                # if all validations passed then set all_pass to True
+                elif i == len(instantiated_validations) - 1:
+                    result = validation_result.result
+                    all_pass = True
+                else:
+                    result = validation_result.result
+            # if validation is the last one and surpassed the validation steps limit then finish the loop with all_pass and mention there is a scaped validation.
+            elif i == len(instantiated_validations) - 1:
+                validation_is_scaped = True
+                all_pass = True
+            
+            else:
+                # if the validation has already reached the validation steps limit then continue to the next validation.
+                validation_is_scaped = True
+        return global_regen_count, all_pass, validation_is_scaped, result
+
     def validate_output(self):
         """
         Validate the synthesized output through a series of validation steps.
@@ -140,39 +191,16 @@ class BaseAgent(ABC):
             iteration_count += 1
             logger.info(f"main_iteration: {iteration_count}")
             logger.info(f"regen_count: {global_regen_count}")
-            for i in range(len(instantiated_validations)):
-                validation = instantiated_validations[i]
-                logger.info(f"validation_running: {validation.__class__.__name__}")
-                logger.info(f"validation_count: {validation.count}")
-                if validation.count < self.validation_steps:
-                    self.belief.update_internal(EventType.result, self.name, result)
-                    validation_result = validation.process_output(
-                        text=result, belief=self.belief, llm=self.llm
-                    )
-                    logger.info(f"validation_result: {validation_result}")
-                    if not validation_result.is_valid:
-                        self.belief.update_internal(
-                            EventType.feedback,
-                            self.feedback_agent_name,
-                            validation_result.feedback,
-                        )
-                        result = self.synthesize_output()
-                        global_regen_count += 1
-                        break
 
-                    # if all validations passed then set all_pass to True
-                    elif i == len(instantiated_validations) - 1:
-                        result = validation_result.result
-                        all_pass = True
-                    else:
-                        result = validation_result.result
-                # if validation is the last one and surpassed the validation steps limit then finish the loop with all_pass and mention there is a scaped validation.
-                elif i == len(instantiated_validations) - 1:
-                    validation_is_scaped = True
-                    all_pass = True
-                else:
-                    validation_is_scaped = True
-
+            global_regen_count, all_pass, validation_is_scaped, result = (
+                self.validation_iterator(
+                    all_pass=all_pass,
+                    global_regen_count=global_regen_count,
+                    validation_is_scaped=validation_is_scaped,
+                    instantiated_validations=instantiated_validations,
+                    result=result,
+                )
+            )
         # if all didn't pass or validation reached max regeneration run the validation one more time but no regeneration.
         if validation_is_scaped or self.global_regen_max >= global_regen_count:
             failed_validations = []
