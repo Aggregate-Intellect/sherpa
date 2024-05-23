@@ -353,7 +353,7 @@ Now you can run the PDF reader with Google Search by running the following comma
 
 .. code-block:: bash
 
-    python main.py --config agent_config.yml
+    TOKENIZERS_PARALLELISM=false python main.py --config agent_config.yml
 
 You should now be able to ask questions about the content of the PDF file and get answers from the content of the PDF file and Google Search results.
 

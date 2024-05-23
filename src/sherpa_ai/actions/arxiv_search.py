@@ -3,7 +3,6 @@ from typing import Any
 from sherpa_ai.actions.base import BaseRetrievalAction
 from sherpa_ai.tools import SearchArxivTool
 
-
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
 
@@ -27,6 +26,7 @@ class ArxivSearch(BaseRetrievalAction):
     # Override the name and args from BaseAction
     name: str = "ArxivSearch"
     args: dict = {"query": "string"}
+    usage: str = "Search paper on the Arxiv website"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

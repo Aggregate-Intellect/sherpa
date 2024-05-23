@@ -6,9 +6,10 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import CharacterTextSplitter
 
 import sherpa_ai.config as cfg
+from sherpa_ai.connectors.base import BaseVectorDB
 
 
-class ChromaVectorStore:
+class ChromaVectorStore(BaseVectorDB):
     """
     A class used to represent a Chroma Vector Store.
 
@@ -88,29 +89,8 @@ class ChromaVectorStore:
 
         return cls(db)
 
-    @classmethod
-    def file_text_splitter(
-        cls,
-        data,
-        meta_data,
-        content_key="file_content",
-        chunk_size=1000,
-        chunk_overlap=0,
-    ):
-        text_splitter = CharacterTextSplitter(
-            chunk_size=chunk_size, chunk_overlap=chunk_overlap
-        )
-        texts = text_splitter.split_text(data)
-        metadatas = []
-        temp_texts = []
-        for doc in texts:
-            metadatas.append(meta_data)
-            temp_texts.append(f"'{content_key}': '{doc}', {meta_data}")
-
-        return {"texts": temp_texts, "meta_datas": metadatas}
-
     def similarity_search(
-        self, query: str = "", session_id: str = None, number_of_results=2
+        self, query: str = "", session_id: str = None, number_of_results=2, k: int = 1
     ):
         filter = {} if session_id is None else {"session_id": session_id}
         results = self.db.query(
