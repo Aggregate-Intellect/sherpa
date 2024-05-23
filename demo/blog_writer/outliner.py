@@ -3,17 +3,15 @@ import time
 
 import tiktoken
 from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+from langchain.prompts.chat import (ChatPromptTemplate,
+                                    HumanMessagePromptTemplate,
+                                    SystemMessagePromptTemplate)
 from langchain.text_splitter import MarkdownTextSplitter
 
 
 class Outliner:
     def __init__(self, transcript_file) -> None:
-        with open(transcript_file, "r") as f:
+        with open(transcript_file, "r", encoding="utf-8") as f:
             self.raw_transcript = f.read()
         # instantiate chat model
         self.chat = ChatOpenAI(
