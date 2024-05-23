@@ -4,7 +4,6 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 
-
 PLANNING_PROMPT = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
 By analyzing user-defined tasks and agent capabilities, you provides structured plans, enhancing project clarity and efficiency.
 Your adaptability ensures customized solutions for diverse needs.
@@ -66,7 +65,11 @@ class Step:
         task: the task that the agent should execute
     """
 
-    def __init__(self, agent_name: str, task: str):
+    def __init__(
+        self,
+        agent_name: str,
+        task: str,
+    ):
         self.agent_name = agent_name
         self.task = task
 
@@ -116,6 +119,7 @@ class TaskPlanning(BaseAction):
         "last_plan": "string",
         "feedback": "string",
     }
+    usage: str = "Come up with a plan to solve the task"
 
     def execute(
         self,

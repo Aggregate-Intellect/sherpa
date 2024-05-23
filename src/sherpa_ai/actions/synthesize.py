@@ -5,7 +5,6 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 
-
 SYNTHESIZE_DESCRIPTION = """{role_description}
 
 Context: {context}
@@ -40,6 +39,7 @@ class SynthesizeOutput(BaseAction):
     # Override the name and args from BaseAction
     name: str = "SynthesizeOutput"
     args: dict = {"task": "string", "context": "string", "history": "string"}
+    usage: str = "Answer the question using conversation history with the user"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

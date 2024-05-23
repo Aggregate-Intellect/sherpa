@@ -6,7 +6,6 @@ from sherpa_ai.actions.base import BaseRetrievalAction
 from sherpa_ai.connectors.vectorstores import get_vectordb
 from sherpa_ai.tools import ContextTool
 
-
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
 
@@ -30,6 +29,7 @@ class ContextSearch(BaseRetrievalAction):
     # Override the name and args from BaseAction
     name: str = "Context Search"
     args: dict = {"query": "string"}
+    usage: str = "Search the conversation history with the user"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

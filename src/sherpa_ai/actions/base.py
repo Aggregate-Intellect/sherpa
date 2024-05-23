@@ -22,16 +22,14 @@ class ActionResource(BaseModel):
 class BaseAction(ABC, BaseModel):
     name: str
     args: dict
+    usage: str
 
     @abstractmethod
     def execute(self, **kwargs):
         pass
 
     def __str__(self):
-        tool_desc = {
-            "name": self.name,
-            "args": self.args,
-        }
+        tool_desc = {"name": self.name, "args": self.args, "usage": self.usage}
 
         return json.dumps(tool_desc, indent=4)
 

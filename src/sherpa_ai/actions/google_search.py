@@ -6,7 +6,6 @@ from sherpa_ai.actions.base import BaseRetrievalAction
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.tools import SearchTool
 
-
 # TODO check for prompt that keep orginal snetnences
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
@@ -43,6 +42,7 @@ class GoogleSearch(BaseRetrievalAction):
     # Override the name and args from BaseAction
     name: str = "Google Search"
     args: dict = {"query": "string"}
+    usage: str = "Get answers from Google Search"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

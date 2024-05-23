@@ -2,7 +2,6 @@ from typing import Any
 
 from sherpa_ai.actions.base import BaseAction
 
-
 DELIBERATION_DESCRIPTION = """Role Description: {role_description}
 Task Description: {task}
 
@@ -26,6 +25,7 @@ class Deliberation(BaseAction):
     # Override the name and args from BaseAction
     name: str = "Deliberation"
     args: dict = {"task": "string"}
+    usage: str = "Directly come up with a solution"
 
     def execute(self, task: str) -> str:
         prompt = self.description.format(
