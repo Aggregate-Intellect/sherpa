@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
+
 from langchain.docstore.document import Document
 
 
