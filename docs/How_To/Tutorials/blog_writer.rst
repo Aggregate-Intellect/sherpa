@@ -112,5 +112,30 @@ Step 2. Run:
    python main.py --config agent_config.yml --transcript transcript.txt
 
 The blog writer will output verbose feedback to the console as it works
-through the files. The blueprint will be saved as ``blueprint.json`` and
-the final output (blog post) as ``blog.md``.
+through the transcript files.
+
+* In the first step, key insights are extracted from each chunk and output to
+  the console.
+
+* Next, the blueprint for the post is generated and the resulting JSON is output
+  to the console and simultaneously saved as a file named ``blueprint.json`` in
+  the current directory.
+
+* Finally, the blog post is generated from the outline. This step is
+  interactive. For each "evidence" encountered, the Writer agent generates a
+  paragraph and asks the user for feedback. The user can accept the paragraph as
+  is (by typing "yes", "y" or pressing Enter) or provide feedback to the Writer
+  to modify or rewrite the paragraph. The final blog post is saved as the file
+  ``blog.md`` in the current directory.
+
+Revisions and Added Features
+----------------------------
+
+.. list-table::
+  :widths: 20 80
+  :header-rows: 1
+
+  * - Date
+    - Description
+  * - 22-May-2024
+    - Added Human in the Loop (User Agent)
