@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import cached_property
 
 
 @dataclass
@@ -29,18 +30,20 @@ class BaseAction(ABC):
 
     @property
     @abstractmethod
-    def args(self) -> dict:
+    def usage(self) -> str:
         pass
 
     @property
+    @abstractmethod
+    def args(self) -> dict:
+        pass
+
+    @cached_property
     def resources(self) -> list:
         return []
 
     def __str__(self):
-        tool_desc = {
-            "name": self.name,
-            "args": self.args,
-        }
+        tool_desc = {"name": self.name, "args": self.args, "usage": self.usage}
 
         return json.dumps(tool_desc, indent=4)
 

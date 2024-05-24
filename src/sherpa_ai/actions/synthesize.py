@@ -36,6 +36,7 @@ class SynthesizeOutput(BaseAction):
         llm: BaseLanguageModel,
         description: str = SYNTHESIZE_DESCRIPTION,
         add_citation=False,
+        action_usage: str = "Answer the question using conversation history with the user",
     ):
         if add_citation:
             self.description = SYNTHESIZE_DESCRIPTION_CITATION
@@ -43,6 +44,7 @@ class SynthesizeOutput(BaseAction):
             self.description = description
         self.role_description = role_description
         self.llm = llm
+        self.action_usage = action_usage
 
     def execute(self, task: str, context: str, history: str) -> str:
         prompt = self.description.format(
@@ -63,3 +65,7 @@ class SynthesizeOutput(BaseAction):
     @property
     def args(self) -> dict:
         return {"task": "string", "context": "string", "history": "string"}
+
+    @property
+    def usage(self) -> str:
+        return self.action_usage
