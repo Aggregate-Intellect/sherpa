@@ -22,6 +22,7 @@ def mock_request(url, **kwargs):
 @pytest.fixture
 def mock_requests(external_api: bool):
     if external_api:
+        yield
         return
 
     with mock.patch("requests.get") as mock_get, mock.patch(
