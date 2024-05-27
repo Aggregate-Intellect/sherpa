@@ -15,7 +15,7 @@ class PromptReconstructor:
     and rewrites the question to incorporate a summary of the scraped URLs.
     """
 
-    def __init__(self, question, slack_message):
+    def __init__(self, question, slack_message, llm):
         """
         Initialize the PromptReconstructor with a question and a Slack message.
 
@@ -26,8 +26,9 @@ class PromptReconstructor:
 
         self.question = question
         self.slack_message = slack_message
+        self.llm = llm
 
-    def reconstruct_prompt(self, user_id=None):
+    def reconstruct_prompt(self):
         """
         Reconstruct the prompt based on the question and the last Slack message.
 
@@ -68,7 +69,7 @@ class PromptReconstructor:
                         link=link,
                         question=question,
                         text_data=scraped_data["data"],
-                        user_id=user_id,
+                        llm=self.llm,
                     )
 
                     while (
@@ -79,7 +80,7 @@ class PromptReconstructor:
                             link=link,
                             question=question,
                             text_data=chunk_summary,
-                            user_id=user_id,
+                            llm=self.llm,
                         )
 
                     final_summary.append({"data": chunk_summary, "link": link})

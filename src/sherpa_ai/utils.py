@@ -121,22 +121,12 @@ def count_string_tokens(string: str, model_name: str) -> int:
     return len(encoding.encode(string))
 
 
-def chunk_and_summarize(
-    text_data: str,
-    question: str,
-    link: str,
-    user_id: str = None,
-):
-    llm = SherpaOpenAI(
-        temperature=cfg.TEMPERATURE,
-        openai_api_key=cfg.OPENAI_API_KEY,
-        user_id=user_id,
-    )
+def chunk_and_summarize(text_data: str, question: str, link: str, llm):
 
     instruction = (
         "include any information that can be used to answer the "
-        "question '{question}' the given literal text is a data "
-        "from the link {link}. Do not directly answer the question itself"
+        f"question '{question}' the given literal text is a data "
+        f"from the link {link}. Do not directly answer the question itself"
     )
 
     text_splitter = TokenTextSplitter(chunk_size=3000, chunk_overlap=0)
@@ -161,19 +151,16 @@ def chunk_and_summarize_file(
     question: str,
     file_name: str,
     file_format: str,
+    llm,
     title: str = None,
-    user_id: str = None,
 ):
-    llm = SherpaOpenAI(
-        temperature=cfg.TEMPERATURE, openai_api_key=cfg.OPENAI_API_KEY, user_id=user_id
-    )
 
     title = f",title {title} " if title is not None else ""
 
     instruction = (
-        "include any information that can be used to answer the "
-        "question '{question}' the given literal text is a data "
-        "from the file named {file_name} {title} and file format {file_format} . Do not directly answer the question itself"
+        f"include any information that can be used to answer the "
+        f"question '{question}' the given literal text is a data "
+        f"from the file named {file_name} {title} and file format {file_format} . Do not directly answer the question itself"
     )
     text_splitter = TokenTextSplitter(chunk_size=3000, chunk_overlap=0)
     chunked_text = text_splitter.split_text(text_data)

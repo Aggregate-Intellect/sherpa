@@ -170,6 +170,7 @@ def file_event_handler(say, files, user_id, thread_ts, question):
         user_id=user_id,
         files=files,
         token=cfg.SLACK_OAUTH_TOKEN,
+        llm=llm,
     )
     file_prompt_data = file_prompt.reconstruct_prompt_with_file()
     if file_prompt_data["status"] == "success":
@@ -217,6 +218,12 @@ def event_test(client, say, event):
     # only will be executed if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
     # users with a daily limitation can be allowed to use in a different workspace
+    llm = SherpaChatOpenAI(
+        openai_api_key=cfg.OPENAI_API_KEY,
+        user_id=user_id,
+        team_id=team_id,
+        temperature=cfg.TEMPERATURE,
+    )
 
     if can_execute:
         if "files" in event:
@@ -227,6 +234,7 @@ def event_test(client, say, event):
                 thread_ts=thread_ts,
                 user_id=combined_id,
                 question=question,
+                llm=llm,
             )
             if file_event["status"] == "error":
                 return
