@@ -10,22 +10,25 @@ import sqlite3
 
 user_id = "test_id"
 
+TEST_DB_NAME = "test_usage.db"
+TEST_DB_URL = "sqlite:///test_usage.db"
+
 
 @pytest.fixture
 def db_setup_teardown():
-    if os.path.exists("test_usage.db"):
-        os.remove("test_usage.db")
+    if os.path.exists(TEST_DB_NAME):
+        os.remove(TEST_DB_NAME)
     yield
 
-    if os.path.exists("test_usage.db"):
-        os.remove("test_usage.db")
+    if os.path.exists(TEST_DB_NAME):
+        os.remove(TEST_DB_NAME)
 
 
 @pytest.fixture
 def db_setup_s3_bucket():
 
     db_path = "./tests/data/test_usage_counter.db"
-    if not os.path.exists("./tests/data/test_usage_counter.db"):
+    if not os.path.exists(db_path):
         conn = sqlite3.connect(db_path)
         conn.close()
         print(f"Database file '{db_path}' created successfully.")
@@ -34,17 +37,17 @@ def db_setup_s3_bucket():
         os.remove(db_path)
 
 
-def test_usage_tracker_whitelist_add_and_get(db_setup_teardown):
-    db = UserUsageTracker(db_name="test_usage.db", db_url="sqlite:///test_usage.db")
+def test_usage_tracker_add_to_whitelist(db_setup_teardown):
+    db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
     db.add_to_whitelist(user_id=user_id)
     white_listed_id = db.get_all_whitelisted_ids()
     assert user_id in white_listed_id
 
 
-def test_usage_checker(db_setup_teardown):
+def test_check_usage_limits_remaining_tokens(db_setup_teardown):
     db = UserUsageTracker(
-        db_name="test_usage.db",
-        db_url="sqlite:///test_usage.db",
+        db_name=TEST_DB_NAME,
+        db_url=TEST_DB_URL,
     )
     db.max_daily_token = 2000
     db.limit_time_size_in_hours = 0.1
@@ -59,7 +62,7 @@ def test_usage_checker(db_setup_teardown):
 
 
 def test_usage_reset_after_a_given_time(db_setup_teardown):
-    db = UserUsageTracker(db_name="test_usage.db", db_url="sqlite:///test_usage.db")
+    db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
     db.max_daily_token = 2000
     db.limit_time_size_in_hours = 0.001  # 3.6 seconds
     db.check_usage(token_amount="2000", user_id="jack")
@@ -125,14 +128,12 @@ def test_whitelist_from_s3(
     mock_upload_to_s3_from_s3,
     db_setup_teardown,
 ):
-    db = UserUsageTracker(db_name="test_usage.db", db_url="sqlite:///test_usage.db")
+    db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
     db.add_to_whitelist(user_id=user_id)
     db.upload_to_s3()
-    os.remove("test_usage.db")
-    UserUsageTracker.download_from_s3(
-        db_name="test_usage.db", db_url="sqlite:///test_usage.db"
-    )
-    db2 = UserUsageTracker(db_name="test_usage.db", db_url="sqlite:///test_usage.db")
+    os.remove(TEST_DB_NAME)
+    UserUsageTracker.download_from_s3(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
+    db2 = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
     white_listed_id = db2.get_all_whitelisted_ids()
     assert user_id in white_listed_id
 
@@ -147,8 +148,8 @@ def test_user_message_logger(db_setup_teardown):
 
     logger = TestLogger()
     db = UserUsageTracker(
-        db_name="test_usage.db",
-        db_url="sqlite:///test_usage.db",
+        db_name=TEST_DB_NAME,
+        db_url=TEST_DB_URL,
         verbose_logger=logger,
     )
 
@@ -156,6 +157,6 @@ def test_user_message_logger(db_setup_teardown):
     db.limit_time_size_in_hours = 9
 
     db.check_usage(token_amount="740", user_id="jack")
-    assert logger.message == "", "it should not rich its 75% limit"
+    assert logger.message == "", "it should not reach its 75% limit"
     db.check_usage(token_amount="11", user_id="jack")
     assert len(logger.message) > 0, "user should get a message at this amount."
