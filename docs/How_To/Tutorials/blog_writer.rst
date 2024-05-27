@@ -109,7 +109,7 @@ Step 2. Run:
 
 .. code:: bash
 
-   python main.py --config agent_config.yml
+   python main.py --config agent_config.yml  --transcript transcript.txt
 
 The blog writer will output verbose feedback to the console as it works
 through the files. The blueprint will be saved as ``blueprint.json`` and

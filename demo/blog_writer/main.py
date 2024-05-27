@@ -11,12 +11,10 @@ from outliner import Outliner
 
 #create Output folder
 directory_name = "Output"
-
-# Create the directory
-try:
+if not os.path.exists(directory_name):
     os.mkdir(directory_name)
     print(f"Directory '{directory_name}' created successfully.")
-except FileExistsError:
+else:
     print(f"Directory '{directory_name}' already exists.")
     
 # from sherpa_ai.memory import Belief
@@ -47,7 +45,14 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default="agent_config.yaml")
     parser.add_argument("--transcript", type=str, default="transcript.txt")
     args = parser.parse_args()
+    
+    # Extract base name from transcript filename
+    base_name = os.path.splitext(os.path.basename(args.transcript))[0]
 
+    # Define dynamic output paths
+    json_output_path = f"Output/blueprint_{base_name}.json"
+    md_output_path = f"Output/blog_{base_name}.md"
+    
     writer_agent = get_qa_agent_from_config_file(args.config)
 
     outliner = Outliner(args.transcript)
@@ -80,7 +85,7 @@ if __name__ == "__main__":
             # writer_agent.belief = Belief()
             blog += f"{result}\n"
 
-    with open("Output/blog.md", "w") as f:
+    with open(md_output_path, "w") as f:
         f.write(blog)
 
     print("\nBlog generated successfully!\n")
