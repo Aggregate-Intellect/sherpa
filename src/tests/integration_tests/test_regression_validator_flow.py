@@ -51,10 +51,10 @@ def test_regression_validator_flow(
         agent_pool=None,
     )
 
-    entity_validation = EntityValidation
-    number_validation = NumberValidation
-    number_validation_two = NumberValidation
-    citation_validation = CitationValidation
+    entity_validation = EntityValidation()
+    number_validation = NumberValidation()
+    number_validation_two = NumberValidation()
+    citation_validation = CitationValidation()
     with patch.object(SearchTool, "_run", return_value=data):
         task_agent = QAAgent(
             llm=llm,
@@ -82,7 +82,7 @@ def test_regression_validator_flow(
         logger.info(results[0].content)
         final_result = results[0].content
 
-        if not entity_validation().get_failure_message() in final_result:
+        if not entity_validation.get_failure_message() in final_result:
             result_entities = [s.lower() for s in extract_entities(results[0].content)]
             expected_entities = [s.lower() for s in expected_entities]
             for entity in expected_entities:
@@ -96,7 +96,7 @@ def test_regression_validator_flow(
 
                 if not match_found:
                     assert False, entity + " was not found in resource"
-        if not number_validation().get_failure_message() in final_result:
+        if not number_validation.get_failure_message() in final_result:
             for number in expected_number:
                 if not number in combined_number_extractor(results[0].content):
                     assert False, number + " was not found in resource"
