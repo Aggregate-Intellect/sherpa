@@ -5,6 +5,7 @@ import pytest
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
 from sherpa_ai.test_utils.llms import get_llm
 
+
 # Assuming that 'your_module' contains the 'PromptReconstructor' class
 
 
@@ -33,12 +34,12 @@ def test_reconstruct_prompt_with_link_inside_succeeds(
     mock_get_link_from_slack_client_conversation,
     mock_scrape_with_url,
     mock_chunk_and_summarize,
-    get_llm
+    get_llm,
 ):
     question = "Here's a <https://google.com>"
     slack_message = ""
     llm = get_llm(__file__, test_reconstruct_prompt_with_link_inside_succeeds.__name__)
-    reconstructor = PromptReconstructor(question, slack_message , llm)
+    reconstructor = PromptReconstructor(question, slack_message, llm)
     with patch(
         "sherpa_ai.scrape.prompt_reconstructor.chunk_and_summarize",
         return_value=mock_chunk_and_summarize,

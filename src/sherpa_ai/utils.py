@@ -122,7 +122,6 @@ def count_string_tokens(string: str, model_name: str) -> int:
 
 
 def chunk_and_summarize(text_data: str, question: str, link: str, llm):
-
     instruction = (
         "include any information that can be used to answer the "
         f"question '{question}' the given literal text is a data "
@@ -154,7 +153,6 @@ def chunk_and_summarize_file(
     llm,
     title: str = None,
 ):
-
     title = f",title {title} " if title is not None else ""
 
     instruction = (
