@@ -54,6 +54,9 @@ class BaseOutputProcessor(ABC):
 
     count: int = 0
 
+    def reset_state(self):
+        self.count = 0
+
     @abstractmethod
     def process_output(self, text: str, **kwargs) -> ValidationResult:
         """
