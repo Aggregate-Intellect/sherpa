@@ -1,9 +1,8 @@
 import time
 
 import boto3
-import sqlalchemy.orm
-from anyio import Path
-from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, create_engine
+from sqlalchemy import Boolean, Column, Integer, String, create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 import sherpa_ai.config as cfg
@@ -46,6 +45,8 @@ class UserUsageTracker:
         s3_file_key="token_counter.db",
         bucket_name="sherpa-sqlight",
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
+        engine=None,
+        session=None,
     ):
         """
         Initialize the UserUsageTracker.
@@ -56,15 +57,19 @@ class UserUsageTracker:
         """
         self.db_name = db_name
         self.db_url = db_url
-        self.engine = create_engine(self.db_url)
-        Session = sessionmaker(bind=self.engine)
-        self.session = Session()
+        self.engine = engine or create_engine(self.db_url)
+        if session:
+            self.session = session
+        else:
+            Session = sessionmaker(bind=self.engine)
+            self.session = Session()
+
         self.create_table()
         self.max_daily_token = cfg.DAILY_TOKEN_LIMIT
         self.verbose_logger = verbose_logger
         self.is_reminded = False
         self.usage_percentage_allowed = 75
-        self.limit_time_size_in_hours = cfg.LIMIT_TIME_SIZE_IN_HOURS
+        self.limit_time_size_in_hours = float(cfg.LIMIT_TIME_SIZE_IN_HOURS or 24)
         self.bucket_name = bucket_name
         self.s3_file_key = s3_file_key
         self.local_file_path = f"./{self.db_name}"
@@ -79,7 +84,7 @@ class UserUsageTracker:
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
         """
-        Download a file from Amazon S3.
+        Download usage tracking database from Amazon S3 to local file.
 
         Args:
             bucket_name (str): Name of the S3 bucket.
@@ -104,7 +109,7 @@ class UserUsageTracker:
 
     def upload_to_s3(self):
         """
-        Upload a file to Amazon S3.
+        Upload usage tracking database file from local file to Amazon S3.
 
         Args:
             local_file_path (str): Local path of the file to be uploaded.
@@ -435,10 +440,10 @@ class UserUsageTracker:
                     user_id=user_id
                 )
 
-                if self.max_daily_token - total_token_since_last_reset <= 0:
+                remaining_tokens = self.max_daily_token - total_token_since_last_reset
+                if remaining_tokens <= 0:
                     return {
-                        "token-left": self.max_daily_token
-                        - total_token_since_last_reset,
+                        "token-left": remaining_tokens,
                         "can_execute": False,
                         "message": "daily usage limit exceeded. you can try after 24 hours",
                         "time_left": self.seconds_to_hms(time_since_last_reset),
@@ -446,8 +451,7 @@ class UserUsageTracker:
                 else:
                     self.add_and_check_data(user_id=user_id, token=token_amount)
                     return {
-                        "token-left": self.max_daily_token
-                        - total_token_since_last_reset,
+                        "token-left": remaining_tokens,
                         "current_token": token_amount,
                         "can_execute": True,
                         "message": "",

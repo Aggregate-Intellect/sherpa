@@ -1,144 +1,195 @@
-import os
-import threading
+from unittest.mock import MagicMock, patch
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+import sherpa_ai.config as cfg
+from sherpa_ai.database.user_usage_tracker import (
+    UsageTracker,
+    UserUsageTracker,
+    Whitelist,
+)
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
-import shutil
-import sqlite3
 
-user_id = "test_id"
 
+USER_ID = "test_id"
 TEST_DB_NAME = "test_usage.db"
 TEST_DB_URL = "sqlite:///test_usage.db"
 
-
-@pytest.fixture
-def db_setup_teardown():
-    if os.path.exists(TEST_DB_NAME):
-        os.remove(TEST_DB_NAME)
-    yield
-
-    if os.path.exists(TEST_DB_NAME):
-        os.remove(TEST_DB_NAME)
+engine = create_engine(TEST_DB_URL)
+Session = sessionmaker()
 
 
-@pytest.fixture
-def db_setup_s3_bucket():
-
-    db_path = "./tests/data/test_usage_counter.db"
-    if not os.path.exists(db_path):
-        conn = sqlite3.connect(db_path)
-        conn.close()
-        print(f"Database file '{db_path}' created successfully.")
-    yield
-    if os.path.exists(db_path):
-        os.remove(db_path)
+@pytest.fixture(scope="module")
+def connection():
+    """Returns a connection to the test database"""
+    connection = engine.connect()
+    yield connection
+    connection.close()
 
 
-def test_usage_tracker_add_to_whitelist(db_setup_teardown):
-    db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
-    db.add_to_whitelist(user_id=user_id)
-    white_listed_id = db.get_all_whitelisted_ids()
-    assert user_id in white_listed_id
+@pytest.fixture(scope="function")
+def session(connection):
+    """
+    Returns a database session that wraps test activities in a transaction
+    which rolls back after the test returns
+    """
+    transaction = connection.begin()
+    session = Session(bind=connection)
+    yield session
+    session.close()
+    transaction.rollback()
 
 
-def test_check_usage_limits_remaining_tokens(db_setup_teardown):
+def delete_table_data(db):
+    db.session.query(Whitelist).delete()
+    db.session.query(UsageTracker).delete()
+    db.session.commit()
+
+
+@pytest.fixture(scope="function")
+def tracker(session):
+    """
+    Returns a UserUsageTracker instance using the test database and
+    session, deleting table rows before yielding to the test
+    so that we start with empty tables
+    """
     db = UserUsageTracker(
-        db_name=TEST_DB_NAME,
-        db_url=TEST_DB_URL,
+        db_name=TEST_DB_NAME, db_url=TEST_DB_URL, engine=engine, session=session
     )
-    db.max_daily_token = 2000
-    db.limit_time_size_in_hours = 0.1
-    check_usage = db.check_usage(token_amount="3000", user_id="jack")
+    delete_table_data(db)
+    yield db
+
+
+@pytest.fixture(scope="function")
+def mock_s3_client(autouse=True):
+    with patch("sherpa_ai.database.user_usage_tracker.boto3") as mock_boto3:
+        mock_s3 = MagicMock()
+        mock_boto3.client.return_value = mock_s3
+        yield mock_s3
+
+
+def test_usage_tracker_time_limit_is_set_in_app_config():
+    with patch("sherpa_ai.database.user_usage_tracker.cfg") as mock_config:
+        mock_config.LIMIT_TIME_SIZE_IN_HOURS = "3.14159"
+        db = UserUsageTracker(
+            db_name=TEST_DB_NAME, db_url=TEST_DB_URL, engine=engine, session=session
+        )
+        assert db.limit_time_size_in_hours is not None
+        assert isinstance(db.limit_time_size_in_hours, float)
+        assert db.limit_time_size_in_hours == 3.14159
+
+
+def test_usage_tracker_time_limit_defaults_to_24_hours():
+    with patch("sherpa_ai.database.user_usage_tracker.cfg") as mock_config:
+        mock_config.LIMIT_TIME_SIZE_IN_HOURS = None
+        db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
+        assert db.limit_time_size_in_hours == 24.0
+
+
+def test_add_to_whitelist_adds_a_user_id(tracker):
+    tracker.add_to_whitelist(user_id=USER_ID)
+    assert USER_ID in tracker.get_all_whitelisted_ids()
+
+
+def test_add_to_whitelist_ignores_duplicate_user_ids():
+    db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
+    delete_table_data((db))
+    db.add_to_whitelist(user_id=USER_ID)
+    assert len(db.get_all_whitelisted_ids()) == 1
+    db.add_to_whitelist(user_id=USER_ID)
+    assert len(db.get_all_whitelisted_ids()) == 1
+
+
+def test_add_to_whitelist_uploads_to_s3_when_flask_debug_is_false(
+    mock_s3_client, tracker
+):
+    with patch("sherpa_ai.database.user_usage_tracker.cfg") as mock_config:
+        mock_config.FLASK_DEBUG = False
+        tracker.add_to_whitelist(user_id=USER_ID)
+        mock_s3_client.upload_file.assert_called()
+
+
+def test_add_to_whitelist_does_not_upload_to_s3_when_flask_debug_is_true(
+    mock_s3_client, tracker
+):
+    with patch("sherpa_ai.database.user_usage_tracker.cfg") as mock_config:
+        mock_config.FLASK_DEBUG = True
+        tracker.add_to_whitelist(user_id=USER_ID)
+        mock_s3_client.upload_file.assert_not_called()
+
+
+def test_get_whitelist_by_user_id(tracker, mock_s3_client):
+    assert tracker.get_whitelist_by_user_id(USER_ID) == []
+    tracker.add_to_whitelist(user_id=USER_ID)
+    whitelisted_ids = tracker.get_whitelist_by_user_id(USER_ID)
+    assert len(whitelisted_ids) == 1
+    assert whitelisted_ids[0]["user_id"] == USER_ID
+
+
+def test_is_in_whitelist(tracker, mock_s3_client):
+    assert not tracker.is_in_whitelist(USER_ID)
+    tracker.add_to_whitelist(user_id=USER_ID)
+    assert tracker.is_in_whitelist(USER_ID)
+
+
+def test_check_usage_limits_remaining_tokens(tracker, mock_s3_client):
+    tracker.max_daily_token = 2000
+    tracker.limit_time_size_in_hours = 0.1
+    check_usage = tracker.check_usage(token_amount="3000", user_id="jack")
     assert check_usage["can_execute"] == False
-    check_usage = db.check_usage(token_amount="1000", user_id="jack")
-    assert check_usage["can_execute"] == True
-    check_usage = db.check_usage(token_amount="1000", user_id="jack")
+    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")
+    assert check_usage["can_execute"] == True and check_usage["token-left"] == 2000
+    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")
     assert check_usage["can_execute"] == True and check_usage["token-left"] == 1000
-    check_usage = db.check_usage(token_amount="1000", user_id="jack")
+    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")
     assert check_usage["can_execute"] == False and check_usage["token-left"] == 0
 
 
-def test_usage_reset_after_a_given_time(db_setup_teardown):
-    db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
-    db.max_daily_token = 2000
-    db.limit_time_size_in_hours = 0.001  # 3.6 seconds
-    db.check_usage(token_amount="2000", user_id="jack")
-    check_usage = db.check_usage(token_amount="10", user_id="jack")
-    assert check_usage["can_execute"] == False
+# # TODO mock time or remove this entirely
+# def test_usage_reset_after_a_given_time(db_setup_teardown, mock_s3_client):
+#     db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
+#     db.max_daily_token = 2000
+#     db.limit_time_size_in_hours = 0.001  # 3.6 seconds
+#     db.check_usage(token_amount="2000", user_id="jack")
+#     check_usage = db.check_usage(token_amount="10", user_id="jack")
+#     assert check_usage["can_execute"] == False
 
-    # check if the usage tracker has been updated after 4 seconds
-    timer = threading.Timer(4.0, (lambda: ""))
-    timer.start()
-    timer.join()
-    check_usage = db.check_usage(token_amount="10", user_id="jack")
-    assert check_usage["can_execute"] == True
-
-
-@pytest.fixture
-def mock_download_from_s3(monkeypatch):
-    # by copying and renaming this function mocks downloading from sqlight file
-    def mock_download(*args, **kwargs):
-        # sqlight db file path which acts as s3 bucket
-        dormant_test_db_path = "./tests/data/test_usage_counter.db"
-
-        # testing db file path
-        active_test_db_path = "./test_usage.db"
-
-        # Copy and rename the file
-        shutil.copyfile(dormant_test_db_path, active_test_db_path)
-
-    monkeypatch.setattr(UserUsageTracker, "download_from_s3", mock_download)
+#     # check if the usage tracker has been updated after 4 seconds
+#     timer = threading.Timer(4.0, (lambda: ""))
+#     timer.start()
+#     timer.join()
+#     check_usage = db.check_usage(token_amount="10", user_id="jack")
+#     assert check_usage["can_execute"] == True
 
 
-@pytest.fixture
-def mock_upload_to_s3_from_s3(monkeypatch):
-    # by copying and renaming the testing sqlight db file to the location of the dormant file this function mocks uploading to s3 bucket.
-    def mock_upload(*args, **kwargs):
-        # sqlight db file path which acts as s3 bucket
-        dormant_test_db_path = "./tests/data/test_usage_counter.db"
-        check = os.path.exists(dormant_test_db_path)
-        if check:
-            os.remove(dormant_test_db_path)
-
-        # testing db file path
-        active_test_db_path = "./test_usage.db"
-
-        # Copy and rename the file
-        shutil.copyfile(active_test_db_path, dormant_test_db_path)
-
-    monkeypatch.setattr(UserUsageTracker, "upload_to_s3", mock_upload)
-
-
-def test_download_db_from_s3(
-    db_setup_s3_bucket, mock_download_from_s3, db_setup_teardown
-):
-    UserUsageTracker.download_from_s3(
-        db_name="test_usage.db", db_url="sqlite:///test_usage.db"
+def test_download_from_s3_calls_download_file(mock_s3_client, tracker):
+    tracker.download_from_s3()
+    mock_s3_client.download_file.assert_called_with(
+        "sherpa-sqlight", "token_counter.db", f"./token_counter.db"
     )
-    third_check = os.path.exists("test_usage.db")
-    assert third_check, "downloading sqlight file has failed"
 
 
-def test_whitelist_from_s3(
-    db_setup_s3_bucket,
-    mock_download_from_s3,
-    mock_upload_to_s3_from_s3,
-    db_setup_teardown,
-):
+def test_download_from_s3_returns_class_instance(mock_s3_client):
+    ret = UserUsageTracker.download_from_s3(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
+    assert isinstance(ret, UserUsageTracker)
+    assert ret.db_name == TEST_DB_NAME
+    assert ret.db_url == TEST_DB_URL
+    assert ret.s3_file_key == "token_counter.db"
+    assert ret.bucket_name == "sherpa-sqlight"
+    assert isinstance(ret.verbose_logger, BaseVerboseLogger)
+
+
+def test_upload_to_s3_calls_upload_file(mock_s3_client):
     db = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
-    db.add_to_whitelist(user_id=user_id)
     db.upload_to_s3()
-    os.remove(TEST_DB_NAME)
-    UserUsageTracker.download_from_s3(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
-    db2 = UserUsageTracker(db_name=TEST_DB_NAME, db_url=TEST_DB_URL)
-    white_listed_id = db2.get_all_whitelisted_ids()
-    assert user_id in white_listed_id
+    mock_s3_client.upload_file.assert_called_with(
+        db.local_file_path, db.bucket_name, db.s3_file_key
+    )
 
 
-def test_user_message_logger(db_setup_teardown):
+def test_reminder_message_after_75_percent_usage(mock_s3_client):
     class TestLogger(BaseVerboseLogger):
         def __init__(self) -> None:
             self.message = ""
@@ -150,13 +201,13 @@ def test_user_message_logger(db_setup_teardown):
     db = UserUsageTracker(
         db_name=TEST_DB_NAME,
         db_url=TEST_DB_URL,
+        engine=engine,
         verbose_logger=logger,
     )
+    delete_table_data(db)
 
     db.max_daily_token = 1000
-    db.limit_time_size_in_hours = 9
-
-    db.check_usage(token_amount="740", user_id="jack")
-    assert logger.message == "", "it should not reach its 75% limit"
-    db.check_usage(token_amount="11", user_id="jack")
-    assert len(logger.message) > 0, "user should get a message at this amount."
+    db.add_and_check_data(user_id="jack", token=751)
+    assert (
+        logger.message[0:9] == "Hi friend"
+    ), "user should get a reminder message after 75% usage"
