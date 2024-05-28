@@ -1,6 +1,7 @@
 import time
 
 import boto3
+from loguru import logger
 from sqlalchemy import Boolean, Column, Integer, String, create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -8,8 +9,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-from loguru import logger
-import boto3
+
 
 Base = declarative_base()
 
@@ -140,7 +140,7 @@ class UserUsageTracker:
         try:
             self.session.add(user)
             self.session.commit()
-        except IntegrityError as e:
+        except IntegrityError:
             logger.warning(f"Ignoring user ID {user_id}, already whitelisted")
             self.session.rollback()
 
@@ -424,7 +424,7 @@ class UserUsageTracker:
                     "time_left": "",
                 }
 
-            if time_since_last_reset == None or (
+            if time_since_last_reset is None or (
                 time_since_last_reset != 0
                 and time_since_last_reset > 3600 * float(self.limit_time_size_in_hours)
             ):

@@ -137,14 +137,16 @@ def test_is_in_whitelist(tracker, mock_s3_client):
 def test_check_usage_limits_remaining_tokens(tracker, mock_s3_client):
     tracker.max_daily_token = 2000
     tracker.limit_time_size_in_hours = 0.1
-    check_usage = tracker.check_usage(token_amount="3000", user_id="jack")
-    assert check_usage["can_execute"] == False
-    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")
-    assert check_usage["can_execute"] == True and check_usage["token-left"] == 2000
-    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")
-    assert check_usage["can_execute"] == True and check_usage["token-left"] == 1000
-    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")
-    assert check_usage["can_execute"] == False and check_usage["token-left"] == 0
+    check_usage = tracker.check_usage(token_amount="3000", user_id="jack")  # nosec B106
+    assert check_usage["can_execute"] is False
+    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")  # nosec B106
+    assert (
+        check_usage["can_execute"] is True and check_usage["token-left"] == 2000
+    )  # nosec B106
+    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")  # nosec B106
+    assert check_usage["can_execute"] is True and check_usage["token-left"] == 1000
+    check_usage = tracker.check_usage(token_amount="1000", user_id="jack")  # nosec B106
+    assert check_usage["can_execute"] is False and check_usage["token-left"] == 0
 
 
 # # TODO mock time or remove this entirely
@@ -154,20 +156,20 @@ def test_check_usage_limits_remaining_tokens(tracker, mock_s3_client):
 #     db.limit_time_size_in_hours = 0.001  # 3.6 seconds
 #     db.check_usage(token_amount="2000", user_id="jack")
 #     check_usage = db.check_usage(token_amount="10", user_id="jack")
-#     assert check_usage["can_execute"] == False
+#     assert check_usage["can_execute"] is False
 
 #     # check if the usage tracker has been updated after 4 seconds
 #     timer = threading.Timer(4.0, (lambda: ""))
 #     timer.start()
 #     timer.join()
 #     check_usage = db.check_usage(token_amount="10", user_id="jack")
-#     assert check_usage["can_execute"] == True
+#     assert check_usage["can_execute"] is True
 
 
 def test_download_from_s3_calls_download_file(mock_s3_client, tracker):
     tracker.download_from_s3()
     mock_s3_client.download_file.assert_called_with(
-        "sherpa-sqlight", "token_counter.db", f"./token_counter.db"
+        "sherpa-sqlight", "token_counter.db", "./token_counter.db"
     )
 
 
