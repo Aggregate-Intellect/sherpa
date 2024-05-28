@@ -33,7 +33,7 @@ class Whitelist(Base):
     __tablename__ = "whitelist"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String)
+    user_id = Column(String, unique=True)
 
 
 class UserUsageTracker:
@@ -132,8 +132,13 @@ class UserUsageTracker:
         """
 
         user = Whitelist(user_id=user_id)
-        self.session.add(user)
-        self.session.commit()
+        try:
+            self.session.add(user)
+            self.session.commit()
+        except IntegrityError as e:
+            logger.warning(f"Ignoring user ID {user_id}, already whitelisted")
+            self.session.rollback()
+
         if not cfg.FLASK_DEBUG:
             self.upload_to_s3()
 
