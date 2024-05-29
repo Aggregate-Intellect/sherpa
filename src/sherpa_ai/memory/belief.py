@@ -1,6 +1,6 @@
 from typing import Callable, List, Optional
 
-from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import Event, EventType
 
 
@@ -133,6 +133,12 @@ class Belief:
 
     def set_actions(self, actions: List[BaseAction]):
         self.actions = actions
+
+        # TODO: This is a quick an dirty way to set the current task
+        # in actions, need to find a better way
+        for action in actions:
+            if type(action) is BaseRetrievalAction:
+                action.current_task = self.current_task
 
     @property
     def action_description(self):

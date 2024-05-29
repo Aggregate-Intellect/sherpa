@@ -12,7 +12,6 @@ from typing_extensions import Literal
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
 
-
 HTTP_GET_TIMEOUT = 2.5
 
 
@@ -83,7 +82,7 @@ class SearchArxivTool(BaseTool):
         logger.debug(f"Arxiv Search Result: {result_list}")
 
         if return_resources:
-            return result, resources
+            return resources
         else:
             return result
 
@@ -102,7 +101,7 @@ class SearchTool(BaseTool):
 
     def _run(
         self, query: str, return_resources=False
-    ) -> Union[str, Tuple[str, List[dict]]]:
+    ) -> Union[str, List[dict]]:
         result = ""
         if self.config.search_domains:
             query_list = [
@@ -111,18 +110,14 @@ class SearchTool(BaseTool):
             ]
             if len(query_list) >= 5:
                 query_list = query_list[:5]
-                result = (
-                    result
-                    + "Warning: Only the first 5 URLs are taken into consideration.\n"
-                )  # noqa: E501
+                logger.warning("Only the first 5 URLs are taken into consideration.")
         else:
             query_list = [query]
         if self.config.invalid_domains:
             invalid_domain_string = ", ".join(self.config.invalid_domains)
-            result = (
-                result
-                + f"Warning: The doman {invalid_domain_string} is invalid and is not taken into consideration.\n"  # noqa: E501
-            )  # noqa: E501
+            logger.warning(
+                f"The domain {invalid_domain_string} is invalid and is not taken into consideration."  # noqa: E501
+            )
 
         top_k = int(self.top_k / len(query_list))
         if return_resources:
@@ -132,22 +127,21 @@ class SearchTool(BaseTool):
             cur_result = self._run_single_query(query, top_k, return_resources)
 
             if return_resources:
-                result += "\n" + cur_result[0]
-                resources.extend(cur_result[1])
+                resources += cur_result
             else:
                 result += "\n" + cur_result
 
         if return_resources:
-            result = (result, resources)
-
-        return result
+            return resources
+        else:
+            return result
 
     def formulate_site_search(self, query: str, site: str) -> str:
         return query + " site:" + site
 
     def _run_single_query(
         self, query: str, top_k: int, return_resources=False
-    ) -> Union[str, Tuple[str, List[dict]]]:
+    ) -> Union[str, List[dict]]:
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
@@ -168,7 +162,7 @@ class SearchTool(BaseTool):
             response = "Answer: " + answer
             meta = [{"Document": answer, "Source": link}]
             if return_resources:
-                return response, meta
+                return meta
             else:
                 return response + "\nLink:" + link
 
@@ -202,7 +196,10 @@ class SearchTool(BaseTool):
                 snippets.append(f"{attribute}: {value}.")
 
             if len(snippets) == 0:
-                return ["No good Google Search Result was found"]
+                if return_resources:
+                    return []
+                else:
+                    return "No good Google Search Result was found"
 
         result = []
 
@@ -240,7 +237,7 @@ class SearchTool(BaseTool):
             )
             full_result = answer + "\n\n" + full_result
         if return_resources:
-            return full_result, resources
+            return resources
         else:
             return full_result
 
@@ -280,7 +277,7 @@ class ContextTool(BaseTool):
                 )
 
         if return_resources:
-            return result, resources
+            return resources
         else:
             return result
 

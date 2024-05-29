@@ -21,30 +21,23 @@ from sherpa_ai.utils import extract_entities
         (
             0,
             "what is unique about Ethiopia calendar?  based on USA calendar assosation. ",
-            (
-                """
-                According to Ethiopian calendar Assosation (ECA) , Ethiopia has thirteen months. Canada and Kenya also mentioned this. also recognized by World Calendar Assosation (WCA) """,
-                [
-                    {
-                        "Document": "Ethiopian calendar",
-                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
-                    }
-                ],
-            ),
+            [
+                {
+                    "Document": "According to Ethiopian calendar Assosation (ECA) , Ethiopia has thirteen months. Canada and Kenya also mentioned this. also recognized by World Calendar Assosation (WCA)",
+                    "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+                }
+            ],
             ["Ethiopian", "Ethiopian Calendar Association", "kenya"],
         ),
         (
             1,
             "Tell me a fact about Star Trek: The Next Generation?",
-            (
-                """Fact: In Star Trek: The Next Generation (STNG), the United Federation of Planets, a coalition of various planetary governments working for peace and cooperation, establishes a set of interstellar laws known as the "Federation Charter." This document outlines the principles and regulations governing member worlds and their interactions. """,
-                [
-                    {
-                        "Document": "Star Trek: The Next Generation",
-                        "Source": "https://www.starTrek.com",
-                    }
-                ],
-            ),
+            [
+                {
+                    "Document": "Star Trek is a 2009 movice. In it, the United Federation of Planets, a coalition of various planetary governments working for peace and cooperation. This document outlines the principles and regulations governing member worlds and their interactions. ",
+                    "Source": "https://www.starTrek.com",
+                }
+            ],
             ["Star Trek", "the United Federation of Planets"],
         ),
     ],
