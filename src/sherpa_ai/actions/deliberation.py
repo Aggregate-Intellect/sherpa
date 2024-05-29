@@ -24,10 +24,12 @@ class Deliberation(BaseAction):
         role_description: str,
         llm: BaseLanguageModel,
         description: str = DELIBERATION_DESCRIPTION,
+        action_usage: str = "Directly come up with a solution",
     ):
         self.role_description = role_description
         self.description = description
         self.llm = llm
+        self.action_usage = action_usage
 
     @property
     def name(self) -> str:
@@ -36,6 +38,10 @@ class Deliberation(BaseAction):
     @property
     def args(self) -> dict:
         return {"task": "string"}
+
+    @property
+    def usage(self) -> str:
+        return self.action_usage
 
     def execute(self, task: str) -> str:
         prompt = self.description.format(

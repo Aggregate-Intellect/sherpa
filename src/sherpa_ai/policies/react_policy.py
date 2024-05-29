@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
-from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
-from sherpa_ai.action_planner.base import BaseActionPlanner
+from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 
 
 if TYPE_CHECKING:
@@ -32,32 +31,35 @@ Response Format:
 {response_format}
 Ensure the response can be parsed by Python json.loads
 
-If you believe the task is complete and no further actions are necessary, respond with "Finished".
-
-Follow the described fromat strictly.
+Follow the described format strictly.
 
 """  # noqa: E501
 
 
-class ActionPlanner(BaseActionPlanner):
-    def __init__(
-        self,
-        role_description: str,
-        output_instruction: str,
-        llm: BaseLanguageModel,
-        description: str = SELECTION_DESCRIPTION,
-    ):
-        self.description = description
-        self.role_description = role_description
-        self.output_instruction = output_instruction
-        self.llm = llm
+class ReactPolicy(BasePolicy):
+    """
+    The policy to select an action from the belief based on the ReACT framework.
 
-        self.response_format = {
-            "command": {
-                "name": "tool/command name you choose",
-                "args": {"arg name": "value"},
-            },
-        }
+    See this paper for more details: https://arxiv.org/abs/2210.03629
+
+    Attributes:
+        role_description (str): The description of the agent role to help select an action
+        output_instruction (str): The instruction to output the action in JSON format
+        llm (BaseLanguageModel): The large language model used to generate text
+        description (str): Description to select the action from the belief
+        response_format (dict): The response format for the policy in JSON format
+    """
+
+    role_description: str
+    output_instruction: str
+    llm: Any  # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
+    description: str = SELECTION_DESCRIPTION
+    response_format: dict = {
+        "command": {
+            "name": "tool/command name you choose",
+            "args": {"arg name": "value"},
+        },
+    }
 
     def transform_output(self, output_str: str) -> Tuple[str, dict]:
         """
@@ -80,22 +82,16 @@ class ActionPlanner(BaseActionPlanner):
         args = command.get("args", {})
         return name, args
 
-    def select_action(
-        self,
-        belief: Belief,
-    ) -> Optional[Tuple[str, dict]]:
+    def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
         """
-        Select an action from a list of possible actions
+        Select an action from a list of possible actions based on the current state (belief)
 
         Args:
-            task_description: Description of the task
-            task_context: Context of the task (e.g. events from previous agents)
-            possible_actions: List of possible actions
-            history_of_previous_actions: History of previous actions
+            belief (Belief): The current state of the agent
 
         Returns:
-            str: Action to be taken
-            dict: Arguments for the action
+            Optional[PolicyOutput]: The selected action and arguments, or None if the selected
+            action is not found in the list of possible actions
         """
         task_description = belief.current_task.content
         task_context = belief.get_context(self.llm.get_num_tokens)
@@ -119,12 +115,12 @@ class ActionPlanner(BaseActionPlanner):
         result = self.llm.predict(prompt)
         logger.debug(f"Result: {result}")
 
-        if result == "Finished":
-            return None
-
         name, args = self.transform_output(result)
 
-        if name == "Finished":
+        action = belief.get_action(name)
+
+        if action is None:
+            logger.error(f"Action {name} not found in the list of possible actions")
             return None
 
-        return name, args
+        return PolicyOutput(action=action, args=args)
