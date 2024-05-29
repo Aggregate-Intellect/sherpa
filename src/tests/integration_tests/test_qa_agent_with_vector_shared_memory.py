@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from langchain.chat_models import ChatOpenAI
+from langchain.docstore.document import Document
 from loguru import logger
 
 from sherpa_ai.agents import QAAgent
@@ -12,7 +13,6 @@ from sherpa_ai.events import EventType
 from sherpa_ai.memory.shared_memory_with_vectordb import SharedMemoryWithVectorDB
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.utils import file_text_splitter
-from langchain.docstore.document import Document
 
 data = """Avocados are a fruit, not a vegetable. They're technically considered a single-seeded berry, believe it or not.
 The Eiffel Tower can be 15 cm taller during the summer, due to thermal expansion meaning the iron heats up, the particles gain kinetic energy and take up more space.
@@ -63,6 +63,7 @@ def fake_embedding(input, default_dimension=1536):
         else:
             results.append([0] * default_dimension)
     return results
+
 
 @pytest.fixture
 def mock_chroma_vector_store(external_api):
@@ -162,6 +163,29 @@ def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):  # noqa F
 
     results = shared_memory.get_by_type(EventType.result)
     logger.debug(results[0].content)
-    expected = ["Avocados", "Eiffel Tower", "Trypophobia", "Allodoxaphobia", "Australia", "Mellifluous", "Spice Girls", "Emma Bunton", "Human teeth", "guinea pig", "Ancient Romans", "shrimp", "Amy Poehler", "shower", "Baby rabbits", "unicorn", "aeroplane", "Venus", "Nutmeg", "French Burgundy"]
-    assert any(item in results[0].content for item in expected), "Result does not contain any expected items"
+    expected = [
+        "Avocados",
+        "Eiffel Tower",
+        "Trypophobia",
+        "Allodoxaphobia",
+        "Australia",
+        "Mellifluous",
+        "Spice Girls",
+        "Emma Bunton",
+        "Human teeth",
+        "guinea pig",
+        "Ancient Romans",
+        "shrimp",
+        "Amy Poehler",
+        "shower",
+        "Baby rabbits",
+        "unicorn",
+        "aeroplane",
+        "Venus",
+        "Nutmeg",
+        "French Burgundy",
+    ]
+    assert any(
+        item in results[0].content for item in expected
+    ), "Result does not contain any expected items"
     assert len(results) == 1

@@ -37,7 +37,10 @@ class Planner(BaseAgent):
         self.belief = belief
         self.action_selector = action_selector
 
-        self.planning = TaskPlanning(llm, num_steps)
+        self.planning = TaskPlanning(
+            llm=llm,
+            num_steps=num_steps,
+        )
         self.verbose_logger = verbose_logger
 
     def get_last_feedback(self) -> Optional[str]:
