@@ -100,7 +100,7 @@ How to Use
 
 Step 1. Currently the blog writer needs the transcript in both ``.txt``
 *and* in ``.pdf`` formats. So the first step is to ensure you have both
-files and copy them into the current (blog writer) directory under the Transcripts folder. Most text
+files and copy them under the ``Transcripts`` subdirectory. Most text
 editors will have an “Export to PDF” feature. Alternatively, you can
 “print” the file as a PDF. Name the files ``transcript.txt`` and
 ``transcript.pdf``.
@@ -112,5 +112,5 @@ Step 2. Run:
    python main.py --config agent_config.yml  --transcript transcript.txt
 
 The blog writer will output verbose feedback to the console as it works
-through the files. The blueprint will be saved as ``blueprint.json`` and
-the final output (blog post) as ``blog.md``.
+through the files. The blueprint will be saved as ``blueprint_transcript.json`` and
+the final output (blog post) as ``blog_transcript.md`` in the ``Output`` folder.
