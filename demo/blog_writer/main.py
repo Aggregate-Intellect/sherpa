@@ -4,10 +4,10 @@ from argparse import ArgumentParser
 
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
-from sherpa_ai.agents import QAAgent
-from sherpa_ai.events import EventType
-
 from outliner import Outliner
+
+from sherpa_ai.agents import QAAgent, UserAgent
+from sherpa_ai.events import EventType
 
 #create Output folder
 directory_name = "Output"
@@ -16,8 +16,6 @@ if not os.path.exists(directory_name):
     print(f"Directory '{directory_name}' created successfully.")
 else:
     print(f"Directory '{directory_name}' already exists.")
-
-# from sherpa_ai.memory import Belief
 
 def get_qa_agent_from_config_file(
     config_path: str,
@@ -40,6 +38,26 @@ def get_qa_agent_from_config_file(
     return qa_agent
 
 
+def get_user_agent_from_config_file(
+    config_path: str,
+) -> UserAgent:
+    """
+    Create a UserAgent from a config file.
+
+    Args:
+        config_path: Path to the config file
+
+    Returns:
+        UserAgent: A UserAgent instance
+    """
+
+    config = OmegaConf.load(config_path)
+
+    user: UserAgent = instantiate(config.user)
+
+    return user
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, default="agent_config.yaml")
@@ -54,6 +72,7 @@ if __name__ == "__main__":
     md_output_path = f"Output/blog_{base_name}.md"
 
     writer_agent = get_qa_agent_from_config_file(args.config)
+    reviewer_agent = get_user_agent_from_config_file(args.config)
 
     outliner = Outliner(args.transcript)
     blueprint = outliner.full_transcript2outline_json(verbose=True)
@@ -64,11 +83,8 @@ if __name__ == "__main__":
     else:
         pure_json_str = blueprint
 
-    with open(json_output_path, "w") as f:
+    with open(json_output_path, "w", encoding="utf-8") as f:
         f.write(pure_json_str)
-
-    # with open("blueprint_manual.json", "r") as f:
-    #     pure_json_str = f.read()
 
     parsed_json = json.loads(pure_json_str)
 
@@ -82,21 +98,32 @@ if __name__ == "__main__":
         for evidence in evidences:
             writer_agent.shared_memory.add(EventType.task, "human", evidence)
             result = writer_agent.run()
-            # writer_agent.belief = Belief()
+
+            reviewer_input = (
+                "\n"
+                "Please review the paragraph generated below. "
+                "Type 'yes', 'y' or simply press Enter if everything looks good. "
+                "Else provide feedback on how you would like the paragraph changed."
+                "\n\n" + result
+            )
+            reviewer_agent.shared_memory.add(EventType.task, "human", reviewer_input)
+
+            decision = reviewer_agent.run()
+            decision_event = reviewer_agent.shared_memory.get_by_type(EventType.result)
+            decision_content = decision_event[-1].content
+
+            if decision_content == []:
+                break
+            #
+            if decision_content.lower() in ["yes", "y", ""]:
+                pass
+            else:
+                writer_agent.shared_memory.add(EventType.task, "human", decision_content)
+                result = writer_agent.run()
+
             blog += f"{result}\n"
 
-    with open(md_output_path, "w") as f:
+    with open(md_output_path, "w", encoding="utf-8") as f:
         f.write(blog)
 
     print("\nBlog generated successfully!\n")
-
-    # save_format = None
-    # while save_format is None:
-    #     save_format = input(
-    #         "Select format to save the blog in: 1. Markdown (Default) 2. ReStructured Text\n"
-    #     )
-
-    # if save_format == "2":
-    #     output = pypandoc.convert("blog.md", "rst")
-    #     if os.path.exists("blog.md"):
-    #         os.remove("blog.md")

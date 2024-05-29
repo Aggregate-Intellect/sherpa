@@ -67,9 +67,15 @@ class Step:
         task: the task that the agent should execute
     """
 
-    def __init__(self, agent_name: str, task: str):
+    def __init__(
+        self,
+        agent_name: str,
+        task: str,
+        action_usage: str = "Come up with a plan to solve the task",
+    ):
         self.agent_name = agent_name
         self.task = task
+        self.action_usage = action_usage
 
     def __str__(self) -> str:
         return f"Agent: {self.agent_name}\nTask: {self.task}\n"
@@ -180,3 +186,7 @@ class TaskPlanning(BaseAction):
             "last_plan": "string",
             "feedback": "string",
         }
+
+    @property
+    def usage(self) -> str:
+        return self.action_usage

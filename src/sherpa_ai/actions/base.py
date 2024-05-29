@@ -30,6 +30,11 @@ class BaseAction(ABC):
 
     @property
     @abstractmethod
+    def usage(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def args(self) -> dict:
         pass
 
@@ -38,10 +43,7 @@ class BaseAction(ABC):
         return []
 
     def __str__(self):
-        tool_desc = {
-            "name": self.name,
-            "args": self.args,
-        }
+        tool_desc = {"name": self.name, "args": self.args, "usage": self.usage}
 
         return json.dumps(tool_desc, indent=4)
 

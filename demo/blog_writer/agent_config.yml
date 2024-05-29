@@ -48,3 +48,11 @@ qa_agent:
         - ${doc_search}
     validations:
         - ${citation_validation}
+
+#configurations for the user agent to bring human in the loop
+user:
+    _target_: sherpa_ai.agents.user.UserAgent
+    shared_memory: ${shared_memory}
+    name: Human Expert
+    description: Review the paragraph provided by qa agent.
+    user_id: 1
