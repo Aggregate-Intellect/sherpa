@@ -1,3 +1,5 @@
+from typing import Any
+
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
@@ -30,21 +32,20 @@ Result:
 
 
 class SynthesizeOutput(BaseAction):
-    def __init__(
-        self,
-        role_description: str,
-        llm: BaseLanguageModel,
-        description: str = SYNTHESIZE_DESCRIPTION,
-        add_citation=False,
-        action_usage: str = "Answer the question using conversation history with the user",
-    ):
-        if add_citation:
+    role_description: str
+    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    description: str = SYNTHESIZE_DESCRIPTION
+    add_citation: bool = False
+
+    # Override the name and args from BaseAction
+    name: str = "SynthesizeOutput"
+    args: dict = {"task": "string", "context": "string", "history": "string"}
+    usage: str = "Answer the question using conversation history with the user"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.add_citation:
             self.description = SYNTHESIZE_DESCRIPTION_CITATION
-        else:
-            self.description = description
-        self.role_description = role_description
-        self.llm = llm
-        self.action_usage = action_usage
 
     def execute(self, task: str, context: str, history: str) -> str:
         prompt = self.description.format(
@@ -57,15 +58,3 @@ class SynthesizeOutput(BaseAction):
         logger.debug("Prompt: {}", prompt)
         result = self.llm.predict(prompt)
         return result
-
-    @property
-    def name(self) -> str:
-        return "SynthesizeOutput"
-
-    @property
-    def args(self) -> dict:
-        return {"task": "string", "context": "string", "history": "string"}
-
-    @property
-    def usage(self) -> str:
-        return self.action_usage

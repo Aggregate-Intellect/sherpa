@@ -97,16 +97,18 @@ class QAAgent(BaseAgent):
     def create_actions(self) -> List[BaseAction]:
         return [
             GoogleSearch(
-                self.description,
-                self.belief.current_task,
-                self.llm,
+                role_description=self.description,
+                task=self.belief.current_task.content,
+                llm=self.llm,
                 config=self.config,
             ),
         ]
 
     def synthesize_output(self) -> str:
         synthesize_action = SynthesizeOutput(
-            self.description, self.llm, add_citation=self.citation_enabled
+            role_description=self.description,
+            llm=self.llm,
+            add_citation=self.citation_enabled,
         )
         result = synthesize_action.execute(
             self.belief.current_task.content,
