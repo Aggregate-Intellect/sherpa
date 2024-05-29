@@ -8,7 +8,7 @@ from sherpa_ai.test_utils.llms import get_llm
 def test_planning_succeeds(get_llm):  # noqa: F811
     llm = get_llm(__file__, test_planning_succeeds.__name__)
 
-    task_planning = TaskPlanning(llm)
+    task_planning = TaskPlanning(llm=llm)
 
     task = """We need to render a highly complex 3D image on the solar system. We can use any publicly avaliable
     resources to achieve this task."""  # noqa: E501

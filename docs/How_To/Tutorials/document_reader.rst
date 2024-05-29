@@ -56,29 +56,45 @@ In the tutorial folder, create a file called `actions.py` and add the following 
 .. code-block:: python
 
     from langchain.document_loaders import PDFMinerLoader
+    from langchain.embeddings.base import Embeddings
     from langchain.text_splitter import SentenceTransformersTokenTextSplitter
     from langchain.vectorstores.chroma import Chroma
     from loguru import logger
+    from pydantic import ConfigDict
 
     from sherpa_ai.actions.base import BaseAction
 
 
     class DocumentSearch(BaseAction):
-        def __init__(self, filename, embedding_function, k=4):
-            # file name of the pdf
-            self.filename = filename
-            # the embedding function to use
-            self.embedding_function = embedding_function
-            # number of results to return in search
-            self.k = k
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+        # file name of the pdf
+        filename: str
+        # the embedding function to use
+        embedding_function: Embeddings
+        # number of results to return in search
+        k: int
+        # the variables start with _ will not included in the __init__
+        _chroma: Chroma
+
+        # Override name and args properties from BaseAction
+        # The name of the action, used to describe the action to the agent.
+        name: str = "DocumentSearch"
+        # The arguments that the action takes, used to describe the action to the agent.
+        args: dict = {"query": "string"}
+
+        def __init__(self, **kwargs):
+            # initialize attributes using Pydantic BaseModel
+            super().__init__(**kwargs)
 
             # load the pdf and create the vector store
-            self.chroma = Chroma(embedding_function = embedding_function)
+            self._chroma = Chroma(embedding_function=self.embedding_function)
             documents = PDFMinerLoader(self.filename).load()
-            documents = SentenceTransformersTokenTextSplitter(chunk_overlap=0).split_documents(documents)
+            documents = SentenceTransformersTokenTextSplitter(
+                chunk_overlap=0
+            ).split_documents(documents)
 
             logger.info(f"Adding {len(documents)} documents to the vector store")
-            self.chroma.add_documents(documents)
+            self._chroma.add_documents(documents)
             logger.info("Finished adding documents to the vector store")
 
         def execute(self, query):
@@ -92,24 +108,13 @@ In the tutorial folder, create a file called `actions.py` and add the following 
                 str: The search results combined into a single string
             """
 
-            results = self.chroma.search(query, search_type="mmr", k=self.k)
+            results = self._chroma.search(query, search_type="mmr", k=self.k)
             return "\n\n".join([result.page_content for result in results])
 
-        @property
-        def name(self) -> str:
-            """
-            The name of the action, used to describe the action to the agent.
-            """
-            return "DocumentSearch"
-        
-        @property
-        def args(self) -> dict:
-            """
-            The arguments that the action takes, used to describe the action to the agent.
-            """
-            return {
-                "query": "string"
-            }
+.. note:: 
+    
+    Sherpa uses `Pydantic` to validate the definition of new components. Including action, agents and more. You can read more about Pydantic here: https://docs.pydantic.dev/latest/
+
 
 The action is a crucial part of Sherpa enabling the agent to interact with other systems. In this case, the action we are creating is used for searching the vector database containing PDF content for the query.
 

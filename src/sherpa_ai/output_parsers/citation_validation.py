@@ -2,7 +2,7 @@ import nltk
 from loguru import logger
 from nltk.tokenize import sent_tokenize, word_tokenize
 
-from sherpa_ai.actions.base import ActionResource
+from sherpa_ai.actions.base import ActionResource, BaseRetrievalAction
 from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
@@ -160,7 +160,8 @@ class CitationValidation(BaseOutputProcessor):
         """
         resources = []
         for action in belief.actions:
-            resources.extend(action.resources)
+            if isinstance(action, BaseRetrievalAction):
+                resources.extend(action.resources)
         return resources
 
     def process_output(self, text: str, belief: Belief, **kwargs) -> ValidationResult:

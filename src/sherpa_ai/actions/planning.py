@@ -1,6 +1,5 @@
-from typing import List, Optional
+from typing import Any, Optional
 
-from langchain.llms.base import LLM
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
@@ -71,11 +70,9 @@ class Step:
         self,
         agent_name: str,
         task: str,
-        action_usage: str = "Come up with a plan to solve the task",
     ):
         self.agent_name = agent_name
         self.task = task
-        self.action_usage = action_usage
 
     def __str__(self) -> str:
         return f"Agent: {self.agent_name}\nTask: {self.task}\n"
@@ -110,14 +107,20 @@ class Plan:
 
 
 class TaskPlanning(BaseAction):
-    def __init__(self, llm: LLM, num_steps: int = 5):
-        self.llm = llm
-        self.num_steps = num_steps
+    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    num_steps: int = 5
+    prompt: str = PLANNING_PROMPT
+    revision_prompt: str = REVISION_PROMPT
 
-        # TODO: define the prompt for planning, it take one arg (task,
-        #  agent_pool_description)
-        self.prompt = PLANNING_PROMPT
-        self.revision_prompt = REVISION_PROMPT
+    # Override the name and args from BaseAction
+    name: str = "TaskPlanning"
+    args: dict = {
+        "task": "string",
+        "agent_pool_description": "string",
+        "last_plan": "string",
+        "feedback": "string",
+    }
+    usage: str = "Come up with a plan to solve the task"
 
     def execute(
         self,
@@ -173,20 +176,3 @@ class TaskPlanning(BaseAction):
             plan.add_step(Step(agent_name, task_description))
 
         return plan
-
-    @property
-    def name(self) -> str:
-        return "TaskPlanning"
-
-    @property
-    def args(self) -> dict:
-        return {
-            "task": "string",
-            "agent_pool_description": "string",
-            "last_plan": "string",
-            "feedback": "string",
-        }
-
-    @property
-    def usage(self) -> str:
-        return self.action_usage
