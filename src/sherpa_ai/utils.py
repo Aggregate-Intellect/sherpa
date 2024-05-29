@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from langchain.docstore.document import Document
 from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader
 from langchain.llms import OpenAI
-from langchain.text_splitter import TokenTextSplitter
+from langchain.text_splitter import CharacterTextSplitter, TokenTextSplitter
 from loguru import logger
 from nltk.metrics import edit_distance, jaccard_distance
 from pypdf import PdfReader
@@ -19,7 +19,7 @@ from word2number import w2n
 import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
-from langchain.text_splitter import CharacterTextSplitter
+
 
 HTTP_GET_TIMEOUT = 2.5
 
@@ -639,6 +639,7 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
         return False, message
     return True, message
 
+
 def file_text_splitter(data, meta_data):
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_text(data)
@@ -650,4 +651,3 @@ def file_text_splitter(data, meta_data):
     texts = temp_texts
 
     return {"texts": texts, "meta_datas": metadatas}
-

@@ -58,13 +58,23 @@ class MLEngineer(BaseAgent):
 
     def create_actions(self) -> List[BaseAction]:
         return [
-            Deliberation(self.description, self.llm),
-            GoogleSearch(self.description, self.belief.current_task, self.llm),
-            ArxivSearch(self.description, self.belief.current_task, self.llm),
+            Deliberation(role_description=self.description, llm=self.llm),
+            GoogleSearch(
+                role_description=self.description,
+                task=self.belief.current_task.content,
+                llm=self.llm,
+            ),
+            ArxivSearch(
+                role_description=self.description,
+                task=self.belief.current_task.content,
+                llm=self.llm,
+            ),
         ]
 
     def synthesize_output(self) -> str:
-        synthesize_action = SynthesizeOutput(self.description, self.llm)
+        synthesize_action = SynthesizeOutput(
+            role_description=self.description, llm=self.llm
+        )
         result = synthesize_action.execute(
             self.belief.current_task.content,
             self.belief.get_context(self.llm.get_num_tokens),
