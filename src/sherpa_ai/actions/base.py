@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from sherpa_ai.actions.reranking import BaseReranking, RerankingByQuery
+from sherpa_ai.actions.reranking import BaseReranking
 
 
 class ActionResource(BaseModel):
@@ -41,7 +41,7 @@ class BaseAction(ABC, BaseModel):
 class BaseRetrievalAction(BaseAction, ABC):
     resources: list[ActionResource] = Field(default_factory=list)
     num_documents: int = 5  # Number of documents to retrieve
-    reranker: BaseReranking = RerankingByQuery()
+    reranker: BaseReranking = None
     current_task: str = ""
 
     perform_reranking: bool = False

@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
-from langchain.embeddings import SentenceTransformerEmbeddings
 from pydantic import BaseModel
 
 
@@ -17,7 +16,7 @@ class BaseReranking(ABC, BaseModel):
 
 
 class RerankingByQuery(BaseReranking):
-    embedding_func: Any = SentenceTransformerEmbeddings()
+    embedding_func: Any
 
     def rerank(self, documents: list[str], query: str) -> str:
         query_embedding = self.embedding_func(query)
