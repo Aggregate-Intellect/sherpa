@@ -16,7 +16,7 @@ if not os.path.exists(directory_name):
     print(f"Directory '{directory_name}' created successfully.")
 else:
     print(f"Directory '{directory_name}' already exists.")
-    
+
 # from sherpa_ai.memory import Belief
 
 def get_qa_agent_from_config_file(
@@ -45,14 +45,14 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default="agent_config.yaml")
     parser.add_argument("--transcript", type=str, default="transcript.txt")
     args = parser.parse_args()
-    
+
     # Extract base name from transcript filename
     base_name = os.path.splitext(os.path.basename(args.transcript))[0]
 
     # Define dynamic output paths
     json_output_path = f"Output/blueprint_{base_name}.json"
     md_output_path = f"Output/blog_{base_name}.md"
-    
+
     writer_agent = get_qa_agent_from_config_file(args.config)
 
     outliner = Outliner(args.transcript)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     else:
         pure_json_str = blueprint
 
-    with open("Output/blueprint.json", "w") as f:
+    with open(json_output_path, "w") as f:
         f.write(pure_json_str)
 
     # with open("blueprint_manual.json", "r") as f:
