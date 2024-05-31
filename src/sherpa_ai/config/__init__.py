@@ -49,7 +49,8 @@ DAILY_LIMIT_REACHED_MESSAGE = (
 LIMIT_TIME_SIZE_IN_HOURS = environ.get("LIMIT_TIME_SIZE_IN_HOURS") or "24"
 FILE_SIZE_LIMIT = environ.get("FILE_SIZE_LIMIT") or 2097152
 FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
-DB_NAME = environ.get("DB_NAME") or "sqlite:///token_counter.db"
+DB_NAME = environ.get("DB_NAME") or "token_counter.db"
+DB_URL = environ.get("DB_URL") or "sqlite:///token_counter.db"
 
 # Slack integration
 SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")

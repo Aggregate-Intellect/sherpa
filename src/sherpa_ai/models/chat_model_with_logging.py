@@ -31,7 +31,6 @@ class ChatModelWithLogging(BaseChatModel):
         llm_name = (
             self.llm.model_name if hasattr(self.llm, "model_name") else self._llm_type
         )
-
         input_text = []
         for message in messages:
             # make sure all the messages stay on the same line

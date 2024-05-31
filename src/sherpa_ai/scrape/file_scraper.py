@@ -15,7 +15,7 @@ DOWNLOAD_TIMEOUT = 2.5
 
 
 class QuestionWithFileHandler:
-    def __init__(self, question, files, token, user_id, team_id):
+    def __init__(self, question, files, token, user_id):
         """
         Initializes the QuestionWithFileHandler instance.
 
@@ -26,13 +26,11 @@ class QuestionWithFileHandler:
             files (list): List of files associated with the question.
             token (str): OAuth token.
             user_id (str): User ID.
-            team_id (str): Team ID.
         """
 
         self.question = question
         self.token = token
         self.files = files
-        self.team_id = team_id
         self.user_id = user_id
 
     def reconstruct_prompt_with_file(self):
@@ -126,7 +124,6 @@ class QuestionWithFileHandler:
                 question=self.question,
                 title=file_info["title"],
                 text_data=data,
-                team_id=self.team_id,
                 user_id=self.user_id,
             )
 
@@ -137,6 +134,7 @@ class QuestionWithFileHandler:
                     question=self.question,
                     title=file_info["title"],
                     text_data=chunk_summary,
+                    user_id=self.user_id,
                 )
         result = question_with_file_reconstructor(
             file_format=file_info["filetype"],
