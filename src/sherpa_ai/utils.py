@@ -124,14 +124,12 @@ def chunk_and_summarize(
     text_data: str,
     question: str,
     link: str,
-    team_id: str = None,
     user_id: str = None,
 ):
     llm = SherpaOpenAI(
         temperature=cfg.TEMPERATURE,
         openai_api_key=cfg.OPENAI_API_KEY,
         user_id=user_id,
-        team_id=team_id,
     )
 
     instruction = (
@@ -163,14 +161,10 @@ def chunk_and_summarize_file(
     file_name: str,
     file_format: str,
     title: str = None,
-    team_id: str = None,
     user_id: str = None,
 ):
     llm = SherpaOpenAI(
-        temperature=cfg.TEMPERATURE,
-        openai_api_key=cfg.OPENAI_API_KEY,
-        user_id=user_id,
-        team_id=team_id,
+        temperature=cfg.TEMPERATURE, openai_api_key=cfg.OPENAI_API_KEY, user_id=user_id
     )
 
     title = f",title {title} " if title is not None else ""

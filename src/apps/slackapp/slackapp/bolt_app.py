@@ -51,9 +51,8 @@ logger.info(f"App init: bot auth_test results {bot}")
 # usage tracker database downloader on every deployment:
 ###########################################################################
 def before_first_request():
-    UserUsageTracker().download_from_s3(
-        "sherpa-sqlight", "token_counter.db", "./token_counter.db"
-    )
+    usage_db = UserUsageTracker(db_name=cfg.DB_NAME)
+    usage_db.download_from_s3()
 
 
 if not cfg.FLASK_DEBUG:
@@ -96,23 +95,21 @@ def get_response(
     verbose_logger: BaseVerboseLogger,
     bot_info: Dict[str, str],
     llm=None,
-    team_id: Optional[str] = None,
     user_id: Optional[str] = None,
 ) -> str:
     """
-    Get response from the task agent for the question
+    Get a response from the task agent for the question.
 
     Args:
-        question (str): question to be answered
-        previous_messages (List[BaseMessage]): previous messages in the thread
-        verbose_logger (BaseVerboseLogger): verbose logger to be used
-        bot_info (Dict[str, str]): information of the Slack bot
-        llm (SherpaChatOpenAI, optional): LLM to be used. Defaults to None.
-        team_id (str, optional): team id of the Slack workspace. Defaults to "".
-        user_id (str, optional): user id of the Slack user. Defaults to "".
+        question (str): The question to be answered.
+        previous_messages (List[BaseMessage]): The previous messages in the thread.
+        verbose_logger (BaseVerboseLogger): The verbose logger to be used.
+        bot_info (Dict[str, str]): Information of the Slack bot.
+        llm (SherpaChatOpenAI, optional): The LLM to be used. Defaults to None.
+        user_id (str, optional): The team ID combined with the user ID of the Slack user, so that it can be a globally unique value for the usage tracker. Defaults to "".
 
     Returns:
-        str: response from the task agent
+        str: The response from the task agent.
     """
     ai_id = bot_info["user_id"]
     question, agent_config = AgentConfig.from_input(question)
@@ -130,7 +127,6 @@ def get_response(
         llm = SherpaChatOpenAI(
             openai_api_key=cfg.OPENAI_API_KEY,
             user_id=user_id,
-            team_id=team_id,
             temperature=cfg.TEMPERATURE,
         )
 
@@ -149,7 +145,7 @@ def get_response(
 
         response = error_handler.run_with_error_handling(task_agent.run, task=question)
     else:
-        agent = get_qa_agent_from_config_file("conf/config.yaml", team_id, user_id, llm)
+        agent = get_qa_agent_from_config_file("conf/config.yaml", user_id, llm)
         for message in previous_messages:
             agent.shared_memory.add(EventType.result, message.type, message.content)
         agent.shared_memory.add(EventType.task, "human", question)
@@ -162,7 +158,7 @@ def get_response(
     return response
 
 
-def file_event_handler(say, files, team_id, user_id, thread_ts, question):
+def file_event_handler(say, files, user_id, thread_ts, question):
     if files[0]["size"] > cfg.FILE_SIZE_LIMIT:
         say(
             "Sorry, the file you attached is larger than 2mb. Please try again with a smaller file",  # noqa E501
@@ -171,7 +167,6 @@ def file_event_handler(say, files, team_id, user_id, thread_ts, question):
         return {"status": "error"}
     file_prompt = QuestionWithFileHandler(
         question=question,
-        team_id=team_id,
         user_id=user_id,
         files=files,
         token=cfg.SLACK_OAUTH_TOKEN,
@@ -194,44 +189,43 @@ def event_test(client, say, event):
     previous_messages = convert_thread_history_messages(previous_messages)
 
     input_message = replies["messages"][-1]
-    user_id = input_message["user"]
+    slack_user_id = input_message["user"]
 
-    # teamid is found on different places depending on the message from slack
+    # team_id is found on different places depending on the message from slack
     # if file exist it will be inside one of the files other wise on the parent message
-    team_id = (
+    slack_team_id = (
         input_message["files"][0]["user_team"]
         if "files" in input_message
         else input_message["team"]
     )
-    combined_id = user_id + "_" + team_id
+    combined_id = slack_user_id + "_" + slack_team_id
 
     slack_verbose_logger = SlackVerboseLogger(say, thread_ts)
-    if cfg.FLASK_DEBUG:
-        can_excute = True
+    if cfg.FLASK_DEBUG == True:
+        can_execute = True
     else:
         user_db = UserUsageTracker(verbose_logger=slack_verbose_logger)
 
-        usage_cheker = user_db.check_usage(
-            user_id=user_id,
-            combined_id=combined_id,
+        usage_checker = user_db.check_usage(
+            user_id=combined_id,
             token_amount=count_string_tokens(question, "gpt-3.5-turbo"),
         )
-        can_excute = usage_cheker["can_excute"]
+
+        can_execute = usage_checker["can_execute"]
         user_db.close_connection()
 
-    # only will be excuted if the user don't pass the daily limit
+    # only will be executed if the user don't pass the daily limit
     # the daily limit is calculated based on the user's usage in a workspace
     # users with a daily limitation can be allowed to use in a different workspace
 
-    if can_excute:
+    if can_execute:
         if "files" in event:
             files = event["files"]
             file_event = file_event_handler(
                 files=files,
                 say=say,
-                team_id=team_id,
                 thread_ts=thread_ts,
-                user_id=user_id,
+                user_id=combined_id,
                 question=question,
             )
             if file_event["status"] == "error":
@@ -244,21 +238,20 @@ def event_test(client, say, event):
             reconstructor = PromptReconstructor(
                 question=question, slack_message=[replies["messages"][-1]]
             )
-            question = reconstructor.reconstruct_prompt()
+            question = reconstructor.reconstruct_prompt(user_id=combined_id)
 
         results = get_response(
             question,
             previous_messages,
             verbose_logger=slack_verbose_logger,
             bot_info=bot,
-            team_id=team_id,
-            user_id=user_id,
+            user_id=combined_id,
         )
 
         say(results, thread_ts=thread_ts)
     else:
         say(
-            f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_cheker['time_left']}.Thank you for your patience and understanding.""",  # noqa E501
+            f"""I'm sorry for any inconvenience, but it appears you've gone over your daily token limit. Don't worry, you'll be able to use our service again in approximately {usage_checker['time_left']}.Thank you for your patience and understanding.""",  # noqa E501
             thread_ts=thread_ts,
         )
 

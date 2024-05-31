@@ -3,14 +3,12 @@ shared_memory:
   objective: Generate a domain model from the user's description
 
 user_id: none
-team_id: none
 
 llm:
   _target_: sherpa_ai.models.sherpa_base_chat_model.SherpaChatOpenAI
   model_name: gpt-3.5-turbo
   temperature: 0.7
   user_id: ${user_id}
-  team_id: ${team_id}
 
 
 agent_config:
