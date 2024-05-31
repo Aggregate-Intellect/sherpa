@@ -1,13 +1,21 @@
 import json
+import os
 from argparse import ArgumentParser
 
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
+from outliner import Outliner
+
 from sherpa_ai.agents import QAAgent, UserAgent
 from sherpa_ai.events import EventType
 
-from outliner import Outliner
-
+#create Output folder
+directory_name = "Output"
+if not os.path.exists(directory_name):
+    os.mkdir(directory_name)
+    print(f"Directory '{directory_name}' created successfully.")
+else:
+    print(f"Directory '{directory_name}' already exists.")
 
 def get_qa_agent_from_config_file(
     config_path: str,
@@ -56,6 +64,13 @@ if __name__ == "__main__":
     parser.add_argument("--transcript", type=str, default="transcript.txt")
     args = parser.parse_args()
 
+    # Extract base name from transcript filename
+    base_name = os.path.splitext(os.path.basename(args.transcript))[0]
+
+    # Define dynamic output paths
+    json_output_path = f"Output/blueprint_{base_name}.json"
+    md_output_path = f"Output/blog_{base_name}.md"
+
     writer_agent = get_qa_agent_from_config_file(args.config)
     reviewer_agent = get_user_agent_from_config_file(args.config)
 
@@ -68,7 +83,7 @@ if __name__ == "__main__":
     else:
         pure_json_str = blueprint
 
-    with open("blueprint.json", "w", encoding="utf-8") as f:
+    with open(json_output_path, "w", encoding="utf-8") as f:
         f.write(pure_json_str)
 
     parsed_json = json.loads(pure_json_str)
@@ -108,7 +123,7 @@ if __name__ == "__main__":
 
             blog += f"{result}\n"
 
-    with open("blog.md", "w", encoding="utf-8") as f:
+    with open(md_output_path, "w", encoding="utf-8") as f:
         f.write(blog)
 
     print("\nBlog generated successfully!\n")

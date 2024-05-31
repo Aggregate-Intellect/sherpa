@@ -17,7 +17,7 @@ embedding_func:
 
 doc_search:
     _target_: actions.DocumentSearch
-    filename: transcript.pdf
+    filename: Transcripts/transcript.pdf
     embedding_function: ${embedding_func}
     k: 4
 
@@ -45,7 +45,7 @@ qa_agent:
     validation_steps: 1
     actions:
         - ${google_search}
-        # - ${doc_search}
+        - ${doc_search}
     validations:
         - ${citation_validation}
 
