@@ -3,6 +3,7 @@ from typing import Any
 from sherpa_ai.actions.base import BaseRetrievalAction
 from sherpa_ai.tools import SearchArxivTool
 
+
 SEARCH_SUMMARY_DESCRIPTION = """Role Description: {role_description}
 Task: {task}
 

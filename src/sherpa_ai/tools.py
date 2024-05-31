@@ -12,6 +12,7 @@ from typing_extensions import Literal
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
 
+
 HTTP_GET_TIMEOUT = 2.5
 
 
@@ -99,9 +100,7 @@ class SearchTool(BaseTool):
         "you cannot find the information using internal search."
     )
 
-    def _run(
-        self, query: str, return_resources=False
-    ) -> Union[str, List[dict]]:
+    def _run(self, query: str, return_resources=False) -> Union[str, List[dict]]:
         result = ""
         if self.config.search_domains:
             query_list = [
