@@ -137,8 +137,8 @@ class Belief:
         # TODO: This is a quick an dirty way to set the current task
         # in actions, need to find a better way
         for action in actions:
-            if type(action) is BaseRetrievalAction:
-                action.current_task = self.current_task
+            if isinstance(action, BaseRetrievalAction):
+                action.current_task = self.current_task.content
 
     @property
     def action_description(self):

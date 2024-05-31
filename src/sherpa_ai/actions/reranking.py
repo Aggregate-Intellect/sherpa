@@ -3,10 +3,15 @@ Different methods for reranking the results of a search query.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
+from numpy.typing import ArrayLike
 from pydantic import BaseModel
+
+
+def cosine_similarity(v1: ArrayLike, v2: ArrayLike) -> float:
+    return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
 
 
 class BaseReranking(ABC, BaseModel):
@@ -17,6 +22,7 @@ class BaseReranking(ABC, BaseModel):
 
 class RerankingByQuery(BaseReranking):
     embedding_func: Any
+    distance_metric: Callable[[ArrayLike, ArrayLike], float] = cosine_similarity
 
     def rerank(self, documents: list[str], query: str) -> str:
         query_embedding = self.embedding_func(query)
@@ -24,7 +30,7 @@ class RerankingByQuery(BaseReranking):
 
         # Calculate the similarity between the query and each document
         similarities = [
-            cosine_similarity(query_embedding, doc_embedding)
+            self.distance_metric(query_embedding, doc_embedding)
             for doc_embedding in document_embeddings
         ]
 
@@ -34,7 +40,3 @@ class RerankingByQuery(BaseReranking):
         ]
 
         return sorted_documents
-
-
-def cosine_similarity(v1, v2):
-    return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))

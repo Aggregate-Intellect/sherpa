@@ -20,6 +20,7 @@ import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
 
+
 HTTP_GET_TIMEOUT = 2.5
 
 

@@ -5,12 +5,13 @@ from typing import TYPE_CHECKING, List, Optional
 
 from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import EventType
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
+
 
 # Avoid circular import
 if TYPE_CHECKING:
