@@ -5,3 +5,4 @@ apps/slackbot/.env
 **/.env_backup
 **/.vscode/
 **/__pycache__
+*.db

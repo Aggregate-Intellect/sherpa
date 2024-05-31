@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from loguru import logger
 
-from sherpa_ai.action_planner import ActionPlanner
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
+from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
@@ -24,7 +24,7 @@ class BaseAgent(ABC):
         description: str,
         shared_memory: SharedMemory = None,
         belief: Belief = None,
-        action_planner: ActionPlanner = None,
+        policy: Optional[BasePolicy] = None,
         num_runs: int = 1,
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
         actions: List[BaseAction] = [],
@@ -36,7 +36,7 @@ class BaseAgent(ABC):
         self.description = description
         self.shared_memory = shared_memory
         self.belief = belief
-        self.action_planner = action_planner
+        self.policy = policy
         self.num_runs = num_runs
 
         self.subscribed_events = []
@@ -65,30 +65,23 @@ class BaseAgent(ABC):
         self.belief.set_actions(actions)
 
         for _ in range(self.num_runs):
-            result = self.action_planner.select_action(self.belief)
+            result = self.policy.select_action(self.belief)
             logger.info(f"Action selected: {result}")
 
             if result is None:
-                # this means the action selector choose to finish
-                break
-
-            action_name, inputs = result
-            action = self.belief.get_action(action_name)
-
-            self.verbose_logger.log(
-                f"```🤖{self.name} is executing {action_name}\n Input: {inputs}...```"
-            )
-            logger.debug(f"🤖{self.name} is executing {action_name}...```")
-
-            self.belief.update_internal(
-                EventType.action, self.name, action_name + str(inputs)
-            )
-
-            if action is None:
-                logger.error(f"Action {action_name} not found")
+                # this means no action is selected
                 continue
 
-            action_output = self.act(action, inputs)
+            self.verbose_logger.log(
+                f"```🤖{self.name} is executing {result.action.name}\n Input: {result.args}...```"
+            )
+            logger.debug(f"🤖{self.name} is executing {result.action.name}...```")
+
+            self.belief.update_internal(
+                EventType.action, self.name, result.action.name + str(result.args)
+            )
+
+            action_output = self.act(result.action, result.args)
 
             self.verbose_logger.log(f"```Action output: {action_output}```")
             logger.debug(f"```Action output: {action_output}```")
