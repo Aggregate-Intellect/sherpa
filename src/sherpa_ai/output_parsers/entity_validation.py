@@ -1,11 +1,12 @@
 from enum import Enum
 from typing import Tuple
 
+from langchain.base_language import BaseLanguageModel
+
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
-from langchain.base_language import BaseLanguageModel
 from sherpa_ai.utils import (
     extract_entities,
     text_similarity,
