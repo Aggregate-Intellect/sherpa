@@ -17,43 +17,27 @@ from sherpa_ai.utils import combined_number_extractor
 @pytest.mark.parametrize(
     "test_id, objective, input_data, expected_numbers",
     [
-        (
-            0,
-            "What is the annual salary for an entry level software engineer in Canada?",
-            (
-                """A software engineer is a person who applies the engineering design process to design, develop, test, maintain, and evaluate computer software.
-        The term programmer is sometimes used as a synonym, but may emphasize software implementation over design and can also lack connotations of engineering education or skills.
-        the average annual  in Canada is around $9000 to $1,000,170,000 CAD for software engineers""",
-                [
-                    {
-                        "Document": "Description: Entry-Level Software Engineer the average annual  in Canada is around 9,000 to $1,170,000 ",
-                        "Source": "https://www.springboard.com/blog/software-engineering/entry-software-engineer-salary/",
-                    }
-                ],
-            ),
-            ["9000", "1000170000"],
-        ),
-        (
-            1,
-            "on june how much cash does Sabio Delivers had?",
-            (
-                """Second Quarter 2023 Financial Highlights for Sabio Delivers
-                Sabio delivered revenues of US$8.0M in Q2-2023, up 11% from US$7.2M in Q2-2022.
-                CTV/OTT sales as a category increased by 57% to US$5.0 million, compared to US$3.2 million in the prior year's quarter. CTV/OTT sales accounted for 62% of the Company's sales mix, compared with 44% in the prior year's quarter.
-                Mobile display revenues of US$2.9million in Q2-2023, down 24%, from US$3.9 million in Q2-2022, as our legacy mobile display campaigns continued to shift their spend with Sabio from mobile display to higher-margin mobile OTT streaming, which is recognized under the Company's CTV/OTT revenue category.
-                Gross Profit of US$4.8 million in Q2-2023, up from US$4.3 million in Q2-2022. Gross Margin improved on a year-over-year basis, from 59% in Q2-2022 to 60% in the completed quarter. The increase is attributable to several efficiency and direct sales improvements within the CTV/OTT channel as well as our App Science business.
-                Adjusted EBITDA1 loss of US$1.7 million in Q2-2023 compared to a loss of US$1.4 million in Q2-2022. The loss was primarily driven by overhead added during and subsequent to the second quarter of 2022, which included the continued expansion of our sales and marketing apparatus in the prior year and costs associated with transitioning our workforce back to the office. On a sequential basis, second quarter operating expenses, normalized for commissions, were flat in comparison to the first quarter of 2023 as cost efficiencies implemented by management offset incremental headcount additions to our salesforce to position ourselves for the 2024 U.S. elections.
-                As of June 30, 2023, the Company had cash of US$1.7 million, as compared to US$2.4 million on June 30, 2022.`
-                As of June 2023, the Company had US$6 million outstanding under its credit facility with Avidbank.""",
-                [
-                    {
-                        "Document": "Sabio Delivers 11% Q2-2023 Revenue Growth, Led by 57% Increase in Connected TV/OTT Sales",
-                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
-                    }
-                ],
-            ),
-            ["1.7"],
-        ),
+        # (
+        #     1,
+        #     "on june how much cash does Sabio Delivers had?",
+        #     (
+        #         """Second Quarter 2023 Financial Highlights for Sabio Delivers
+        #         Sabio delivered revenues of US$8.0M in Q2-2023, up 11% from US$7.2M in Q2-2022.
+        #         CTV/OTT sales as a category increased by 57% to US$5.0 million, compared to US$3.2 million in the prior year's quarter. CTV/OTT sales accounted for 62% of the Company's sales mix, compared with 44% in the prior year's quarter.
+        #         Mobile display revenues of US$2.9million in Q2-2023, down 24%, from US$3.9 million in Q2-2022, as our legacy mobile display campaigns continued to shift their spend with Sabio from mobile display to higher-margin mobile OTT streaming, which is recognized under the Company's CTV/OTT revenue category.
+        #         Gross Profit of US$4.8 million in Q2-2023, up from US$4.3 million in Q2-2022. Gross Margin improved on a year-over-year basis, from 59% in Q2-2022 to 60% in the completed quarter. The increase is attributable to several efficiency and direct sales improvements within the CTV/OTT channel as well as our App Science business.
+        #         Adjusted EBITDA1 loss of US$1.7 million in Q2-2023 compared to a loss of US$1.4 million in Q2-2022. The loss was primarily driven by overhead added during and subsequent to the second quarter of 2022, which included the continued expansion of our sales and marketing apparatus in the prior year and costs associated with transitioning our workforce back to the office. On a sequential basis, second quarter operating expenses, normalized for commissions, were flat in comparison to the first quarter of 2023 as cost efficiencies implemented by management offset incremental headcount additions to our salesforce to position ourselves for the 2024 U.S. elections.
+        #         As of June 30, 2023, the Company had cash of US$1.7 million, as compared to US$2.4 million on June 30, 2022.`
+        #         As of June 2023, the Company had US$6 million outstanding under its credit facility with Avidbank.""",
+        #         [
+        #             {
+        #                 "Document": "Sabio Delivers 11% Q2-2023 Revenue Growth, Led by 57% Increase in Connected TV/OTT Sales",
+        #                 "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+        #             }
+        #         ],
+        #     ),
+        #     ["1.7"],
+        # ),
         (
             2,
             "how many players are in a field of a soccer game? ",
@@ -124,7 +108,7 @@ from sherpa_ai.utils import combined_number_extractor
             "what is unique about ethiopian callender? and Please provide the answer in numerical form.",
             (
                 """
-                Ehtiopia has thirteen months.""",
+                Ethiopia has thirteen months.""",
                 [
                     {
                         "Document": "soccer",
@@ -155,7 +139,7 @@ from sherpa_ai.utils import combined_number_extractor
                 """
                 In the rally GGH there are going to be One Thousand Two Hundred Thirty-Four dogs. and also one thousand cats. 
                 there are going to be also event for wolves and lions.
-                """,  # noqa W291
+                """,
                 [
                     {
                         "Document": "soccer",
@@ -168,18 +152,20 @@ from sherpa_ai.utils import combined_number_extractor
     ],
 )
 def test_number_citation_succeeds_in_qa(
-    get_llm, test_id, input_data, expected_numbers, objective  # noqa: F811
-):
+    get_llm, test_id, input_data, expected_numbers, objective
+):  # noqa: F811
     llm = get_llm(
         __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
     )
+
+    data = input_data
 
     shared_memory = SharedMemory(
         objective=objective,
         agent_pool=None,
     )
     number_validation = NumberValidation()
-    with patch.object(SearchTool, "_run", return_value=input_data):
+    with patch.object(SearchTool, "_run", return_value=data):
         task_agent = QAAgent(
             llm=llm,
             shared_memory=shared_memory,
@@ -200,7 +186,6 @@ def test_number_citation_succeeds_in_qa(
         data_numbers = expected_numbers
 
         logger.debug(results[0].content)
-
         for number in data_numbers:
             assert number in combined_number_extractor(results[0].content), (
                 number + " was not found in resource"

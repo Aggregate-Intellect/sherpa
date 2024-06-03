@@ -15,6 +15,7 @@ from loguru import logger
 from nltk.metrics import edit_distance, jaccard_distance
 from pypdf import PdfReader
 from word2number import w2n
+from langchain.base_language import BaseLanguageModel
 
 import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
@@ -507,6 +508,7 @@ def json_from_text(text: str):
 
 
 def text_similarity_by_llm(
+    llm: BaseLanguageModel,
     source_entity: List[str],
     source,
     result,
@@ -526,13 +528,6 @@ def text_similarity_by_llm(
     Returns:
     dict: Result of the check containing 'entity_exist' and 'messages'.
     """
-
-    llm = SherpaOpenAI(
-        temperature=cfg.TEMPERATURE,
-        openai_api_key=cfg.OPENAI_API_KEY,
-        user_id=user_id,
-        team_id=team_id,
-    )
 
     instruction = f"""
         I have a question and an answer. I want you to confirm whether the entities from the question are all mentioned in some form within the answer.
