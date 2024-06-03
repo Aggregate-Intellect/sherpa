@@ -1,0 +1,5 @@
+project=sherpa
+user=Aggregate-Intellect
+since-tag=v0.2.0
+future-release=0.3.0
+issues=false
