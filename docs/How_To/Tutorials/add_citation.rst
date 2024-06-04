@@ -1,5 +1,5 @@
-Add Citation to Sherpa Resonse
-==============================
+Add Citation to Sherpa Response
+===============================
 
 
 .. note:: 
