@@ -27,13 +27,12 @@ class PromptReconstructor:
         self.question = question
         self.slack_message = slack_message
 
-    def reconstruct_prompt(self, user_id=None, team_id=None):
+    def reconstruct_prompt(self, user_id=None):
         """
         Reconstruct the prompt based on the question and the last Slack message.
 
         Parameters:
         - user_id (str, optional): User ID for context in prompt reconstruction.
-        - team_id (str, optional): Team ID for context in prompt reconstruction.
 
         Returns:
         str: The reconstructed prompt .
@@ -70,7 +69,6 @@ class PromptReconstructor:
                         question=question,
                         text_data=scraped_data["data"],
                         user_id=user_id,
-                        team_id=team_id,
                     )
 
                     while (
@@ -82,7 +80,6 @@ class PromptReconstructor:
                             question=question,
                             text_data=chunk_summary,
                             user_id=user_id,
-                            team_id=team_id,
                         )
 
                     final_summary.append({"data": chunk_summary, "link": link})
