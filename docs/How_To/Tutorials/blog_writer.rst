@@ -102,17 +102,57 @@ Step 1. Currently the blog writer needs the transcript in both ``.txt``
 *and* in ``.pdf`` formats. So the first step is to ensure you have both
 files and copy them under the ``Transcripts`` subdirectory. Most text
 editors will have an “Export to PDF” feature. Alternatively, you can
-“print” the file as a PDF. Name the files ``transcript.txt`` and
+“print” the file as a PDF. Name the files ``projectname.txt`` and
 ``transcript.pdf``.
 
-Step 2. Run:
+Step 2. To create a custom blueprint for your blog writing strategy, 
+you can either manually populate a provided JSON template by defining a 
+thesis statement, articulating key arguments, and listing supportive evidence, 
+or opt for automation using a blueprint generator tool that crafts the blueprint 
+based on input parameters such as topic and target audience. This should be 
+put in the /Output folder. Once created, you can review and adjust the content 
+to align with your specific needs. For those preferring flexibility, existing 
+blueprints can be modified by editing the thesis, arguments, or evidence, and 
+changes are saved to either local storage or cloud services. After you've created
+a blueprin, specify your blueprint using the --blueprint argument followed by the 
+path to your JSON file or the identifier of the automated blueprint, ensuring 
+your blog strategy is both structured and adaptable to future changes.
+
+An example of what the template can look like: 
+
+{
+    "Thesis Statement": "Effective blog writing in the tech industry requires a focus on cutting-edge technology and user engagement.",
+    "Supporting Arguments": [
+        {
+            "Argument": "Highlighting the latest tech developments attracts a tech-savvy audience.",
+            "Evidence": [
+                "Articles featuring the latest in AI and machine learning see a 50% increase in engagement."
+            ]
+        },
+        {
+            "Argument": "Interactive content like quizzes and tech challenges keeps readers engaged.",
+            "Evidence": [
+                "Readers spend 30% more time on pages with interactive elements."
+            ]
+        },
+        {
+            "Argument": "Integrating user-generated content builds community and loyalty.",
+            "Evidence": [
+                "Blogs featuring guest posts from industry experts have a higher repeat visit rate."
+            ]
+        }
+    ]
+}
+
+Step 3. Run:
 
 .. code:: bash
 
-   python main.py --config agent_config.yml  --transcript transcript.txt
+   python main.py --config agent_config.yml  --transcript projectname.txt --blueprint blueprint_projectname.json
 
 The blog writer will output verbose feedback to the console as it works
-through the transcript files. The blueprint will be saved as ``blueprint_transcript.json`` and
+through the transcript files. The blueprint will be saved as ``blueprint_transcript.json`` 
+if there isn't one that exists, and you don't specify a file and
 the final output (blog post) as ``blog_transcript.md`` in the ``Output`` folder.
 
 * In the first step, key insights are extracted from each chunk and output to
