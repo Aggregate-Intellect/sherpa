@@ -6,3 +6,4 @@ apps/slackbot/.env
 **/.vscode/
 **/__pycache__
 *.db
+**/.venv

@@ -12,7 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src'))
+
+sys.path.insert(0, os.path.abspath("../src"))
 
 
 # -- Project information -----------------------------------------------------
@@ -31,11 +32,11 @@ release = "0.0.1"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx_design',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
-    ]
+    "sphinx_design",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -60,7 +61,7 @@ html_theme_options = {
     "use_issues_button": True,
     "home_page_in_toc": True,
     "show_navbar_depth": 1,
-    "show_toc_level": 3,
+    "show_toc_level": 2,
     "toc_title": "In This Page:",
 }
 html_title = "Sherpa - Thinking Companion"

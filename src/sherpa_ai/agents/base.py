@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Optional
 
+from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
@@ -11,7 +12,7 @@ from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-from langchain.base_language import BaseLanguageModel
+
 
 # Avoid circular import
 if TYPE_CHECKING:
@@ -118,7 +119,6 @@ class BaseAgent(ABC):
         validation_is_scaped,
         result,
     ):
-
         for i in range(len(validations)):
             validation = validations[i]
             logger.info(f"validation_running: {validation.__class__.__name__}")
@@ -177,13 +177,13 @@ class BaseAgent(ABC):
         iteration_count = 0
         result = self.synthesize_output()
         global_regen_count = 0
-        
+
         # reset the state of all the validation before starting the validation process.
         for validation in self.validations:
             validation.reset_state()
 
         validations = self.validations
-        
+
         # this loop will run until max regeneration reached or all validations have failed
         while self.global_regen_max > global_regen_count and not all_pass:
             logger.info(f"validations_size: {len(validations)}")
@@ -191,14 +191,17 @@ class BaseAgent(ABC):
             logger.info(f"main_iteration: {iteration_count}")
             logger.info(f"regen_count: {global_regen_count}")
 
-            global_regen_count, all_pass, validation_is_scaped, result = (
-                self.validation_iterator(
-                    all_pass=all_pass,
-                    global_regen_count=global_regen_count,
-                    validation_is_scaped=validation_is_scaped,
-                    validations=validations,
-                    result=result,
-                )
+            (
+                global_regen_count,
+                all_pass,
+                validation_is_scaped,
+                result,
+            ) = self.validation_iterator(
+                all_pass=all_pass,
+                global_regen_count=global_regen_count,
+                validation_is_scaped=validation_is_scaped,
+                validations=validations,
+                result=result,
             )
         # if all didn't pass or validation reached max regeneration run the validation one more time but no regeneration.
         if validation_is_scaped or self.global_regen_max >= global_regen_count:
@@ -219,7 +222,6 @@ class BaseAgent(ABC):
             )
 
         else:
-
             # check if validation is not passed after all the attempts if so return the error message.
             result += "\n".join(
                 (
