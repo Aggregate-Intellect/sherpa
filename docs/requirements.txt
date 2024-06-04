@@ -1,3 +1,4 @@
 sphinx
 sphinx-book-theme
 sphinx-design
+-e ../src  # local dependency with editable install

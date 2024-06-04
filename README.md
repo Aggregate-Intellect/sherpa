@@ -15,4 +15,4 @@ We love your input! We want to make contributing to this project as easy and tra
 - Proposing new features
 - Becoming a maintainer
 
-To get started, visit: https://sherpa-ai.readthedocs.io/en/latest/How_To/Contribute/contribute.html
+To get started, visit: https://sherpa-ai.readthedocs.io/en/latest/How_To/contribute.html
