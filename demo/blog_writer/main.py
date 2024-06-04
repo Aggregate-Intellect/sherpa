@@ -1,11 +1,10 @@
 import json
 import os
-from argparse import ArgumentParser
 
+from argparse import ArgumentParser
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from outliner import Outliner
-
 from sherpa_ai.agents import QAAgent, UserAgent
 from sherpa_ai.events import EventType
 
@@ -62,30 +61,47 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, default="agent_config.yaml")
     parser.add_argument("--transcript", type=str, default="transcript.txt")
+    parser.add_argument("--blueprint", type=str, help="Optional JSON blueprint file to use")
     args = parser.parse_args()
 
-    # Extract base name from transcript filename
     base_name = os.path.splitext(os.path.basename(args.transcript))[0]
-
-    # Define dynamic output paths
     json_output_path = f"Output/blueprint_{base_name}.json"
     md_output_path = f"Output/blog_{base_name}.md"
-
+    
+    if args.blueprint:
+        blueprint_full_path = os.path.join("Output", args.blueprint)
+        if os.path.isfile(blueprint_full_path):
+            with open(blueprint_full_path, 'r') as file:
+                pure_json_str = file.read()
+            print(f"Using existing blueprint from {blueprint_full_path}")
+        else:
+            print(f"No blueprint found at {blueprint_full_path}, creating a new blueprint.")
+            # Assume outliner creates a new blueprint if not found
+            outliner = Outliner(args.transcript)
+            blueprint = outliner.full_transcript2outline_json(verbose=True)
+            if blueprint.startswith("```"):
+                lines = blueprint.split("\n")[1:-1]
+                pure_json_str = "\n".join(lines)
+            else:
+                pure_json_str = blueprint
+            with open(json_output_path, "w", encoding="utf-8") as f:
+                f.write(pure_json_str)
+            print(f"Blueprint generated and saved to {json_output_path}")
+    else:
+        # If no blueprint file is specified, proceed with creating a new one
+        outliner = Outliner(args.transcript)
+        blueprint = outliner.full_transcript2outline_json(verbose=True)
+        if blueprint.startswith("```"):
+            lines = blueprint.split("\n")[1:-1]
+            pure_json_str = "\n".join(lines)
+        else:
+            pure_json_str = blueprint
+        with open(json_output_path, "w", encoding="utf-8") as f:
+            f.write(pure_json_str)
+        print(f"Blueprint generated and saved to {json_output_path}")
+        
     writer_agent = get_qa_agent_from_config_file(args.config)
     reviewer_agent = get_user_agent_from_config_file(args.config)
-
-    outliner = Outliner(args.transcript)
-    blueprint = outliner.full_transcript2outline_json(verbose=True)
-    if blueprint.startswith("```"):
-        # The first and last lines are code block delimiters; remove them
-        lines = blueprint.split("\n")[1:-1]
-        pure_json_str = "\n".join(lines)
-    else:
-        pure_json_str = blueprint
-
-    with open(json_output_path, "w", encoding="utf-8") as f:
-        f.write(pure_json_str)
-
     parsed_json = json.loads(pure_json_str)
 
     blog = ""
