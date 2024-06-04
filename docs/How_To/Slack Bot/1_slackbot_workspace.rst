@@ -43,7 +43,8 @@ Next, we will create a new Slack app and add it to the Slack Workspace we just c
 
 Run the Slackbot Locally
 ************************
-Next, we will run the slack app project locally. The slackapp project is part of this livebook's repository. If you haven't done so, follow this guide: :doc:`Run and Develop Sherpa Slackbot <2_run_slackbot>` to set up the livebook repository.
+Next, we will run the slack app project locally. The slackapp project is part of the 
+Sherpa repository. If you haven't done so, follow this guide: :doc:`Run and Develop Sherpa Slackbot <2_run_slackbot>` to set up the repository.
 
 
 Connect Slack Bot to the App
