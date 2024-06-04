@@ -4,7 +4,7 @@ Run and Develop Sherpa Slackbot
 The `Sherpa repository <https://github.com/Aggregate-Intellect/sherpa>`__ contains the Sherpa  code,
 including a chatbot built using Flask and Slack.
 The chatbot leverages the Langchain library for question-answering and
-text processing tasks. While you can :doc:`talk to Sherpa in the AISC Slack workspace<0_slack_bot_intro>`,
+text processing tasks. While you can :doc:`talk to Sherpa in the AISC Slack workspace</How_To/talk_to_sherpa>`,
 if you want to go deeper and contribute to code or run Sherpa in your own Slack workspace then
 this section is for you.
 
@@ -138,91 +138,10 @@ Run with Virtual Environment
          cd src/
          python apps/slackapp/slackapp/bolt_app.py
 
-Development
------------
-
-Linting and formating
-~~~~~~~~~~~~~~~~~~~~~
-
-This project uses ``flake8`` for linting, ``black`` and ``isort`` for
-formatting, and ``pytest`` for testing.
-
-To format the project, run:
-
-.. code:: bash
-
-   make format
-
-if you don’t have ``make`` installed, you can also run the following
-commands:
-
-.. code:: bash
-
-   black .
-   isort .
-
-To lint the project, run:
-
-.. code:: bash
-
-   make lint
-
-if you don’t have ``make`` installed, you can also run the following
-commands:
-
-.. code:: bash
-
-   flake8 .
-
-Testing
-~~~~~~~
-
-To run the tests, run:
-
-.. code:: bash
-
-   make test
-
-or
-
-.. code:: bash
-
-   pytest .
-
-Debugging
-~~~~~~~~~
-
-The Slackbot is built with Flask, which provides a built-in web server and debugger suitable for development use.
-
-When Flask debug mode is enabled, ...
-
-- the server automatically reloads when code is changed
-- http://localhost:3000/ serves a web-based debugger which displays an interactive stack trace when an exception is raised
-- http://localhost:3000/test_debug raises an exception so you can try out the debugger
-- http://localhost:3000/console displays a web-based console where you can execute Python expressions in the context of the application
-- stack traces are also displayed in your terminal console
-
-When Flask debug mode is disabled, ...
-
-- you must manually restart the server to pick up code changes
-- the web-based debugger and console are not available
-- stack traces are only displayed in your terminal console
-
-To enable debug mode, set ``FLASK_DEBUG=True`` in your ``.env`` file.
-To disable debug mode, comment out ``FLASK_DEBUG`` or set it to any value other than ``True``.
-
-**Warning:**
-Never use the development server or enable the debugger when deploying to production.
-These tools are intended for use only during local development, and are not designed to
-be particularly efficient, stable, or secure.
-For more info on the debugger see Werkzeug: `Debugging Applications <https://werkzeug.palletsprojects.com/en/2.3.x/debug/>`__
-and `Flask: Debugging Application Errors <https://flask.palletsprojects.com/en/2.3.x/debugging/>`__.
-
-
 Reference
 ~~~~~~~~~
 
 Once you have the chatbot running you can start interacting with it by mentioning the app in a Slack
-channel. See :doc:`Talk to Sherpa <0_slack_bot_intro>` for how to do this.
+channel. See :doc:`Talk to Sherpa </How_To/talk_to_sherpa>` for how to do this.
 
 You can also configure a local vector database for the chatbot to use as a context search tool. See :doc:`Setup Local VectorDB with Production Data <4_local_vectordb>`
