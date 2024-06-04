@@ -1,4 +1,4 @@
-ABOUT Sherpa
+About Sherpa
 ============
 
 .. image:: _imgs/what_if.png
@@ -122,10 +122,3 @@ But we haven't forgotten about existing businesses.
 We are creating managed and operationalized versions of Sherpa for businesses to use.
 
 If you want to know more about *Sherpa for Business* reach out to sherpa@ai.science
-
-.. toctree::
-    :maxdepth: 1
-
-    Resources/index
-    Updates/index
-    multi_agent_framework.rst
