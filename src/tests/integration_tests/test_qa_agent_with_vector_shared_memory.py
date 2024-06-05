@@ -14,6 +14,7 @@ from sherpa_ai.memory.shared_memory_with_vectordb import SharedMemoryWithVectorD
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.utils import file_text_splitter
 
+
 data = """Avocados are a fruit, not a vegetable. They're technically considered a single-seeded berry, believe it or not.
 The Eiffel Tower can be 15 cm taller during the summer, due to thermal expansion meaning the iron heats up, the particles gain kinetic energy and take up more space.
 Trypophobia is the fear of closely-packed holes. Or more specifically, "an aversion to the sight of irregular patterns or clusters of small holes or bumps." No crumpets for them, then.

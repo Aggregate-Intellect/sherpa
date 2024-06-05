@@ -1,5 +1,5 @@
 ======================
-Sherpa Test Guidelines
+Test Guidelines
 ======================
 
 
