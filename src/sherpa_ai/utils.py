@@ -7,6 +7,7 @@ import requests
 import spacy
 import tiktoken
 from bs4 import BeautifulSoup
+from langchain.base_language import BaseLanguageModel
 from langchain.docstore.document import Document
 from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader
 from langchain.llms import OpenAI
@@ -15,7 +16,6 @@ from loguru import logger
 from nltk.metrics import edit_distance, jaccard_distance
 from pypdf import PdfReader
 from word2number import w2n
-from langchain.base_language import BaseLanguageModel
 
 import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker

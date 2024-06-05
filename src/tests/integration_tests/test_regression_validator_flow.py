@@ -39,7 +39,12 @@ from sherpa_ai.utils import combined_number_extractor, extract_entities
     ],
 )
 def test_regression_validator_flow(
-    get_llm, test_id, objective, input_data, expected_entities, expected_number
+    get_llm,  # noqa F811
+    test_id,
+    objective,
+    input_data,
+    expected_entities,
+    expected_number,
 ):
     llm = get_llm(
         __file__, test_regression_validator_flow.__name__ + f"_{str(test_id)}"
@@ -98,6 +103,6 @@ def test_regression_validator_flow(
                     assert False, entity + " was not found in resource"
         if not number_validation.get_failure_message() in final_result:
             for number in expected_number:
-                if not number in combined_number_extractor(results[0].content):
+                if number not in combined_number_extractor(results[0].content):
                     assert False, number + " was not found in resource"
         assert True
