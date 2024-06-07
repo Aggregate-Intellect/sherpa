@@ -118,31 +118,8 @@ a blueprin, specify your blueprint using the --blueprint argument followed by th
 path to your JSON file or the identifier of the automated blueprint, ensuring 
 your blog strategy is both structured and adaptable to future changes.
 
-An example of what the template can look like: 
-
-{
-    "Thesis Statement": "Effective blog writing in the tech industry requires a focus on cutting-edge technology and user engagement.",
-    "Supporting Arguments": [
-        {
-            "Argument": "Highlighting the latest tech developments attracts a tech-savvy audience.",
-            "Evidence": [
-                "Articles featuring the latest in AI and machine learning see a 50% increase in engagement."
-            ]
-        },
-        {
-            "Argument": "Interactive content like quizzes and tech challenges keeps readers engaged.",
-            "Evidence": [
-                "Readers spend 30% more time on pages with interactive elements."
-            ]
-        },
-        {
-            "Argument": "Integrating user-generated content builds community and loyalty.",
-            "Evidence": [
-                "Blogs featuring guest posts from industry experts have a higher repeat visit rate."
-            ]
-        }
-    ]
-}
+An example of the blueprint is available in the output folder as a placeholder. 
+Please edit or delete this if you prefer the blueprint to be auto-generated before step 3
 
 Step 3. Run:
 
