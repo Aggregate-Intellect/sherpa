@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Tuple
 
+from langchain.base_language import BaseLanguageModel
+
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
@@ -36,7 +38,7 @@ class EntityValidation(BaseOutputProcessor):
     """
 
     def process_output(
-        self, text: str, belief: Belief, iteration_count: int = 1
+        self, text: str, belief: Belief, llm: BaseLanguageModel = None, **kwargs
     ) -> ValidationResult:
         """
         Verifies that entities within `text` exist in the `belief` source text.
@@ -58,7 +60,7 @@ class EntityValidation(BaseOutputProcessor):
             exclude_types=[EventType.feedback, EventType.result, EventType.action],
         )
         entity_exist_in_source, error_message = self.check_entities_match(
-            text, source, self.similarity_picker(iteration_count)
+            text, source, self.similarity_picker(self.count), llm
         )
         if entity_exist_in_source:
             return ValidationResult(
@@ -67,6 +69,7 @@ class EntityValidation(BaseOutputProcessor):
                 feedback="",
             )
         else:
+            self.count += 1
             return ValidationResult(
                 is_valid=False,
                 result=text,
@@ -93,7 +96,11 @@ class EntityValidation(BaseOutputProcessor):
         return "Some enitities from the source might not be mentioned."
 
     def check_entities_match(
-        self, result: str, source: str, stage: TextSimilarityMethod
+        self,
+        result: str,
+        source: str,
+        stage: TextSimilarityMethod,
+        llm: BaseLanguageModel,
     ):
         """
         Check if entities extracted from a question are present in an answer.
@@ -118,9 +125,13 @@ class EntityValidation(BaseOutputProcessor):
             return text_similarity_by_metrics(
                 check_entity=check_entity, source_entity=source_entity
             )
-        else:
+        elif stage > 1 and llm is not None:
             return text_similarity_by_llm(
+                llm=llm,
                 source_entity=source_entity,
                 result=result,
                 source=source,
             )
+        return text_similarity_by_metrics(
+            check_entity=check_entity, source_entity=source_entity
+        )

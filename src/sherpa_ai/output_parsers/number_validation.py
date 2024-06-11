@@ -48,6 +48,7 @@ class NumberValidation(BaseOutputProcessor):
                 feedback="",
             )
         else:
+            self.count += 1
             return ValidationResult(
                 is_valid=False,
                 result=text,

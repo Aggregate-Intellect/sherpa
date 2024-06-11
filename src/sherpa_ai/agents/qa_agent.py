@@ -45,6 +45,7 @@ class QAAgent(BaseAgent):
         actions: List[BaseAction] = [],
         validation_steps: int = 1,
         validations: List[BaseOutputProcessor] = [],
+        global_regen_max: int = 5,
     ):
         """
         The QA agent handles a single question-answering task.
@@ -63,16 +64,18 @@ class QAAgent(BaseAgent):
             validations (List[BaseOutputProcessor], optional): The list of validations the agent will perform. Defaults to [].
         """
         super().__init__(
-            name,
-            description + "\n\n" + f"Your name is {name}.",
-            shared_memory,
-            belief,
-            policy,
-            num_runs,
-            verbose_logger,
-            actions,
-            validation_steps,
-            validations,
+            llm=llm,
+            name=name,
+            description=description + "\n\n" + f"Your name is {name}.",
+            shared_memory=shared_memory,
+            belief=belief,
+            policy=policy,
+            num_runs=num_runs,
+            verbose_logger=verbose_logger,
+            actions=actions,
+            validation_steps=validation_steps,
+            validations=validations,
+            global_regen_max=global_regen_max,
         )
 
         if self.policy is None:
@@ -89,6 +92,7 @@ class QAAgent(BaseAgent):
             belief = Belief()
         self.belief = belief
         self.citation_enabled = False
+
         for validation in self.validations:
             if isinstance(validation, CitationValidation):
                 self.citation_enabled = True
