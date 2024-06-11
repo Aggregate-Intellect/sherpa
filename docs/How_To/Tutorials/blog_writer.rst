@@ -102,17 +102,34 @@ Step 1. Currently the blog writer needs the transcript in both ``.txt``
 *and* in ``.pdf`` formats. So the first step is to ensure you have both
 files and copy them under the ``Transcripts`` subdirectory. Most text
 editors will have an “Export to PDF” feature. Alternatively, you can
-“print” the file as a PDF. Name the files ``transcript.txt`` and
+“print” the file as a PDF. Name the files ``projectname.txt`` and
 ``transcript.pdf``.
 
-Step 2. Run:
+Step 2. To create a custom blueprint for your blog writing strategy, 
+you can either manually populate a provided JSON template by defining a 
+thesis statement, articulating key arguments, and listing supportive evidence, 
+or opt for automation using a blueprint generator tool that crafts the blueprint 
+based on input parameters such as topic and target audience. This should be 
+put in the /Output folder. Once created, you can review and adjust the content 
+to align with your specific needs. For those preferring flexibility, existing 
+blueprints can be modified by editing the thesis, arguments, or evidence, and 
+changes are saved to either local storage or cloud services. After you've created
+a blueprin, specify your blueprint using the --blueprint argument followed by the 
+path to your JSON file or the identifier of the automated blueprint, ensuring 
+your blog strategy is both structured and adaptable to future changes.
+
+An example of the blueprint is available in the output folder as a placeholder. 
+Please edit or delete this if you prefer the blueprint to be auto-generated before step 3
+
+Step 3. Run:
 
 .. code:: bash
 
-   python main.py --config agent_config.yml  --transcript transcript.txt
+   python main.py --config agent_config.yml  --transcript projectname.txt --blueprint blueprint_projectname.json
 
 The blog writer will output verbose feedback to the console as it works
-through the transcript files. The blueprint will be saved as ``blueprint_transcript.json`` and
+through the transcript files. The blueprint will be saved as ``blueprint_transcript.json`` 
+if there isn't one that exists, and you don't specify a file and
 the final output (blog post) as ``blog_transcript.md`` in the ``Output`` folder.
 
 * In the first step, key insights are extracted from each chunk and output to
