@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from sherpa_ai.actions.reranking import BaseReranking
+from sherpa_ai.actions.utils.reranking import BaseReranking
 
 
 class ActionResource(BaseModel):

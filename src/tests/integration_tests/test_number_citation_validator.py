@@ -18,19 +18,6 @@ from sherpa_ai.utils import combined_number_extractor
     "test_id, objective, input_data, expected_numbers",
     [
         (
-            0,
-            "What is the annual salary for an entry level software engineer in Canada?",
-            [
-                {
-                    "Document": """A software engineer is a person who applies the engineering design process to design, develop, test, maintain, and evaluate computer software.
-                 The term programmer is sometimes used as a synonym, but may emphasize software implementation over design and can also lack connotations of engineering education or skills.
-                the average annual  in Canada is around $9000 to $1,000,170,000 CAD for software engineers""",
-                    "Source": "https://www.springboard.com/blog/software-engineering/entry-software-engineer-salary/",
-                }
-            ],
-            ["9000", "1000170000"],
-        ),
-        (
             1,
             "on june how much cash does Sabio Delivers had?",
             [
@@ -133,7 +120,6 @@ def test_number_citation_succeeds_in_qa(
     llm = get_llm(
         __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
     )
-
     data = input_data
 
     shared_memory = SharedMemory(

@@ -1,10 +1,9 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from sherpa_ai.actions.google_search import GoogleSearch
-from sherpa_ai.actions.reranking import RerankingByQuery
-
+from sherpa_ai.actions.utils.reranking import RerankingByQuery
 
 Resources = [
     {"Document": "0", "Source": "www.link1.com"},
@@ -20,17 +19,30 @@ def mock_google_search():
         yield mock_google_search
 
 
+def embedding_query(text):
+    return_values = [[1, 0, 0], [1, 1, 1], [1, 1, 0]]
+    return return_values[int(text)]
+
+
+def embedding_documents(texts):
+    results = []
+    for text in texts:
+        results.append(embedding_query(text))
+
+    return results
+
+
 @pytest.fixture
-def mock_embedding_func():
-    def embedding(text):
-        return_values = [[1, 0, 0], [1, 1, 1], [1, 1, 0]]
-        return return_values[int(text)]
+def mock_embeddings():
+    embeddings = MagicMock()
+    embeddings.embed_query.side_effect = embedding_query
+    embeddings.embed_documents.side_effect = embedding_documents
 
-    return embedding
+    return embeddings
 
 
-def test_default_reranker(mock_google_search, mock_embedding_func):
-    reranker = RerankingByQuery(embedding_func=mock_embedding_func)
+def test_default_reranker(mock_google_search, mock_embeddings):
+    reranker = RerankingByQuery(embeddings=mock_embeddings)
 
     action = GoogleSearch(
         role_description="Planner",
