@@ -10,10 +10,29 @@ from langchain.text_splitter import MarkdownTextSplitter
 
 
 class Outliner:
-    def __init__(self, transcript_file) -> None:
-        with open(transcript_file, "r", encoding="utf-8") as f:
+    def __init__(self, input_filename=None) -> None:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        default_folder_path = os.path.join(script_dir, 'Transcripts')
+        folder_path = default_folder_path
+
+        transcript_files = [f for f in os.listdir(folder_path) if f.endswith('.txt')]
+
+        if not transcript_files:
+            raise ValueError("No transcript files found in the folder.")
+
+        if input_filename:
+            if input_filename in transcript_files:
+                transcript_file_path = os.path.join(folder_path, input_filename)
+            else:
+                raise FileNotFoundError(f"The specified file {input_filename} does not exist in the Transcripts folder.")
+        else:
+            transcript_file_path = os.path.join(folder_path, transcript_files[0])
+
+        print(f"Using transcript file: {transcript_file_path}")
+
+        with open(transcript_file_path, "r", encoding="utf-8") as f:
             self.raw_transcript = f.read()
-        # instantiate chat model
+
         self.chat = ChatOpenAI(
             openai_api_key=os.environ.get("OPENAI_API_KEY"),
             temperature=0,

@@ -7,6 +7,7 @@ import requests
 import spacy
 import tiktoken
 from bs4 import BeautifulSoup
+from langchain.base_language import BaseLanguageModel
 from langchain.docstore.document import Document
 from langchain.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader
 from langchain.llms import OpenAI
@@ -507,6 +508,7 @@ def json_from_text(text: str):
 
 
 def text_similarity_by_llm(
+    llm: BaseLanguageModel,
     source_entity: List[str],
     source,
     result,
@@ -526,13 +528,6 @@ def text_similarity_by_llm(
     Returns:
     dict: Result of the check containing 'entity_exist' and 'messages'.
     """
-
-    llm = SherpaOpenAI(
-        temperature=cfg.TEMPERATURE,
-        openai_api_key=cfg.OPENAI_API_KEY,
-        user_id=user_id,
-        team_id=team_id,
-    )
 
     instruction = f"""
         I have a question and an answer. I want you to confirm whether the entities from the question are all mentioned in some form within the answer.

@@ -134,12 +134,14 @@ def test_number_citation_succeeds_in_qa(
         __file__, test_number_citation_succeeds_in_qa.__name__ + f"_{str(test_id)}"
     )
 
+    data = input_data
+
     shared_memory = SharedMemory(
         objective=objective,
         agent_pool=None,
     )
     number_validation = NumberValidation()
-    with patch.object(SearchTool, "_run", return_value=input_data):
+    with patch.object(SearchTool, "_run", return_value=data):
         task_agent = QAAgent(
             llm=llm,
             shared_memory=shared_memory,
@@ -160,7 +162,6 @@ def test_number_citation_succeeds_in_qa(
         data_numbers = expected_numbers
 
         logger.debug(results[0].content)
-
         for number in data_numbers:
             assert number in combined_number_extractor(results[0].content), (
                 number + " was not found in resource"
