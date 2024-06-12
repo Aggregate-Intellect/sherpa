@@ -1,3 +1,8 @@
+from unittest.mock import patch
+
+import pytest
+from loguru import logger
+
 from sherpa_ai.config import AgentConfig
 from sherpa_ai.output_parser import TaskAction
 from sherpa_ai.tools import SearchTool
@@ -38,7 +43,13 @@ def test_search_query_includes_multiple_gsite_config():
     assert search_result != ""
 
 
-def test_search_query_includes_more_gsite_config_warning():
+@pytest.fixture
+def mock_logger():
+    with patch("loguru.logger.warning") as mock_logger:
+        yield mock_logger
+
+
+def test_search_query_includes_more_gsite_config_warning(mock_logger):
     site = "https://www.google.com, https://www.langchain.com, https://openai.com, https://www.google.com, https://www.langchain.com, https://openai.com"  # noqa: E501
     config = AgentConfig(
         verbose=True,
@@ -47,10 +58,10 @@ def test_search_query_includes_more_gsite_config_warning():
     assert config.gsite == site.split(", ")
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
-    search_result = search_tool._run(query)
-    assert (
-        "Warning: Only the first 5 URLs are taken into consideration." in search_result
-    )
+    search_tool._run(query)
+
+    expected_warning = "Only the first 5 URLs are taken into consideration."
+    mock_logger.assert_called_with(expected_warning)
 
 
 def test_search_query_includes_more_gsite_config_empty():
@@ -64,7 +75,7 @@ def test_search_query_includes_more_gsite_config_empty():
     assert search_result != ""
 
 
-def test_search_query_includes_invalid_url():
+def test_search_query_includes_invalid_url(mock_logger):
     site = "http://www.cwi.nl:80/%7Eguido/Python.html, /data/Python.html, 532, https://stackoverflow.com"  # noqa: E501
     invalid_domain_list = [
         "/data/Python.html",
@@ -77,9 +88,9 @@ def test_search_query_includes_invalid_url():
     assert config.gsite == site.split(", ")
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
-    result = search_tool._run(query)
+    search_tool._run(query)
 
     invalid_domain = ", ".join(invalid_domain_list)
-    expected_error = f"Warning: The doman {invalid_domain} is invalid and is not taken into consideration.\n"  # noqa: E501
+    expected_error = f"The domain {invalid_domain} is invalid and is not taken into consideration."  # noqa: E501
 
-    assert expected_error in result
+    logger.warning.assert_called_with(expected_error)

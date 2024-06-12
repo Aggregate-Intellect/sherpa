@@ -36,7 +36,6 @@ class GoogleSearch(BaseRetrievalAction):
     task: str
     llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SEARCH_SUMMARY_DESCRIPTION
-    n: int = 5
     config: AgentConfig = AgentConfig()
     _search_tool: Any
 
@@ -47,12 +46,10 @@ class GoogleSearch(BaseRetrievalAction):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._search_tool = SearchTool(config=self.config)
+        self._search_tool = SearchTool(config=self.config, top_k=self.num_documents)
 
-    def execute(self, query) -> str:
-        result, resources = self._search_tool._run(query, return_resources=True)
+    def search(self, query) -> list[dict]:
+        resources = self._search_tool._run(query, return_resources=True)
         self.add_resources(resources)
 
-        logger.debug("Search Result: {}", result)
-
-        return result
+        return resources

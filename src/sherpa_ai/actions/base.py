@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from functools import cached_property
 
+from loguru import logger
 from pydantic import BaseModel, Field
+
+from sherpa_ai.actions.utils.reranking import BaseReranking
 
 
 class ActionResource(BaseModel):
@@ -36,6 +39,12 @@ class BaseAction(ABC, BaseModel):
 
 class BaseRetrievalAction(BaseAction, ABC):
     resources: list[ActionResource] = Field(default_factory=list)
+    num_documents: int = 5  # Number of documents to retrieve
+    reranker: BaseReranking = None
+    current_task: str = ""
+
+    perform_reranking: bool = False
+    perform_refinement: bool = False
 
     def add_resources(self, resources: list[dict]):
         action_resources = self.resources
@@ -45,3 +54,38 @@ class BaseRetrievalAction(BaseAction, ABC):
             action_resources.append(
                 ActionResource(source=resource["Source"], content=resource["Document"])
             )
+
+    def execute(self, query: str) -> str:
+        results = self.search(query)
+
+        results = [result["Document"] for result in results]
+
+        if self.perform_reranking:
+            results = self.reranking(results)
+
+        results = "\n\n".join(results)
+        logger.debug("Action Results: {}", results)
+
+        if self.perform_refinement:
+            results = self.refine(results)
+
+        return results
+
+    @abstractmethod
+    def search(self, query: str) -> str:
+        """
+        Search for relevant documents based on the query.
+        """
+        pass
+
+    def reranking(self, documents: list[str]) -> list[str]:
+        """
+        Rerank the documents based on the query.
+        """
+        return self.reranker.rerank(documents, self.current_task)
+
+    def refine(self, results: str) -> str:
+        """
+        Refine the results based on the query.
+        """
+        return results
