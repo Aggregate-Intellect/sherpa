@@ -15,7 +15,7 @@ DOWNLOAD_TIMEOUT = 2.5
 
 
 class QuestionWithFileHandler:
-    def __init__(self, question, files, token, user_id):
+    def __init__(self, question, files, token, user_id, team_id, llm):
         """
         Initializes the QuestionWithFileHandler instance.
 
@@ -32,6 +32,7 @@ class QuestionWithFileHandler:
         self.token = token
         self.files = files
         self.user_id = user_id
+        self.llm = llm
 
     def reconstruct_prompt_with_file(self):
         """
@@ -124,7 +125,7 @@ class QuestionWithFileHandler:
                 question=self.question,
                 title=file_info["title"],
                 text_data=data,
-                user_id=self.user_id,
+                llm=self.llm,
             )
 
             while count_string_tokens(chunk_summary, "gpt-3.5-turbo") > 3000:
@@ -134,7 +135,7 @@ class QuestionWithFileHandler:
                     question=self.question,
                     title=file_info["title"],
                     text_data=chunk_summary,
-                    user_id=self.user_id,
+                    llm=self.llm,
                 )
         result = question_with_file_reconstructor(
             file_format=file_info["filetype"],
