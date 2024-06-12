@@ -23,16 +23,12 @@ from sherpa_ai.utils import combined_number_extractor, extract_entities
         (
             0,
             "what is unique about Ethiopia calendar?  based on USA calendar association. what is the number of months ",
-            (
-                """
-                According to Ethiopian calendar Association (ECA) , Ethiopia has thirteen months. Canada and Kenya also mentioned this. also recognized by World Calendar Association (WCA) , Addis Ababa , AU , 34.5 , 9000 , Africa """,
-                [
-                    {
-                        "Document": "Ethiopian calendar",
-                        "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
-                    }
-                ],
-            ),
+            [
+                {
+                    "Document": "According to Ethiopian calendar Association (ECA) , Ethiopia has thirteen months. Canada and Kenya also mentioned this. also recognized by World Calendar Association (WCA) , Addis Ababa , AU , 34.5 , 9000 , Africa",
+                    "Source": "https://www.sabioholding.com/press-releases/sabio-delivers-11-q2-2023-revenue-growth-led-by-57-increase-in-connected-tv-ott-sales",
+                }
+            ],
             ["Ethiopian", "Ethiopian Calendar Association", "kenya"],
             ["13"],
         ),

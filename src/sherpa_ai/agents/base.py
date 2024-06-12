@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List, Optional
 from langchain.base_language import BaseLanguageModel
 from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import EventType
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
