@@ -1,6 +1,6 @@
 import json
 import re
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -42,6 +42,14 @@ def load_files(files: List[str]) -> List[Document]:
             documents.extend(loader.load())
     logger.info(documents)
     return documents
+
+
+def get_links_from_text(text: str) -> List[str]:
+    url_regex = r"(https?://\S+|www\.\S+)"
+    urls = re.findall(url_regex, text)
+
+    result = [{"url": url, "base_url": get_base_url(url)} for url in urls]
+    return result
 
 
 def get_links_from_string(text):
@@ -121,7 +129,7 @@ def count_string_tokens(string: str, model_name: str) -> int:
     return len(encoding.encode(string))
 
 
-def chunk_and_summarize(text_data: str, question: str, link: str, llm):
+def chunk_and_summarize(text_data: str, question: str, link: str, llm: Any):
     instruction = (
         "include any information that can be used to answer the "
         f"question '{question}' the given literal text is a data "

@@ -11,7 +11,16 @@ from typing_extensions import Literal
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
-
+from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
+from sherpa_ai.scrape.extract_github_readme import extract_github_readme
+from sherpa_ai.utils import (
+    chunk_and_summarize,
+    count_string_tokens,
+    get_links_from_text,
+    rewrite_link_references,
+    scrape_with_url,
+)
+from langchain.base_language import BaseLanguageModel
 
 HTTP_GET_TIMEOUT = 2.5
 
@@ -297,3 +306,75 @@ class UserInputTool(BaseTool):
 
     def _arun(self, query: str) -> str:
         raise NotImplementedError("UserInputTool does not support async run")
+
+
+class LinkScraperTool(BaseTool):
+    llm: Any
+
+    name = "Link Scraper"
+    description = "Access the content of a link. Only use this tool when you need to extract information from a link."
+
+    def _run(
+        self,
+        query: str,
+    ) -> str:
+        # existing code...
+
+        query_links = get_links_from_text(query)
+
+        # if there is a link inside the question scraped then summarize based
+        # on question and then aggregate to the question
+
+        if len(query_links) > 0:
+            # TODO I should get gpt-3.5-turbo from an environment variable or a config file
+            available_token = 3000 - count_string_tokens(query, "gpt-3.5-turbo")
+            per_scrape_token_size = available_token / len(query_links)
+            final_summary = []
+            for last_message_link in query_links:
+                link = last_message_link["url"]
+                scraped_data = ""
+                if "github" in query_links[-1]["base_url"]:
+                    git_scraper = extract_github_readme(link)
+                    if git_scraper:
+                        scraped_data = {
+                            "data": git_scraper,
+                            "status": 200,
+                        }
+                    else:
+                        scraped_data = {"data": "", "status": 404}
+                else:
+                    scraped_data = scrape_with_url(link)
+                if scraped_data["status"] == 200:
+                    chunk_summary = chunk_and_summarize(
+                        link=link,
+                        question=query,
+                        text_data=scraped_data["data"],
+                        # TODO_ user id is not going to be needed here in the future
+                        llm=self.llm,
+                    )
+
+                    while (
+                        count_string_tokens(chunk_summary, "gpt-3.5-turbo")
+                        > per_scrape_token_size
+                    ):
+                        chunk_summary = chunk_and_summarize(
+                            link=link,
+                            question=query,
+                            text_data=chunk_summary,
+                            llm=self.llm,
+                        )
+
+                    final_summary.append({"data": chunk_summary, "link": link})
+
+            scraped_data = rewrite_link_references(question=query, data=final_summary)
+            resources = []
+            resources.append(
+                {
+                    "Document": scraped_data,
+                    "Source": ", ".join([link["url"] for link in query_links]),
+                }
+            )
+        return resources
+
+    def _arun(self, query: str) -> str:
+        raise NotImplementedError("LinkScraperTool does not support async run")
