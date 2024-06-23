@@ -1,7 +1,7 @@
 from typing import Any
 
-from langchain.base_language import BaseLanguageModel
-from loguru import logger
+from langchain_core.language_models import BaseLanguageModel  # type: ignore
+from loguru import logger  # type: ignore
 
 from sherpa_ai.actions.base import BaseAction
 

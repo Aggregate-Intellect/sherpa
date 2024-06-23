@@ -1,11 +1,11 @@
 import base64
 import re
 
-import pinecone
+import pinecone  # type: ignore
 import requests
-from dotenv import dotenv_values
-from langchain.embeddings.openai import OpenAIEmbeddings
-from loguru import logger
+from dotenv import dotenv_values  # type: ignore
+from langchain_community.embeddings import OpenAIEmbeddings  # type: ignore
+from loguru import logger  # type: ignore
 
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import ConversationStore
@@ -46,7 +46,8 @@ def extract_github_readme(repo_url):
         owner, repo = get_owner_and_repo(repo_url)
         path = "README.md"
         token = cfg.GITHUB_AUTH_TOKEN
-        github_api_url = f"https://api.github.com/repos/{owner}/{repo}/contents"
+        github_api_url = f"https://api.github.com/repos/{
+            owner}/{repo}/contents"
         headers = {
             "Authorization": f"token {token}",
             "X-GitHub-Api-Version": "2022-11-28",
@@ -71,7 +72,8 @@ def extract_github_readme(repo_url):
             )
         ]
         path = matching_files[0]
-        github_api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+        github_api_url = f"https://api.github.com/repos/{
+            owner}/{repo}/contents/{path}"
         headers = {
             "Authorization": f"token {token}",
             "X-GitHub-Api-Version": "2022-11-28",

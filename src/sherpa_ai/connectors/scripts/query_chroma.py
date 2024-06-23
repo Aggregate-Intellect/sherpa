@@ -2,12 +2,12 @@ import argparse
 import json
 import uuid
 
-import chromadb
-from chromadb.config import Settings
-from dotenv import load_dotenv
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-from loguru import logger
+import chromadb  # type: ignore
+from chromadb.config import Settings  # type: ignore
+from dotenv import load_dotenv  # type: ignore
+from langchain_community.embeddings import OpenAIEmbeddings  # type: ignore
+from langchain_community.vectorstores import Chroma  # type: ignore
+from loguru import logger  # type: ignore
 
 
 def main(args):
@@ -37,7 +37,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--chroma_host", help="URL of Chroma instance", default="localhost"
     )
-    parser.add_argument("--chroma_port", help="Port of Chroma instance", default="8000")
+    parser.add_argument(
+        "--chroma_port", help="Port of Chroma instance", default="8000")
     parser.add_argument(
         "--chroma_index", help="Index of Chroma instance", default="langchain"
     )

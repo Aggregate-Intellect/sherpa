@@ -3,11 +3,11 @@ import urllib.parse
 from typing import Any, List, Tuple, Union
 
 import requests
-from langchain.tools import BaseTool
-from langchain.utilities import GoogleSerperAPIWrapper
-from langchain.vectorstores.base import VectorStoreRetriever
-from loguru import logger
-from typing_extensions import Literal
+from langchain_core.tools import BaseTool  # type: ignore
+from langchain_community.utilities import GoogleSerperAPIWrapper  # type: ignore
+from langchain_core.vectorstores import VectorStoreRetriever  # type: ignore
+from loguru import logger  # type: ignore
+from typing_extensions import Literal  # type: ignore
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
@@ -66,7 +66,8 @@ class SearchArxivTool(BaseTool):
         result_list = []
         for i in range(len(titles)):
             result_list.append(
-                "Title: " + titles[i] + "\n" + "Summary: " + summaries[i] + "\n"
+                "Title: " + titles[i] + "\n" +
+                "Summary: " + summaries[i] + "\n"
             )
         result = "\n".join(result_list)
 
@@ -109,7 +110,8 @@ class SearchTool(BaseTool):
             ]
             if len(query_list) >= 5:
                 query_list = query_list[:5]
-                logger.warning("Only the first 5 URLs are taken into consideration.")
+                logger.warning(
+                    "Only the first 5 URLs are taken into consideration.")
         else:
             query_list = [query]
         if self.config.invalid_domains:
