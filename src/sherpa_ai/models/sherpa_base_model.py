@@ -1,14 +1,16 @@
 import typing
 from typing import Any, List, Optional
 
-from langchain.callbacks.manager import (
+from langchain.callbacks.manager import (  # type: ignore
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
-from langchain.chat_models import ChatOpenAI
-from langchain.chat_models.base import BaseChatModel
-from langchain.schema import BaseMessage, ChatResult
-from pydantic import BaseModel
+from langchain_community.chat_models import ChatOpenAI  # type: ignore
+from langchain_core.callbacks import AsyncCallbackManagerForLLMRun, CallbackManagerForLLMRun  # type: ignore
+from langchain_core.language_models import BaseChatModel  # type: ignore
+from langchain_core.messages import BaseMessage  # type: ignore
+from langchain_core.outputs import ChatResult  # type: ignore
+from pydantic import BaseModel  # type: ignore
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 

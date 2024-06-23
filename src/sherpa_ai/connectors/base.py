@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from langchain.docstore.document import Document
+from langchain_core.documents import Document  # type: ignore
 
 
 class BaseVectorDB(ABC):

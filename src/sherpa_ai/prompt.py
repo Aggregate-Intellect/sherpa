@@ -1,11 +1,11 @@
 import time
 from typing import Any, Callable, List
 
-from langchain.prompts.chat import BaseChatPromptTemplate
-from langchain.schema import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain.vectorstores.base import VectorStoreRetriever
-from loguru import logger
-from pydantic import BaseModel
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage  # type: ignore
+from langchain_core.prompts import BaseChatPromptTemplate  # type: ignore
+from langchain_core.vectorstores import VectorStoreRetriever  # type: ignore
+from loguru import logger  # type: ignore
+from pydantic import BaseModel  # type: ignore
 
 from sherpa_ai.prompt_generator import get_prompt
 from sherpa_ai.tools import BaseTool
@@ -19,7 +19,8 @@ class SlackBotPrompt(BaseChatPromptTemplate):
     send_token_limit: int = 4196
 
     def construct_base_prompt(self):
-        full_prompt = f"You are a friendly assistent bot called {self.ai_name}\n\n"
+        full_prompt = f"You are a friendly assistent bot called {
+            self.ai_name}\n\n"
         full_prompt += f"\n\n{get_prompt(self.tools)}"
         logger.debug(full_prompt)
         return full_prompt
@@ -67,7 +68,8 @@ class SlackBotPrompt(BaseChatPromptTemplate):
 
             message_cls = AIMessage if message["user"] == self.ai_id else HumanMessage
             # replace the at in the message with the name of the bot
-            text = message["text"].replace(f"@{self.ai_id}", f"@{self.ai_name}")
+            text = message["text"].replace(
+                f"@{self.ai_id}", f"@{self.ai_name}")
             results.append(message_cls(content=text))
 
         return results

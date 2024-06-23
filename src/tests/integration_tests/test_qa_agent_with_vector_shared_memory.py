@@ -1,10 +1,10 @@
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
-from langchain.chat_models import ChatOpenAI
-from langchain.docstore.document import Document
-from loguru import logger
+import pytest  # type: ignore
+from langchain_community.chat_models import ChatOpenAI  # type: ignore
+from langchain_core.documents import Document  # type: ignore
+from loguru import logger  # type: ignore
 
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.connectors.base import BaseVectorDB
@@ -134,7 +134,8 @@ def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store):
     result_content = result[0].page_content
     logger.debug(result[0])
 
-    assert len(result_content) > 0, "Failed to do similarity search from exsiting store"
+    assert len(
+        result_content) > 0, "Failed to do similarity search from exsiting store"
     assert result[0].metadata["file_name"] == "kk", "Chunk is not from the correct file"
 
 

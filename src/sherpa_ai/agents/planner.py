@@ -1,7 +1,7 @@
 from typing import Optional
 
-from langchain.llms.base import LLM
-from loguru import logger
+from langchain_core.language_models import LLM  # type: ignore
+from loguru import logger  # type: ignore
 
 from sherpa_ai.actions.planning import TaskPlanning
 from sherpa_ai.agents.agent_pool import AgentPool
@@ -72,7 +72,8 @@ class Planner(BaseAgent):
         last_plan = self.get_last_plan()
 
         # run the planning
-        plan = self.planning.execute(task, agent_pool_description, last_plan, feedback)
+        plan = self.planning.execute(
+            task, agent_pool_description, last_plan, feedback)
 
         logger.info(f"Plan: {plan}")
 

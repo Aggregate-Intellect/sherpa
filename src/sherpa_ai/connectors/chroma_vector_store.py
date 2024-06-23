@@ -1,9 +1,9 @@
 import uuid
 
-import chromadb
-from chromadb.utils import embedding_functions
-from langchain.docstore.document import Document
-from langchain.text_splitter import CharacterTextSplitter
+import chromadb  # type: ignore
+from chromadb.utils import embedding_functions  # type: ignore
+from langchain_core.documents import Document  # type: ignore
+from langchain_text_splitters import CharacterTextSplitter  # type: ignore
 
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.base import BaseVectorDB

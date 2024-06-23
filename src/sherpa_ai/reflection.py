@@ -1,10 +1,10 @@
 from os import environ
 from typing import List
 
-from langchain.base_language import BaseLanguageModel
-from langchain.schema import BaseMessage
-from langchain.tools import BaseTool
-from loguru import logger
+from langchain_core.language_models import BaseLanguageModel  # type: ignore
+from langchain_core.messages import BaseMessage  # type: ignore
+from langchain_core.tools import BaseTool  # type: ignore
+from loguru import logger  # type: ignore
 
 from sherpa_ai.prompt_generator import PromptGenerator
 
@@ -31,7 +31,8 @@ class Reflection:
         current_tokens = 0
 
         for message in reversed(messages):
-            current_tokens = current_tokens + self.token_counter(message.content)
+            current_tokens = current_tokens + \
+                self.token_counter(message.content)
             if current_tokens > max_token:
                 break
             result = message.type + ": " + message.content + "\n" + result
@@ -50,7 +51,8 @@ class Reflection:
                 instruction = (
                     f"You want to solve the task: {task}."
                     f"The original reply is: {assistant_reply}"
-                    f"Here is all the commands you can choose to use: {self.commands}"
+                    f"Here is all the commands you can choose to use: {
+                        self.commands}"
                     f"Here is previous messages: \n{message_history}\n"
                     f"We need a new reply by changing neither command.name or command.args.query."
                     f"Make sure the new reply is different from the original reply by name or query."
