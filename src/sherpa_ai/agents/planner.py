@@ -72,8 +72,7 @@ class Planner(BaseAgent):
         last_plan = self.get_last_plan()
 
         # run the planning
-        plan = self.planning.execute(
-            task, agent_pool_description, last_plan, feedback)
+        plan = self.planning.execute(task, agent_pool_description, last_plan, feedback)
 
         logger.info(f"Plan: {plan}")
 

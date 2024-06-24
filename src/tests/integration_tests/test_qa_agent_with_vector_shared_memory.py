@@ -134,8 +134,7 @@ def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store):
     result_content = result[0].page_content
     logger.debug(result[0])
 
-    assert len(
-        result_content) > 0, "Failed to do similarity search from exsiting store"
+    assert len(result_content) > 0, "Failed to do similarity search from exsiting store"
     assert result[0].metadata["file_name"] == "kk", "Chunk is not from the correct file"
 
 

@@ -57,8 +57,7 @@ class EntityValidation(BaseOutputProcessor):
         """
 
         source = belief.get_histories_excluding_types(
-            exclude_types=[EventType.feedback,
-                           EventType.result, EventType.action],
+            exclude_types=[EventType.feedback, EventType.result, EventType.action],
         )
         entity_exist_in_source, error_message = self.check_entities_match(
             text, source, self.similarity_picker(self.count), llm
@@ -90,8 +89,7 @@ class EntityValidation(BaseOutputProcessor):
         Returns:
             TextSimilarityState: The selected text similarity state.
         """
-        switch_dict = {0: TextSimilarityMethod.BASIC,
-                       1: TextSimilarityMethod.METRICS}
+        switch_dict = {0: TextSimilarityMethod.BASIC, 1: TextSimilarityMethod.METRICS}
         return switch_dict.get(value, TextSimilarityMethod.LLM)
 
     def get_failure_message(self) -> str:

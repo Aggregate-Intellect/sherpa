@@ -80,11 +80,11 @@ class BaseAgent(ABC):
                 continue
 
             self.verbose_logger.log(
-                f"```🤖{self.name} is executing {
-                    result.action.name}\n Input: {result.args}...```"
+                f"```🤖{self.name} is executing 
+                {result.action.name}\n Input: {result.args}...```"
             )
-            logger.debug(f"🤖{self.name} is executing {
-                         result.action.name}...```")
+            logger.debug(f"🤖{self.name} is executing 
+                         {result.action.name}...```")
 
             self.belief.update_internal(
                 EventType.action, self.name, result.action.name +

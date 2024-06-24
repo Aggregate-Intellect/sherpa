@@ -37,8 +37,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--chroma_host", help="URL of Chroma instance", default="localhost"
     )
-    parser.add_argument(
-        "--chroma_port", help="Port of Chroma instance", default="8000")
+    parser.add_argument("--chroma_port", help="Port of Chroma instance", default="8000")
     parser.add_argument(
         "--chroma_index", help="Index of Chroma instance", default="langchain"
     )

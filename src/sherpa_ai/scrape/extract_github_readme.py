@@ -46,8 +46,8 @@ def extract_github_readme(repo_url):
         owner, repo = get_owner_and_repo(repo_url)
         path = "README.md"
         token = cfg.GITHUB_AUTH_TOKEN
-        github_api_url = f"https://api.github.com/repos/{
-            owner}/{repo}/contents"
+        github_api_url = f"https://api.github.com/repos/
+        {owner}/{repo}/contents"
         headers = {
             "Authorization": f"token {token}",
             "X-GitHub-Api-Version": "2022-11-28",

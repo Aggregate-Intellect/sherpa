@@ -2,7 +2,10 @@ import json
 import typing
 from typing import Any, Coroutine, List, Optional
 
-from langchain_core.callbacks import AsyncCallbackManagerForLLMRun, CallbackManagerForLLMRun  # type: ignore
+from langchain_core.callbacks import (  # type: ignore
+    AsyncCallbackManagerForLLMRun,
+    CallbackManagerForLLMRun,
+)
 from langchain_core.language_models import BaseChatModel  # type: ignore
 from langchain_core.messages import BaseMessage  # type: ignore
 from langchain_core.outputs import ChatResult  # type: ignore
@@ -27,15 +30,13 @@ class ChatModelWithLogging(BaseChatModel):
         # get the name of the language model. For models like OpenAI, this is the model
         # name (e.g., gpt-3.5-turbo). for other LLMs, this is the type of the LLM
         llm_name = (
-            self.llm.model_name if hasattr(
-                self.llm, "model_name") else self._llm_type
+            self.llm.model_name if hasattr(self.llm, "model_name") else self._llm_type
         )
         input_text = []
         for message in messages:
             # make sure all the messages stay on the same line
             input_text.append(
-                {"text": message.content.replace(
-                    "\n", "\\n"), "agent": message.type}
+                {"text": message.content.replace("\n", "\\n"), "agent": message.type}
             )
         result = self.llm._generate(messages, stop, run_manager, **kwargs)
         # only one generation for a LLM call

@@ -7,11 +7,17 @@ import requests
 import spacy  # type: ignore
 import tiktoken  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
-from langchain_community.document_loaders import UnstructuredMarkdownLoader, UnstructuredPDFLoader  # type: ignore
+from langchain_community.document_loaders import (  # type: ignore
+    UnstructuredMarkdownLoader,
+    UnstructuredPDFLoader,
+)
 from langchain_community.llms import OpenAI  # type: ignore
 from langchain_core.documents import Document  # type: ignore
 from langchain_core.language_models import BaseLanguageModel  # type: ignore
-from langchain_text_splitters import CharacterTextSplitter, TokenTextSplitter  # type: ignore
+from langchain_text_splitters import (  # type: ignore
+    CharacterTextSplitter,
+    TokenTextSplitter,
+)
 from loguru import logger  # type: ignore
 from nltk.metrics import edit_distance, jaccard_distance  # type: ignore
 from pypdf import PdfReader  # type: ignore
@@ -79,8 +85,7 @@ def get_link_from_slack_client_conversation(data):
                             if newElement.get("type") == "link":
                                 newUrl = newElement["url"]
                                 links.append(
-                                    {"url": newUrl,
-                                        "base_url": get_base_url(newUrl)}
+                                    {"url": newUrl, "base_url": get_base_url(newUrl)}
                                 )
     return links
 
@@ -103,8 +108,11 @@ def rewrite_link_references(data: any, question: str):
         link = chunk["link"]
         link_with_angle_brackets = f"<{link}>"
         result = result.replace(link_with_angle_brackets, reference)
-        result = result + f""" {reference}
+        result = (
+            result
+            + f""" {reference}
             link: "{link}" , link_data: {data}"""
+        )
     return result
 
 
@@ -160,8 +168,9 @@ def chunk_and_summarize_file(
     instruction = (
         f"include any information that can be used to answer the "
         f"question '{question}' the given literal text is a data "
-        f"from the file named {file_name} {title} and file format {
-            file_format} . Do not directly answer the question itself"
+        f"from the file named {file_name}"
+        f"{title} and file format {file_format}."
+        f"Do not directly answer the question itself"
     )
     text_splitter = TokenTextSplitter(chunk_size=3000, chunk_overlap=0)
     chunked_text = text_splitter.split_text(text_data)
@@ -202,10 +211,8 @@ def log_formatter(logs):
         reply = log["reply"]
         if "thoughts" in reply:
             # reply = json.loads(reply)
-            formatted_reply = (
-                f"""-- Step: {log["Step"]
+            formatted_reply = f"""-- Step: {log["Step"]
                               } -- \nThoughts: \n {reply["thoughts"]} """
-            )
 
             if "command" in reply:  # add command if it exists
                 formatted_reply += f"""\nCommand: \n {reply["command"]}"""
@@ -268,8 +275,7 @@ def extract_urls(text):
     words = text.split()
 
     # Extract URLs using urllib.parse
-    urls = [word for word in words if urlparse(word).scheme in [
-        "http", "https"]]
+    urls = [word for word in words if urlparse(word).scheme in ["http", "https"]]
 
     return urls
 
@@ -353,8 +359,7 @@ def extract_numeric_entities(
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     numbers = []
-    filtered_entities = [
-        ent.text for ent in doc.ents if ent.label_ in entity_types]
+    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
     for entity in filtered_entities:
         if any(char.isdigit() for char in entity):
             result = extract_numbers_from_text(entity)
@@ -396,8 +401,8 @@ def verify_numbers_against_source(
 
     if len(incorrect_candidates) > 0:
         joined_numbers = ", ".join(incorrect_candidates)
-        message = f"Don't use the numbers {
-            joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context."
+        message = f"Don't use the numbers"
+        f"{joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context."
         return False, message
     return True, None
 
@@ -414,8 +419,8 @@ def check_if_number_exist(result: str, source: str):
     if len(error_numbers) > 0:
         for numbers in error_numbers:
             message += numbers + ", "
-        message = f"Don't use the numbers {
-            message} to answer the question instead stick to the numbers mentioned in the context."
+        message = f"Don't use the numbers"
+        f"{message} to answer the question instead stick to the numbers mentioned in the context."
         return {"number_exists": False, "messages": message}
     return {"number_exists": True, "messages": message}
 
@@ -469,8 +474,7 @@ def extract_entities(text):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     entity_types = ["NORP", "ORG", "GPE", "LOC"]
-    filtered_entities = [
-        ent.text for ent in doc.ents if ent.label_ in entity_types]
+    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
 
     return filtered_entities
 
@@ -592,8 +596,8 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
         # If there are error entities, create a message to address them in the final answer
         for entity in error_entity:
             message += entity + ", "
-        message = f"Remember to address these entities {
-            message} in the final answer."
+        message = f"Remember to address these entities"
+        f"{message} in the final answer."
         return False, message
     return True, message
 
@@ -621,8 +625,8 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
     if len(error_entity) > 0:
         for entity in error_entity:
             message += entity + ", "
-        message = f"remember to address these entities {
-            message} in final the answer."
+        message = f"remember to address these entities"
+        f"{message} in final the answer."
         return False, message
     return True, message
 
