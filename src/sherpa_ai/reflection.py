@@ -51,8 +51,8 @@ class Reflection:
                 instruction = (
                     f"You want to solve the task: {task}."
                     f"The original reply is: {assistant_reply}"
-                    f"Here is all the commands you can choose to use: {
-                        self.commands}"
+                    f"Here is all the commands you can choose to use: 
+                        {self.commands}"
                     f"Here is previous messages: \n{message_history}\n"
                     f"We need a new reply by changing neither command.name or command.args.query."
                     f"Make sure the new reply is different from the original reply by name or query."

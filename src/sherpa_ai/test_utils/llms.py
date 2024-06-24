@@ -16,8 +16,7 @@ def get_fake_llm(filename) -> FakeListLLM:
         for line in f:
             responses.append(json.loads(line))
     # restore new line characters
-    responses = [response["output"].replace(
-        "\\n", "\n") for response in responses]
+    responses = [response["output"].replace("\\n", "\n") for response in responses]
     return FakeListLLM(responses=responses)
 
 

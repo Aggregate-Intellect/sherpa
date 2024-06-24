@@ -1,7 +1,12 @@
 import time
 from typing import Any, Callable, List
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage  # type: ignore
+from langchain_core.messages import (  # type: ignore
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+)
 from langchain_core.prompts import BaseChatPromptTemplate  # type: ignore
 from langchain_core.vectorstores import VectorStoreRetriever  # type: ignore
 from loguru import logger  # type: ignore
@@ -19,8 +24,8 @@ class SlackBotPrompt(BaseChatPromptTemplate):
     send_token_limit: int = 4196
 
     def construct_base_prompt(self):
-        full_prompt = f"You are a friendly assistent bot called {
-            self.ai_name}\n\n"
+        full_prompt = f"You are a friendly assistent bot called 
+        {self.ai_name}\n\n"
         full_prompt += f"\n\n{get_prompt(self.tools)}"
         logger.debug(full_prompt)
         return full_prompt

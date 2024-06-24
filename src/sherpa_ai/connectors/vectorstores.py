@@ -4,13 +4,15 @@ from typing import Any, Iterable, List, Optional, Tuple, Type
 
 import chromadb  # type: ignore
 import pinecone  # type: ignore
-from langchain_core.documents import Document  # type: ignore
-from langchain_community.embeddingsimport OpenAIEmbeddings  # type: ignore
-from langchain_core.embeddings import Embeddings  # type: ignore
 from langchain.indexes import VectorstoreIndexCreator  # type: ignore
-from langchain_text_splitters import CharacterTextSplitter  # type: ignore
 from langchain_community.vectorstores import Chroma  # type: ignore
-from langchain_core.vectorstores import VectorStore, VectorStoreRetriever  # type: ignore
+from langchain_core.documents import Document  # type: ignore
+from langchain_core.embeddings import Embeddings  # type: ignore
+from langchain_core.vectorstores import (  # type: ignore
+    VectorStore,
+    VectorStoreRetriever,
+)
+from langchain_text_splitters import CharacterTextSplitter  # type: ignore
 from loguru import logger  # type: ignore
 
 import sherpa_ai.config as cfg
@@ -26,8 +28,7 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def from_index(cls, namespace, openai_api_key, index_name, text_key="text"):
-        pinecone.init(api_key=cfg.PINECONE_API_KEY,
-                      environment=cfg.PINECONE_ENV)
+        pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         logger.info(f"Loading index {index_name} from Pinecone")
         index = pinecone.Index(index_name)
         embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
@@ -103,8 +104,7 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def delete(cls, namespace, index_name):
-        pinecone.init(api_key=cfg.PINECONE_API_KEY,
-                      environment=cfg.PINECONE_ENV)
+        pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         index = pinecone.Index(index_name)
         return index.delete(delete_all=True, namespace=namespace)
 
@@ -127,8 +127,7 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def from_texts(cls, texts: List[str], embedding: Embeddings, metadatas: list[dict]):
-        raise NotImplementedError(
-            "ConversationStore does not support from_texts")
+        raise NotImplementedError("ConversationStore does not support from_texts")
 
 
 class LocalChromaStore(Chroma):
@@ -185,8 +184,7 @@ def get_vectordb():
             logger.warning(
                 "No files folder found, initialize an empty vectorstore instead"
             )
-            embedding_func = OpenAIEmbeddings(
-                openai_api_key=cfg.OPENAI_API_KEY)
+            embedding_func = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY)
             return LocalChromaStore(
                 "memory", embedding_function=embedding_func
             ).as_retriever()
