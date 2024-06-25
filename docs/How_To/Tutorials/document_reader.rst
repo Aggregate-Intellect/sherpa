@@ -75,12 +75,13 @@ In the tutorial folder, create a file called `actions.py` and add the following 
         k: int
         # the variables start with _ will not included in the __init__
         _chroma: Chroma
-
         # Override name and args properties from BaseAction
         # The name of the action, used to describe the action to the agent.
         name: str = "DocumentSearch"
         # The arguments that the action takes, used to describe the action to the agent.
         args: dict = {"query": "string"}
+        # Description of action. Used semantically to determine when the action should be chosen by the agent
+        usage: str = "Search the document store based on a query"
 
         def __init__(self, **kwargs):
             # initialize attributes using Pydantic BaseModel

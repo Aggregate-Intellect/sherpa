@@ -1,0 +1,33 @@
+shared_memory:
+    _target_: sherpa_ai.memory.shared_memory.SharedMemory  # The absolute path to the share memory class in the library
+    objective: Answer the question  # Objective for the agent, since this is a question answering agent, the objective is to answer questions
+
+agent_config: # For the demo, default configuration is used. You can change the configuration as per your requirement
+    _target_: sherpa_ai.config.task_config.AgentConfig
+
+
+llm:  # Configuration for the llm, here we are using the OpenAI GPT-3.5-turbo model
+    _target_: langchain.chat_models.ChatOpenAI
+    model_name: gpt-3.5-turbo
+    temperature: 0
+
+embedding_func:
+    _target_: langchain.embeddings.SentenceTransformerEmbeddings
+    model_name: sentence-transformers/all-mpnet-base-v2
+
+doc_search:
+    _target_: actions.DocumentSearch
+    filename: paper.pdf
+    embedding_function: ${embedding_func}
+    k: 4
+
+qa_agent:
+    _target_: sherpa_ai.agents.qa_agent.QAAgent
+    llm: ${llm}
+    shared_memory: ${shared_memory}
+    name: QA Sherpa
+    description: You are a question answering assistant helping users to find answers to their questions. Based on the input question, you will provide the answer from the text ONLY.
+    agent_config: ${agent_config}
+    num_runs: 1
+    actions:
+        - ${doc_search}
