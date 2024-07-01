@@ -72,8 +72,8 @@ def extract_github_readme(repo_url):
             )
         ]
         path = matching_files[0]
-        github_api_url = f"https://api.github.com/repos/{
-            owner}/{repo}/contents/{path}"
+        github_api_url = f"https://api.github.com/repos/"
+        f"{owner}/{repo}/contents/{path}"
         headers = {
             "Authorization": f"token {token}",
             "X-GitHub-Api-Version": "2022-11-28",
