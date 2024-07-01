@@ -24,8 +24,8 @@ class SlackBotPrompt(BaseChatPromptTemplate):
     send_token_limit: int = 4196
 
     def construct_base_prompt(self):
-        full_prompt = f"You are a friendly assistent bot called 
-        {self.ai_name}\n\n"
+        full_prompt = f"You are a friendly assistent bot called"
+        f" {self.ai_name}\n\n"
         full_prompt += f"\n\n{get_prompt(self.tools)}"
         logger.debug(full_prompt)
         return full_prompt

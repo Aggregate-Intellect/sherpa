@@ -1,7 +1,7 @@
 import typing
 from typing import Any, List, Optional
 
-from langchain_community.chat_models import ChatOpenAI  # type: ignore
+from langchain_openai import ChatOpenAI  # type: ignore
 from langchain_core.callbacks import (  # type: ignore
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,

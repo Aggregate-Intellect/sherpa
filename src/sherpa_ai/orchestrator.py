@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from langchain_community.chat_models import ChatOpenAI  # type: ignore
+from langchain_openai import ChatOpenAI  # type: ignore
 from pydantic import BaseModel  # type: ignore
 
 from sherpa_ai.actions.planning import Plan
@@ -25,7 +25,8 @@ class Orchestrator:
             model_name=self.config.llm_name, temperature=self.config.llm_temperature
         )
         self.agent_pool = agent_pool
-        self.shared_memory = SharedMemory(objective="", agent_pool=self.agent_pool)
+        self.shared_memory = SharedMemory(
+            objective="", agent_pool=self.agent_pool)
 
     def plan(self, task: str, planner: Planner, critic: Critic) -> Plan:
         # planner critic loop
@@ -87,14 +88,16 @@ class Orchestrator:
         # save the shared memory and agents
         result = {}
         result["shared_memory"] = shared_memory.__dict__
-        result["agent_belief"] = {agent.name: agent.belief.__dict__ for agent in agents}
+        result["agent_belief"] = {
+            agent.name: agent.belief.__dict__ for agent in agents}
 
         return result
 
     @classmethod
     def restore(cls, data: dict, agent_pool: AgentPool):
         # restore the shared memory and agents
-        shared_memory = SharedMemory.from_dict(data["shared_memory"], agent_pool)
+        shared_memory = SharedMemory.from_dict(
+            data["shared_memory"], agent_pool)
         agent_belief = data["agent_belief"]
         for name, agent in agent_pool.agents.items():
             agent.belief = Belief.from_dict(agent_belief[name])
@@ -111,7 +114,8 @@ class Orchestrator:
         agent_pool = self.agent_pool
         shared_memory = self.shared_memory
 
-        self.shared_memory.add(EventType.result, current_step.agent_name, user_feedback)
+        self.shared_memory.add(
+            EventType.result, current_step.agent_name, user_feedback)
 
         # continue with the next step
         for i in range(current_step_id + 1, len(self.shared_memory.plan.steps)):

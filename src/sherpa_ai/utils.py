@@ -11,7 +11,7 @@ from langchain_community.document_loaders import (  # type: ignore
     UnstructuredMarkdownLoader,
     UnstructuredPDFLoader,
 )
-from langchain_community.llms import OpenAI  # type: ignore
+from langchain_openai import OpenAI  # type: ignore
 from langchain_core.documents import Document  # type: ignore
 from langchain_core.language_models import BaseLanguageModel  # type: ignore
 from langchain_text_splitters import (  # type: ignore
@@ -85,7 +85,8 @@ def get_link_from_slack_client_conversation(data):
                             if newElement.get("type") == "link":
                                 newUrl = newElement["url"]
                                 links.append(
-                                    {"url": newUrl, "base_url": get_base_url(newUrl)}
+                                    {"url": newUrl,
+                                        "base_url": get_base_url(newUrl)}
                                 )
     return links
 
@@ -212,7 +213,7 @@ def log_formatter(logs):
         if "thoughts" in reply:
             # reply = json.loads(reply)
             formatted_reply = f"""-- Step: {log["Step"]
-                              } -- \nThoughts: \n {reply["thoughts"]} """
+                                            } -- \nThoughts: \n {reply["thoughts"]} """
 
             if "command" in reply:  # add command if it exists
                 formatted_reply += f"""\nCommand: \n {reply["command"]}"""
@@ -275,7 +276,8 @@ def extract_urls(text):
     words = text.split()
 
     # Extract URLs using urllib.parse
-    urls = [word for word in words if urlparse(word).scheme in ["http", "https"]]
+    urls = [word for word in words if urlparse(word).scheme in [
+        "http", "https"]]
 
     return urls
 
@@ -359,7 +361,8 @@ def extract_numeric_entities(
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     numbers = []
-    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
+    filtered_entities = [
+        ent.text for ent in doc.ents if ent.label_ in entity_types]
     for entity in filtered_entities:
         if any(char.isdigit() for char in entity):
             result = extract_numbers_from_text(entity)
@@ -474,7 +477,8 @@ def extract_entities(text):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     entity_types = ["NORP", "ORG", "GPE", "LOC"]
-    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
+    filtered_entities = [
+        ent.text for ent in doc.ents if ent.label_ in entity_types]
 
     return filtered_entities
 

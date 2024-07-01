@@ -5,7 +5,7 @@ import uuid
 import chromadb  # type: ignore
 from chromadb.config import Settings  # type: ignore
 from dotenv import load_dotenv  # type: ignore
-from langchain_community.embeddings import OpenAIEmbeddings  # type: ignore
+from langchain_openai import OpenAIEmbeddings  # type: ignore
 from langchain_community.vectorstores import Chroma  # type: ignore
 from loguru import logger  # type: ignore
 
@@ -37,7 +37,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--chroma_host", help="URL of Chroma instance", default="localhost"
     )
-    parser.add_argument("--chroma_port", help="Port of Chroma instance", default="8000")
+    parser.add_argument(
+        "--chroma_port", help="Port of Chroma instance", default="8000")
     parser.add_argument(
         "--chroma_index", help="Index of Chroma instance", default="langchain"
     )
