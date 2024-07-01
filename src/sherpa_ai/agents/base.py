@@ -80,8 +80,8 @@ class BaseAgent(ABC):
                 continue
 
             self.verbose_logger.log(
-                f"```🤖{self.name} is executing 
-                {result.action.name}\n Input: {result.args}...```"
+                f"```🤖{self.name} is executing```"
+                f"```{result.action.name}\n Input: {result.args}...```"
             )
             logger.debug(f"🤖{self.name} is executing 
                          {result.action.name}...```")
