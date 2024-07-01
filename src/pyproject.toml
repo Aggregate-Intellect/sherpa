@@ -9,7 +9,7 @@ repository = "https://github.com/Aggregate-Intellect/sherpa"
 [tool.poetry.dependencies]
 python = "^3.9"
 langchain = " 0.2.5"
-langchain-community = "0.2.6" 
+langchain-community = "0.2.5" 
 python-dotenv = "^1.0.0"
 unstructured = "^0.10.11"
 openai = "^0.28.0"
