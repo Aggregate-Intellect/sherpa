@@ -83,8 +83,8 @@ class BaseAgent(ABC):
                 f"```🤖{self.name} is executing```"
                 f"```{result.action.name}\n Input: {result.args}...```"
             )
-            logger.debug(f"🤖{self.name} is executing 
-                         {result.action.name}...```")
+            logger.debug(f"🤖{self.name} is executing```"
+                         "``` {result.action.name}...```")
 
             self.belief.update_internal(
                 EventType.action, self.name, result.action.name +
