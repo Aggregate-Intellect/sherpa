@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from langchain_community.embeddings import OpenAIEmbeddings  # type: ignore
+from langchain_openai import OpenAIEmbeddings  # type: ignore
 
 from sherpa_ai.actions.planning import Plan
 

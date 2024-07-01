@@ -1,0 +1,11 @@
+A syntax error happened on ../../../src/sherpa_ai/prompt.py. This file cannot be formatted.
+Syntax Error @ 1:1.
+tokenizer error: unterminated string literal
+
+import time
+^A syntax error happened on ../../../src/sherpa_ai/reflection.py. This file cannot be formatted.
+Syntax Error @ 1:1.
+tokenizer error: unterminated string literal
+
+from os import environ
+^
