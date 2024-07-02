@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from loguru import logger
 
 from sherpa_ai.actions.utils.refinement import RefinementByQuery
 from sherpa_ai.test_utils.llms import get_llm
@@ -14,11 +15,45 @@ documents = [
 
 query = "Why summer market is popular in Toronto?"
 
+documents_not_related = [
+    "Iron Man fears Hulk more than anybody.",
+    "Hulk was named the strongest Avenger on Sakaar.",
+    "Natasha loves Bruce Banner.",
+    "SHIELD built a contingency plan only for Hulk if he gets angry.",
+]
 
-def test_default_reranker(get_llm):
-    llm = get_llm(__file__, test_default_reranker.__name__)
+query_not_related = "Why is Hulk the strongest Avenger?"
+
+
+def test_default_refinement(get_llm):
+    llm = get_llm(__file__, test_default_refinement.__name__)
 
     rfiner = RefinementByQuery(llm=llm)
     output_refined = rfiner.refinement(documents, query)
+    logger.info(output_refined)
     # test if output have <3 sentences (k=3, k is the max number of sentences after refinement)
     assert max([doc.count(".") for doc in output_refined]) <= 3
+    assert len(output_refined) == 3
+
+
+def test_refinement_not_question(get_llm):
+    query = "Best summer market in Toronto"
+    llm = get_llm(__file__, test_refinement_not_question.__name__)
+
+    rfiner = RefinementByQuery(llm=llm)
+    output_refined = rfiner.refinement(documents, query)
+    logger.info(output_refined)
+    # test if output have <3 sentences (k=3, k is the max number of sentences after refinement)
+    assert max([doc.count(".") for doc in output_refined]) <= 3
+    assert len(output_refined) == 3
+
+
+def test_default_refinement_not_related(get_llm):
+    llm = get_llm(__file__, test_default_refinement_not_related.__name__)
+
+    rfiner = RefinementByQuery(llm=llm)
+    output_refined = rfiner.refinement(documents_not_related, query_not_related)
+
+    # test if output have <3 sentences (k=3, k is the max number of sentences after refinement)
+    assert max([doc.count(".") for doc in output_refined]) <= 3
+    assert len(output_refined) == 3
