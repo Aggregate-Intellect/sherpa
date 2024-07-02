@@ -15,7 +15,12 @@ Relevant Answer:
 {answer}
 
 
-Review relevant answer and provide the most relevant information in at most {k} sentences."""
+Review and extract the most relevant sentences from relavant answer. 
+Need to follows rules:
+1. The output sentences should only picked from original relevant answer.
+2. Return 'not relevant.' if relevant answer is not relevant to the question asked.
+3. The output sentences must in at most {k} sentences"""
+
 
 
 class BaseRefinement(ABC, BaseModel):
@@ -30,10 +35,11 @@ class RefinementByQuery(BaseRefinement):
     k: int = 3
 
     def refinement(self, documents: list[str], query: str) -> str:
-        refined_result = [
-            self.llm.predict(
+        refined_result = []
+        for doc in documents:
+            res = self.llm.predict(
                 self.description.format(question=query, answer=doc, k=self.k)
             )
-            for doc in documents
-        ]
+            if res.lower() != "not relevant.":
+                refined_result.append(res)
         return refined_result
