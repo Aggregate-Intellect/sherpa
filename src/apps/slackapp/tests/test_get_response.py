@@ -1,9 +1,9 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
-import pytest
-from langchain.llms.fake import FakeListLLM
-from loguru import logger
+import pytest  # type: ignore
+from langchain_community.llms import FakeListLLM  # type: ignore
+from loguru import logger  # type: ignore
 from slackapp.bolt_app import get_response
 
 import sherpa_ai.config as cfg

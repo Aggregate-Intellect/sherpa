@@ -1,8 +1,8 @@
 from typing import Optional
 
-from hydra.utils import instantiate
-from langchain.base_language import BaseLanguageModel
-from omegaconf import OmegaConf
+from hydra.utils import instantiate  # type: ignore
+from langchain_core.language_models import BaseLanguageModel  # type: ignore
+from omegaconf import OmegaConf  # type: ignore
 
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.config.task_config import AgentConfig
@@ -20,7 +20,8 @@ def get_qa_agent_from_config_file(
         config["user_id"] = user_id
 
     if llm is None:
-        qa_agent: QAAgent = instantiate(config.qa_agent, agent_config=agent_config)
+        qa_agent: QAAgent = instantiate(
+            config.qa_agent, agent_config=agent_config)
     else:
         qa_agent: QAAgent = instantiate(
             config.qa_agent, agent_config=agent_config, llm=llm

@@ -5,6 +5,7 @@ import pytest
 from sherpa_ai.actions.google_search import GoogleSearch
 from sherpa_ai.actions.utils.reranking import RerankingByQuery
 
+
 Resources = [
     {"Document": "0", "Source": "www.link1.com"},
     {"Document": "1", "Source": "www.link2.com"},

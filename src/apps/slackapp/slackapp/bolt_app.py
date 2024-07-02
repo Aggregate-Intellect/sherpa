@@ -6,12 +6,12 @@
 import time
 from typing import Dict, List, Optional
 
-from flask import Flask, request
-from langchain.schema import AIMessage, BaseMessage, HumanMessage
-from loguru import logger
-from omegaconf import OmegaConf
-from slack_bolt import App
-from slack_bolt.adapter.flask import SlackRequestHandler
+from flask import Flask, request  # type: ignore
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage  # type: ignore
+from loguru import logger  # type: ignore
+from omegaconf import OmegaConf  # type: ignore
+from slack_bolt import App  # type: ignore
+from slack_bolt.adapter.flask import SlackRequestHandler  # type: ignore
 from slackapp.routes.whitelist import whitelist_blueprint
 from slackapp.utils import get_qa_agent_from_config_file
 
@@ -27,7 +27,7 @@ from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.post_processors import md_link_to_slack
 from sherpa_ai.scrape.file_scraper import QuestionWithFileHandler
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
-from sherpa_ai.task_agent import TaskAgent
+from sherpa_ai.task_agent import TaskAgent  # type: ignore
 from sherpa_ai.tools import get_tools
 from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_only
 from sherpa_ai.verbose_loggers import DummyVerboseLogger, SlackVerboseLogger
@@ -143,11 +143,13 @@ def get_response(
             agent_config=agent_config,
         )
 
-        response = error_handler.run_with_error_handling(task_agent.run, task=question)
+        response = error_handler.run_with_error_handling(
+            task_agent.run, task=question)
     else:
         agent = get_qa_agent_from_config_file("conf/config.yaml", user_id, llm)
         for message in previous_messages:
-            agent.shared_memory.add(EventType.result, message.type, message.content)
+            agent.shared_memory.add(
+                EventType.result, message.type, message.content)
         agent.shared_memory.add(EventType.task, "human", question)
         agent.verbose_logger = verbose_logger
 
@@ -185,7 +187,8 @@ def file_event_handler(say, files, user_id, thread_ts, question):
 def event_test(client, say, event):
     question = event["text"]
     thread_ts = event.get("thread_ts", None) or event["ts"]
-    replies = client.conversations_replies(channel=event["channel"], ts=thread_ts)
+    replies = client.conversations_replies(
+        channel=event["channel"], ts=thread_ts)
     previous_messages = replies["messages"][:-1]
     previous_messages = convert_thread_history_messages(previous_messages)
 
@@ -336,7 +339,8 @@ def hello():
 
 def main():
     logger.info(
-        "App init: starting HTTP server on port {port}".format(port=cfg.SLACK_PORT)
+        "App init: starting HTTP server on port {port}".format(
+            port=cfg.SLACK_PORT)
     )
     # SECURITY host "0.0.0.0" tells Flask to listen on all available IP addresses.
     # This is handy for development, but unsafe in production.

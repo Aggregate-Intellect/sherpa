@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from langchain.chat_models.base import BaseChatModel
-from loguru import logger
+from langchain_core.language_models import BaseChatModel  # type: ignore
+from loguru import logger  # type: ignore
 
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import EventType

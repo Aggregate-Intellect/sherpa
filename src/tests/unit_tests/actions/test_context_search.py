@@ -10,7 +10,7 @@ from sherpa_ai.test_utils.llms import get_llm
 def mock_context_search(external_api):
     # Always mock VectorStoreRetriever to simulate the vector database
     with mock.patch(
-        "langchain.schema.vectorstore.VectorStoreRetriever.get_relevant_documents"
+        "langchain_core.vectorstores.VectorStoreRetriever.get_relevant_documents"
     ) as mock_retrival:
         mock_doc = mock.MagicMock()
         mock_doc.page_content = "mock"
