@@ -105,15 +105,12 @@ def scrape_with_url(url: str):
 def rewrite_link_references(data: any, question: str):
     result = question + "./n Reference:"
     for count, chunk in enumerate(data):
-        reference = f"[{count + 1}]"
+        reference = f"[{ count + 1}]"
         link = chunk["link"]
-        link_with_angle_brackets = f"<{link}>"
+        link_with_angle_brackets = f"<{ link }>"
         result = result.replace(link_with_angle_brackets, reference)
-        result = (
-            result
-            + f""" {reference}
-            link: "{link}" , link_data: {data}"""
-        )
+        result = result + f""" {reference} link: "{link}" , link_data: {data}"""
+        
     return result
 
 
@@ -629,8 +626,7 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
     if len(error_entity) > 0:
         for entity in error_entity:
             message += entity + ", "
-        message = f"remember to address these entities"
-        f"{message} in final the answer."
+        message = f"remember to address these entities {message} in final the answer."
         return False, message
     return True, message
 

@@ -11,6 +11,8 @@ from langchain_core.vectorstores import (  # type: ignore
     VectorStore,
     VectorStoreRetriever,
 )
+from langchain_openai import OpenAIEmbeddings  # type: ignore
+
 from langchain_text_splitters import CharacterTextSplitter  # type: ignore
 from loguru import logger  # type: ignore
 
