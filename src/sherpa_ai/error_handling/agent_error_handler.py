@@ -11,7 +11,7 @@ class AgentErrorHandler:
 
     def __init__(self):
         self.error_map = {
-            openai.APIError: "OpenAI API returned an API Error",
+            # openai.APIError: "OpenAI API returned an API Error",
             openai.APIConnectionError: "Failed to connect to OpenAI API",
             openai.RateLimitError: "OpenAI API request exceeded rate limit",
             openai.AuthenticationError: (

@@ -73,3 +73,6 @@ def test_no_error_succeeds(configure_logger, dummy_log):
     )
     assert response == "dummy response"
     assert len(dummy_log.logs) == 0
+
+
+test_handling_predefined_errors_succeeds(configure_logger, dummy_log)

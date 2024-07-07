@@ -597,8 +597,7 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
         # If there are error entities, create a message to address them in the final answer
         for entity in error_entity:
             message += entity + ", "
-        message = f"Remember to address these entities"
-        f"{message} in the final answer."
+        message = f"remember to address these entities {message} in the final answer."
         return False, message
     return True, message
 
