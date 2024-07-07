@@ -12,12 +12,12 @@ class AgentErrorHandler:
     def __init__(self):
         self.error_map = {
             # openai.APIError: "OpenAI API returned an API Error",
-            openai.APIConnectionError: "Failed to connect to OpenAI API",
-            openai.RateLimitError: "OpenAI API request exceeded rate limit",
-            openai.AuthenticationError: (
-                "OpenAI API failed authentication or incorrect token"
-            ),
-            openai.Timeout: "OpenAI API Timeout error",
+            # openai.APIConnectionError: "Failed to connect to OpenAI API",
+            # openai.RateLimitError: "OpenAI API request exceeded rate limit",
+            # openai.AuthenticationError: (
+            #     "OpenAI API failed authentication or incorrect token"
+            # ),
+            # openai.Timeout: "OpenAI API Timeout error",
             # openai.InvalidRequestError: "OpenAI API invalid request error",
         }
         self.default_response = (
