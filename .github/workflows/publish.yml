@@ -1,0 +1,53 @@
+name: "PyPI Poetry Publish"
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pip install poetry poetry-core
+        shell: bash
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: poetry
+          check-latest: true
+
+      - name: Set GitHub Tag as Package Version
+        run: |
+          sed -i '0,/version =.*/s//version = "'"${{ github.event.release.tag_name }}"'"/' ./src/pyproject.toml
+        shell: bash
+
+      - name: Add and Commit Version
+        run: |
+          git add ./src/pyproject.toml
+          git config --global user.name "PyPI Poetry Publish Bot"
+          git config --global user.email "bot@ai.science"
+          git commit -m "Change version to ${{ github.event.release.tag_name }}" --allow-empty
+          git push origin HEAD:main
+        shell: bash
+
+      - name: Install dependencies
+        working-directory: ./src
+        run: |
+          poetry install --no-root
+        shell: bash
+
+      - name: Build and Publish
+        working-directory: ./src
+        run: |
+          poetry config pypi-token.pypi ${{secrets.pypi}}  
+          poetry publish --build
+        shell: bash
