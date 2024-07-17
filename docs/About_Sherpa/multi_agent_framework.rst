@@ -52,3 +52,7 @@ NOTE: All human operators can be defined as `Agents` with the same set of metada
     - *Contextual retrieval*. The environment maintains a shared memory pool that supports caching and indexing. Meanwhile, agents can query their internal memory as needed to obtain contextual details relevant to their current task. This helps in refining their understanding and making better decisions.
     - *Updates synchronization*. Any updates or changes made to the messages are synchronized across all linked agent memories to maintain a consistent view of the information. This ensures that all agents have access to the most up-to-date data.
 
+===================
+Sherpa architecture
+===================
+.. image:: _imgs/multi_agent_architect.png
