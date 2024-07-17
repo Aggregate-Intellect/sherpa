@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from loguru import logger
 from pydantic import BaseModel, Field
 
+from sherpa_ai.actions.utils.refinement import BaseRefinement
 from sherpa_ai.actions.utils.reranking import BaseReranking
 
 
@@ -41,6 +42,7 @@ class BaseRetrievalAction(BaseAction, ABC):
     resources: list[ActionResource] = Field(default_factory=list)
     num_documents: int = 5  # Number of documents to retrieve
     reranker: BaseReranking = None
+    refiner: BaseRefinement = None
     current_task: str = ""
 
     perform_reranking: bool = False
@@ -62,12 +64,10 @@ class BaseRetrievalAction(BaseAction, ABC):
 
         if self.perform_reranking:
             results = self.reranking(results)
-
-        results = "\n\n".join(results)
-        logger.debug("Action Results: {}", results)
-
         if self.perform_refinement:
             results = self.refine(results)
+        results = "\n\n".join(results)
+        logger.debug("Action Results: {}", results)
 
         return results
 
@@ -84,8 +84,8 @@ class BaseRetrievalAction(BaseAction, ABC):
         """
         return self.reranker.rerank(documents, self.current_task)
 
-    def refine(self, results: str) -> str:
+    def refine(self, documents: list[str]) -> list[str]:
         """
         Refine the results based on the query.
         """
-        return results
+        return self.refiner.refinement(documents, self.current_task)
