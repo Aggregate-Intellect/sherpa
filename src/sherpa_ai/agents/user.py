@@ -53,7 +53,7 @@ class UserAgent(BaseAgent):
             self.shared_memory.add(
                 event_type=EventType.result, agent=self.name, content=result
             )
-            return False
+            return result
         else:
             self.event_logger.log(message)
-            return True
+            return result
