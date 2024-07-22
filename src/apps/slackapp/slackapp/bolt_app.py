@@ -6,12 +6,12 @@
 import time
 from typing import Dict, List, Optional
 
-from flask import Flask, request  # type: ignore
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage  # type: ignore
-from loguru import logger  # type: ignore
-from omegaconf import OmegaConf  # type: ignore
-from slack_bolt import App  # type: ignore
-from slack_bolt.adapter.flask import SlackRequestHandler  # type: ignore
+from flask import Flask, request 
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage 
+from loguru import logger 
+from omegaconf import OmegaConf 
+from slack_bolt import App 
+from slack_bolt.adapter.flask import SlackRequestHandler 
 from slackapp.routes.whitelist import whitelist_blueprint
 from slackapp.utils import get_qa_agent_from_config_file
 
@@ -27,7 +27,7 @@ from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.post_processors import md_link_to_slack
 from sherpa_ai.scrape.file_scraper import QuestionWithFileHandler
 from sherpa_ai.scrape.prompt_reconstructor import PromptReconstructor
-from sherpa_ai.task_agent import TaskAgent  # type: ignore
+from sherpa_ai.task_agent import TaskAgent 
 from sherpa_ai.tools import get_tools
 from sherpa_ai.utils import count_string_tokens, log_formatter, show_commands_only
 from sherpa_ai.verbose_loggers import DummyVerboseLogger, SlackVerboseLogger

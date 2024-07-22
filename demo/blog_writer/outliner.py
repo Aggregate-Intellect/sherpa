@@ -1,12 +1,12 @@
 import os
 import time
 
-import tiktoken  # type: ignore
-from langchain_community.chat_models import ChatOpenAI  # type: ignore
-from langchain_core.prompts import (ChatPromptTemplate,  # type: ignore
+import tiktoken 
+from langchain_community.chat_models import ChatOpenAI 
+from langchain_core.prompts import (ChatPromptTemplate, 
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
-from langchain_text_splitters import MarkdownTextSplitter  # type: ignore
+from langchain_text_splitters import MarkdownTextSplitter 
 
 
 class Outliner:

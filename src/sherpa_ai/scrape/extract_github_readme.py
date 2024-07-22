@@ -1,11 +1,11 @@
 import base64
 import re
 
-import pinecone  # type: ignore
+import pinecone 
 import requests
-from dotenv import dotenv_values  # type: ignore
-from langchain_openai import OpenAIEmbeddings  # type: ignore
-from loguru import logger  # type: ignore
+from dotenv import dotenv_values 
+from langchain_openai import OpenAIEmbeddings 
+from loguru import logger 
 
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import ConversationStore

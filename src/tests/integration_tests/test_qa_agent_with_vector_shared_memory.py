@@ -1,10 +1,10 @@
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest  # type: ignore
-from langchain_openai import ChatOpenAI  # type: ignore
-from langchain_core.documents import Document  # type: ignore
-from loguru import logger  # type: ignore
+import pytest 
+from langchain_openai import ChatOpenAI 
+from langchain_core.documents import Document 
+from loguru import logger 
 
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.connectors.base import BaseVectorDB

@@ -2,19 +2,19 @@ import json
 import typing
 from typing import Any, Coroutine, List, Optional
 
-from langchain_core.callbacks import (  # type: ignore
+from langchain_core.callbacks import ( 
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
-from langchain_core.language_models import BaseChatModel  # type: ignore
-from langchain_core.messages import BaseMessage  # type: ignore
-from langchain_core.outputs import ChatResult  # type: ignore
-from loguru import logger  # type: ignore
+from langchain_core.language_models import BaseChatModel 
+from langchain_core.messages import BaseMessage 
+from langchain_core.outputs import ChatResult 
+from loguru import logger 
 
 
 class ChatModelWithLogging(BaseChatModel):
     llm: BaseChatModel
-    logger: type(logger)  # type: ignore
+    logger: type(logger) 
 
     @property
     def _llm_type(self):

@@ -1,7 +1,7 @@
 from typing import Optional
 
-from langchain_core.language_models import LLM  # type: ignore
-from loguru import logger  # type: ignore
+from langchain_core.language_models import LLM 
+from loguru import logger 
 
 from sherpa_ai.actions.planning import TaskPlanning
 from sherpa_ai.agents.agent_pool import AgentPool

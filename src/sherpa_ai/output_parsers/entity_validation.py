@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Tuple
 
-from langchain_core.language_models import BaseLanguageModel  # type: ignore
+from langchain_core.language_models import BaseLanguageModel 
 
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief

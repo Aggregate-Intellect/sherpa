@@ -1,8 +1,8 @@
 from typing import Optional
 
-from hydra.utils import instantiate  # type: ignore
-from langchain_core.language_models import BaseLanguageModel  # type: ignore
-from omegaconf import OmegaConf  # type: ignore
+from hydra.utils import instantiate 
+from langchain_core.language_models import BaseLanguageModel 
+from omegaconf import OmegaConf 
 
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.config.task_config import AgentConfig

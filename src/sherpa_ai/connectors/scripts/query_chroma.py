@@ -2,12 +2,12 @@ import argparse
 import json
 import uuid
 
-import chromadb  # type: ignore
-from chromadb.config import Settings  # type: ignore
-from dotenv import load_dotenv  # type: ignore
-from langchain_openai import OpenAIEmbeddings  # type: ignore
-from langchain_community.vectorstores import Chroma  # type: ignore
-from loguru import logger  # type: ignore
+import chromadb 
+from chromadb.config import Settings 
+from dotenv import load_dotenv 
+from langchain_openai import OpenAIEmbeddings 
+from langchain_community.vectorstores import Chroma 
+from loguru import logger 
 
 
 def main(args):

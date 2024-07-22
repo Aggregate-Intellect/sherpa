@@ -1,7 +1,7 @@
-from langchain_community.document_loaders import PDFMinerLoader  # type: ignore
-from langchain_community.vectorstores import Chroma  # type: ignore
-from langchain_text_splitters import SentenceTransformersTokenTextSplitter  # type: ignore
-from loguru import logger  # type: ignore
+from langchain_community.document_loaders import PDFMinerLoader 
+from langchain_community.vectorstores import Chroma 
+from langchain_text_splitters import SentenceTransformersTokenTextSplitter 
+from loguru import logger 
 
 from sherpa_ai.actions.base import BaseAction
 

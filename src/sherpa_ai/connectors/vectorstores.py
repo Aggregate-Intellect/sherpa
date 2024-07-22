@@ -2,19 +2,19 @@ import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
 
-import chromadb  # type: ignore
-import pinecone  # type: ignore
-from langchain_community.vectorstores import Chroma  # type: ignore
-from langchain_core.documents import Document  # type: ignore
-from langchain_core.embeddings import Embeddings  # type: ignore
-from langchain_core.vectorstores import (  # type: ignore
+import chromadb 
+import pinecone 
+from langchain_community.vectorstores import Chroma 
+from langchain_core.documents import Document 
+from langchain_core.embeddings import Embeddings 
+from langchain_core.vectorstores import ( 
     VectorStore,
     VectorStoreRetriever,
 )
-from langchain_openai import OpenAIEmbeddings  # type: ignore
+from langchain_openai import OpenAIEmbeddings 
 
-from langchain_text_splitters import CharacterTextSplitter  # type: ignore
-from loguru import logger  # type: ignore
+from langchain_text_splitters import CharacterTextSplitter 
+from loguru import logger 
 
 import sherpa_ai.config as cfg
 from sherpa_ai.utils import load_files

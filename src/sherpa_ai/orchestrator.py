@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from langchain_openai import ChatOpenAI  # type: ignore
-from pydantic import BaseModel  # type: ignore
+from langchain_openai import ChatOpenAI 
+from pydantic import BaseModel 
 
 from sherpa_ai.actions.planning import Plan
 from sherpa_ai.agents import AgentPool, Critic, MLEngineer, Physicist, Planner

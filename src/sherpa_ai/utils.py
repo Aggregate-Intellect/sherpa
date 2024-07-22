@@ -4,24 +4,24 @@ from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 import requests
-import spacy  # type: ignore
-import tiktoken  # type: ignore
-from bs4 import BeautifulSoup  # type: ignore
-from langchain_community.document_loaders import (  # type: ignore
+import spacy 
+import tiktoken 
+from bs4 import BeautifulSoup 
+from langchain_community.document_loaders import ( 
     UnstructuredMarkdownLoader,
     UnstructuredPDFLoader,
 )
-from langchain_openai import OpenAI  # type: ignore
-from langchain_core.documents import Document  # type: ignore
-from langchain_core.language_models import BaseLanguageModel  # type: ignore
-from langchain_text_splitters import (  # type: ignore
+from langchain_openai import OpenAI 
+from langchain_core.documents import Document 
+from langchain_core.language_models import BaseLanguageModel 
+from langchain_text_splitters import ( 
     CharacterTextSplitter,
     TokenTextSplitter,
 )
-from loguru import logger  # type: ignore
-from nltk.metrics import edit_distance, jaccard_distance  # type: ignore
-from pypdf import PdfReader  # type: ignore
-from word2number import w2n  # type: ignore
+from loguru import logger 
+from nltk.metrics import edit_distance, jaccard_distance 
+from pypdf import PdfReader 
+from word2number import w2n 
 
 import sherpa_ai.config as cfg
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker

@@ -3,7 +3,7 @@ import re
 from abc import abstractmethod
 from typing import Dict, NamedTuple
 
-from langchain_core.output_parsers import BaseOutputParser  # type: ignore
+from langchain_core.output_parsers import BaseOutputParser 
 
 
 class TaskAction(NamedTuple):

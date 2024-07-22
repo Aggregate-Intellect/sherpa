@@ -1,14 +1,14 @@
 import typing
 from typing import Any, List, Optional
 
-from langchain_openai import ChatOpenAI  # type: ignore
-from langchain_core.callbacks import (  # type: ignore
+from langchain_openai import ChatOpenAI 
+from langchain_core.callbacks import ( 
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
-from langchain_core.language_models import BaseChatModel  # type: ignore
-from langchain_core.messages import BaseMessage  # type: ignore
-from langchain_core.outputs import ChatResult  # type: ignore
+from langchain_core.language_models import BaseChatModel 
+from langchain_core.messages import BaseMessage 
+from langchain_core.outputs import ChatResult 
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
