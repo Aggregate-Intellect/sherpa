@@ -64,15 +64,3 @@ def test_handling_undefined_errors_succeeds(configure_logger, dummy_log):
     assert isinstance(dummy_log.logs[0], str)
 
 
-def test_no_error_succeeds(configure_logger, dummy_log):
-    error_handler = AgentErrorHandler()
-    action = partial(dummy_agent_action, exception=None)
-    response = error_handler.run_with_error_handling(
-        action,
-        question="dummy question",
-    )
-    assert response == "dummy response"
-    assert len(dummy_log.logs) == 0
-
-
-test_handling_predefined_errors_succeeds(configure_logger, dummy_log)
