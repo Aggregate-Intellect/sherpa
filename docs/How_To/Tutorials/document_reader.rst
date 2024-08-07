@@ -55,10 +55,10 @@ In the tutorial folder, create a file called `actions.py` and add the following 
 
 .. code-block:: python
 
-    from langchain.document_loaders import PDFMinerLoader
-    from langchain.embeddings.base import Embeddings
-    from langchain.text_splitter import SentenceTransformersTokenTextSplitter
-    from langchain.vectorstores.chroma import Chroma
+    from langchain_community.document_loaders import PDFMinerLoader
+    from langchain_community.embeddings.base import Embeddings
+    from langchain_text_splitters import SentenceTransformersTokenTextSplitter
+    from langchain_community.vectorstores.chroma import Chroma
     from loguru import logger
     from pydantic import ConfigDict
 
@@ -154,12 +154,12 @@ Create a file called `agent_config.yml` and add the following code:
 
 
     llm:  # Configuration for the llm, here we are using the OpenAI GPT-3.5-turbo model
-        _target_: langchain.chat_models.ChatOpenAI
+        _target_: langchain_community.chat_models.ChatOpenAI
         model_name: gpt-3.5-turbo
         temperature: 0
 
     embedding_func: 
-        _target_: langchain.embeddings.SentenceTransformerEmbeddings
+        _target_: langchain_community.embeddings.SentenceTransformerEmbeddings
         model_name: sentence-transformers/all-mpnet-base-v2
 
     doc_search:

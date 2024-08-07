@@ -1,12 +1,12 @@
 import os
 import time
 
-import tiktoken
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import (ChatPromptTemplate,
+import tiktoken 
+from langchain_community.chat_models import ChatOpenAI 
+from langchain_core.prompts import (ChatPromptTemplate, 
                                     HumanMessagePromptTemplate,
                                     SystemMessagePromptTemplate)
-from langchain.text_splitter import MarkdownTextSplitter
+from langchain_text_splitters import MarkdownTextSplitter 
 
 
 class Outliner:
@@ -15,18 +15,22 @@ class Outliner:
         default_folder_path = os.path.join(script_dir, 'Transcripts')
         folder_path = default_folder_path
 
-        transcript_files = [f for f in os.listdir(folder_path) if f.endswith('.txt')]
+        transcript_files = [f for f in os.listdir(
+            folder_path) if f.endswith('.txt')]
 
         if not transcript_files:
             raise ValueError("No transcript files found in the folder.")
 
         if input_filename:
             if input_filename in transcript_files:
-                transcript_file_path = os.path.join(folder_path, input_filename)
+                transcript_file_path = os.path.join(
+                    folder_path, input_filename)
             else:
-                raise FileNotFoundError(f"The specified file {input_filename} does not exist in the Transcripts folder.")
+                raise FileNotFoundError(f"The specified file {
+                                        input_filename} does not exist in the Transcripts folder.")
         else:
-            transcript_file_path = os.path.join(folder_path, transcript_files[0])
+            transcript_file_path = os.path.join(
+                folder_path, transcript_files[0])
 
         print(f"Using transcript file: {transcript_file_path}")
 
@@ -92,7 +96,8 @@ class Outliner:
             response = "\n".join([response, insights])
             if verbose:
                 print(
-                    f"\nInsights extracted from chunk {i+1}/{len(transcript_chunks)}:\n{insights}"
+                    f"\nInsights extracted from chunk {
+                        i+1}/{len(transcript_chunks)}:\n{insights}"
                 )
         return response
 

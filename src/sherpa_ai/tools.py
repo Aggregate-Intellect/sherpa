@@ -3,11 +3,11 @@ import urllib.parse
 from typing import Any, List, Tuple, Union
 
 import requests
-from langchain.tools import BaseTool
-from langchain.utilities import GoogleSerperAPIWrapper
-from langchain.vectorstores.base import VectorStoreRetriever
-from loguru import logger
-from typing_extensions import Literal
+from langchain_community.utilities import GoogleSerperAPIWrapper 
+from langchain_core.tools import BaseTool 
+from langchain_core.vectorstores import VectorStoreRetriever 
+from loguru import logger 
+from typing_extensions import Literal 
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
