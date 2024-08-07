@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from langchain.base_language import BaseLanguageModel
+from langchain_core.language_models import BaseLanguageModel 
 
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.arxiv_search import ArxivSearch

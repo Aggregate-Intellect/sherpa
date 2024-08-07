@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-from langchain.tools.base import BaseTool
+from langchain_core.tools import BaseTool 
 
 
 FINISH_NAME = "finish"
@@ -112,9 +112,11 @@ class PromptGenerator:
         """
         formatted_response_format = json.dumps(self.response_format, indent=4)
         prompt_string = (
-            f"Constraints:\n{self._generate_numbered_list(self.constraints)}\n\n"
+            f"Constraints:\n"
+            f"{self._generate_numbered_list(self.constraints)}\n\n"
             f"Commands:\n"
-            f"{self._generate_numbered_list(self.commands, item_type='command')}\n\n"
+            f"{self._generate_numbered_list(
+                self.commands, item_type='command')}\n\n"
             # f"Resources:\n{self._generate_numbered_list(self.resources)}\n\n"
             f"Performance Evaluation:\n"
             f"{self._generate_numbered_list(self.performance_evaluation)}\n\n"

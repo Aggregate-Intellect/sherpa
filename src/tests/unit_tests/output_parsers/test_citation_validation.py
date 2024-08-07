@@ -74,7 +74,7 @@ def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
         }
 
         with mock.patch(
-            "langchain.utilities.GoogleSerperAPIWrapper._google_serper_api_results"
+            "langchain_community.utilities.GoogleSerperAPIWrapper._google_serper_api_results"
         ) as mock_search:
             mock_search.return_value = GOOGLE_SEARCH_MOCK
             task_agent.run()

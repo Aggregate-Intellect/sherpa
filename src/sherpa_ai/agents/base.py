@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Optional
 
-from langchain.base_language import BaseLanguageModel
-from loguru import logger
+from langchain_core.language_models import BaseLanguageModel 
+from loguru import logger 
 
 from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import EventType
@@ -67,7 +67,8 @@ class BaseAgent(ABC):
 
         self.shared_memory.observe(self.belief)
 
-        actions = self.actions if len(self.actions) > 0 else self.create_actions()
+        actions = self.actions if len(
+            self.actions) > 0 else self.create_actions()
         self.belief.set_actions(actions)
 
         for _ in range(self.num_runs):
@@ -79,12 +80,15 @@ class BaseAgent(ABC):
                 continue
 
             self.verbose_logger.log(
-                f"```🤖{self.name} is executing {result.action.name}\n Input: {result.args}...```"
+                f"```🤖{self.name} is executing```"
+                f"```{result.action.name}\n Input: {result.args}...```"
             )
-            logger.debug(f"🤖{self.name} is executing {result.action.name}...```")
+            logger.debug(f"🤖{self.name} is executing```"
+                         "``` {result.action.name}...```")
 
             self.belief.update_internal(
-                EventType.action, self.name, result.action.name + str(result.args)
+                EventType.action, self.name, result.action.name +
+                str(result.args)
             )
 
             action_output = self.act(result.action, result.args)
@@ -125,7 +129,8 @@ class BaseAgent(ABC):
             logger.info(f"validation_count: {validation.count}")
             # this checks if the validator has already exceeded the validation steps limit.
             if validation.count < self.validation_steps:
-                self.belief.update_internal(EventType.result, self.name, result)
+                self.belief.update_internal(
+                    EventType.result, self.name, result)
                 validation_result = validation.process_output(
                     text=result, belief=self.belief, llm=self.llm
                 )
