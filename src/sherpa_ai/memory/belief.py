@@ -62,9 +62,6 @@ class Belief:
                 if token_counter(context) > max_tokens:
                     break
 
-        if context == "":
-            exit(1)
-
         return context
 
     def get_internal_history(
