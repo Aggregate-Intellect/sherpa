@@ -4,6 +4,12 @@ from sherpa_ai.memory import Belief
 from sherpa_ai.policies import ReactPolicy
 
 AGENT_FEEDBACK_DESCRIPTION = """You are an intelligent assistant helping the user to complete their task. You have the following task to complete:
+{task}
+
+Context of you work is as follows:
+{context}
+
+You have the following options to continue completing the this task:
 
 {options}
 
@@ -26,11 +32,14 @@ class AgentFeedbackPolicy(ReactPolicy):
 
     def select_action(self, belief: Belief, **kwargs):
         actions = belief.actions
+
+        task = belief.current_task
+        context = belief.get_context(self.llm.get_num_tokens)
         options = "\n".join(
             [f"{i+1}. {action.name}" for i, action in enumerate(actions)]
         )
 
-        agent_feedback_prompt = self.agent_feedback_description.format(options=options)
+        agent_feedback_prompt = self.agent_feedback_description.format(task=task, context=context, options=options)
         question = self.llm.predict(agent_feedback_prompt)
         self.agent.shared_memory.add_event(Event(EventType.task, "Agent", question))
         result = self.agent.run()
