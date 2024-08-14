@@ -32,6 +32,9 @@ class BaseAction(ABC, BaseModel):
     def execute(self, **kwargs):
         pass
 
+    def __call__(self, **kwargs):
+        return self.execute(**kwargs)
+
     def __str__(self):
         tool_desc = {"name": self.name, "args": self.args, "usage": self.usage}
 
