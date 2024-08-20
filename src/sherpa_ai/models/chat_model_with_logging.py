@@ -2,18 +2,19 @@ import json
 import typing
 from typing import Any, Coroutine, List, Optional
 
-from langchain.callbacks.manager import (
+from langchain_core.callbacks import ( 
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
-from langchain.chat_models.base import BaseChatModel
-from langchain.schema import BaseMessage, ChatResult
-from loguru import logger
+from langchain_core.language_models import BaseChatModel 
+from langchain_core.messages import BaseMessage 
+from langchain_core.outputs import ChatResult 
+from loguru import logger 
 
 
 class ChatModelWithLogging(BaseChatModel):
     llm: BaseChatModel
-    logger: type(logger)
+    logger: type(logger) 
 
     @property
     def _llm_type(self):
@@ -38,7 +39,8 @@ class ChatModelWithLogging(BaseChatModel):
                 {"text": message.content.replace("\n", "\\n"), "agent": message.type}
             )
         result = self.llm._generate(messages, stop, run_manager, **kwargs)
-        generation = result.generations[0]  # only one generation for a LLM call
+        # only one generation for a LLM call
+        generation = result.generations[0]
         log = {
             "input": input_text,
             # make sure all the messages stay on the same line

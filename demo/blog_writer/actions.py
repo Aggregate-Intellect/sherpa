@@ -1,7 +1,7 @@
-from langchain.document_loaders import PDFMinerLoader
-from langchain.text_splitter import SentenceTransformersTokenTextSplitter
-from langchain.vectorstores.chroma import Chroma
-from loguru import logger
+from langchain_community.document_loaders import PDFMinerLoader 
+from langchain_community.vectorstores import Chroma 
+from langchain_text_splitters import SentenceTransformersTokenTextSplitter 
+from loguru import logger 
 
 from sherpa_ai.actions.base import BaseAction
 
@@ -16,9 +16,10 @@ class DocumentSearch(BaseAction):
         self.k = k
 
         # load the pdf and create the vector store
-        self.chroma = Chroma(embedding_function = embedding_function)
+        self.chroma = Chroma(embedding_function=embedding_function)
         documents = PDFMinerLoader(self.filename).load()
-        documents = SentenceTransformersTokenTextSplitter(chunk_overlap=0).split_documents(documents)
+        documents = SentenceTransformersTokenTextSplitter(
+            chunk_overlap=0).split_documents(documents)
 
         logger.info(f"Adding {len(documents)} documents to the vector store")
         self.chroma.add_documents(documents)

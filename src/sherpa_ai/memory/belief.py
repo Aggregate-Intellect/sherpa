@@ -2,6 +2,7 @@ from typing import Callable, List, Optional
 
 from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import Event, EventType
+from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
 class Belief:
@@ -15,6 +16,7 @@ class Belief:
         self.events: List[Event] = []
         self.internal_events: List[Event] = []
         self.current_task: Event = None
+        self.state_machine: SherpaStateMachine = None
 
     def update(self, observation: Event):
         if observation in self.events:
@@ -129,6 +131,11 @@ class Belief:
         return context
 
     def set_actions(self, actions: List[BaseAction]):
+        if self.state_machine is not None:
+            raise ValueError(
+                "State machine exists, please add actions as transitions directly to the state machine"
+            )
+
         self.actions = actions
 
         # TODO: This is a quick an dirty way to set the current task
@@ -139,15 +146,29 @@ class Belief:
 
     @property
     def action_description(self):
-        return "\n".join([str(action) for action in self.actions])
+        return "\n".join([str(action) for action in self.get_actions()])
+
+    def get_state(self):
+        if self.state_machine is None:
+            return None
+
+        return self.state_machine.state
+
+    def get_actions(self) -> List[BaseAction]:
+        if self.state_machine is None:
+            return self.actions
+
+        return self.state_machine.get_actions()
 
     def get_action(self, action_name) -> BaseAction:
+        if self.state_machine is not None:
+            self.actions = self.state_machine.get_actions()
+
         result = None
         for action in self.actions:
             if action.name == action_name:
                 result = action
                 break
-
         return result
 
     @property

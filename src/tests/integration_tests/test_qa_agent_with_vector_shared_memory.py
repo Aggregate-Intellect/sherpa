@@ -1,10 +1,10 @@
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
-from langchain.chat_models import ChatOpenAI
-from langchain.docstore.document import Document
-from loguru import logger
+import pytest 
+from langchain_openai import ChatOpenAI 
+from langchain_core.documents import Document 
+from loguru import logger 
 
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.connectors.base import BaseVectorDB
