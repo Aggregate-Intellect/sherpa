@@ -1,5 +1,8 @@
 from typing import Callable, List, Optional
 
+import pydash
+from loguru import logger
+
 from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory.state_machine import SherpaStateMachine
@@ -17,6 +20,7 @@ class Belief:
         self.internal_events: List[Event] = []
         self.current_task: Event = None
         self.state_machine: SherpaStateMachine = None
+        self.dict: dict = {}
 
     def update(self, observation: Event):
         if observation in self.events:
@@ -174,12 +178,46 @@ class Belief:
                 break
         return result
 
+    def get_dict(self):
+        return self.dict
+
+    def get(self, key):
+        """
+        Get value from the dict, the key can be a dot separated string if the value is nested
+        """
+        return pydash.get(self.dict, key)
+
+    def get_all_keys(self):
+        def get_all_keys(d, parent_key=""):
+            keys = []
+            for k, v in d.items():
+                full_key = parent_key + "." + k if parent_key else k
+                keys.append(full_key)
+                if isinstance(v, dict):
+                    keys.extend(get_all_keys(v, full_key))
+            return keys
+
+        return get_all_keys(self.dict)
+
+    def has(self, key):
+        """
+        Check if the key exists in the dict
+        """
+        return pydash.has(self.dict, key)
+
+    def set(self, key, value):
+        """
+        Set value in the dict, the key can be a dot separated string if the value is nested
+        """
+        pydash.set_(self.dict, key, value)
+
     @property
     def __dict__(self):
         return {
             "events": [event.__dict__ for event in self.events],
             "internal_events": [event.__dict__ for event in self.internal_events],
             "current_task": self.current_task.__dict__ if self.current_task else None,
+            "dict": self.dict,
         }
 
     @classmethod
@@ -192,4 +230,7 @@ class Belief:
         belief.current_task = (
             Event.from_dict(data["current_task"]) if data["current_task"] else None
         )
+
+        belief.dict = data["dict"]
+
         return belief
