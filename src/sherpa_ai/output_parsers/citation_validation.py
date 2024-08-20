@@ -7,10 +7,9 @@ from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
 
-
 # download the punkt tokenizer. This is necessary for the sent_tokenize in NLTK.
 # The download will only happen once and the result will be cached.
-nltk.download("punkt")
+nltk.download("punkt_tab")
 
 
 class CitationValidation(BaseOutputProcessor):
