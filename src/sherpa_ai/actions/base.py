@@ -37,6 +37,9 @@ class BaseAction(ABC, BaseModel):
 
         return json.dumps(tool_desc, indent=4)
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class BaseRetrievalAction(BaseAction, ABC):
     resources: list[ActionResource] = Field(default_factory=list)
