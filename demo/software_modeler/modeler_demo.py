@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from langchain.schema import HumanMessage
+from langchain_core.messages import HumanMessage 
 from slackapp.utils import get_qa_agent_from_config_file
 
 import sherpa_ai.config as cfg

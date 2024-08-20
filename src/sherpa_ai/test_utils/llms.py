@@ -1,10 +1,10 @@
 import json
 import re
 
-import pytest
-from langchain.base_language import BaseLanguageModel
-from langchain.chat_models import ChatOpenAI
-from langchain.llms import FakeListLLM
+import pytest 
+from langchain_core.language_models import BaseLanguageModel 
+from langchain_community.chat_models import ChatOpenAI 
+from langchain_core.language_models import FakeListLLM 
 
 from sherpa_ai.models.chat_model_with_logging import ChatModelWithLogging
 from sherpa_ai.test_utils.loggers import get_new_logger
@@ -16,7 +16,8 @@ def get_fake_llm(filename) -> FakeListLLM:
         for line in f:
             responses.append(json.loads(line))
     # restore new line characters
-    responses = [response["output"].replace("\\n", "\n") for response in responses]
+    responses = [response["output"].replace(
+        "\\n", "\n") for response in responses]
     return FakeListLLM(responses=responses)
 
 
