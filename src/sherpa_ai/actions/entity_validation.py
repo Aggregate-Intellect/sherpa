@@ -25,16 +25,16 @@ class TextSimilarityMethod(Enum):
 
 class EntityValidationAction(BaseAction):
     llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
-    # belief: Belief = None
-    # Override the name and args from BaseAction
     belief: Any = None
+
+    # Override the name and args from BaseAction
     name: str = "Entity Validator"
     args: dict = {
-        "text": "the value to validate.",
-        "text_two": "the value to compare against. where the answer generated from",
+        "target_text": "the value to validate.",
+        "source_text": "the value to compare against. where the answer generated from",
     }
     usage: str = (
-        "simple entity validation that checks if entities in the text exist in the text_two text."
+        "simple entity validation that checks if entities in the target_text exist in the source_text text."
     )
 
     count: int = 0
@@ -42,12 +42,12 @@ class EntityValidationAction(BaseAction):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def execute(self, text: str, text_two: str, **kwargs) -> str:
+    def execute(self, target_text: str, source_text: str, **kwargs) -> str:
         """
         Verifies that entities within `text` exist in the `source` text.
         Args:
-            text: The text to be processed
-            source: The source text to compare against
+            target_text: The text to be processed
+            source_text: The source text to compare against
             iteration_count (int, optional): The iteration count for validation processing.
                 1 means basic text similarity.
                 2 means text similarity by metrics.
@@ -63,18 +63,18 @@ class EntityValidationAction(BaseAction):
         )   
 
         if not source:
-            source = text_two
+            source = source_text
         logger.info(f"Entity Validation Action: {self.name}")
-        logger.info(f"Text: {text}")
+        logger.info(f"Text: {target_text}")
         logger.info(f"Source: {source}")
         entity_exist_in_source, error_message = self.check_entities_match(
-            text, source, self.similarity_picker(self.count), self.llm
+            target_text, source, self.similarity_picker(self.count), self.llm
         )
         if entity_exist_in_source:
             return str(
                 ValidationResult(
                     is_valid=True,
-                    result=text,
+                    result=target_text,
                     feedback="",
                 )
             )
@@ -83,7 +83,7 @@ class EntityValidationAction(BaseAction):
             return str(
                 ValidationResult(
                     is_valid=True,
-                    result=text,
+                    result=target_text,
                     feedback="",
                 )
             )
