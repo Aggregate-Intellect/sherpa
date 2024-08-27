@@ -2,6 +2,7 @@ import os
 import time
 import re
 import json
+from venv import logger
 
 import tiktoken
 from langchain.chat_models import ChatOpenAI
@@ -30,7 +31,7 @@ class Outliner:
         else:
             transcript_file_path = os.path.join(folder_path, transcript_files[0])
 
-        print(f"Using transcript file: {transcript_file_path}")
+        logger.debug(f"Using transcript file: {transcript_file_path}")
 
         with open(transcript_file_path, "r", encoding="utf-8") as f:
             self.raw_transcript = f.read()
@@ -46,7 +47,12 @@ class Outliner:
             temperature=0,
             model="gpt-4o",
         )
-
+        self.chat_4o_mini = ChatOpenAI(
+            openai_api_key=os.environ.get("OPENAI_API_KEY"),
+            temperature=0,
+            model="gpt-4o-mini",
+        )
+        
     def num_tokens_from_string(
         self, string: str, encoding_name="cl100k_base"
     ) -> int:
@@ -100,7 +106,7 @@ class Outliner:
             insights = self.transcript2insights(text.page_content)
             response = "\n".join([response, insights])
             if verbose:
-                print(
+                logger.debug(
                     f"\nInsights extracted from chunk {i+1}/{len(transcript_chunks)}:\n{insights}"
                 )
         return response
@@ -165,7 +171,7 @@ class Outliner:
             [system_prompt, human_prompt]
         )
 
-        outline = self.chat_4o(
+        outline = self.chat_4o_mini(
             chat_prompt.format_prompt(insights=processed_statements).to_messages()
         )
 
@@ -182,7 +188,7 @@ class Outliner:
             # Print the JSON object
             # print(json.dumps(outline_json, indent=2))
         else:
-            print("No JSON part found in the outline text.")
+            logger.debug("No JSON part found in the outline text.")
         
         # Iterate over the JSON data to replace numbers with strings from p_dict
         for key, value in outline_json.items():
@@ -199,18 +205,18 @@ class Outliner:
 
     # @timer_decorator
     def full_transcript2outline_json(self, verbose=True):
-        print("\nChunking transcript...")
+        logger.debug("\nChunking transcript...")
         transcript_docs = self.transcript_splitter()
         t1 = time.time()
-        print("\nExtracting key insights...")
+        logger.debug("\nExtracting key insights...")
         essay_insights = self.create_essay_insights(transcript_docs, verbose)
         t2 = time.time() - t1
-        print("\nCreating essay outline...")
+        logger.debug("\nCreating essay outline...")
         t1 = time.time()
         blueprint = self.create_blueprint(essay_insights, verbose)
         t3 = time.time() - t1
         if verbose:
-            print()
-            print(f"Extracted essay insights in {t2:.2f} seconds.")
-            print(f"Created essay blueprint in {t3:.2f} seconds.")
+            logger.debug()
+            logger.debug(f"Extracted essay insights in {t2:.2f} seconds.")
+            logger.debug(f"Created essay blueprint in {t3:.2f} seconds.")
         return blueprint

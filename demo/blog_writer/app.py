@@ -1,3 +1,4 @@
+from venv import logger
 import chainlit as cl
 import json
 import os
@@ -20,9 +21,9 @@ from langchain.text_splitter import MarkdownTextSplitter
 directory_name = "Output"
 if not os.path.exists(directory_name):
     os.mkdir(directory_name)
-    print(f"Directory '{directory_name}' created successfully.")
+    logger.debug(f"Directory '{directory_name}' created successfully.")
 else:
-    print(f"Directory '{directory_name}' already exists.")
+    logger.debug(f"Directory '{directory_name}' already exists.")
 
 
 def get_qa_agent_from_config_file(
@@ -149,7 +150,7 @@ async def blog_generator(message: cl.Message):
                 content = f.read()
             with open(transcript_path, 'w') as f:
                 f.write(content)
-    print(transcript_path)
+    logger.debug(transcript_path)
     base_name = os.path.splitext(os.path.basename(transcript_path))[0]
     json_output_path = f"Output/blueprint_{base_name}.json"
     md_output_path = f"Output/blog_{base_name}.md"
@@ -162,15 +163,15 @@ async def blog_generator(message: cl.Message):
 
         with open(blueprint_full_path, 'r') as file:
             pure_json_str = file.read()
-        print(f"Using existing blueprint from {blueprint_full_path}")
+        logger.debug(f"Using existing blueprint from {blueprint_full_path}")
     else:
-        print(
+        logger.debug(
             f"No blueprint found at {blueprint_full_path}, creating a new blueprint.")
         # Assume outliner creates a new blueprint if not found
         blueprint = outliner.full_transcript2outline_json(verbose=True)
         with open(json_output_path, "w", encoding="utf-8") as f:
             f.write(blueprint)
-        print(f"Blueprint generated and saved to {json_output_path}")
+        logger.debug(f"Blueprint generated and saved to {json_output_path}")
 
     chat = ChatOpenAI(
         openai_api_key=os.environ.get("OPENAI_API_KEY"),
@@ -240,7 +241,7 @@ async def blog_generator(message: cl.Message):
                 markdown_input += f"## {second_layer_key}\n\n" + \
                     ' '.join(second_layer_value) + "\n\n"
 
-            print(">>>>> input >>>> : " + markdown_input)
+            logger.debug(">>>>> input >>>> : " + markdown_input)
 
             # Execute the write function on the resulting string
 
@@ -291,7 +292,7 @@ async def blog_generator(message: cl.Message):
         return blog
 
     blog = await write_from_json2md(blueprint)
-    print(blog)
+    logger.debug(blog)
     with open(md_output_path, "w", encoding="utf-8") as f:
         f.write(blog)
     return blog, md_output_path
@@ -299,7 +300,7 @@ async def blog_generator(message: cl.Message):
 
 @cl.on_message
 async def main(message: cl.Message):
-    print("new")
+    logger.debug("new")
     blog, md_output_path = await blog_generator(message)
     with open(md_output_path, 'r') as f:
         elements = [cl.File(name='blog_transcript.md', path='./Transcripts/blog_transcript.md', display="inline")]
