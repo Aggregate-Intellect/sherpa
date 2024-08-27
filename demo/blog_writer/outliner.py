@@ -175,6 +175,7 @@ class Outliner:
             chat_prompt.format_prompt(insights=processed_statements).to_messages()
         )
 
+
         # Use regex to extract the JSON part
         json_match = re.search(r'```json(.*?)```', outline.content, re.DOTALL)
 
