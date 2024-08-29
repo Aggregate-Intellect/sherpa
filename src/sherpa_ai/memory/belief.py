@@ -1,11 +1,15 @@
-from typing import Callable, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 import pydash
 from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import Event, EventType
-from sherpa_ai.memory.state_machine import SherpaStateMachine
+
+if TYPE_CHECKING:
+    from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
+    from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
 class Belief:
@@ -178,11 +182,11 @@ class Belief:
     def get_dict(self):
         return self.dict
 
-    def get(self, key):
+    def get(self, key, default=None):
         """
         Get value from the dict, the key can be a dot separated string if the value is nested
         """
-        return pydash.get(self.dict, key)
+        return pydash.get(self.dict, key, default)
 
     def get_all_keys(self):
         def get_all_keys(d, parent_key=""):

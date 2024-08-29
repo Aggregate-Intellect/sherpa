@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Optional
 
-from langchain_core.language_models import BaseLanguageModel 
-from loguru import logger 
+from langchain_core.language_models import BaseLanguageModel
+from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import EventType
@@ -12,7 +12,6 @@ from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
 
 # Avoid circular import
 if TYPE_CHECKING:
@@ -65,15 +64,17 @@ class BaseAgent(ABC):
         self.verbose_logger.log(f"⏳{self.name} is thinking...")
         logger.debug(f"```⏳{self.name} is thinking...```")
 
-        self.shared_memory.observe(self.belief)
+        if self.shared_memory is not None:
+            self.shared_memory.observe(self.belief)
 
-        actions = self.actions if len(
-            self.actions) > 0 else self.create_actions()
-        self.belief.set_actions(actions)
+        if len(self.belief.get_actions()) == 0:
+            actions = self.actions if len(
+                self.actions) > 0 else self.create_actions()
+            self.belief.set_actions(actions)
 
         for _ in range(self.num_runs):
             result = self.policy.select_action(self.belief)
-            logger.info(f"Action selected: {result}")
+            logger.debug(f"Action selected: {result}")
 
             if result is None:
                 # this means no action is selected
@@ -92,6 +93,8 @@ class BaseAgent(ABC):
             )
 
             action_output = self.act(result.action, result.args)
+
+            action_output = self.belief.get(result.action.name, action_output)
 
             self.verbose_logger.log(f"```Action output: {action_output}```")
             logger.debug(f"```Action output: {action_output}```")
@@ -244,4 +247,4 @@ class BaseAgent(ABC):
         return self.shared_memory.observe(self.belief)
 
     def act(self, action, inputs):
-        return action.execute(**inputs)
+        return action(**inputs)
