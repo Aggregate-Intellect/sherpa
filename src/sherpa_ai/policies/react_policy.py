@@ -7,7 +7,6 @@ from loguru import logger
 
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 
-
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
 

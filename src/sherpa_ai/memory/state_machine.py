@@ -4,7 +4,7 @@ from loguru import logger
 from transitions import Machine, Transition
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.actions.dymatic import DynamicAction
+from sherpa_ai.actions.dynamic import DynamicAction
 from sherpa_ai.actions.empty import EmptyAction
 
 
@@ -25,7 +25,6 @@ class SherpaStateMachine(Machine):
         action: Optional[BaseAction] = None,
     ):
         self.explicit_transitions.add(name)
-        logger.error(name)
 
         if not action:
             action = EmptyAction(usage="")
@@ -43,8 +42,6 @@ class SherpaStateMachine(Machine):
         state = self.model.state
         triggers = self.get_triggers(state)
         actions = []
-
-        logger.error(triggers)
 
         for t in triggers:
             if t not in self.explicit_transitions:
@@ -64,10 +61,20 @@ class SherpaStateMachine(Machine):
 
         def wrapper_action(**kwargs):
             transit_trigger = getattr(self.model, trigger)
-            transit_trigger()
+            result = transit_trigger(**kwargs)
 
-        usage = transition.prepare[0].usage
-        args = transition.prepare[0].args
+            if not isinstance(result, str):
+                return str(result)
+            else:
+                return result
+
+        if len(transition.prepare) > 0:
+            usage = transition.prepare[0].usage
+            args = transition.prepare[0].args
+            transition.prepare[0].name = trigger
+        else:
+            usage = trigger
+            args = {}
         name = trigger
 
         # Append the transition to the usage

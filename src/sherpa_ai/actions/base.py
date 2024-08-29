@@ -1,13 +1,15 @@
-from __future__ import annotations
-
 import json
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Optional
 
 from loguru import logger
 from pydantic import BaseModel, Field
 
 from sherpa_ai.actions.utils.refinement import BaseRefinement
 from sherpa_ai.actions.utils.reranking import BaseReranking
+
+if TYPE_CHECKING:
+    from sherpa_ai.memory.belief import Belief
 
 
 class ActionResource(BaseModel):
@@ -24,16 +26,30 @@ class ActionResource(BaseModel):
 
 
 class BaseAction(ABC, BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
+
     name: str
     args: dict
     usage: str
+    beleif: Any = None
 
     @abstractmethod
     def execute(self, **kwargs):
         pass
 
     def __call__(self, **kwargs):
-        return self.execute(**kwargs)
+        filtered_kwargs = {}
+        for arg in self.args:
+            if arg not in kwargs:
+                raise ValueError(f"Missing argument: {arg}")
+            filtered_kwargs[arg] = kwargs[arg]
+
+        result = self.execute(**filtered_kwargs)
+        self.beleif: Belief = self.beleif
+        if self.beleif:
+            self.beleif.set(self.name, result)
+        return result
 
     def __str__(self):
         tool_desc = {"name": self.name, "args": self.args, "usage": self.usage}
