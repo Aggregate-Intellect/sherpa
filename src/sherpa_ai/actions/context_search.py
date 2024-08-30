@@ -22,9 +22,9 @@ Only use the information given. Do not add any additional information. The summa
 class ContextSearch(BaseRetrievalAction):
     role_description: str
     task: str
-    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SEARCH_SUMMARY_DESCRIPTION
-    _context: Any
+    _context: Any = None
 
     # Override the name and args from BaseAction
     name: str = "Context Search"
