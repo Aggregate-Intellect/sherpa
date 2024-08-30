@@ -6,3 +6,4 @@ openai>=0.28.0
 tiktoken>=0.4.0
 sherpa-ai >= 0.2.1
 chainlit==0.4.1
+python-box==7.2.0
