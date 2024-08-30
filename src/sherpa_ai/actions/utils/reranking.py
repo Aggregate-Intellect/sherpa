@@ -21,7 +21,7 @@ class BaseReranking(ABC, BaseModel):
 
 
 class RerankingByQuery(BaseReranking):
-    embeddings: Any  # takes an Embedding Object from LangChain, use Any since it is not compatible with Pydantic 2 yet
+    embeddings: Any = None  # takes an Embedding Object from LangChain, use Any since it is not compatible with Pydantic 2 yet
     distance_metric: Callable[[ArrayLike, ArrayLike], float] = cosine_similarity
 
     def rerank(self, documents: list[str], query: str) -> str:

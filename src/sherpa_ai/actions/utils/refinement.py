@@ -35,7 +35,7 @@ class BaseRefinement(ABC, BaseModel):
 
 
 class RefinementByQuery(BaseRefinement):
-    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SEARCH_SUMMARY_DESCRIPTION
     k: int = 3
 
@@ -51,7 +51,7 @@ class RefinementByQuery(BaseRefinement):
 
 
 class RefinementBySentence(BaseRefinement):
-    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SEARCH_SUMMARY_DESCRIPTION_SENT
 
     def refinement(self, documents: list[str], query: str) -> list[str]:

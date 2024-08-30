@@ -4,11 +4,11 @@ Actions to operate the dictionary inside agent's belief
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.memory.belief import Belief
+from pydantic import ConfigDict
 
 
 class UpdateBelief(BaseAction):
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     name: str = "update_belief"
     args: dict = {
@@ -27,8 +27,7 @@ class UpdateBelief(BaseAction):
 
 
 class RetrieveBelief(BaseAction):
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     name: str = "retrieve_belief"
     args: dict = {

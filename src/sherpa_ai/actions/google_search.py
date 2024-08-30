@@ -34,10 +34,10 @@ Only use the information given. Do not add any additional information. The summa
 class GoogleSearch(BaseRetrievalAction):
     role_description: str
     task: str
-    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SEARCH_SUMMARY_DESCRIPTION
     config: AgentConfig = AgentConfig()
-    _search_tool: Any
+    _search_tool: Any = None
 
     # Override the name and args from BaseAction
     name: str = "Google Search"

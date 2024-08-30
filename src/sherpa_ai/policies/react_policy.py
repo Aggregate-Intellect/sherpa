@@ -52,7 +52,7 @@ class ReactPolicy(BasePolicy):
 
     role_description: str
     output_instruction: str
-    llm: Any  # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
+    llm: Any = None  # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
     description: str = SELECTION_DESCRIPTION
     response_format: dict = {
         "command": {
