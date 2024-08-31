@@ -119,7 +119,6 @@ class ReactPolicy(BasePolicy):
         action = belief.get_action(name)
 
         if action is None:
-            logger.error(f"Action {name} not found in the list of possible actions")
-            return None
+            raise ValueError(f"Action {name} not found in the list of possible actions")
 
         return PolicyOutput(action=action, args=args)

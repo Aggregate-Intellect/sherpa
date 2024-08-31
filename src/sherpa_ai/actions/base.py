@@ -32,7 +32,7 @@ class BaseAction(ABC, BaseModel):
     name: str
     args: dict
     usage: str
-    beleif: Any = None
+    belief: Any = None
 
     @abstractmethod
     def execute(self, **kwargs):
@@ -46,9 +46,9 @@ class BaseAction(ABC, BaseModel):
             filtered_kwargs[arg] = kwargs[arg]
 
         result = self.execute(**filtered_kwargs)
-        self.beleif: Belief = self.beleif
-        if self.beleif:
-            self.beleif.set(self.name, result)
+        self.belief: Belief = self.belief
+        if self.belief:
+            self.belief.set(self.name, result)
         return result
 
     def __str__(self):
