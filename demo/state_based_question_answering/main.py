@@ -6,13 +6,28 @@ from sherpa_ai.memory.belief import Belief
 from sherpa_ai.models import SherpaChatOpenAI
 from sherpa_ai.policies.react_policy import ReactPolicy
 
+role_description = """You are a helpful agent help user to perform their task.
+
+Your task is to choose from available actions and execute them to help with user's task.
+
+ask clarification if needed.
+
+If you make any assumptions, make sure to clarify them with the user.
+
+You want the response to be concise yet informative and keep the conversation engaging.
+
+Store any relevant clarification into the belief and use it to answer the question if necessary. 
+
+Never Ask question repetitively. Never make random assumption
+"""
+
 
 def main():
     belief = Belief()
-    llm = SherpaChatOpenAI(name="gpt-4o-mini")
+    llm = SherpaChatOpenAI(model_name="gpt-4o-mini", temperature=0.7)
 
     policy = ReactPolicy(
-        role_description="You are a helpful agent help user to perform their task, ask clarification if needed. You want the response to be concise yet informative and keep the conversation engaging",
+        role_description=role_description,
         output_instruction="Determine which action and arguments would be the best continuing the task",
         llm=llm,
     )

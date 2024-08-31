@@ -68,12 +68,19 @@ class BaseAgent(ABC):
             self.shared_memory.observe(self.belief)
 
         if len(self.belief.get_actions()) == 0:
-            actions = self.actions if len(
-                self.actions) > 0 else self.create_actions()
+            actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
         for _ in range(self.num_runs):
-            result = self.policy.select_action(self.belief)
+            try:
+                result = self.policy.select_action(self.belief)
+            except Exception as e:
+                self.belief.update_internal(
+                    EventType.action_output,
+                    self.feedback_agent_name,
+                    f"Error in selecting action: {e}",
+                )
+                continue
             logger.debug(f"Action selected: {result}")
 
             if result is None:
@@ -84,15 +91,25 @@ class BaseAgent(ABC):
                 f"```🤖{self.name} is executing```"
                 f"```{result.action.name}\n Input: {result.args}...```"
             )
-            logger.debug(f"🤖{self.name} is executing```"
-                         "``` {result.action.name}...```")
-
-            self.belief.update_internal(
-                EventType.action, self.name, result.action.name +
-                str(result.args)
+            logger.debug(
+                f"🤖{self.name} is executing```" "``` {result.action.name}...```"
             )
 
-            action_output = self.act(result.action, result.args)
+            self.belief.update_internal(
+                EventType.action,
+                self.name,
+                "Action: " + result.action.name + str(result.args),
+            )
+
+            try:
+                action_output = self.act(result.action, result.args)
+            except Exception as e:
+                self.belief.update_internal(
+                    EventType.action_output,
+                    self.feedback_agent_name,
+                    f"Error in executing action: {result.action.name}. Error: {e}",
+                )
+                continue
 
             action_output = self.belief.get(result.action.name, action_output)
 
@@ -100,7 +117,7 @@ class BaseAgent(ABC):
             logger.debug(f"```Action output: {action_output}```")
 
             self.belief.update_internal(
-                EventType.action_output, self.name, action_output
+                EventType.action_output, self.name, "Output: " + action_output
             )
 
         result = (
@@ -132,8 +149,7 @@ class BaseAgent(ABC):
             logger.info(f"validation_count: {validation.count}")
             # this checks if the validator has already exceeded the validation steps limit.
             if validation.count < self.validation_steps:
-                self.belief.update_internal(
-                    EventType.result, self.name, result)
+                self.belief.update_internal(EventType.result, self.name, result)
                 validation_result = validation.process_output(
                     text=result, belief=self.belief, llm=self.llm
                 )
