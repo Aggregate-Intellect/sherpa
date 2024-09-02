@@ -5,6 +5,9 @@ from sherpa_ai.memory.belief import Belief
 
 
 class UserHelp(BaseAction):
+    """
+    Ask the user for clarification on a question.
+    """
     args: dict = {"question": "str"}
 
     def execute(self, question: str) -> str:
@@ -14,6 +17,9 @@ class UserHelp(BaseAction):
 
 
 class Respond(BaseAction):
+    """
+    Respond to the user with a message.
+    """
     args: dict = {"response": "str"}
 
     def execute(self, response: str) -> str:
@@ -23,6 +29,9 @@ class Respond(BaseAction):
 
 
 class StartQuestion(BaseAction):
+    """
+    Waiting the user to ask a question.
+    """
     belief: Belief
     args: dict = {}
 
