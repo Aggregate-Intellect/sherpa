@@ -16,7 +16,7 @@ Relevant Answer:
 {answer}
 
 
-Review and extract the most relevant sentences from relavant answer. 
+Review and extract the most relevant sentences from relevant answer. 
 Need to follows rules:
 1. The output sentences should only picked from original relevant answer.
 2. Return 'not relevant.' if relevant answer is not relevant to the question asked."""
