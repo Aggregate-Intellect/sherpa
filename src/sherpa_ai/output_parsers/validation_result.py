@@ -20,3 +20,6 @@ class ValidationResult(BaseModel):
     is_valid: bool
     result: str
     feedback: str = ""
+
+    def __str__(self) -> str:
+        return f"ValidationResult(is_valid={self.is_valid}, result={self.result}, feedback={self.feedback})"
