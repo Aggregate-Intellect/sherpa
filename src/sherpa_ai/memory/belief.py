@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Callable, List, Optional
 import pydash
 from loguru import logger
 
+from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
 from sherpa_ai.events import Event, EventType
 
 if TYPE_CHECKING:
-    from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
     from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
@@ -24,6 +24,7 @@ class Belief:
         self.internal_events: List[Event] = []
         self.current_task: Event = None
         self.state_machine: SherpaStateMachine = None
+        self.actions = []
         self.dict: dict = {}
 
     def update(self, observation: Event):
