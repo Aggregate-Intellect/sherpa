@@ -25,6 +25,7 @@ SELECTION_DESCRIPTION = """{role_description}
 **History of Previous Actions**:
 {history_of_previous_actions}
 
+You should only select the actions specified in **Possible Actions**
 You should only respond in JSON format as described below without any extra text.
 Response Format:
 {response_format}

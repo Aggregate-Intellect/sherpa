@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List, Optional
 from langchain_core.language_models import BaseLanguageModel
 from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
+from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
@@ -71,7 +71,7 @@ class BaseAgent(ABC):
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
-        for _ in range(self.num_runs):
+        for i in range(self.num_runs):
             try:
                 result = self.policy.select_action(self.belief)
             except Exception as e:
@@ -80,6 +80,8 @@ class BaseAgent(ABC):
                     self.feedback_agent_name,
                     f"Error in selecting action: {e}",
                 )
+                logger.error("Error in selecting action")
+                logger.error(e)
                 continue
             logger.debug(f"Action selected: {result}")
 
@@ -109,13 +111,15 @@ class BaseAgent(ABC):
                     self.feedback_agent_name,
                     f"Error in executing action: {result.action.name}. Error: {e}",
                 )
+                logger.error(
+                    f"Error in executing action: {result.action.name}. Error: {e}"
+                )
                 continue
 
             action_output = self.belief.get(result.action.name, action_output)
 
             self.verbose_logger.log(f"```Action output: {action_output}```")
             logger.debug(f"```Action output: {action_output}```")
-
             self.belief.update_internal(
                 EventType.action_output, self.name, "Output: " + action_output
             )
