@@ -32,6 +32,7 @@ def main():
         llm=llm,
     )
     belief = add_qa_sm(belief)
+    belief.max_tokens = 100
     belief.set_current_task(Event(EventType.task, "user", "Answer the question"))
 
     # belief.state_machine.enter_state("Waiting")
