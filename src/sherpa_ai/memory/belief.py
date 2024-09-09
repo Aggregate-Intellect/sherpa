@@ -26,6 +26,7 @@ class Belief:
         self.state_machine: SherpaStateMachine = None
         self.actions = []
         self.dict: dict = {}
+        self.max_tokens = 4000
 
     def update(self, observation: Event):
         if observation in self.events:
@@ -50,7 +51,7 @@ class Belief:
     def set_current_task(self, task: Event):
         self.current_task = task
 
-    def get_context(self, token_counter: Callable[[str], int], max_tokens=4000):
+    def get_context(self, token_counter: Callable[[str], int]):
         """
         Get the context of the agent
 
@@ -70,20 +71,17 @@ class Belief:
             ]:
                 context = event.content + "\n" + context
 
-                if token_counter(context) > max_tokens:
+                if token_counter(context) > self.max_tokens:
                     break
 
         return context
 
-    def get_internal_history(
-        self, token_counter: Callable[[str], int], max_tokens=4000
-    ):
+    def get_internal_history(self, token_counter: Callable[[str], int]):
         """
         Get the internal history of the agent
 
         Args:
             token_counter: Token counter
-            max_tokens: Maximum number of tokens
 
         Returns:
             str: Internal history of the agent with event content separated by newlines.
@@ -95,7 +93,7 @@ class Belief:
         for event in reversed(self.internal_events):
             results.append(event.content)
             current_tokens += token_counter(event.content)
-            if current_tokens > max_tokens:
+            if current_tokens > self.max_tokens:
                 break
 
         context = "\n".join(reversed(results))

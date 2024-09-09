@@ -1,6 +1,5 @@
 from actions import Respond, StartQuestion, UserHelp
-from transitions.extensions import (GraphMachine, HierarchicalGraphMachine,
-                                    HierarchicalMachine)
+from transitions.extensions import GraphMachine, HierarchicalGraphMachine
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.belief_actions import RetrieveBelief, UpdateBelief
@@ -42,54 +41,7 @@ def get_actions(belief: Belief) -> dict[str, BaseAction]:
 
 
 def add_qa_sm(belief: Belief) -> Belief:
-    # states = [
-    #     "Start",
-    #     {"name": "Waiting", "on_enter": "start_question"},
-    #     "QA",
-    #     "Clarification",
-    # ]
-    # initial = "Start"
-
-    # transitions = [
-    #     {
-    #         "trigger": "start",
-    #         "source": "Start",
-    #         "dest": "Waiting",
-    #     },
-    #     {"trigger": "Start_question_answering", "source": "Waiting", "dest": "QA"},
-    #     {
-    #         "trigger": "Ask_for_clarification",
-    #         "source": "QA",
-    #         "dest": "Clarification",
-    #         "before": "clarify_question",
-    #     },
-    #     {
-    #         "trigger": "Ask_for_clarification",
-    #         "source": "Clarification",
-    #         "dest": "Clarification",
-    #         "before": "clarify_question",
-    #     },
-    #     {
-    #         "trigger": "Update_belief",
-    #         "source": "Clarification",
-    #         "dest": "Clarification",
-    #         "before": "update_belief",
-    #     },
-    #     {
-    #         "trigger": "Retrieve_belief",
-    #         "source": "Clarification",
-    #         "dest": "Clarification",
-    #         "before": "retrieve_belief",
-    #     },
-    #     {"trigger": "Finish_clarification", "source": "Clarification", "dest": "QA"},
-    #     {
-    #         "trigger": "Answer_question",
-    #         "source": "QA",
-    #         "dest": "Waiting",
-    #         "before": "answer_question",
-    #     },
-    # ]
-
+    # Hierarchical version of the state machine
     states = [
         "Start",
         {"name": "Waiting", "on_enter": "start_question"},
