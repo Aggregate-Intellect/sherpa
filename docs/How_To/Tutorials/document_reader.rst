@@ -129,6 +129,7 @@ There are three main parts in this action class:
 
 3. `name` and `args`: These properties describe the action to agents that want to use it.
 
+4. `usage`: This property explain the action purpose to help the LLM to better understand action.
 
 Find a PDF file
 ****************
