@@ -29,7 +29,7 @@ def get_qa_agent_from_config_file(
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--config", type=str, default="agent_config.yaml")
+    parser.add_argument("--config", type=str, default="agent_config.yml")
     args = parser.parse_args()
 
     qa_agent = get_qa_agent_from_config_file(args.config)
