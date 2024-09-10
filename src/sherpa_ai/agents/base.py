@@ -3,16 +3,15 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Optional
 
-from langchain_core.language_models import BaseLanguageModel 
-from loguru import logger 
+from langchain_core.language_models import BaseLanguageModel
+from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
+from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
 
 # Avoid circular import
 if TYPE_CHECKING:
@@ -65,15 +64,26 @@ class BaseAgent(ABC):
         self.verbose_logger.log(f"⏳{self.name} is thinking...")
         logger.debug(f"```⏳{self.name} is thinking...```")
 
-        self.shared_memory.observe(self.belief)
+        if self.shared_memory is not None:
+            self.shared_memory.observe(self.belief)
 
-        actions = self.actions if len(
-            self.actions) > 0 else self.create_actions()
-        self.belief.set_actions(actions)
+        if len(self.belief.get_actions()) == 0:
+            actions = self.actions if len(self.actions) > 0 else self.create_actions()
+            self.belief.set_actions(actions)
 
-        for _ in range(self.num_runs):
-            result = self.policy.select_action(self.belief)
-            logger.info(f"Action selected: {result}")
+        for i in range(self.num_runs):
+            try:
+                result = self.policy.select_action(self.belief)
+            except Exception as e:
+                self.belief.update_internal(
+                    EventType.action_output,
+                    self.feedback_agent_name,
+                    f"Error in selecting action: {e}",
+                )
+                logger.error("Error in selecting action")
+                logger.error(e)
+                continue
+            logger.debug(f"Action selected: {result}")
 
             if result is None:
                 # this means no action is selected
@@ -83,21 +93,35 @@ class BaseAgent(ABC):
                 f"```🤖{self.name} is executing```"
                 f"```{result.action.name}\n Input: {result.args}...```"
             )
-            logger.debug(f"🤖{self.name} is executing```"
-                         "``` {result.action.name}...```")
-
-            self.belief.update_internal(
-                EventType.action, self.name, result.action.name +
-                str(result.args)
+            logger.debug(
+                f"🤖{self.name} is executing```" "``` {result.action.name}...```"
             )
 
-            action_output = self.act(result.action, result.args)
+            self.belief.update_internal(
+                EventType.action,
+                self.name,
+                "Action: " + result.action.name + str(result.args),
+            )
+
+            try:
+                action_output = self.act(result.action, result.args)
+            except Exception as e:
+                self.belief.update_internal(
+                    EventType.action_output,
+                    self.feedback_agent_name,
+                    f"Error in executing action: {result.action.name}. Error: {e}",
+                )
+                logger.error(
+                    f"Error in executing action: {result.action.name}. Error: {e}"
+                )
+                continue
+
+            action_output = self.belief.get(result.action.name, action_output)
 
             self.verbose_logger.log(f"```Action output: {action_output}```")
             logger.debug(f"```Action output: {action_output}```")
-
             self.belief.update_internal(
-                EventType.action_output, self.name, action_output
+                EventType.action_output, self.name, "Output: " + action_output
             )
 
         result = (
@@ -129,8 +153,7 @@ class BaseAgent(ABC):
             logger.info(f"validation_count: {validation.count}")
             # this checks if the validator has already exceeded the validation steps limit.
             if validation.count < self.validation_steps:
-                self.belief.update_internal(
-                    EventType.result, self.name, result)
+                self.belief.update_internal(EventType.result, self.name, result)
                 validation_result = validation.process_output(
                     text=result, belief=self.belief, llm=self.llm
                 )
@@ -244,4 +267,4 @@ class BaseAgent(ABC):
         return self.shared_memory.observe(self.belief)
 
     def act(self, action, inputs):
-        return action.execute(**inputs)
+        return action(**inputs)
