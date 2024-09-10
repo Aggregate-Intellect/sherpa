@@ -7,7 +7,6 @@ from loguru import logger
 
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 
-
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
 
@@ -26,6 +25,7 @@ SELECTION_DESCRIPTION = """{role_description}
 **History of Previous Actions**:
 {history_of_previous_actions}
 
+You should only select the actions specified in **Possible Actions**
 You should only respond in JSON format as described below without any extra text.
 Response Format:
 {response_format}
@@ -120,7 +120,6 @@ class ReactPolicy(BasePolicy):
         action = belief.get_action(name)
 
         if action is None:
-            logger.error(f"Action {name} not found in the list of possible actions")
-            return None
+            raise ValueError(f"Action {name} not found in the list of possible actions")
 
         return PolicyOutput(action=action, args=args)

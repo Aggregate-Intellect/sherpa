@@ -12,9 +12,9 @@ def state_machine():
     action_c = EmptyAction()
 
     sm = SherpaStateMachine(states=["A", "B", "C"], initial="A")
-    sm.add_transition("A_to_B_1", "A", "B", action=action_a)
-    sm.add_transition("A_to_B_2", "A", "B", action=action_b)
-    sm.add_transition("B_to_C", "B", "C", action=action_c)
+    sm.update_transition("A_to_B_1", "A", "B", action=action_a)
+    sm.update_transition("A_to_B_2", "A", "B", action=action_b)
+    sm.update_transition("B_to_C", "B", "C", action=action_c)
 
     return sm
 
