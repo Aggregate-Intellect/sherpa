@@ -2,8 +2,6 @@ from typing import Any, Callable, Optional, Union
 
 import transitions as ts
 from loguru import logger
-from pydantic import BaseModel
-from transitions.extensions import HierarchicalMachine
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import DynamicAction
@@ -25,6 +23,10 @@ class SherpaStateMachine:
     State machine for defining the behavior of an agent in sherpa
 
     It combines with a set of states and transitions between them
+    Attributes:
+        explicit_transitions: set of triggers that are explicitly defined in the
+            transitions
+        sm: the state machine object from pytransitions
     """
 
     explicit_transitions: set = set()
@@ -40,6 +42,19 @@ class SherpaStateMachine:
         sm_cls: type = ts.Machine,
         action_map: dict[str, BaseAction] = {},
     ):
+        """
+        Initialize the state machine
+
+        Args:
+            name (str): name of the state machine
+            states (list): list of states in the state machine
+            transitions (list): list of transitions connecting all states
+            initial (str): the name of initial state
+            auto_transitions (bool): whether to allow automatically building
+                transitions from each pair of states
+            sm_cls (type): the state machine class to instantiate the state machine
+            action_map (dict): mapping from action name to action object
+        """
 
         for name, action in action_map.items():
             self.__setattr__(name, action)
@@ -59,6 +74,13 @@ class SherpaStateMachine:
         self.add_explicit_transitions(transitions)
 
     def add_explicit_transitions(self, transitions: list[Any]):
+        """
+        Add explicit transitions to the state machine
+
+        Args:
+            transitions (list): list of explicit transitions to add
+        """
+
         for t in transitions:
             if isinstance(t, dict):
                 self.explicit_transitions.add(t["trigger"])
@@ -73,9 +95,19 @@ class SherpaStateMachine:
         source: str,
         dest: str,
         conditions: Union[Callable, list[Callable]] = None,
-        unless: Union[Callable, list[Callable]] = None,
         action: Optional[BaseAction] = None,
     ):
+        """
+        Update or add a transition to the state machine
+
+        Args:
+            trigger (str): the trigger event for the transition
+            source (str): the name of the source state of the transition
+            dest (str): the name of the destination state of the transition
+            conditions (list): list of conditions checking functions that needs to
+                return True before the transition can happen
+            action (BaseAction): the action to be executed before the transition happens
+        """
         self.explicit_transitions.add(trigger)
 
         if not action:
@@ -89,11 +121,17 @@ class SherpaStateMachine:
             source=source,
             dest=dest,
             conditions=conditions,
-            unless=unless,
-            prepare=action,
+            before=action,
         )
 
     def get_actions(self) -> list[BaseAction]:
+        """
+        Get the available transitions as list of actions based on the current state
+
+        Returns:
+            list[BaseAction]: list of actions that can be executed from the current
+                state
+        """
         state = self.state
         triggers = self.sm.get_triggers(state)
         actions = []
@@ -116,6 +154,13 @@ class SherpaStateMachine:
     ) -> BaseAction:
         """
         Wrap a transition into a BaseAction that can be selected by an agent
+
+        Args:
+            trigger (str): the trigger event for the transition
+            transition (ts.Transition): the transition object to be wrapped
+
+        Returns:
+            BaseAction: the action object that can be executed by the agent
         """
 
         def wrapper_action(**kwargs):
