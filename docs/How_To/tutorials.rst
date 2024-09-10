@@ -9,4 +9,4 @@ The tutorials are a hands-on way for software developers to learn about Sherpa's
     Tutorials/blog_writer
     Tutorials/document_reader
     Tutorials/add_citation
-
+    Tutorials/search_refinement

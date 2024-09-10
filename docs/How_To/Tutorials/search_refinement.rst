@@ -1,5 +1,5 @@
 Refine Sherpa search results
-===============================
+============================
 
 .. note:: 
     This tutorial assumes that you have already knew how to use `GoogleSearch`, you can find document under :doc:`Create a PDF Reader with Sherpa <./document_reader>` tutorial.
@@ -18,6 +18,7 @@ First add the refinement action. There are two refinement methods available:
 Below is an example of adding a refinement method for google search:
 
 .. code-block:: yaml
+
     refinement:
         _target_: sherpa_ai.actions.utils.refinement.RefinementBySentence
         llm: ${llm}
@@ -42,6 +43,7 @@ Then, add the `google_search` action to the `qa_agent` section:
 Now, run the agent and ask a question that will trigger the Google search action. The agent should return refined results.
 
 .. code-block:: bash
+
     (sherpa) (yourenv) yourlaptop sherpa % cd demo 
     (sherpa) (yourenv) yourlaptop demo % cd pdf_question_answering 
     (sherpa) (yourenv) yourlaptop pdf_question_answering % python main.py
