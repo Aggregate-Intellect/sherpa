@@ -1,56 +1,36 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional
+from typing import Any, List
 
-from langchain_core.language_models import BaseLanguageModel
 from loguru import logger
+from pydantic import BaseModel, ConfigDict
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
+from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 
-# Avoid circular import
-if TYPE_CHECKING:
-    from sherpa_ai.memory import Belief, SharedMemory
 
+class BaseAgent(ABC, BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
-class BaseAgent(ABC):
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        shared_memory: SharedMemory = None,
-        belief: Belief = None,
-        policy: Optional[BasePolicy] = None,
-        num_runs: int = 1,
-        verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
-        actions: List[BaseAction] = [],
-        validation_steps: int = 1,
-        validations: List[BaseOutputProcessor] = [],
-        feedback_agent_name: str = "critic",
-        global_regen_max: int = 12,
-        llm: BaseLanguageModel = None,
-    ):
-        self.llm = llm
-        self.name = name
-        self.description = description
-        self.shared_memory = shared_memory
-        self.belief = belief
-        self.policy = policy
-        self.num_runs = num_runs
-
-        self.subscribed_events = []
-
-        self.verbose_logger = verbose_logger
-        self.actions = actions
-        self.validation_steps = validation_steps
-        self.global_regen_max = global_regen_max
-        self.validations = validations
-        self.feedback_agent_name = feedback_agent_name
+    name: str
+    description: str
+    shared_memory: SharedMemory = None
+    belief: Belief = None
+    policy: BasePolicy = None
+    num_runs: int = 1
+    verbose_logger: BaseVerboseLogger = DummyVerboseLogger()
+    actions: List[BaseAction] = []
+    validation_steps: int = 1
+    validations: List[BaseOutputProcessor] = []
+    feedback_agent_name: str = "critic"
+    global_regen_max: int = 12
+    llm: Any = None
 
     @abstractmethod
     def create_actions(self) -> List[BaseAction]:
@@ -132,13 +112,18 @@ class BaseAgent(ABC):
 
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
-        self.shared_memory.add(EventType.result, self.name, result)
+        if self.shared_memory is not None:
+            self.shared_memory.add(EventType.result, self.name, result)
         return result
 
-    # The validation_iterator function is responsible for iterating through each instantiated validation in the 'self.validations' list.
-    # It performs the necessary validation steps for each validation, updating the belief system and synthesizing output if needed.
-    # It keeps track of the global regeneration count, whether all validations have passed, and if any validation has been escaped.
-    # The function returns the updated global regeneration count, the status of all validations, whether any validation has been escaped, and the synthesized output.
+    # The validation_iterator function is responsible for iterating through each
+    # instantiated validation in the 'self.validations' list.
+    # It performs the necessary validation steps for each validation, updating the
+    # belief system and synthesizing output if needed.
+    # It keeps track of the global regeneration count, whether all validations have
+    # passed, and if any validation has been escaped.
+    # The function returns the updated global regeneration count, the status of all
+    # validations, whether any validation has been escaped, and the synthesized output.
     def validation_iterator(
         self,
         validations,
@@ -151,7 +136,8 @@ class BaseAgent(ABC):
             validation = validations[i]
             logger.info(f"validation_running: {validation.__class__.__name__}")
             logger.info(f"validation_count: {validation.count}")
-            # this checks if the validator has already exceeded the validation steps limit.
+            # this checks if the validator has already exceeded the validation steps
+            # limit.
             if validation.count < self.validation_steps:
                 self.belief.update_internal(EventType.result, self.name, result)
                 validation_result = validation.process_output(
@@ -174,13 +160,16 @@ class BaseAgent(ABC):
                     all_pass = True
                 else:
                     result = validation_result.result
-            # if validation is the last one and surpassed the validation steps limit then finish the loop with all_pass and mention there is a scaped validation.
+            # if validation is the last one and surpassed the validation steps limit
+            # then finish the loop with all_pass and mention there is a scaped
+            # validation.
             elif i == len(validations) - 1:
                 validation_is_scaped = True
                 all_pass = True
 
             else:
-                # if the validation has already reached the validation steps limit then continue to the next validation.
+                # if the validation has already reached the validation steps limit then
+                # continue to the next validation.
                 validation_is_scaped = True
         return global_regen_count, all_pass, validation_is_scaped, result
 
@@ -188,18 +177,20 @@ class BaseAgent(ABC):
         """
         Validate the synthesized output through a series of validation steps.
 
-        This method iterates through each validation in the 'validations' list, and for each validation,
-        it performs 'validation_steps' attempts to synthesize output using 'synthesize_output' method.
-        If the output doesn't pass validation, feedback is incorporated into the belief system.
+        This method iterates through each validation in the 'validations' list, and for
+        each validation, it performs 'validation_steps' attempts to synthesize output
+        using 'synthesize_output' method. If the output doesn't pass validation,
+        feedback is incorporated into the belief system.
 
-        If a validation fails after all attempts, the error messages from the last failed validation
-        are appended to the final result.
+        If a validation fails after all attempts, the error messages from the last
+        failed validation are appended to the final result.
 
         Returns:
             str: The synthesized output after validation.
         """
         result = ""
-        # create array of instance of validation so that we can keep track of how many times regeneration happened.
+        # create array of instance of validation so that we can keep track of how many
+        # times regeneration happened.
         all_pass = False
         validation_is_scaped = False
         iteration_count = 0
@@ -212,7 +203,8 @@ class BaseAgent(ABC):
 
         validations = self.validations
 
-        # this loop will run until max regeneration reached or all validations have failed
+        # this loop will run until max regeneration reached or all validations have
+        # failed
         while self.global_regen_max > global_regen_count and not all_pass:
             logger.info(f"validations_size: {len(validations)}")
             iteration_count += 1
@@ -231,7 +223,8 @@ class BaseAgent(ABC):
                 validations=validations,
                 result=result,
             )
-        # if all didn't pass or validation reached max regeneration run the validation one more time but no regeneration.
+        # if all didn't pass or validation reached max regeneration run the validation
+        # one more time but no regeneration.
         if validation_is_scaped or self.global_regen_max >= global_regen_count:
             failed_validations = []
 
@@ -250,7 +243,8 @@ class BaseAgent(ABC):
             )
 
         else:
-            # check if validation is not passed after all the attempts if so return the error message.
+            # check if validation is not passed after all the attempts if so return the
+            # error message.
             result += "\n".join(
                 (
                     inst_val.get_failure_message()
