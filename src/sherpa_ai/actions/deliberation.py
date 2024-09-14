@@ -20,7 +20,7 @@ Keep the result concise and short. No more than one paragraph.
 class Deliberation(BaseAction):
     # TODO: Make a version of Deliberation action that considers the context
     role_description: str
-    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = DELIBERATION_DESCRIPTION
 
     # Override the name and args from BaseAction

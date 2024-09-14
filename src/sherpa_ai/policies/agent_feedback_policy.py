@@ -4,6 +4,7 @@ from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.policies import ReactPolicy
+from pydantic import ConfigDict
 
 AGENT_FEEDBACK_DESCRIPTION = """You are an intelligent assistant helping the user to complete their task. You have the following task to complete:
 {task}
@@ -25,9 +26,7 @@ class AgentFeedbackPolicy(ReactPolicy):
     """
     Select the best next action based on the feedback from an agent
     """
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     # Prompt used to generate question to the user
     agent_feedback_description: str = AGENT_FEEDBACK_DESCRIPTION
