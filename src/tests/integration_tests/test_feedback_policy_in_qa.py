@@ -44,7 +44,7 @@ def test_feedback_policy_in_qa_incomplete(get_llm, mock_google_search):
         llm=llm,
     )
 
-    agent = UserAgent("Agent", "", shared_memory=shared_memory)
+    agent = UserAgent(name="Agent", description="", shared_memory=shared_memory)
     agent.run = mock_user_run_more_info
 
     policy = AgentFeedbackPolicy(
@@ -55,8 +55,6 @@ def test_feedback_policy_in_qa_incomplete(get_llm, mock_google_search):
         shared_memory=shared_memory,
         num_runs=3,
         actions=[google_search],
-        belief=None,
-        agent_config=None,
         policy=policy,
     )
     qa_agent.shared_memory.add(EventType.task, "human", question)
@@ -82,7 +80,7 @@ def test_feedback_policy_in_qa_complete(get_llm, mock_google_search):
         llm=llm,
     )
 
-    agent = UserAgent("Agent", "", shared_memory=shared_memory)
+    agent = UserAgent(name="Agent", description="", shared_memory=shared_memory)
     agent.run = mock_user_run_google_search
 
     policy = AgentFeedbackPolicy(
@@ -93,8 +91,6 @@ def test_feedback_policy_in_qa_complete(get_llm, mock_google_search):
         shared_memory=shared_memory,
         num_runs=3,
         actions=[google_search],
-        belief=None,
-        agent_config=None,
         policy=policy,
     )
     qa_agent.shared_memory.add(EventType.task, "human", question)
