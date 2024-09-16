@@ -21,7 +21,7 @@ class PolicyOutput(BaseModel):
         args (dict): The arguments for the selected action
     """
 
-    action: Any  # TODO: Currently, we cannot use BaseAction since it does not inherit from Base class.
+    action: Any = None  # TODO: Currently, we cannot use BaseAction since it does not inherit from Base class.
     args: dict
 
 
