@@ -4,7 +4,7 @@ from functools import cached_property
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, computed_field, validator
+from pydantic import field_validator, BaseModel, computed_field
 
 
 class AgentConfig(BaseModel):
@@ -13,7 +13,8 @@ class AgentConfig(BaseModel):
     do_reflect: bool = False
     use_task_agent: bool = False
 
-    @validator("gsite", pre=True)
+    @field_validator("gsite", mode="before")
+    @classmethod
     def parse_gsite(cls, value: Optional[str]) -> list[str]:
         if value is None:
             return []

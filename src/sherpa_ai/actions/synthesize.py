@@ -33,7 +33,7 @@ Result:
 
 class SynthesizeOutput(BaseAction):
     role_description: str
-    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SYNTHESIZE_DESCRIPTION
     add_citation: bool = False
 

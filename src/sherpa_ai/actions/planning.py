@@ -107,7 +107,7 @@ class Plan:
 
 
 class TaskPlanning(BaseAction):
-    llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     num_steps: int = 5
     prompt: str = PLANNING_PROMPT
     revision_prompt: str = REVISION_PROMPT
