@@ -12,11 +12,9 @@ from outliner import Outliner
 from sherpa_ai.agents import QAAgent, UserAgent
 from sherpa_ai.events import EventType
 
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import (ChatPromptTemplate,
-                                    HumanMessagePromptTemplate,
-                                    SystemMessagePromptTemplate)
-from langchain.text_splitter import MarkdownTextSplitter
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from langchain_text_splitters import MarkdownTextSplitter
 
 directory_name = "Output"
 if not os.path.exists(directory_name):

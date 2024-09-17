@@ -3,16 +3,12 @@ import time
 import re
 import json
 import tiktoken
-
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import (ChatPromptTemplate,
-                                    HumanMessagePromptTemplate,
-                                    SystemMessagePromptTemplate)
-from langchain.text_splitter import MarkdownTextSplitter
-from langchain.text_splitter import SentenceTransformersTokenTextSplitter
-from langchain.document_loaders import PDFMinerLoader
-from langchain.embeddings.base import Embeddings
-from langchain.vectorstores.chroma import Chroma
+from langchain_openai import ChatOpenAI
+from langchain_community.document_loaders import PDFMinerLoader
+from langchain_community.vectorstores import Chroma
+from langchain_core.embeddings import Embeddings
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from langchain_text_splitters import MarkdownTextSplitter, SentenceTransformersTokenTextSplitter
 from loguru import logger
 from pydantic import ConfigDict
 

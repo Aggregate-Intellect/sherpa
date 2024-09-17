@@ -5,11 +5,9 @@ import json
 from venv import logger
 
 import tiktoken
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import (ChatPromptTemplate,
-                                    HumanMessagePromptTemplate,
-                                    SystemMessagePromptTemplate)
-from langchain.text_splitter import MarkdownTextSplitter
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from langchain_text_splitters import MarkdownTextSplitter
 
 
 class Outliner:
