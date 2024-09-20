@@ -47,15 +47,19 @@ def get_qa_agent_from_config_file(
     Returns:
         QAAgent: A QAAgent instance
     """
+    print("here in get qa")
 
     config = OmegaConf.load(config_path)
-
+    print(config)
     agent_config = instantiate(config.agent_config)
     config = instantiate(config.config, agent_config=agent_config)
+    print("2nd here in get qa")
 
+    print(config)
     for action in config["actions"].values():
         action.belief = config["agent"].belief
-
+    print("______________________________________________")
+    print(config )
     actions = {
         "answer_question": config["actions"]["summarize"],
         "query_document": config["actions"]["doc_search"],
@@ -69,7 +73,9 @@ def get_qa_agent_from_config_file(
 @cl.on_message
 async def main(message: cl.Message):
     # Example function to run your QA agent in a chat loop
+    print("actions first")
     qa_agent, actions = get_qa_agent_from_config_file("agent_config.yml")
+    print('actions')
 
     # Start the conversation
     await message.send("Welcome! You can ask your questions now. \n Ask your Question: ")
@@ -79,6 +85,7 @@ async def main(message: cl.Message):
         # Trigger your agent to handle the user question
         qa_agent.belief.set_current_task(
             Event(EventType.task, "user", message))
+        add_qa_sm(qa_agent.belief, actions)
         result = qa_agent.run()
 
         await message.send(f"Here is your answer: {result}")
