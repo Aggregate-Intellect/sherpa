@@ -72,6 +72,8 @@ class BaseAgent(ABC):
             self.belief.set_actions(actions)
 
         for i in range(self.num_runs):
+            if len(self.belief.get_actions()) == 0:
+                break
             try:
                 result = self.policy.select_action(self.belief)
             except Exception as e:
@@ -132,7 +134,8 @@ class BaseAgent(ABC):
 
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
-        self.shared_memory.add(EventType.result, self.name, result)
+        if self.shared_memory is not None:
+            self.shared_memory.add(EventType.result, self.name, result)
         return result
 
     # The validation_iterator function is responsible for iterating through each instantiated validation in the 'self.validations' list.
