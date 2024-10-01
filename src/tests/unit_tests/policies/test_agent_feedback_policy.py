@@ -22,7 +22,11 @@ def test_agent_feedback_policy(mock_agent_run, get_llm):  # noqa: F811
     llm = get_llm(__file__, test_agent_feedback_policy.__name__)
 
     shared_memory = SharedMemory(objective="")
-    agent = UserAgent("Agent", "An agent to help the user", shared_memory=shared_memory)
+    agent = UserAgent(
+        name="Agent",
+        description="An agent to help the user",
+        shared_memory=shared_memory,
+    )
     policy = AgentFeedbackPolicy(
         agent=agent, llm=llm, role_description="", output_instruction=""
     )
