@@ -1,11 +1,11 @@
-from langchain.document_loaders import PDFMinerLoader
-from langchain.embeddings.base import Embeddings
-from langchain.text_splitter import SentenceTransformersTokenTextSplitter
-from langchain.vectorstores.chroma import Chroma
 from loguru import logger
 from pydantic import ConfigDict
 
 from sherpa_ai.actions.base import BaseAction
+from langchain_community.document_loaders import PDFMinerLoader
+from langchain_community.vectorstores import Chroma
+from langchain_core.embeddings import Embeddings
+from langchain_text_splitters import SentenceTransformersTokenTextSplitter
 
 
 class DocumentSearch(BaseAction):
