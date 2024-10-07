@@ -1,15 +1,10 @@
-from typing import List, Optional
-
-from langchain_core.language_models import BaseLanguageModel 
+from typing import List
 
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.memory import Belief, SharedMemory
+from sherpa_ai.memory.belief import Belief
 from sherpa_ai.policies import ReactPolicy
-from sherpa_ai.policies.base import BasePolicy
-from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
 
 PHYSICIST_DESCRIPTION = "You are a physicist with a deep-rooted expertise in understanding and analyzing the fundamental principles of the universe, spanning from the tiniest subatomic particles to vast cosmic phenomena. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex physics-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."  # noqa: E501
 
@@ -21,34 +16,22 @@ class Physicist(BaseAgent):
     The physicist agent answers questions or research about physics-related topics
     """
 
-    def __init__(
-        self,
-        llm: BaseLanguageModel,
-        name="Physicist",
-        description=PHYSICIST_DESCRIPTION,
-        shared_memory: SharedMemory = None,
-        policy: Optional[BasePolicy] = None,
-        num_runs=3,
-        verbose_logger=DummyVerboseLogger(),
-    ):
-        super().__init__(
-            name=name,
-            description=description,
-            shared_memory=shared_memory,
-            belief=Belief(),
-            policy=policy,
-            num_runs=num_runs,
-            verbose_logger=verbose_logger,
-        )
+    name: str = "Physicist"
+    description: str = PHYSICIST_DESCRIPTION
+    num_runs: int = 3
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.belief is None:
+            self.belief = Belief()
 
         if self.policy is None:
             self.policy = ReactPolicy(
-                role_description=description,
+                role_description=self.description,
                 output_instruction=ACTION_PLAN_DESCRIPTION,
-                llm=llm,
+                llm=self.llm,
             )
-
-        self.llm = llm
 
     def create_actions(self) -> List[BaseAction]:
         return [
