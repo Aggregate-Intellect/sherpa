@@ -1,16 +1,11 @@
-from typing import List, Optional
-
-from langchain_core.language_models import BaseLanguageModel 
+from typing import List
 
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.arxiv_search import ArxivSearch
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.memory import Belief, SharedMemory
+from sherpa_ai.memory import Belief
 from sherpa_ai.policies import ReactPolicy
-from sherpa_ai.policies.base import BasePolicy
-from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
 
 ACTION_PLAN_DESCRIPTION = "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."  # noqa: E501
 
@@ -27,34 +22,22 @@ class MLEngineer(BaseAgent):
     The machine learning agent answers questions or research about ML-related topics
     """
 
-    def __init__(
-        self,
-        llm: BaseLanguageModel,
-        name="ML Engineer",
-        description=ML_ENGINEER_DESCRIPTION,
-        shared_memory: SharedMemory = None,
-        policy: Optional[BasePolicy] = None,
-        num_runs=3,
-        verbose_logger=DummyVerboseLogger(),
-    ):
-        super().__init__(
-            name=name,
-            description=description,
-            shared_memory=shared_memory,
-            belief=Belief(),
-            policy=policy,
-            num_runs=num_runs,
-            verbose_logger=verbose_logger,
-        )
+    name: str = "ML Engineer"
+    description: str = ML_ENGINEER_DESCRIPTION
+    num_runs: int = 3
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.belief is None:
+            self.belief = Belief()
 
         if self.policy is None:
             self.policy = ReactPolicy(
-                role_description=description,
+                role_description=self.description,
                 output_instruction=ACTION_PLAN_DESCRIPTION,
-                llm=llm,
+                llm=self.llm,
             )
-
-        self.llm = llm
 
     def create_actions(self) -> List[BaseAction]:
         return [
