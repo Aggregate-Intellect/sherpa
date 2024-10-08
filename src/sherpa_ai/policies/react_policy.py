@@ -8,6 +8,7 @@ from loguru import logger
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 
 if TYPE_CHECKING:
+    from sherpa_ai.actions.base import BaseAction
     from sherpa_ai.memory.belief import Belief
 
 SELECTION_DESCRIPTION = """{role_description}
@@ -52,7 +53,9 @@ class ReactPolicy(BasePolicy):
 
     role_description: str
     output_instruction: str
-    llm: Any = None  # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
+    llm: Any = (
+        None  # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
+    )
     description: str = SELECTION_DESCRIPTION
     response_format: dict = {
         "command": {
@@ -82,6 +85,19 @@ class ReactPolicy(BasePolicy):
         args = command.get("args", {})
         return name, args
 
+    def is_selection_trivial(self, actions: list[BaseAction]) -> bool:
+        """
+        Check if the selection of the action is trivial. The selection is trivial if there
+        is only one action without any arguments, so LLM is not needed in the selection.
+
+        Args:
+            belief (Belief): The current state of the agent
+
+        Returns:
+            bool: True if the selection is trivial, False otherwise
+        """
+        return len(actions) == 1 and len(actions[0].args) == 0
+
     def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
         """
         Select an action from a list of possible actions based on the current state (belief)
@@ -93,9 +109,14 @@ class ReactPolicy(BasePolicy):
             Optional[PolicyOutput]: The selected action and arguments, or None if the selected
             action is not found in the list of possible actions
         """
+        actions = belief.get_actions()
+
+        if self.is_selection_trivial(actions):
+            return PolicyOutput(action=actions[0], args={})
+
         task_description = belief.current_task.content
         task_context = belief.get_context(self.llm.get_num_tokens)
-        possible_actions = belief.action_description
+        possible_actions = "\n".join([str(action) for action in actions])
         history_of_previous_actions = belief.get_internal_history(
             self.llm.get_num_tokens
         )
