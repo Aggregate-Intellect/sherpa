@@ -52,6 +52,8 @@ class BaseAgent(ABC, BaseModel):
             self.belief.set_actions(actions)
 
         for i in range(self.num_runs):
+            if len(self.belief.get_actions()) == 0:
+                break
             try:
                 result = self.policy.select_action(self.belief)
             except Exception as e:
