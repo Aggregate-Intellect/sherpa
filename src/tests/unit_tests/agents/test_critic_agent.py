@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock
 
 from sherpa_ai.agents.critic import Critic
+from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.test_utils.llms import get_llm
-
 
 task = "Write a hello world program"
 plan = """
@@ -35,6 +35,8 @@ def test_evaluation_matrices_succeeds(get_llm):  # noqa: F811
 def test_get_feedback_succeeds(get_llm):  # noqa: F811
     llm = get_llm(__file__, test_get_feedback_succeeds.__name__)
     # set ratio to 2 to force feedback
-    critic_agent = Critic(llm=llm, ratio=2, shared_memory=MagicMock())
+    mock_shared_memory = MagicMock()
+    mock_shared_memory.__class__ = SharedMemory
+    critic_agent = Critic(llm=llm, ratio=2, shared_memory=mock_shared_memory)
     feedback_list = critic_agent.get_feedback(task, plan)
     assert len(feedback_list) == 3
