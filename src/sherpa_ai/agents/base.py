@@ -93,12 +93,6 @@ class BaseAgent(ABC, BaseModel):
                 f"🤖{self.name} is executing```" "``` {result.action.name}...```"
             )
 
-            self.belief.update_internal(
-                EventType.action,
-                self.name,
-                "Action: " + result.action.name + str(result.args),
-            )
-
             try:
                 action_output = self.act(result.action, result.args)
             except Exception as e:
@@ -114,9 +108,6 @@ class BaseAgent(ABC, BaseModel):
 
             self.verbose_logger.log(f"```Action output: {action_output}```")
             logger.debug(f"```Action output: {action_output}```")
-            self.belief.update_internal(
-                EventType.action_output, self.name, "Output: " + action_output
-            )
 
         result = (
             self.validate_output()
