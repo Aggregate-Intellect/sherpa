@@ -139,9 +139,10 @@ class Belief:
 
     def set_actions(self, actions: List[BaseAction]):
         if self.state_machine is not None:
-            raise ValueError(
+            logger.warning(
                 "State machine exists, please add actions as transitions directly to the state machine"
             )
+            return
 
         self.actions = actions
 

@@ -2,6 +2,7 @@ from typing import Any, Callable, Optional, Union
 
 import transitions as ts
 from loguru import logger
+from transitions.extensions.states import Tags, add_state_features
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import DynamicAction
@@ -61,6 +62,10 @@ class SherpaStateMachine:
 
             # sm_cls.state_cls = State
             # sm_cls.transition_cls = Transition
+
+        # extend the state machine states with additional features
+        extend_states = add_state_features(Tags)
+        sm_cls = extend_states(sm_cls)
 
         self.sm = sm_cls(
             model=self,
@@ -124,20 +129,31 @@ class SherpaStateMachine:
             before=action,
         )
 
-    def get_actions(self) -> list[BaseAction]:
+    def get_actions(self, include_waiting: bool = False) -> list[BaseAction]:
         """
         Get the available transitions as list of actions based on the current state
+
+        Args:
+            include_waiting (bool): whether to include transitions from the waiting states
 
         Returns:
             list[BaseAction]: list of actions that can be executed from the current
                 state
         """
         state = self.state
+        state_obj = self.sm.get_state(state)
+
+        if not include_waiting and state_obj.is_waiting:
+            return []
+
         triggers = self.sm.get_triggers(state)
         actions = []
 
         for t in triggers:
             if t not in self.explicit_transitions:
+                continue
+
+            if not self.may_trigger(t):
                 continue
 
             event = self.sm.events.get(t)
@@ -148,6 +164,19 @@ class SherpaStateMachine:
                     actions.append(action)
 
         return actions
+
+    def is_transition_valid(self, transition: ts.Transition):
+        """
+        Check if a transition is valid based on the current state by checking it's
+            conditions
+
+        Args:
+            transition (ts.Transition): the transition object to be checked
+
+        Returns:
+            bool: whether the transition is valid
+        """
+        return self.sm._transition_for_model(transition)
 
     def transition_to_action(
         self, trigger: str, transition: ts.Transition
@@ -172,20 +201,21 @@ class SherpaStateMachine:
             else:
                 return result
 
+        usage = trigger
+        args = {}
         if len(transition.before) > 0:
             action = transition.before[0]
             if isinstance(action, str):
                 action = getattr(self, action)
 
             # refresh the usage or argument attributes of the action
-            _ = str(action)
+            if isinstance(action, BaseAction):
+                _ = str(action)
 
-            usage = action.usage
-            args = action.args
-            action.name = trigger
-        else:
-            usage = trigger
-            args = {}
+                usage = action.usage
+                args = action.args
+                action.name = trigger
+
         name = trigger
 
         # Append the transition to the usage
