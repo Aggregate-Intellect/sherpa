@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from sherpa_ai.actions.utils.refinement import BaseRefinement
 from sherpa_ai.actions.utils.reranking import BaseReranking
+from sherpa_ai.events import EventType
 
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
@@ -132,6 +133,13 @@ class BaseAction(ABC, BaseModel):
                     "are 'agent' and 'belief'"
                 )
 
+        # Log to the belief
+        if self.belief is not None:
+            self.belief.update_internal(
+                EventType.action, self.name, f"Action: {self.name} starts, Args: {filtered_kwargs}"
+            )
+
+
         # Execute the action
         result = self.execute(**filtered_kwargs)
 
@@ -139,6 +147,10 @@ class BaseAction(ABC, BaseModel):
         self.belief: Belief = self.belief
         if self.belief:
             self.belief.set(self.output_key, result)
+            self.belief.update_internal(
+                EventType.action_output, self.name, f"Action: {self.name} finishes, Observation: {result}"
+            )
+
         return result
 
     def __str__(self):
