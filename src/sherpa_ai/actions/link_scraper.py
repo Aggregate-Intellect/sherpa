@@ -12,7 +12,6 @@ class LinkScraperAction(BaseAction, BaseModel):
     }
     usage: str = "Simple link scraper that scrapes the data from url and returns string"
     scraper_tool: LinkScraperTool = Field(default_factory=LinkScraperTool)
-    print(scraper_tool)
 
     def execute(self, url: str, **kwargs) -> str:
         """
@@ -28,5 +27,4 @@ class LinkScraperAction(BaseAction, BaseModel):
                 raise ValueError("Scraper returned no content.")
             return str(result)
         except Exception as e:
-            print(f"Error during scraping: {e}")
             return ""

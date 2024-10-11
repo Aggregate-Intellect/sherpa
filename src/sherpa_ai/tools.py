@@ -340,9 +340,6 @@ class LinkScraperTool(BaseTool):
                         scraped_data = {"data": "", "status": 404}
                 else:
                     scraped_data = scrape_with_url(link)
-                    print("%m" * 70)
-                    print(scraped_data, flush=True)
-                    print("%m" * 70)
                 if scraped_data["status"] == 200:
                     chunk_summary = chunk_and_summarize(
                         link=link,
@@ -367,7 +364,6 @@ class LinkScraperTool(BaseTool):
 
                     final_summary.append({"data": chunk_summary, "link": link})
                 else:
-                    print("Scraping failed")
                     final_summary.append({"data": "Scraping failed", "link": link})
 
             scraped_data = rewrite_link_references(question=query, data=final_summary)
