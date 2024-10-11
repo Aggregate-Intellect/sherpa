@@ -5,7 +5,6 @@ from loguru import logger
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import EventType
-from sherpa_ai.memory import Belief, SharedMemory
 
 
 class UserAgent(BaseAgent):
@@ -13,20 +12,8 @@ class UserAgent(BaseAgent):
     A wrapper class for redirecting the task to a real person
     """
 
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        shared_memory: SharedMemory = None,
-        user_id: str = None,
-        event_logger=None,
-    ):
-        self.name = name
-        self.description = description
-        self.shared_memory = shared_memory
-        self.user_id = user_id
-        self.belief = Belief()
-        self.event_logger = event_logger
+    name: str = "User"
+    description: str = "A user agent that redirects the task to an expert"
 
     def create_actions(self) -> List[BaseAction]:
         pass
@@ -46,7 +33,7 @@ class UserAgent(BaseAgent):
         user_name = self.user_id if self.user_id else self.name
         message = f"@{user_name} Please complete the following task: \n{task.content}"
 
-        if self.event_logger is None:
+        if self.verbose_logger is None:
             logger.warning("No event logger provided. Using print instead.")
             print(message)
             result = input()
@@ -55,5 +42,5 @@ class UserAgent(BaseAgent):
             )
             return result
         else:
-            self.event_logger.log(message)
+            self.verbose_logger.log(message)
             return result

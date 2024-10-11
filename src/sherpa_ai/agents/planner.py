@@ -1,15 +1,11 @@
 from typing import Optional
 
-from langchain_core.language_models import LLM 
-from loguru import logger 
+from loguru import logger
 
 from sherpa_ai.actions.planning import TaskPlanning
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.events import Event, EventType
-from sherpa_ai.memory import Belief, SharedMemory
-from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
-
+from sherpa_ai.events import EventType
 
 PLANNER_DESCRIPTION = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
 By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.
@@ -18,30 +14,20 @@ Your adaptability ensures customized solutions for diverse needs.
 
 
 class Planner(BaseAgent):
-    def __init__(
-        self,
-        agent_pool: AgentPool,
-        name: str = "Planner",
-        description: str = PLANNER_DESCRIPTION,
-        shared_memory: SharedMemory = None,
-        belief: Belief = None,
-        action_selector=None,
-        llm=LLM,
-        num_steps: int = 5,
-        verbose_logger=DummyVerboseLogger(),
-    ):
-        self.name = name
-        self.description = description
-        self.agent_pool = agent_pool
-        self.shared_memory = shared_memory
-        self.belief = belief
-        self.action_selector = action_selector
+    name: str = "Planner"
+    description: str = PLANNER_DESCRIPTION
+
+    planning: TaskPlanning = None
+    agent_pool: AgentPool
+    num_runs: int = 5
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.planning = TaskPlanning(
-            llm=llm,
-            num_steps=num_steps,
+            llm=self.llm,
+            num_steps=self.num_runs,
         )
-        self.verbose_logger = verbose_logger
 
     def get_last_feedback(self) -> Optional[str]:
         """
