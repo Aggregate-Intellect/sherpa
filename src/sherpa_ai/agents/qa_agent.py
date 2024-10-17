@@ -87,6 +87,7 @@ class QAAgent(BaseAgent):
                 task=self.belief.current_task.content,
                 llm=self.llm,
                 config=self.config,
+                belief=self.belief,
             ),
         ]
 
