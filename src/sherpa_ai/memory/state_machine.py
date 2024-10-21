@@ -7,6 +7,8 @@ from transitions.extensions.states import Tags, add_state_features
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import DynamicAction
 from sherpa_ai.actions.empty import EmptyAction
+from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
+                                    add_transition_features)
 
 
 class State(ts.State):
@@ -64,8 +66,11 @@ class SherpaStateMachine:
             # sm_cls.transition_cls = Transition
 
         # extend the state machine states with additional features
-        extend_states = add_state_features(Tags)
+        extend_states = add_state_features(Tags, StateDesc)
+        extend_transitions = add_transition_features(TransitionDesc)
+
         sm_cls = extend_states(sm_cls)
+        sm_cls = extend_transitions(sm_cls)
 
         self.sm = sm_cls(
             model=self,
@@ -101,6 +106,7 @@ class SherpaStateMachine:
         dest: str,
         conditions: Union[Callable, list[Callable]] = None,
         action: Optional[BaseAction] = None,
+        **kwargs,
     ):
         """
         Update or add a transition to the state machine
@@ -127,6 +133,7 @@ class SherpaStateMachine:
             dest=dest,
             conditions=conditions,
             before=action,
+            **kwargs,
         )
 
     def get_actions(self, include_waiting: bool = False) -> list[BaseAction]:
@@ -139,7 +146,7 @@ class SherpaStateMachine:
         Returns:
             list[BaseAction]: list of actions that can be executed from the current
                 state
-        """
+        """  # noqa: E501
         state = self.state
         state_obj = self.sm.get_state(state)
 
