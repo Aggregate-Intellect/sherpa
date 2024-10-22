@@ -3,7 +3,7 @@ import re
 
 import pytest 
 from langchain_core.language_models import BaseLanguageModel 
-from langchain_community.chat_models import ChatOpenAI 
+from langchain_openai import ChatOpenAI
 from langchain_core.language_models import FakeListLLM 
 
 from sherpa_ai.models.chat_model_with_logging import ChatModelWithLogging
