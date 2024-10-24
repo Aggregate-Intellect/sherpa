@@ -38,7 +38,60 @@ def load_files(files: List[str]) -> List[Document]:
             documents.extend(loader.load())
     logger.info(documents)
     return documents
+import json
+from typing import Dict, List
 
+class JsonToObject:
+    def __init__(self):
+        pass
+        
+    def __call__(self, json_data):
+        if isinstance(json_data, str):
+            data = json.loads(json_data)
+        else:
+            data = json_data
+            
+        for key, value in data.items():
+            if isinstance(value, dict):
+                value = JsonToObject()(value)
+            elif isinstance(value, list):
+                value = [JsonToObject()(item) if isinstance(item, dict) else item for item in value]
+            setattr(self, key, value)
+        return self
+        
+    def __repr__(self):
+        return f"{self.__dict__}"
+    
+def load_json(file_path: str) -> Dict:
+    """
+    Load JSON data from a file.
+    
+    Args:
+        file_path (str): Path to the JSON file.
+    
+    Returns:
+        Dict: Loaded JSON data.
+    """
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+def get_prompts(data: Dict) -> Dict[str, List[Dict]]:
+    """
+    Extract prompts from the loaded JSON data.
+    
+    Args:
+        data (Dict): Loaded JSON data.
+    
+    Returns:
+        Dict[str, List[Dict]]: Dictionary of all prompts grouped by their wrapper.
+    """
+    all_prompts = {}
+    for wrapper, items in data.items():
+        all_prompts[wrapper] = []
+        for item in items:
+            prompts = item.get('schema', {}).get('prompts', [])
+            all_prompts[wrapper].extend(prompts)
+    return all_prompts
 
 def get_links_from_string(text):
     # Define the regular expression pattern to find links inside angle brackets
