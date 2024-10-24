@@ -12,7 +12,6 @@ from sherpa_ai.utils import (
 
 
 class NumberValidationAction(BaseAction):
-    belief: Any = None
 
     name: str = "Number validator"
     args: dict = {
@@ -22,8 +21,6 @@ class NumberValidationAction(BaseAction):
     usage: str = (
         "simple number citation validation that checks if number in the target_text exist in the source_text text."
     )
-
-    count: int = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -66,7 +63,6 @@ class NumberValidationAction(BaseAction):
                 )
             )
         else:
-            self.count += 1
             return str(
                 ValidationResult(
                     is_valid=False,
