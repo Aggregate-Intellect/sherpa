@@ -185,6 +185,27 @@ class SherpaStateMachine:
         """
         return self.sm._transition_for_model(transition)
 
+    def get_current_state(self) -> ts.State:
+        """
+        Get the current state of the state machine
+
+        Returns:
+            ts.State: the current state object
+        """
+        return self.sm.get_state(self.state)
+
+    def get_state(self, state: str) -> ts.State:
+        """
+        Get the state object from the state machine
+
+        Args:
+            state (str): the name of the state
+
+        Returns:
+            ts.State: the state object
+        """
+        return self.sm.get_state(state)
+
     def transition_to_action(
         self, trigger: str, transition: ts.Transition
     ) -> BaseAction:
