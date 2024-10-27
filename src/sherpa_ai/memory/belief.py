@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import pydash
+import transitions as ts
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
@@ -156,11 +157,17 @@ class Belief:
     def action_description(self):
         return "\n".join([str(action) for action in self.get_actions()])
 
-    def get_state(self):
+    def get_state(self) -> str:
         if self.state_machine is None:
             return None
 
-        return self.state_machine.state
+        return self.state_machine.get_current_state().name
+
+    def get_state_obj(self) -> ts.State:
+        if self.state_machine is None:
+            return None
+
+        return self.state_machine.get_current_state().name
 
     def get_actions(self) -> List[BaseAction]:
         if self.state_machine is None:

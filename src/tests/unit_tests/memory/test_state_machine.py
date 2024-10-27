@@ -106,3 +106,6 @@ def test_extension_features():
     assert sm.sm.get_transitions("A_to_B_1")[0].description == "Transition from A to B"
     assert sm.sm.get_transitions("A_to_B_2")[0].description == "Transition from A to B"
     assert sm.sm.get_transitions("B_to_C")[0].description == "Transition from B to C"
+
+    assert sm.get_current_state().name == "A"
+    assert sm.get_current_state().description == "This is state A"
