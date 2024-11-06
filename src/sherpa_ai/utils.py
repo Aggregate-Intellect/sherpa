@@ -694,3 +694,10 @@ def file_text_splitter(data, meta_data):
     texts = temp_texts
 
     return {"texts": texts, "meta_datas": metadatas}
+
+def get_links_from_text(text: str) -> List[str]:
+    url_regex = r"(https?://\S+|www\.\S+)"
+    urls = re.findall(url_regex, text)
+
+    result = [{"url": url, "base_url": get_base_url(url)} for url in urls]
+    return result
