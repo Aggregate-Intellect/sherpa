@@ -167,7 +167,7 @@ class Belief:
         if self.state_machine is None:
             return None
 
-        return self.state_machine.get_current_state().name
+        return self.state_machine.get_current_state()
 
     def get_actions(self) -> List[BaseAction]:
         if self.state_machine is None:
