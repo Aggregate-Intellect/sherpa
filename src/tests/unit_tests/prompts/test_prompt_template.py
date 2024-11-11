@@ -41,10 +41,10 @@ mock_json_data = {
     ]
 }
 
-@patch('sherpa_ai.utils.load_json')
+@patch('sherpa_ai.prompts.prompt_loader.load_json')
 def test_format_prompt(mock_load_json):
     mock_load_json.return_value = mock_json_data
-    template = PromptTemplate("./tests/unit_tests/prompts/prompts.json")
+    template = PromptTemplate("./tests/data/prompts.json")
     
     # Test formatting prompt with variables
     variables = {"first_num": 15, "second_num": 25}
@@ -55,10 +55,10 @@ def test_format_prompt(mock_load_json):
         {"role": "user", "content": "Add 15 and 25"}
     ]
 
-@patch('sherpa_ai.utils.load_json')
+@patch('sherpa_ai.prompts.prompt_loader.load_json')
 def test_get_full_formatted_prompt(mock_load_json):
     mock_load_json.return_value = mock_json_data
-    template = PromptTemplate("./tests/unit_tests/prompts/prompts.json")
+    template = PromptTemplate("./tests/data/prompts.json")
     
     # Test getting full formatted prompt
     variables = {"first_num": 15, "second_num": 25}
