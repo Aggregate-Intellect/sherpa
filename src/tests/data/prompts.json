@@ -1,0 +1,170 @@
+{
+    "control_flow_prompts": [
+      {
+        "name": "emoji_generator",
+        "description": "Emoji generator",
+        "schema": {
+          "prompts": [
+            {
+              "name": "emoji",
+              "version": "1.0",
+              "type": "chat",
+              "description": "chat prompt for emoji",
+              "content": [
+                {
+                  "role": "system",
+                  "content": "You will be provided with a message, and your task is to respond using emojis only."
+                },
+                {
+                  "role": "user",
+                  "content": "How are you?"
+                }
+              ],
+              "response_format": {}
+            }
+          ]
+        }
+      }
+    ],
+    "second type prompts": [
+      {
+        "name": "text_flow",
+        "description": "Policy for reacting to user input",
+        "schema": {
+          "prompts": [
+            {
+              "name": "dict_prompt",
+              "version": "1.0",
+              "type": "text",
+              "description": "bla bla bla",
+              "content": {
+                "role": "user",
+                "text": "test"
+              },
+              "response_format": {}
+            }
+          ]
+        }
+      }
+    ],
+    "addition_prompts": [
+      {
+        "name": "add",
+        "description": "prompt to add numbers and return structured output",
+        "schema": {
+          "prompts": [
+            {
+              "name": "add_numbers",
+              "version": "1.0",
+              "type": "object",
+              "description": "prompt to add numbers and return structured output",
+              "content": [
+                {
+                  "role": "system",
+                  "content": "You are a helpful assistant that performs simple arithmetic operations."
+                },
+                { "role": "user", "content": "Add {first_num} and {second_num}" }
+              ],
+              "variables":{
+                "first_num": 5,
+                "second_num": 10
+              },
+              "response_format":{
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "addition_result",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "result": {"type": "number"},
+                            "explanation": {"type": "string"}
+                        },
+                        "required": ["result", "explanation"]
+                    }
+                }
+            }
+            }
+          ]
+        }
+      }
+    ],
+    "Processor_comparsion_prompts":[
+      {
+        "name": "compare_processors",
+        "description": "prompt to compare processors and return structured output",
+        "schema": {
+          "prompts": [
+            {
+              "name": "compare_processors",
+              "version": "1.0",
+              "type": "chat",
+              "description": "prompt to compare Intel i7, AMD Ryzen 9, and Apple M1 processors and return structured output",
+              "content": [
+                {
+                  "role": "system",
+                  "content": "You are a helpful assistant that provides detailed comparisons of processors."
+                },
+                {
+                  "role": "user",
+                  "content": "Compare {processor_1}, {processor_2}, and {processor_3} in terms of performance, power efficiency, and price."
+                }
+              ],
+              "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                  "name": "comparison_result",
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "performance": { "type": "string" },
+                      "power_efficiency": { "type": "string" },
+                      "price": { "type": "string" },
+                      "summary": { "type": "string" }
+                    },
+                    "required": ["performance", "power_efficiency", "price", "summary"]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "addition_prompt": [
+      {
+        "name": "add",
+        "description": "prompt to add numbers and return structured output",
+        "schema": {
+          "prompts": [
+            {
+              "name": "add_numbers",
+              "version": "1.0",
+              "type": "string",
+              "description": "prompt to add numbers and return structured output",
+              "content": "Add {first_num} and {second_num}",
+              "variables":{
+                "first_num": 5,
+                "second_num": 10
+              },
+              "response_format":{
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "addition_result",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "result": {"type": "number"},
+                            "explanation": {"type": "string"}
+                        },
+                        "required": ["result", "explanation"]
+                    }
+                }
+            }
+            }
+          ]
+        }
+      }
+    ]
+  
+  }
+  

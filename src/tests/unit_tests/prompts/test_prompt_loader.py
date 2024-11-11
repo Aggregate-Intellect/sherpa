@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from sherpa_ai.prompts.prompt_loader import PromptLoader
-from sherpa_ai.utils import JsonToObject
+from sherpa_ai.prompts.prompt_loader import JsonToObject
 
 
 # Mock JSON data to simulate prompts.json
@@ -52,13 +52,13 @@ def mock_json():
     return mock_object
 
 
-@patch('sherpa_ai.utils.load_json')
+@patch('sherpa_ai.prompts.prompt_loader.load_json')
 def test_prompt_loader_process_prompts(mock_load_json, mock_json):
     # Mock loading of JSON
     mock_load_json.return_value = mock_json_data
     
     # Initialize PromptLoader
-    loader = PromptLoader("./tests/unit_tests/prompts/prompts.json")
+    loader = PromptLoader("./tests/data/prompts.json")
     
     # Test processing prompts
     assert loader.prompts["addition_prompts"][0].name == "add_numbers"
@@ -66,10 +66,10 @@ def test_prompt_loader_process_prompts(mock_load_json, mock_json):
     assert len(loader.prompts["addition_prompts"]) == 1
 
 
-@patch('sherpa_ai.utils.load_json')
+@patch('sherpa_ai.prompts.prompt_loader.load_json')
 def test_get_prompt(mock_load_json, mock_json):
     mock_load_json.return_value = mock_json_data
-    loader = PromptLoader("./tests/unit_tests/prompts/prompts.json")
+    loader = PromptLoader("./tests/data/prompts.json")
     
     # Test fetching a prompt by wrapper, name, and version
     prompt = loader.get_prompt("addition_prompts", "add_numbers", "1.0")
@@ -77,10 +77,10 @@ def test_get_prompt(mock_load_json, mock_json):
     assert prompt.version == "1.0"
 
 
-@patch('sherpa_ai.utils.load_json')
+@patch('sherpa_ai.prompts.prompt_loader.load_json')
 def test_get_prompt_content(mock_load_json):
     mock_load_json.return_value = mock_json_data
-    loader = PromptLoader("./tests/unit_tests/prompts/prompts.json")
+    loader = PromptLoader("./tests/data/prompts.json")
     
     # Test fetching prompt content
     content = loader.get_prompt_content("addition_prompts", "add_numbers", "1.0")
@@ -90,10 +90,10 @@ def test_get_prompt_content(mock_load_json):
     ])
 
 
-@patch('sherpa_ai.utils.load_json')
+@patch('sherpa_ai.prompts.prompt_loader.load_json')
 def test_get_prompt_output_schema(mock_load_json):
     mock_load_json.return_value = mock_json_data
-    loader = PromptLoader("./tests/unit_tests/prompts/prompts.json")
+    loader = PromptLoader("./tests/data/prompts.json")
     
     # Test fetching output schema
     output_schema = loader.get_prompt_output_schema("addition_prompts", "add_numbers", "1.0")
