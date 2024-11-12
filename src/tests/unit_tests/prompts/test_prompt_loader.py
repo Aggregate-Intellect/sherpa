@@ -47,7 +47,7 @@ mock_json_data = {
 @pytest.fixture
 def mock_json():
     # Return a mock JsonToObject instance mimicking JSON object conversion
-    mock_object = JsonToObject()
+    mock_object = JsonToObject({})
     mock_object.addition_prompts = mock_json_data["addition_prompts"]
     return mock_object
 
