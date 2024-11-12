@@ -66,7 +66,7 @@ class InvalidPromptContentError(Exception):
 class PromptLoader:
     def __init__(self, json_file_path: str):
         raw_data = load_json(json_file_path)
-        self.data = JsonToObject()(raw_data)
+        self.data = JsonToObject(raw_data)
         self.prompts = self._process_prompts()
         
     def _validate_prompt_content(self, prompt: JsonToObject) -> bool:
