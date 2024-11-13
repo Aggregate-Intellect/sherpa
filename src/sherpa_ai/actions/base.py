@@ -131,7 +131,7 @@ class BaseAction(ABC, BaseModel):
 
         return filtered_kwargs
 
-    def log_start(self, args: dict):
+    def action_start(self, args: dict):
         if self.belief is not None:
             self.belief.update_internal(
                 EventType.action,
@@ -139,8 +139,9 @@ class BaseAction(ABC, BaseModel):
                 f"Action: {self.name} starts, Args: {args}",
             )
 
-    def log_end(self, result: Any):
+    def action_end(self, result: Any):
         if self.belief is not None:
+            self.belief.set(self.output_key, result)
             self.belief.update_internal(
                 EventType.action_output,
                 self.name,
@@ -152,13 +153,13 @@ class BaseAction(ABC, BaseModel):
         filtered_kwargs = self.input_validation(**kwargs)
 
         # Log to the belief
-        self.log_start(filtered_kwargs)
+        self.action_start(filtered_kwargs)
 
         # Execute the action
         result = self.execute(**filtered_kwargs)
 
         # Save the result to the belief
-        self.log_end(result)
+        self.action_end(result)
 
         return result
 
