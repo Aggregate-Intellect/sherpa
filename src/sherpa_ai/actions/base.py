@@ -187,13 +187,13 @@ class AsyncBaseAction(BaseAction, ABC):
         filtered_kwargs = self.input_validation(**kwargs)
 
         # Log to the belief
-        self.log_start(filtered_kwargs)
+        self.action_start(filtered_kwargs)
 
         # Execute the action
         result = await self.execute(**filtered_kwargs)
 
         # Save the result to the belief
-        self.log_end(result)
+        self.action_end(result)
 
         return result
 
