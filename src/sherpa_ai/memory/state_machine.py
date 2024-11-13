@@ -5,7 +5,7 @@ from loguru import logger
 from transitions.extensions.states import Tags, add_state_features
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.actions.dynamic import DynamicAction
+from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
 from sherpa_ai.actions.empty import EmptyAction
 
 
@@ -139,7 +139,7 @@ class SherpaStateMachine:
         Returns:
             list[BaseAction]: list of actions that can be executed from the current
                 state
-        """
+        """  # noqa: E501
         state = self.state
         state_obj = self.sm.get_state(state)
 
@@ -201,6 +201,15 @@ class SherpaStateMachine:
             else:
                 return result
 
+        async def async_wrapper_action(**kwargs):
+            transit_trigger = getattr(self, trigger)
+            result = await transit_trigger(**kwargs)
+
+            if not isinstance(result, str):
+                return str(result)
+            else:
+                return result
+
         usage = trigger
         args = {}
         if len(transition.before) > 0:
@@ -221,6 +230,14 @@ class SherpaStateMachine:
         # Append the transition to the usage
         usage += f" Transit the state from {transition.source} to {transition.dest}"
 
-        action = DynamicAction(name=name, args=args, usage=usage, action=wrapper_action)
+        # Select the wrapper action based on the type of the state machine
+        if "async" in self.sm.__class__.__name__.lower():
+            action = AsyncDynamicAction(
+                name=name, args=args, usage=usage, action=async_wrapper_action
+            )
+        else:
+            action = DynamicAction(
+                name=name, args=args, usage=usage, action=wrapper_action
+            )
 
         return action
