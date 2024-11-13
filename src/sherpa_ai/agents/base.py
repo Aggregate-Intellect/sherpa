@@ -77,8 +77,6 @@ class BaseAgent(ABC, BaseModel):
         if self.shared_memory is not None:
             self.shared_memory.observe(self.belief)
 
-        print(self.belief.get_actions())
-        print(self.belief.state_machine.state)
         if len(self.belief.get_actions()) == 0:
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
@@ -128,7 +126,7 @@ class BaseAgent(ABC, BaseModel):
                 f"🤖{self.name} is executing```" "``` {result.action.name}...```"
             )
 
-            action_output = self.run(result.action, result.args)
+            action_output = self.act(result.action, result.args)
             if action_output is None:
                 continue
 
