@@ -66,14 +66,13 @@ class PromptTemplate(PromptLoader):
                             "content": ""
                         })
         elif types == "string": 
+            formatted_prompt=""
             content = prompt_content
             for var_name, var_value in final_variables.items():
                 placeholder = f"{{{var_name}}}"
                 if placeholder in content:
                     content = content.replace(placeholder, str(var_value))
-            formatted_prompt.append({
-                 content
-            })
+            formatted_prompt=content
         return formatted_prompt
     
 

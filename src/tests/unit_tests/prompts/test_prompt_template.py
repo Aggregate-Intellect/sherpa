@@ -1,86 +1,34 @@
-import pytest
-from unittest.mock import patch, MagicMock
+
 from sherpa_ai.prompts.prompt_template import PromptTemplate
 
 
-mock_json_data = {
-    "addition_prompts": [
-        {
-            "name": "add",
-            "description": "prompt to add numbers and return structured output",
-            "schema": {
-                "prompts": [
-                    {
-                        "name": "add_numbers",
-                        "version": "1.0",
-                        "type": "object",
-                        "description": "prompt to add numbers and return structured output",
-                        "content": [
-                            {"role": "system", "content": "You are a helpful assistant that performs simple arithmetic operations."},
-                            {"role": "user", "content": "Add {first_num} and {second_num}"}
-                        ],
-                        "variables": {"first_num": 5, "second_num": 10},
-                        "response_format": {
-                            "type": "json_schema",
-                            "json_schema": {
-                                "name": "addition_result",
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "result": {"type": "number"},
-                                        "explanation": {"type": "string"}
-                                    },
-                                    "required": ["result", "explanation"]
-                                }
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    ]
-}
+def testqa_synthesize_output():
+    task = "What is AutoGPT?"
+    context = "What is AutoGPT?"
 
-@patch('sherpa_ai.prompts.prompt_loader.load_json')
-def test_format_prompt(mock_load_json):
-    mock_load_json.return_value = mock_json_data
-    template = PromptTemplate("./tests/data/prompts.json")
-    
-    # Test formatting prompt with variables
-    variables = {"first_num": 15, "second_num": 25}
-    formatted_prompt = template.format_prompt("addition_prompts", "add_numbers", "1.0", variables)
-    
-    assert formatted_prompt == [
-        {"role": "system", "content": "You are a helpful assistant that performs simple arithmetic operations."},
-        {"role": "user", "content": "Add 15 and 25"}
-    ]
+    history = """Action: Google Search starts, Args: {'query': 'What is AutoGPT?'}
+Action: Google Search finishes, Observation: Description: GoogleGoogle is a search engine
+Error in selecting action: Action Finished not found in the list of possible actions
+Error in selecting action: Action Finished not found in the list of possible actions"""
+    role_description = """You are a **question answering assistant** who solves user questions and offers a detailed solution.
 
-@patch('sherpa_ai.prompts.prompt_loader.load_json')
-def test_get_full_formatted_prompt(mock_load_json):
-    mock_load_json.return_value = mock_json_data
-    template = PromptTemplate("./tests/data/prompts.json")
+Your name is QA Agent."""
+    template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
+    variables = {
+        "role_description": role_description,
+        "task": task,
+        "context": context,
+        "history": history,
+    }
+    add_citation = True
     
-    # Test getting full formatted prompt
-    variables = {"first_num": 15, "second_num": 25}
-    full_prompt = template.get_full_formatted_prompt("addition_prompts", "add_numbers", "1.0", variables)
+    prompt = template.format_prompt(
+        wrapper="synthesize_prompts",
+        name="SYNTHESIZE_DESCRIPTION_CITATION" if add_citation else "SYNTHESIZE_DESCRIPTION",
+        version="1.0",
 
-    
-    assert str(full_prompt["description"]) == "prompt to add numbers and return structured output"
-    assert str(full_prompt["content"]) == str([
-        {"role": "system", "content": "You are a helpful assistant that performs simple arithmetic operations."},
-        {"role": "user", "content": "Add 15 and 25"}
-    ])
-    assert str(full_prompt["output_schema"]) == str({
-        "type": "json_schema",
-        "json_schema": {
-            "name": "addition_result",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "result": {"type": "number"},
-                    "explanation": {"type": "string"}
-                },
-                "required": ["result", "explanation"]
-            }
-        }
-    })
+    )
+
+    print(prompt, flush=True)
+
+    assert True

@@ -2,20 +2,24 @@ from typing import Optional
 
 from loguru import logger
 
+from sherpa_ai.prompts.prompt_template import PromptTemplate
 from sherpa_ai.actions.planning import TaskPlanning
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import EventType
 
-PLANNER_DESCRIPTION = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
-By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.
-Your adaptability ensures customized solutions for diverse needs.
-"""  # noqa: E501
 
+template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
+
+planner_description = template.format_prompt(
+            wrapper="planner_prompts",
+            name="PLANNER_DESCRIPTION",
+            version="1.0",
+        )
 
 class Planner(BaseAgent):
     name: str = "Planner"
-    description: str = PLANNER_DESCRIPTION
+    description: str = planner_description
 
     planning: TaskPlanning = None
     agent_pool: AgentPool

@@ -1,5 +1,6 @@
 from typing import List
 
+from sherpa_ai.prompts.prompt_template import PromptTemplate
 from sherpa_ai.actions import Deliberation, GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.arxiv_search import ArxivSearch
 from sherpa_ai.actions.base import BaseAction
@@ -7,14 +8,19 @@ from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief
 from sherpa_ai.policies import ReactPolicy
 
-ACTION_PLAN_DESCRIPTION = "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."  # noqa: E501
 
+template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
 
-ML_ENGINEER_DESCRIPTION = """You are a skilled machine learning engineer with a deep-rooted expertise in understanding and analyzing various Machine Learnng algorithm and use it to solve practical problems. \
-Your primary role is to assist individuals, organizations, and researchers in using machine learning models to solve Machine-Learning-Related chalenges, \
-using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes.\
-If you encounter a question or challenge outside your current knowledge base, you acknowledge your limitations and seek assistance or additional resources to fill the gaps. \
-"""  # noqa: E501
+ml_engineer_description = template.format_prompt(
+            wrapper="ml_engineer_prompts",
+            name="ML_ENGINEER_DESCRIPTION",
+            version="1.0",
+        )
+action_planner = template.format_prompt(
+            wrapper="ml_engineer_prompts",
+            name="ACTION_PLAN_DESCRIPTION",
+            version="1.0",
+        )
 
 
 class MLEngineer(BaseAgent):
@@ -23,7 +29,7 @@ class MLEngineer(BaseAgent):
     """
 
     name: str = "ML Engineer"
-    description: str = ML_ENGINEER_DESCRIPTION
+    description: str = ml_engineer_description
     num_runs: int = 3
 
     def __init__(self, *args, **kwargs):
@@ -35,7 +41,7 @@ class MLEngineer(BaseAgent):
         if self.policy is None:
             self.policy = ReactPolicy(
                 role_description=self.description,
-                output_instruction=ACTION_PLAN_DESCRIPTION,
+                output_instruction=str(action_planner),
                 llm=self.llm,
             )
 
