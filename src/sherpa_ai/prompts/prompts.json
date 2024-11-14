@@ -159,7 +159,7 @@
     "planner_prompts": [
       {
         "name": "planner",
-        "description": "Provide a dynamic action plan description.",
+        "description": "Provide a sequential steps by breaking down complex steps",
         "schema": {
           "prompts": [
             {
@@ -238,17 +238,27 @@
               "response_format": {}
             },
             {
+              "name": "EVALUATION_PROMPT",
+              "version": "1.0",
+              "type": "string",
+              "content": 
+                  "Task: {task} \n Evaluation in the importance matrices: {i_evaluation}\n Evaluation in the detail matrices: {d_evaluation} "
+              ,
+              "variables": {
+                "task": "",
+                "i_evaluation": "",
+                "d_evaluation": ""
+              },
+              "response_format": {}
+            },
+            {
               "name": "FEEDBACK_PROMPT",
               "version": "1.0",
               "type": "string",
               "content": 
-                  "Task: {task} \n Evaluation in the importance matrices: {i_evaluation}\n Evaluation in the detail matrices: {d_evaluation}\n {feedback_prompt} "
+                  "What are the {num_feedback} most important feedback for the plan received from the planner, using the\n insight you have from current observation, evaluation using the importance matrices and detail matrices.\n Feedback:"
               ,
               "variables": {
-                "feedback_prompt": "What are the {num_feedback} most important feedback for the plan received from the planner, using the\n insight you have from current observation, evaluation using the importance matrices and detail matrices.\n Feedback:",
-                "task": "",
-                "i_evaluation": "",
-                "d_evaluation": "",
                 "num_feedback": ""
               },
               "response_format": {}

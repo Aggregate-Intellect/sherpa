@@ -69,27 +69,40 @@ class PromptLoader:
         self.data = JsonToObject(raw_data)
         self.prompts = self._process_prompts()
         
-    def _validate_prompt_content(self, prompt: JsonToObject) -> bool:
-        """
-        Validate that a prompt has the required content structure.
+     # New validation method to ensure prompt structure and types match expected schema
+    def _validate_prompt_structure(self, prompt: JsonToObject) -> bool:
+        """ 
+        Validate that the prompt has the required structure and types.
         
         Args:
-            prompt (JsonToObject): The prompt object to validate
-            
-        Returns:
-            bool: True if valid, raises InvalidPromptContentError if invalid
-            
+            prompt (JsonToObject): The prompt object to validate.
+
         Raises:
-            InvalidPromptContentError: If prompt content is invalid
+            InvalidPromptContentError: If any part of the prompt structure is invalid.
         """
-        if not hasattr(prompt, CONTENT_ATTR):
-            raise InvalidPromptContentError(f"Prompt must have '{CONTENT_ATTR}' attribute")
-            
-        content = getattr(prompt, CONTENT_ATTR)
-        # Allow any type of content, but ensure it's not None
-        if content is None:
-            raise InvalidPromptContentError("Prompt content cannot be None")
-                
+        required_attrs = {
+            "name": str,
+            "version": str,
+            "type": str,
+            "content": (str, list)
+        }
+
+        # Check for required attributes and validate their types
+        for attr, expected_type in required_attrs.items():
+            if not hasattr(prompt, attr):
+                raise InvalidPromptContentError(f"Prompt must have '{attr}' attribute in the prompt '{prompt.name}'.")
+            if not isinstance(getattr(prompt, attr), expected_type):
+                raise InvalidPromptContentError(
+                    f"Prompt '{attr}' must be of type '{expected_type.__name__}'"
+                    f"found '{type(getattr(prompt, attr)).__name__}' instead, in the prompt '{prompt.name}' ."
+                )
+
+        # Validate that `content` type matches `type` field specification
+        if prompt.type == "string" and not isinstance(prompt.content, str):
+            raise InvalidPromptContentError(f"Prompt content must be a string when type is 'string', in the prompt '{prompt.name}'.")
+        elif prompt.type == "object" and not isinstance(prompt.content, list):
+            raise InvalidPromptContentError(f"Prompt content must be a list when type is 'object', in the prompt '{prompt.name}'.")
+        
         return True
         
     def _process_prompts(self) -> Dict:
@@ -103,17 +116,30 @@ class PromptLoader:
         for wrapper_key, wrapper_data in vars(self.data).items():
             if isinstance(wrapper_data, list):
                 for prompt_group in wrapper_data:
-                    if hasattr(prompt_group, SCHEMA_ATTR) and hasattr(prompt_group.schema, PROMPTS_ATTR):
-                        wrapper_name = wrapper_key
-                        if wrapper_name not in processed_prompts:
-                            processed_prompts[wrapper_name] = []
-                            
-                        # Validate each prompt before adding
-                        for prompt in prompt_group.schema.prompts:
-                            self._validate_prompt_content(prompt)
-                            processed_prompts[wrapper_name].append(prompt)
-                            
+                    # Raise error if schema is not present
+                    if not hasattr(prompt_group, SCHEMA_ATTR):
+                        raise InvalidPromptContentError(
+                            f"Missing '{SCHEMA_ATTR}' attribute in wrapper '{wrapper_key}'."
+                        )
+                    
+                    # Raise error if prompts are not present in schema
+                    if not hasattr(prompt_group.schema, PROMPTS_ATTR):
+                        raise InvalidPromptContentError(
+                            f"Missing '{PROMPTS_ATTR}' attribute in schema of wrapper '{wrapper_key}'."
+                        )
+                    
+                    wrapper_name = wrapper_key
+                    if wrapper_name not in processed_prompts:
+                        processed_prompts[wrapper_name] = []
+                    
+                    # Validate each prompt in the schema before adding
+                    for prompt in prompt_group.schema.prompts:
+                        # Validation to ensure prompt structure is correct before adding
+                        self._validate_prompt_structure(prompt)
+                        processed_prompts[wrapper_name].append(prompt)
+                        
         return processed_prompts
+
 
     def get_prompt(self, wrapper: str, name: str, version: str) -> Optional[JsonToObject]:
         """
@@ -130,6 +156,7 @@ class PromptLoader:
         if wrapper in self.prompts:
             for prompt in self.prompts[wrapper]:
                 if prompt.name == name and prompt.version == version:
+                    self._validate_prompt_structure(prompt)
                     return prompt
         return None
 
@@ -147,7 +174,7 @@ class PromptLoader:
         """
         prompt = self.get_prompt(wrapper, name, version)
         if prompt:
-            self._validate_prompt_content(prompt)
+            self._validate_prompt_structure(prompt)
             return prompt.content
         return None
 

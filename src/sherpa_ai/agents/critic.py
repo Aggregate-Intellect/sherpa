@@ -97,12 +97,19 @@ class Critic(BaseAgent):
                 "num_feedback": self.num_feedback
 
             }
-            prompt = template.format_prompt(
+            Evaluation_prompt = template.format_prompt(
+                wrapper="critic_prompts",
+                name="EVALUATION_PROMPT",
+                version="1.0",
+                variables=variables,
+            )
+            feedback_prompt = template.format_prompt(
                 wrapper="critic_prompts",
                 name="FEEDBACK_PROMPT",
                 version="1.0",
                 variables=variables,
             )
+            prompt = Evaluation_prompt + feedback_prompt
             feedback = self.llm.predict(self.description + prompt)
 
             self.shared_memory.add(EventType.feedback, self.name, feedback)
