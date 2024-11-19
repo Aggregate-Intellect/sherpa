@@ -1,6 +1,6 @@
 import json
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Any, Optional, Union
 
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -8,9 +8,6 @@ from pydantic import BaseModel, Field
 from sherpa_ai.actions.utils.refinement import BaseRefinement
 from sherpa_ai.actions.utils.reranking import BaseReranking
 from sherpa_ai.events import EventType
-
-if TYPE_CHECKING:
-    from sherpa_ai.memory.belief import Belief
 
 
 class ActionResource(BaseModel):
@@ -115,8 +112,7 @@ class BaseAction(ABC, BaseModel):
     def execute(self, **kwargs):
         pass
 
-    def __call__(self, **kwargs):
-        # Retrieve the arguments from the belief or agent
+    def input_validation(self, **kwargs) -> dict:
         filtered_kwargs = {}
         for arg in self.args:
             if arg.source == "agent":
@@ -133,23 +129,37 @@ class BaseAction(ABC, BaseModel):
                     "are 'agent' and 'belief'"
                 )
 
-        # Log to the belief
+        return filtered_kwargs
+
+    def action_start(self, args: dict):
         if self.belief is not None:
             self.belief.update_internal(
-                EventType.action, self.name, f"Action: {self.name} starts, Args: {filtered_kwargs}"
+                EventType.action,
+                self.name,
+                f"Action: {self.name} starts, Args: {args}",
             )
 
+    def action_end(self, result: Any):
+        if self.belief is not None:
+            self.belief.set(self.output_key, result)
+            self.belief.update_internal(
+                EventType.action_output,
+                self.name,
+                f"Action: {self.name} finishes, Observation: {result}",
+            )
+
+    def __call__(self, **kwargs):
+        # Retrieve the arguments from the belief or agent
+        filtered_kwargs = self.input_validation(**kwargs)
+
+        # Log to the belief
+        self.action_start(filtered_kwargs)
 
         # Execute the action
         result = self.execute(**filtered_kwargs)
 
         # Save the result to the belief
-        self.belief: Belief = self.belief
-        if self.belief:
-            self.belief.set(self.output_key, result)
-            self.belief.update_internal(
-                EventType.action_output, self.name, f"Action: {self.name} finishes, Observation: {result}"
-            )
+        self.action_end(result)
 
         return result
 
@@ -169,6 +179,26 @@ class BaseAction(ABC, BaseModel):
 
     def __repr__(self):
         return self.__str__()
+
+
+class AsyncBaseAction(BaseAction, ABC):
+    async def __call__(self, **kwargs):
+        # Retrieve the arguments from the belief or agent
+        filtered_kwargs = self.input_validation(**kwargs)
+
+        # Log to the belief
+        self.action_start(filtered_kwargs)
+
+        # Execute the action
+        result = await self.execute(**filtered_kwargs)
+
+        # Save the result to the belief
+        self.action_end(result)
+
+        return result
+
+    async def execute(self, **kwargs):
+        return await self.execute(**kwargs)
 
 
 class BaseRetrievalAction(BaseAction, ABC):
