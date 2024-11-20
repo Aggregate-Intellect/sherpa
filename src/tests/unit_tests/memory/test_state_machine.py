@@ -1,4 +1,5 @@
 import pytest
+from transitions.extensions import AsyncMachine
 
 from sherpa_ai.actions.empty import EmptyAction
 from sherpa_ai.memory.belief import Belief
@@ -14,6 +15,30 @@ def state_machine():
     sm = SherpaStateMachine(states=["A", "B", "C"], initial="A")
     sm.update_transition("A_to_B_1", "A", "B", action=action_a)
     sm.update_transition("A_to_B_2", "A", "B", action=action_b)
+    sm.update_transition("B_to_C", "B", "C", action=action_c)
+
+    return sm
+
+
+@pytest.fixture
+def async_state_machine():
+    action_a = EmptyAction()
+    action_b = EmptyAction()
+    action_c = EmptyAction()
+
+    async def mock_condition_True():
+        return True
+
+    async def mock_condition_False():
+        return False
+
+    sm = SherpaStateMachine(states=["A", "B", "C"], initial="A", sm_cls=AsyncMachine)
+    sm.update_transition(
+        "A_to_B_1", "A", "B", action=action_a, conditions=mock_condition_True
+    )
+    sm.update_transition(
+        "A_to_B_2", "A", "B", action=action_b, conditions=mock_condition_False
+    )
     sm.update_transition("B_to_C", "B", "C", action=action_c)
 
     return sm
@@ -109,3 +134,12 @@ def test_extension_features():
 
     assert sm.get_current_state().name == "A"
     assert sm.get_current_state().description == "This is state A"
+
+
+def test_get_actions_async(async_state_machine):
+    assert async_state_machine.state == "A"
+
+    actions = async_state_machine.get_actions()
+
+    assert len(actions) == 1
+    assert actions[0].name == "A_to_B_1"
