@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any, List, Optional
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
@@ -10,9 +10,7 @@ from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
-from sherpa_ai.policies.base import BasePolicy
-from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
-from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
+from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 
 
 class BaseAgent(ABC, BaseModel):
@@ -24,7 +22,6 @@ class BaseAgent(ABC, BaseModel):
     belief: Belief = None
     policy: BasePolicy = None
     num_runs: int = 1
-    verbose_logger: BaseVerboseLogger = DummyVerboseLogger()
     actions: List[BaseAction] = []
     validation_steps: int = 1
     validations: List[BaseOutputProcessor] = []
@@ -54,8 +51,27 @@ class BaseAgent(ABC, BaseModel):
 
         getattr(self.belief.state_machine, event)(**args)
 
-    def run(self):
-        self.verbose_logger.log(f"⏳{self.name} is thinking...")
+    async def async_send_event(self, event: str, args: dict):
+        """
+        Send an event to the state machine in the belief
+
+        Args:
+            event (str): The event name
+            args (dict): The arguments for the event
+        """
+        if self.belief.state_machine is None:
+            logger.error("State machine is not defined in the belief")
+            return
+
+        func = getattr(self.belief.state_machine, event)
+
+        if func is None:
+            logger.error(f"Event {event} is not defined in the state machine")
+            return
+
+        await func(**args)
+
+    def agent_preparation(self):
         logger.debug(f"```⏳{self.name} is thinking...```")
 
         if self.shared_memory is not None:
@@ -65,50 +81,21 @@ class BaseAgent(ABC, BaseModel):
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
-        for i in range(self.num_runs):
-            if len(self.belief.get_actions()) == 0:
-                break
-            try:
-                result = self.policy.select_action(self.belief)
-            except Exception as e:
-                self.belief.update_internal(
-                    EventType.action_output,
-                    self.feedback_agent_name,
-                    f"Error in selecting action: {e}",
-                )
-                logger.error("Error in selecting action")
-                logger.error(e)
-                continue
-            logger.debug(f"Action selected: {result}")
-
-            if result is None:
-                # this means no action is selected
-                continue
-
-            self.verbose_logger.log(
-                f"```🤖{self.name} is executing```"
-                f"```{result.action.name}\n Input: {result.args}...```"
+    def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
+        try:
+            result = self.policy.select_action(self.belief)
+            return result
+        except Exception as e:
+            self.belief.update_internal(
+                EventType.action_output,
+                self.feedback_agent_name,
+                f"Error in selecting action: {e}",
             )
-            logger.debug(
-                f"🤖{self.name} is executing```" "``` {result.action.name}...```"
-            )
+            logger.error("Error in selecting action")
+            logger.error(e)
+            return None
 
-            try:
-                action_output = self.act(result.action, result.args)
-            except Exception as e:
-                self.belief.update_internal(
-                    EventType.action_output,
-                    self.feedback_agent_name,
-                    f"Error in executing action: {result.action.name}. Error: {e}",
-                )
-                logger.exception(e)
-                continue
-
-            action_output = self.belief.get(result.action.name, action_output)
-
-            self.verbose_logger.log(f"```Action output: {action_output}```")
-            logger.debug(f"```Action output: {action_output}```")
-
+    def agent_finished(self, result: str) -> str:
         result = (
             self.validate_output()
             if len(self.validations) > 0
@@ -119,6 +106,64 @@ class BaseAgent(ABC, BaseModel):
 
         if self.shared_memory is not None:
             self.shared_memory.add(EventType.result, self.name, result)
+        return result
+
+    def run(self):
+        self.agent_preparation()
+
+        for _ in range(self.num_runs):
+            if len(self.belief.get_actions()) == 0:
+                break
+
+            result = self.select_action(self.belief)
+
+            if result is None:
+                # this means no action is selected
+                continue
+
+            logger.debug(f"Action selected: {result}")
+            logger.debug(
+                f"🤖{self.name} is executing```" "``` {result.action.name}...```"
+            )
+
+            action_output = self.act(result.action, result.args)
+            if action_output is None:
+                continue
+
+            action_output = self.belief.get(result.action.name, action_output)
+
+            logger.debug(f"```Action output: {action_output}```")
+
+        result = self.agent_finished(result)
+        return result
+
+    async def async_run(self):
+        self.agent_preparation()
+
+        for _ in range(self.num_runs):
+            if len(self.belief.get_actions()) == 0:
+                break
+
+            result = self.select_action(self.belief)
+
+            if result is None:
+                # this means no action is selected
+                continue
+
+            logger.debug(f"Action selected: {result}")
+            logger.debug(
+                f"🤖{self.name} is executing```" "``` {result.action.name}...```"
+            )
+
+            action_output = await self.async_act(result.action, result.args)
+            if action_output is None:
+                continue
+
+            action_output = self.belief.get(result.action.name, action_output)
+
+            logger.debug(f"```Action output: {action_output}```")
+
+        result = self.agent_finished(result)
         return result
 
     # The validation_iterator function is responsible for iterating through each
@@ -265,5 +310,28 @@ class BaseAgent(ABC, BaseModel):
     def observe(self):
         return self.shared_memory.observe(self.belief)
 
-    def act(self, action, inputs):
-        return action(**inputs)
+    def act(self, action: BaseAction, inputs: dict) -> Optional[str]:
+        try:
+            action_output = action(**inputs)
+            return action_output
+        except Exception as e:
+            self.belief.update_internal(
+                EventType.action_output,
+                self.feedback_agent_name,
+                f"Error in executing action: {action.name}. Error: {e}",
+            )
+            logger.exception(e)
+            return None
+
+    async def async_act(self, action: BaseAction, inputs: dict) -> Optional[str]:
+        try:
+            action_output = await action(**inputs)
+            return action_output
+        except Exception as e:
+            self.belief.update_internal(
+                EventType.action_output,
+                self.feedback_agent_name,
+                f"Error in executing action: {action.name}. Error: {e}",
+            )
+            logger.exception(e)
+            return None
