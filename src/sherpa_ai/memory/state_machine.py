@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Callable, Optional, Union
 
 import transitions as ts
@@ -7,6 +8,8 @@ from transitions.extensions.states import Tags, add_state_features
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
 from sherpa_ai.actions.empty import EmptyAction
+from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
+                                    add_transition_features)
 
 
 class State(ts.State):
@@ -64,8 +67,11 @@ class SherpaStateMachine:
             # sm_cls.transition_cls = Transition
 
         # extend the state machine states with additional features
-        extend_states = add_state_features(Tags)
+        extend_states = add_state_features(Tags, StateDesc)
+        extend_transitions = add_transition_features(TransitionDesc)
+
         sm_cls = extend_states(sm_cls)
+        sm_cls = extend_transitions(sm_cls)
 
         self.sm = sm_cls(
             model=self,
@@ -101,6 +107,7 @@ class SherpaStateMachine:
         dest: str,
         conditions: Union[Callable, list[Callable]] = None,
         action: Optional[BaseAction] = None,
+        **kwargs,
     ):
         """
         Update or add a transition to the state machine
@@ -127,6 +134,7 @@ class SherpaStateMachine:
             dest=dest,
             conditions=conditions,
             before=action,
+            **kwargs,
         )
 
     def get_actions(self, include_waiting: bool = False) -> list[BaseAction]:
@@ -153,7 +161,12 @@ class SherpaStateMachine:
             if t not in self.explicit_transitions:
                 continue
 
-            if not self.may_trigger(t):
+            if self.is_async():
+                can_trigger = asyncio.run(self.may_trigger(t))
+            else:
+                can_trigger = self.may_trigger(t)
+
+            if not can_trigger:
                 continue
 
             event = self.sm.events.get(t)
@@ -177,6 +190,27 @@ class SherpaStateMachine:
             bool: whether the transition is valid
         """
         return self.sm._transition_for_model(transition)
+
+    def get_current_state(self) -> ts.State:
+        """
+        Get the current state of the state machine
+
+        Returns:
+            ts.State: the current state object
+        """
+        return self.sm.get_state(self.state)
+
+    def get_state(self, state: str) -> ts.State:
+        """
+        Get the state object from the state machine
+
+        Args:
+            state (str): the name of the state
+
+        Returns:
+            ts.State: the state object
+        """
+        return self.sm.get_state(state)
 
     def transition_to_action(
         self, trigger: str, transition: ts.Transition
@@ -210,7 +244,7 @@ class SherpaStateMachine:
             else:
                 return result
 
-        usage = trigger
+        usage = transition.description
         args = {}
         if len(transition.before) > 0:
             action = transition.before[0]
@@ -221,7 +255,7 @@ class SherpaStateMachine:
             if isinstance(action, BaseAction):
                 _ = str(action)
 
-                usage = action.usage
+                usage = f"{usage}. {action.usage}"
                 args = action.args
                 action.name = trigger
 
@@ -241,3 +275,6 @@ class SherpaStateMachine:
             )
 
         return action
+
+    def is_async(self):
+        return "async" in type(self.sm).__name__.lower()
