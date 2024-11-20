@@ -14,18 +14,16 @@ if TYPE_CHECKING:
 
 SELECTION_DESCRIPTION = """{role_description}
 
-{output_instruction}
+## History of Previous Actions
+{history_of_previous_actions}
 
-**Task Description**: {task_description}
+You have a state machine to help you with the action execution. You are currently in the {state} state.
+{state_description}
 
-**Possible Actions**:
+## Possible Actions:
 {possible_actions}
 
-**Task Context**:
-{task_context}
-
-**History of Previous Actions**:
-{history_of_previous_actions}
+**Task Description**: {task_description}
 
 You should only select the actions specified in **Possible Actions**
 You should only respond in JSON format as described below without any extra text.
@@ -33,16 +31,20 @@ Response Format:
 {response_format}
 Ensure the response can be parsed by Python json.loads
 
-Follow the described format strictly.
+{output_instruction}
 
 """  # noqa: E501
 
+STATE_DESCRIPTION_PROMPT = """The {state} state has the following instruction:
+{state_description}
+"""
 
-class ReactPolicy(BasePolicy):
+
+class ReactStateMachinePolicy(BasePolicy):
     """
     The policy to select an action from the belief based on the ReACT framework.
 
-    See this paper for more details: https://arxiv.org/abs/2210.03629
+    If uses information from the state machine
 
     Attributes:
         role_description (str): The description of the agent role to help select an action
@@ -56,6 +58,7 @@ class ReactPolicy(BasePolicy):
     output_instruction: str
     # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
     llm: Any = None
+
     description: str = SELECTION_DESCRIPTION
     response_format: dict = {
         "command": {
@@ -63,6 +66,46 @@ class ReactPolicy(BasePolicy):
             "args": {"arg name": "value"},
         },
     }
+
+    def get_prompt(self, belief: Belief) -> str:
+        """
+        Create the prompt based on information from the belief
+
+        Args:
+            belief (Belief): The current state of the agent
+
+        Returns:
+            str: The prompt to be used for the selection of the action
+        """
+        actions = belief.get_actions()
+
+        task_description = belief.current_task.content
+        possible_actions = "\n".join([str(action) for action in actions])
+        history_of_previous_actions = belief.get_internal_history(
+            self.llm.get_num_tokens
+        )
+        current_state = belief.get_state_obj().name
+        state_description = belief.get_state_obj().description
+
+        if len(state_description) > 0:
+            state_description = STATE_DESCRIPTION_PROMPT.format(
+                state=current_state, state_description=state_description
+            )
+
+        response_format = json.dumps(self.response_format, indent=4)
+
+        prompt = self.description.format(
+            role_description=self.role_description,
+            task_description=task_description,
+            possible_actions=possible_actions,
+            history_of_previous_actions=history_of_previous_actions,
+            output_instruction=self.output_instruction,
+            response_format=response_format,
+            state=current_state,
+            state_description=state_description,
+        )
+
+        return prompt
 
     def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
         """
@@ -76,28 +119,10 @@ class ReactPolicy(BasePolicy):
             action is not found in the list of possible actions
         """  # noqa: E501
         actions = belief.get_actions()
-
         if is_selection_trivial(actions):
             return PolicyOutput(action=actions[0], args={})
 
-        task_description = belief.current_task.content
-        task_context = belief.get_context(self.llm.get_num_tokens)
-        possible_actions = "\n".join([str(action) for action in actions])
-        history_of_previous_actions = belief.get_internal_history(
-            self.llm.get_num_tokens
-        )
-
-        response_format = json.dumps(self.response_format, indent=4)
-
-        prompt = self.description.format(
-            role_description=self.role_description,
-            task_description=task_description,
-            possible_actions=possible_actions,
-            history_of_previous_actions=history_of_previous_actions,
-            task_context=task_context,
-            output_instruction=self.output_instruction,
-            response_format=response_format,
-        )
+        prompt = self.get_prompt(belief)
         logger.debug(f"Prompt: {prompt}")
         result = self.llm.predict(prompt)
         logger.debug(f"Result: {result}")

@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Callable, Optional, Union
 
 import transitions as ts
@@ -160,7 +161,12 @@ class SherpaStateMachine:
             if t not in self.explicit_transitions:
                 continue
 
-            if not self.may_trigger(t):
+            if self.is_async():
+                can_trigger = asyncio.run(self.may_trigger(t))
+            else:
+                can_trigger = self.may_trigger(t)
+
+            if not can_trigger:
                 continue
 
             event = self.sm.events.get(t)
@@ -238,7 +244,7 @@ class SherpaStateMachine:
             else:
                 return result
 
-        usage = trigger
+        usage = transition.description
         args = {}
         if len(transition.before) > 0:
             action = transition.before[0]
@@ -249,7 +255,7 @@ class SherpaStateMachine:
             if isinstance(action, BaseAction):
                 _ = str(action)
 
-                usage = action.usage
+                usage = f"{usage}. {action.usage}"
                 args = action.args
                 action.name = trigger
 
@@ -269,3 +275,6 @@ class SherpaStateMachine:
             )
 
         return action
+
+    def is_async(self):
+        return "async" in type(self.sm).__name__.lower()
