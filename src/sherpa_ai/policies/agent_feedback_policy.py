@@ -1,10 +1,10 @@
 from loguru import logger
+from pydantic import ConfigDict
 
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.policies import ReactPolicy
-from pydantic import ConfigDict
 
 AGENT_FEEDBACK_DESCRIPTION = """You are an intelligent assistant helping the user to complete their task. You have the following task to complete:
 {task}

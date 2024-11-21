@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from loguru import logger
 
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
+from sherpa_ai.policies.exceptions import SherpaPolicyException
 from sherpa_ai.policies.utils import (is_selection_trivial,
                                       transform_json_output)
 
@@ -132,6 +133,8 @@ class ReactStateMachinePolicy(BasePolicy):
         action = belief.get_action(name)
 
         if action is None:
-            raise ValueError(f"Action {name} not found in the list of possible actions")
+            raise SherpaPolicyException(
+                f"Action {name} not found in the list of possible actions"
+            )
 
         return PolicyOutput(action=action, args=args)
