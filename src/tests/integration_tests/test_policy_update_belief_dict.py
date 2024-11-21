@@ -35,6 +35,7 @@ def test_update_belief(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
+        do_synthesize_output=True
     )
 
     shared_memory.add(
@@ -67,6 +68,7 @@ def test_update_belief_nested(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
+        do_synthesize_output=True
     )
 
     shared_memory.add(
@@ -99,6 +101,7 @@ def test_update_belief_exist(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
+        do_synthesize_output=True
     )
 
     shared_memory.add(
@@ -130,6 +133,7 @@ def test_retrieve_value(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
+        do_synthesize_output=True
     )
 
     shared_memory.add(
@@ -160,6 +164,7 @@ def test_retrieve_and_calculate(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
+        do_synthesize_output=True
     )
 
     shared_memory.add(

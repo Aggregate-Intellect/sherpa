@@ -5,6 +5,7 @@ from typing import Any, Optional, Union
 from loguru import logger
 from pydantic import BaseModel, Field
 
+from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.actions.utils.refinement import BaseRefinement
 from sherpa_ai.actions.utils.reranking import BaseReranking
 from sherpa_ai.events import EventType
@@ -221,6 +222,9 @@ class BaseRetrievalAction(BaseAction, ABC):
             )
 
     def execute(self, query: str) -> str:
+        if query is None or len(query) == 0:
+            raise SherpaActionExecutionException("Query cannot be empty")
+
         results = self.search(query)
 
         results = [result["Document"] for result in results]

@@ -1,19 +1,19 @@
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest 
-from langchain_openai import ChatOpenAI 
-from langchain_core.documents import Document 
-from loguru import logger 
+import pytest
+from langchain_core.documents import Document
+from langchain_openai import ChatOpenAI
+from loguru import logger
 
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.connectors.base import BaseVectorDB
 from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
 from sherpa_ai.events import EventType
-from sherpa_ai.memory.shared_memory_with_vectordb import SharedMemoryWithVectorDB
+from sherpa_ai.memory.shared_memory_with_vectordb import \
+    SharedMemoryWithVectorDB
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.utils import file_text_splitter
-
 
 data = """Avocados are a fruit, not a vegetable. They're technically considered a single-seeded berry, believe it or not.
 The Eiffel Tower can be 15 cm taller during the summer, due to thermal expansion meaning the iron heats up, the particles gain kinetic energy and take up more space.
@@ -152,6 +152,7 @@ def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):  # noqa F
     task_agent = QAAgent(
         llm=llm,
         shared_memory=shared_memory,
+        do_synthesize_output=True
     )
 
     shared_memory.add(
