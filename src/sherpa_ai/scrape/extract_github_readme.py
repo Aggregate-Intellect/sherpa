@@ -1,15 +1,12 @@
 import base64
 import re
 
-import pinecone 
 import requests
-from dotenv import dotenv_values 
-from langchain_openai import OpenAIEmbeddings 
-from loguru import logger 
+from langchain_openai import OpenAIEmbeddings
+from loguru import logger
 
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.vectorstores import ConversationStore
-
 
 GITHUB_REQUEST_TIMEOUT = 2.5
 
@@ -100,6 +97,7 @@ def save_to_pine_cone(content, metadatas):
     - content (str): The content to be saved.
     - metadatas (list): List of metadata associated with the content.
     """
+    import pinecone
 
     pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
     index = pinecone.Index("langchain")

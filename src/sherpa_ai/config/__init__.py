@@ -26,7 +26,6 @@ from loguru import logger
 
 from sherpa_ai.config.task_config import AgentConfig
 
-
 env_path = find_dotenv(usecwd=True)
 load_dotenv(env_path)
 
