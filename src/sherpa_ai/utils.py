@@ -1,37 +1,27 @@
+from __future__ import annotations
+
 import json
 import re
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 from urllib.parse import urlparse
 
 import requests
-import spacy 
-import tiktoken 
-from bs4 import BeautifulSoup 
-from langchain_community.document_loaders import ( 
-    UnstructuredMarkdownLoader,
-    UnstructuredPDFLoader,
-)
-from langchain_openai import OpenAI 
-from langchain_core.documents import Document 
-from langchain_core.language_models import BaseLanguageModel 
-from langchain_text_splitters import ( 
-    CharacterTextSplitter,
-    TokenTextSplitter,
-)
-from loguru import logger 
-from nltk.metrics import edit_distance, jaccard_distance 
-from pypdf import PdfReader 
-from word2number import w2n 
+import tiktoken
+from bs4 import BeautifulSoup
+from loguru import logger
+from word2number import w2n
 
-import sherpa_ai.config as cfg
-from sherpa_ai.database.user_usage_tracker import UserUsageTracker
-from sherpa_ai.models.sherpa_base_model import SherpaOpenAI
-
+if TYPE_CHECKING:
+    from langchain_core.documents import Document
+    from langchain_core.language_models import BaseLanguageModel
 
 HTTP_GET_TIMEOUT = 2.5
 
 
 def load_files(files: List[str]) -> List[Document]:
+    from langchain_community.document_loaders import (
+        UnstructuredMarkdownLoader, UnstructuredPDFLoader)
+
     documents = []
     loader = None
     for f in files:
@@ -85,8 +75,7 @@ def get_link_from_slack_client_conversation(data):
                             if newElement.get("type") == "link":
                                 newUrl = newElement["url"]
                                 links.append(
-                                    {"url": newUrl,
-                                        "base_url": get_base_url(newUrl)}
+                                    {"url": newUrl, "base_url": get_base_url(newUrl)}
                                 )
     return links
 
@@ -110,7 +99,7 @@ def rewrite_link_references(data: any, question: str):
         link_with_angle_brackets = f"<{ link }>"
         result = result.replace(link_with_angle_brackets, reference)
         result = result + f""" {reference} link: "{link}" , link_data: {data}"""
-        
+
     return result
 
 
@@ -130,6 +119,8 @@ def count_string_tokens(string: str, model_name: str) -> int:
 
 
 def chunk_and_summarize(text_data: str, question: str, link: str, llm):
+    from langchain_text_splitters import TokenTextSplitter
+
     instruction = (
         "include any information that can be used to answer the "
         f"question '{question}' the given literal text is a data "
@@ -161,6 +152,8 @@ def chunk_and_summarize_file(
     llm,
     title: str = None,
 ):
+    from langchain_text_splitters import TokenTextSplitter
+
     title = f",title {title} " if title is not None else ""
 
     instruction = (
@@ -252,6 +245,8 @@ def show_commands_only(logs):
 
 
 def extract_text_from_pdf(pdf_path):
+    from pypdf import PdfReader
+
     text = ""
     # Extract text from a PDF using PdfReader
     pdf_file = open(pdf_path, "rb")
@@ -273,8 +268,7 @@ def extract_urls(text):
     words = text.split()
 
     # Extract URLs using urllib.parse
-    urls = [word for word in words if urlparse(word).scheme in [
-        "http", "https"]]
+    urls = [word for word in words if urlparse(word).scheme in ["http", "https"]]
 
     return urls
 
@@ -336,17 +330,17 @@ def extract_numeric_entities(
     entity_types: List[str] = ["DATE", "CARDINAL", "QUANTITY", "MONEY"],
 ):
     """
-    Extracts numeric entities from the given text using spaCy and converts textual
-    representations of numbers to floats using the word_to_float function.
+    Extracts numeric entities from the given text using spaCy and converts textualrepresentations of numbers to floats using the word_to_float function.
 
-    Parameters:
-    - text (str): The input text from which numeric entities will be extracted.
-    - entity_types (List[str]): A list of spaCy entity types to consider for extraction.
+    Args:
+        text (str): The input text from which numeric entities will be extracted.
+        entity_types (List[str]): A list of spaCy entity types to consider for extraction.
                                 Default is ["DATE", "CARDINAL", "QUANTITY", "MONEY"].
 
     Returns:
-    List[str]: A list of numeric values extracted from the text.
-    """
+        List[str]: A list of numeric values extracted from the text.
+    """  # noqa: E501
+    import spacy
 
     if text is None:
         return []
@@ -358,8 +352,7 @@ def extract_numeric_entities(
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     numbers = []
-    filtered_entities = [
-        ent.text for ent in doc.ents if ent.label_ in entity_types]
+    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
     for entity in filtered_entities:
         if any(char.isdigit() for char in entity):
             result = extract_numbers_from_text(entity)
@@ -393,7 +386,7 @@ def combined_number_extractor(text: str):
 def verify_numbers_against_source(
     text_to_test: Optional[str], source_text: Optional[str]
 ):
-    """Verifies that all numbers in text_to_test exist in source_text. Returns True on success. Returns False and a feedback string on failure."""
+    """Verifies that all numbers in text_to_test exist in source_text. Returns True on success. Returns False and a feedback string on failure."""  # noqa: E501
     candidate_numbers = set(combined_number_extractor(text_to_test))
     source_numbers = set(combined_number_extractor(source_text))
 
@@ -401,8 +394,8 @@ def verify_numbers_against_source(
 
     if len(incorrect_candidates) > 0:
         joined_numbers = ", ".join(incorrect_candidates)
-        message = f"Don't use the numbers"
-        f"{joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context."
+        message = "Don't use the numbers"
+        f"{joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context."  # noqa: E501
         return False, message
     return True, None
 
@@ -419,7 +412,7 @@ def check_if_number_exist(result: str, source: str):
     if len(error_numbers) > 0:
         for numbers in error_numbers:
             message += numbers + ", "
-        message = f"Don't use the numbers"
+        message = "Don't use the numbers"
         f"{message} to answer the question instead stick to the numbers mentioned in the context."
         return {"number_exists": False, "messages": message}
     return {"number_exists": True, "messages": message}
@@ -436,7 +429,8 @@ def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_con
 
     Returns:
     float: Combined similarity metric.
-    """
+    """  # noqa: E501
+    from nltk.metrics import edit_distance, jaccard_distance
 
     word1_set = set(word1)
     word2_set = set(word2)
@@ -444,7 +438,8 @@ def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_con
     lev_distance = edit_distance(word1, word2)
     jaccard_sim = 1 - jaccard_distance(word1_set, word2_set)
     long_len = max(len(word1), len(word2))
-    # This will give a value between 0 and 1, where 0 represents identical words and 1 represents completely different words.
+    # This will give a value between 0 and 1, where 0 represents identical words
+    # and 1 represents completely different words.
     normalized_levenshtein = 1 - (lev_distance / long_len)
     # The weight is determined by the levenshtein_constant variable,
     # which should be a value between 0 and 1.
@@ -460,22 +455,23 @@ def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_con
 def extract_entities(text):
     """
     Extract entities of specific types
-        NORP (Nationalities or Religious or Political Groups),
-        ORG (Organization),
-        GPE (Geopolitical Entity),
-        LOC (Location) using spaCy.
+    NORP (Nationalities or Religious or Political Groups)
+    ORG (Organization)
+    GPE (Geopolitical Entity)
+    LOC (Location) using spaCy.
+
     Args:
     - text (str): Input text.
 
     Returns:
     List[str]: List of extracted entities.
     """
+    import spacy
 
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     entity_types = ["NORP", "ORG", "GPE", "LOC"]
-    filtered_entities = [
-        ent.text for ent in doc.ents if ent.label_ in entity_types]
+    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
 
     return filtered_entities
 
@@ -528,7 +524,7 @@ def text_similarity_by_llm(
 
     Returns:
     dict: Result of the check containing 'entity_exist' and 'messages'.
-    """
+    """  # noqa: E501
 
     instruction = f"""
         I have a question and an answer. I want you to confirm whether the entities from the question are all mentioned in some form within the answer.
@@ -537,13 +533,13 @@ def text_similarity_by_llm(
         Entities inside the question = {source_entity}
 
         Answer = {result}
-       """
+       """  # noqa: E501
     prompt = (
         instruction
         + """
            only return {"entity_exist": true , "messages":"" } if all entities are mentioned inside the answer in
            only return {"entity_exist": false , "messages": " Entity x hasn't been mentioned inside the answer"} if the entity is not mentioned properly .
-          """
+          """  # noqa: E501
     )
 
     llm_result = llm.predict(prompt)
@@ -572,7 +568,8 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
     message = ""
     levenshtein_constant = 0.5
 
-    # for each entity in the source entity list, check if it is similar to any entity in the check entity list
+    # for each entity in the source entity list, check if it is similar to any entity
+    # in the check entity list
     # if similarity is below the threshold, add the entity to the error_entity list
     # else return True means all entities are similar
     for source_entity_val in source_entity_lower:
@@ -581,7 +578,8 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
             word1 = source_entity_val
             word2 = check_entity_val
 
-            # Calculate the combined similarity metric using Jaccard similarity and normalized Levenshtein distance
+            # Calculate the combined similarity metric using Jaccard similarity
+            # and normalized Levenshtein distance
             combined_similarity = string_comparison_with_jaccard_and_levenshtein(
                 word1=word1, word2=word2, levenshtein_constant=levenshtein_constant
             )
@@ -589,12 +587,14 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
             if metrics_value < combined_similarity:
                 metrics_value = combined_similarity
         if metrics_value < threshold:
-            # If the metrics value is below the threshold, add the entity to the error_entity list
+            # If the metrics value is below the threshold, add the entity to
+            # the error_entity list
             index_of_entity = source_entity_lower.index(source_entity_val)
             error_entity.append(source_entity[index_of_entity])
 
     if len(error_entity) > 0:
-        # If there are error entities, create a message to address them in the final answer
+        # If there are error entities, create a message to address
+        # them in the final answer
         for entity in error_entity:
             message += entity + ", "
         message = f"remember to address these entities {message} in the final answer."
@@ -631,6 +631,8 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
 
 
 def file_text_splitter(data, meta_data):
+    from langchain_text_splitters import CharacterTextSplitter
+
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_text(data)
     metadatas = []
@@ -641,6 +643,7 @@ def file_text_splitter(data, meta_data):
     texts = temp_texts
 
     return {"texts": texts, "meta_datas": metadatas}
+
 
 def get_links_from_text(text: str) -> List[str]:
     url_regex = r"(https?://\S+|www\.\S+)"

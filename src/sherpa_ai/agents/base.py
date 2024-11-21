@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import traceback
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
 from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
+from sherpa_ai.policies.exceptions import SherpaPolicyException
 
 
 class BaseAgent(ABC, BaseModel):
@@ -27,6 +30,7 @@ class BaseAgent(ABC, BaseModel):
     validations: List[BaseOutputProcessor] = []
     feedback_agent_name: str = "critic"
     global_regen_max: int = 12
+    do_synthesize_output: bool = False
     llm: Any = None
 
     @abstractmethod
@@ -81,26 +85,27 @@ class BaseAgent(ABC, BaseModel):
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
-    def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
+    def select_action(self) -> Optional[PolicyOutput]:
         try:
             result = self.policy.select_action(self.belief)
             return result
-        except Exception as e:
+        except SherpaPolicyException as e:
             self.belief.update_internal(
                 EventType.action_output,
                 self.feedback_agent_name,
                 f"Error in selecting action: {e}",
             )
-            logger.error("Error in selecting action")
-            logger.error(e)
+            logger.exception(e)
             return None
+        except Exception as e:
+            logger.exception(e)
+            return e
 
     def agent_finished(self, result: str) -> str:
-        result = (
-            self.validate_output()
-            if len(self.validations) > 0
-            else self.synthesize_output()
-        )
+        if len(self.validations) > 0:
+            result = self.validate_output()
+        elif self.do_synthesize_output:
+            result = self.synthesize_output()
 
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
@@ -115,11 +120,15 @@ class BaseAgent(ABC, BaseModel):
             if len(self.belief.get_actions()) == 0:
                 break
 
-            result = self.select_action(self.belief)
+            result = self.select_action()
 
             if result is None:
                 # this means no action is selected
                 continue
+            elif isinstance(result, Exception):
+                tb_exception = traceback.TracebackException.from_exception(result)
+                stack_trace = "".join(tb_exception.format())
+                return stack_trace
 
             logger.debug(f"Action selected: {result}")
             logger.debug(
@@ -129,13 +138,19 @@ class BaseAgent(ABC, BaseModel):
             action_output = self.act(result.action, result.args)
             if action_output is None:
                 continue
+            elif isinstance(action_output, Exception):
+                tb_exception = traceback.TracebackException.from_exception(
+                    action_output
+                )
+                stack_trace = "".join(tb_exception.format())
+                return stack_trace
 
             action_output = self.belief.get(result.action.name, action_output)
 
             logger.debug(f"```Action output: {action_output}```")
 
-        result = self.agent_finished(result)
-        return result
+        action_output = self.agent_finished(action_output)
+        return action_output
 
     async def async_run(self):
         self.agent_preparation()
@@ -144,11 +159,15 @@ class BaseAgent(ABC, BaseModel):
             if len(self.belief.get_actions()) == 0:
                 break
 
-            result = self.select_action(self.belief)
+            result = self.select_action()
 
             if result is None:
                 # this means no action is selected
                 continue
+            elif isinstance(result, Exception):
+                tb_exception = traceback.TracebackException.from_exception(result)
+                stack_trace = "".join(tb_exception.format())
+                return stack_trace
 
             logger.debug(f"Action selected: {result}")
             logger.debug(
@@ -158,6 +177,12 @@ class BaseAgent(ABC, BaseModel):
             action_output = await self.async_act(result.action, result.args)
             if action_output is None:
                 continue
+            elif isinstance(action_output, Exception):
+                tb_exception = traceback.TracebackException.from_exception(
+                    action_output
+                )
+                stack_trace = "".join(tb_exception.format())
+                return stack_trace
 
             action_output = self.belief.get(result.action.name, action_output)
 
@@ -310,11 +335,11 @@ class BaseAgent(ABC, BaseModel):
     def observe(self):
         return self.shared_memory.observe(self.belief)
 
-    def act(self, action: BaseAction, inputs: dict) -> Optional[str]:
+    def act(self, action: BaseAction, inputs: dict) -> Union[Optional[str], Exception]:
         try:
             action_output = action(**inputs)
             return action_output
-        except Exception as e:
+        except SherpaActionExecutionException as e:
             self.belief.update_internal(
                 EventType.action_output,
                 self.feedback_agent_name,
@@ -322,6 +347,9 @@ class BaseAgent(ABC, BaseModel):
             )
             logger.exception(e)
             return None
+        except Exception as e:
+            logger.exception(e)
+            return e
 
     async def async_act(self, action: BaseAction, inputs: dict) -> Optional[str]:
         try:

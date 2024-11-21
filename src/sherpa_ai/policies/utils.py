@@ -2,9 +2,8 @@ import json
 import re
 from typing import Tuple
 
-from loguru import logger
-
 from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.policies.exceptions import SherpaPolicyException
 
 
 def transform_json_output(output_str: str) -> Tuple[str, dict]:
@@ -17,6 +16,9 @@ def transform_json_output(output_str: str) -> Tuple[str, dict]:
     Returns:
         str: Action to be taken
         dict: Arguments for the action
+
+    Raises:
+        SherpaPolicyException: If the output does not contain proper json format
     """
     json_pattern = re.compile(r"(\{.*\})", re.DOTALL)
     match = json_pattern.search(output_str)
@@ -24,8 +26,10 @@ def transform_json_output(output_str: str) -> Tuple[str, dict]:
     if match is not None:
         output = json.loads(match.group(1))
     else:
-        logger.error("Output does not contain proper json format {}", output_str)
-        return "Finished", None
+        raise SherpaPolicyException(
+            f"Output does not contain proper json format {output_str}"
+        )
+
     command = output["command"]
     name = command["name"]
     args = command.get("args", {})
