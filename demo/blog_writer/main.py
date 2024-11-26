@@ -2,6 +2,8 @@ import json
 import os
 
 from argparse import ArgumentParser
+from loguru import logger
+
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from outliner import Outliner
@@ -12,9 +14,9 @@ from sherpa_ai.events import EventType
 directory_name = "Output"
 if not os.path.exists(directory_name):
     os.mkdir(directory_name)
-    print(f"Directory '{directory_name}' created successfully.")
+    logger.debug(f"Directory '{directory_name}' created successfully.")
 else:
-    print(f"Directory '{directory_name}' already exists.")
+    logger.debug(f"Directory '{directory_name}' already exists.")
 
 def get_qa_agent_from_config_file(
     config_path: str,
@@ -73,9 +75,7 @@ if __name__ == "__main__":
         if os.path.isfile(blueprint_full_path):
             with open(blueprint_full_path, 'r') as file:
                 pure_json_str = file.read()
-            print(f"Using existing blueprint from {blueprint_full_path}")
         else:
-            print(f"No blueprint found at {blueprint_full_path}, creating a new blueprint.")
             # Assume outliner creates a new blueprint if not found
             outliner = Outliner(args.transcript)
             blueprint = outliner.full_transcript2outline_json(verbose=True)
@@ -86,7 +86,7 @@ if __name__ == "__main__":
                 pure_json_str = blueprint
             with open(json_output_path, "w", encoding="utf-8") as f:
                 f.write(pure_json_str)
-            print(f"Blueprint generated and saved to {json_output_path}")
+            logger.debug(f"Blueprint generated and saved to {json_output_path}")
     else:
         # If no blueprint file is specified, proceed with creating a new one
         outliner = Outliner(args.transcript)
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             pure_json_str = blueprint
         with open(json_output_path, "w", encoding="utf-8") as f:
             f.write(pure_json_str)
-        print(f"Blueprint generated and saved to {json_output_path}")
+        logger.debug(f"Blueprint generated and saved to {json_output_path}")
         
     writer_agent = get_qa_agent_from_config_file(args.config)
     reviewer_agent = get_user_agent_from_config_file(args.config)
@@ -142,4 +142,4 @@ if __name__ == "__main__":
     with open(md_output_path, "w", encoding="utf-8") as f:
         f.write(blog)
 
-    print("\nBlog generated successfully!\n")
+    logger.debug("\nBlog generated successfully!\n")

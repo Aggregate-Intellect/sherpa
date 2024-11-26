@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "blog-writer"
+version = "0.1.0"
+description = ""
+authors = ["Sami Negash <smlnegash@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+sentence-transformers = "*"
+langchain = "0.2.5"
+langchain-openai = "0.1.13"
+openai = "1.35.7"
+python-dotenv = ">=1.0.0"
+tiktoken = ">=0.4.0"
+sherpa-ai = ">=0.2.1"
+chainlit = "1.1.404"
+python-box = "7.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
