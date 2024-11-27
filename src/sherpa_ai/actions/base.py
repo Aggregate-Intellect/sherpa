@@ -93,7 +93,7 @@ class BaseAction(ABC, BaseModel):
             arguments = []
             for arg_name, arg_value in self.args.items():
                 if isinstance(arg_value, str):
-                    arg_value = {"type": arg_value}
+                    arg_value = {"description": arg_value}
                 arg_value["name"] = arg_name
                 arguments.append(ActionArgument(**arg_value))
             self.args = arguments

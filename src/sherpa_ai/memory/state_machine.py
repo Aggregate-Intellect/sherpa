@@ -7,7 +7,6 @@ from transitions.extensions.states import Tags, add_state_features
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
-from sherpa_ai.actions.empty import EmptyAction
 from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
                                     add_transition_features)
 
@@ -122,20 +121,26 @@ class SherpaStateMachine:
         """
         self.explicit_transitions.add(trigger)
 
-        if not action:
-            action = EmptyAction(usage="")
-
         if len(self.sm.get_transitions(trigger, source, dest)) > 0:
             self.sm.remove_transition(trigger, source, dest)
 
-        self.sm.add_transition(
-            trigger=trigger,
-            source=source,
-            dest=dest,
-            conditions=conditions,
-            before=action,
-            **kwargs,
-        )
+        if action is not None:
+            self.sm.add_transition(
+                trigger=trigger,
+                source=source,
+                dest=dest,
+                conditions=conditions,
+                before=action,
+                **kwargs,
+            )
+        else:
+            self.sm.add_transition(
+                trigger=trigger,
+                source=source,
+                dest=dest,
+                conditions=conditions,
+                **kwargs,
+            )
 
     def get_actions(self, include_waiting: bool = False) -> list[BaseAction]:
         """
@@ -212,6 +217,43 @@ class SherpaStateMachine:
         """
         return self.sm.get_state(state)
 
+    def extract_actions_info(
+        self, actions: list[BaseAction], args: dict, description: str
+    ):
+        """
+        Extract the information from a list of actions
+
+        Args:
+            actions (list[BaseAction]): the list of actions to extract information from
+            args (dict): the argument dictionary to put the action arguments to
+            description (str): the description to concatenate action descriptions to
+
+        Returns:
+            Tuple(dict, str): the updated argument dictionary and the concatenated
+        """
+        for action in actions:
+            if isinstance(action, str):
+                action = getattr(self, action)
+
+            # refresh the usage or argument attributes of the action
+            if isinstance(action, BaseAction):
+                _ = str(action)
+
+            for arg in action.args:
+                if type(arg) is str:
+                    arg_usage = action.args[arg]
+                else:
+                    arg_usage = arg.description
+                    arg = arg.name
+
+                if arg in args:
+                    logger.warning(f"Duplicate argument {arg} in action {action.name}")
+                args[arg] = arg_usage
+
+            description += f". Next, {action.usage}"
+
+        return args, description
+
     def transition_to_action(
         self, trigger: str, transition: ts.Transition
     ) -> BaseAction:
@@ -246,21 +288,16 @@ class SherpaStateMachine:
 
         usage = transition.description
         args = {}
-        if len(transition.before) > 0:
-            action = transition.before[0]
-            if isinstance(action, str):
-                action = getattr(self, action)
+        source_state = self.get_state(transition.source)
+        dest_state = self.get_state(transition.dest)
 
-            # refresh the usage or argument attributes of the action
-            if isinstance(action, BaseAction):
-                _ = str(action)
-
-                usage = f"{usage}. {action.usage}"
-                args = action.args
-                action.name = trigger
+        # gather callback information from the source and destination states
+        args, usage = self.extract_actions_info(source_state.on_exit, args, usage)
+        args, usage = self.extract_actions_info(transition.before, args, usage)
+        args, usage = self.extract_actions_info(dest_state.on_enter, args, usage)
+        args, usage = self.extract_actions_info(transition.after, args, usage)
 
         name = trigger
-
         # Append the transition to the usage
         usage += f" Transit the state from {transition.source} to {transition.dest}"
 
