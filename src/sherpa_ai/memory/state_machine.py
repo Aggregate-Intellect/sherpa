@@ -7,8 +7,7 @@ from transitions.extensions.states import Tags, add_state_features
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
-from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
-                                    add_transition_features)
+from sherpa_ai.memory.utils import StateDesc, TransitionDesc, add_transition_features
 
 
 class State(ts.State):
@@ -239,18 +238,20 @@ class SherpaStateMachine:
             if isinstance(action, BaseAction):
                 _ = str(action)
 
-            for arg in action.args:
-                if type(arg) is str:
-                    arg_usage = action.args[arg]
-                else:
-                    arg_usage = arg.description
-                    arg = arg.name
+                for arg in action.args:
+                    if type(arg) is str:
+                        arg_usage = action.args[arg]
+                    else:
+                        arg_usage = arg.description
+                        arg = arg.name
 
-                if arg in args:
-                    logger.warning(f"Duplicate argument {arg} in action {action.name}")
-                args[arg] = arg_usage
+                    if arg in args:
+                        logger.warning(
+                            f"Duplicate argument {arg} in action {action.name}"
+                        )
+                    args[arg] = arg_usage
 
-            description += f". Next, {action.usage}"
+                description += f". Next, {action.usage}"
 
         return args, description
 

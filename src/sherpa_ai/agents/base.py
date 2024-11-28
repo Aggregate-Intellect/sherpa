@@ -355,7 +355,7 @@ class BaseAgent(ABC, BaseModel):
         try:
             action_output = await action(**inputs)
             return action_output
-        except Exception as e:
+        except SherpaActionExecutionException as e:
             self.belief.update_internal(
                 EventType.action_output,
                 self.feedback_agent_name,
@@ -363,3 +363,6 @@ class BaseAgent(ABC, BaseModel):
             )
             logger.exception(e)
             return None
+        except Exception as e:
+            logger.exception(e)
+            return e
