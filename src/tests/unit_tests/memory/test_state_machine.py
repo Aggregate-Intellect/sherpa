@@ -143,3 +143,51 @@ def test_get_actions_async(async_state_machine):
 
     assert len(actions) == 1
     assert actions[0].name == "A_to_B_1"
+
+
+def test_get_action_full_callbacks():
+    action_on_exit = EmptyAction(usage="on_exit", args={"on_exit": "2"})
+    action_before1 = EmptyAction(usage="before1", args={"before1": "3"})
+    action_before2 = EmptyAction(usage="before2", args={"before2": "4"})
+    action_on_enter1 = EmptyAction(usage="on_enter1", args={"on_enter1": "5"})
+    action_on_enter2 = EmptyAction(usage="on_enter2", args={"on_enter2": "6"})
+    action_after = EmptyAction(usage="after", args={"after": "7"})
+
+    sm = SherpaStateMachine(
+        states=[
+            {"name": "A", "on_exit": action_on_exit},
+            {"name": "B", "on_enter": [action_on_enter1, action_on_enter2]},
+        ],
+        initial="A",
+    )
+    sm.update_transition(
+        "A_to_B",
+        "A",
+        "B",
+        before=[action_before1, action_before2],
+        after=action_after,
+    )
+
+    action = sm.get_actions()[0]
+
+    args = {}
+
+    for arg in action.args:
+        args[arg.name] = arg.description
+
+    assert args == {
+        "on_exit": "2",
+        "before1": "3",
+        "before2": "4",
+        "on_enter1": "5",
+        "on_enter2": "6",
+        "after": "7",
+    }
+
+    # assert action_prepare.usage in action.usage
+    assert action_on_exit.usage in action.usage
+    assert action_before1.usage in action.usage
+    assert action_before2.usage in action.usage
+    assert action_on_enter1.usage in action.usage
+    assert action_on_enter2.usage in action.usage
+    assert action_after.usage in action.usage
