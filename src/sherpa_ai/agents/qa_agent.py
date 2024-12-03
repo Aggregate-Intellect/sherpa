@@ -1,5 +1,6 @@
 from typing import List
 
+from sherpa_ai.prompts.prompt_template import PromptTemplate
 from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
@@ -13,10 +14,19 @@ from sherpa_ai.policies import ReactPolicy
 # Some of the feature may be added to the agent base class, such as
 # the verbose logger.
 
-ACTION_PLAN_DESCRIPTION = "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."  # noqa: E501
 
-TASK_AGENT_DESCRIPTION = "You are a **question answering assistant** who solves user questions and offers a detailed solution."  # noqa: E501
+template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
 
+action_planner = template.format_prompt(
+            wrapper="qa_agent_prompts",
+            name="ACTION_PLAN_DESCRIPTION",
+            version="1.0",
+        )
+task_agent_description = template.format_prompt(
+            wrapper="qa_agent_prompts",
+            name="TASK_AGENT_DESCRIPTION",
+            version="1.0",
+        )
 
 class QAAgent(BaseAgent):
     """
@@ -45,7 +55,7 @@ class QAAgent(BaseAgent):
     """
 
     name: str = "QA Agent"
-    description: str = TASK_AGENT_DESCRIPTION
+    description: str = task_agent_description
     config: AgentConfig = None
     num_runs: int = 3
     global_regen_max: int = 5
@@ -65,7 +75,7 @@ class QAAgent(BaseAgent):
         if self.policy is None:
             self.policy = ReactPolicy(
                 role_description=self.description,
-                output_instruction=ACTION_PLAN_DESCRIPTION,
+                output_instruction=action_planner,
                 llm=self.llm,
             )
 
