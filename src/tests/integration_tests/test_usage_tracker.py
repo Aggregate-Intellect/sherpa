@@ -64,7 +64,7 @@ def tracker(session):
 
 @pytest.fixture(scope="function")
 def mock_s3_client(autouse=True):
-    with patch("sherpa_ai.database.user_usage_tracker.boto3") as mock_boto3:
+    with patch("sherpa_ai.database.user_usage_tracker.UserUsageTracker.boto3") as mock_boto3:
         mock_s3 = MagicMock()
         mock_boto3.client.return_value = mock_s3
         yield mock_s3

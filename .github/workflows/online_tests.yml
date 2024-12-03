@@ -22,8 +22,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./src
         run: |
-          poetry install
-          poetry run python -m spacy download en_core_web_sm
+          poetry install --with test,extra,lint
 
       - name: Run tests
         env:
