@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./src
         run: |
-          poetry install --with test,extra,lint
+          poetry install --with test,optional,lint
 
       - name: Run tests
         env:
