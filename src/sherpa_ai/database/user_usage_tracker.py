@@ -49,7 +49,7 @@ class UserUsageTracker:
     ):
         try:
             import boto3
-            self.boto3 = boto3
+            UserUsageTracker.boto3 = boto3
         except ImportError:
             raise ImportError(
                 "Could not import boto3 python package."
@@ -103,7 +103,7 @@ class UserUsageTracker:
         local_file_path = f"./{db_name}"
         # file_path = Path(self.local_file_path)
         # if not file_path.exists():
-        s3 = self.boto3.client("s3")
+        s3 = cls.boto3.client("s3")
         try:
             s3.download_file(bucket_name, s3_file_key, local_file_path)
         except Exception as e:
@@ -126,7 +126,7 @@ class UserUsageTracker:
             s3_file_key (str): Key of the file in the S3 bucket.
         """
 
-        s3 = self.boto3.client("s3")
+        s3 = UserUsageTracker.boto3.client("s3")
         try:
             s3.upload_file(self.local_file_path, self.bucket_name, self.s3_file_key)
         except Exception as e:
