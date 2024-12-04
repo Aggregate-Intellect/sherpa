@@ -70,7 +70,8 @@ class Belief:
                 EventType.result,
                 EventType.user_input,
             ]:
-                context = event.content + "\n" + context
+                message = f"{event.agent}: {event.content}({event.event_type})"
+                context = message + "\n" + context
 
                 if token_counter(context) > self.max_tokens:
                     break
@@ -99,6 +100,10 @@ class Belief:
 
         context = "\n".join(reversed(results))
         return context
+
+    def clear_short_term_memory(self):
+        self.dict.clear()
+        self.internal_events.clear()
 
     def get_histories_excluding_types(
         self,
