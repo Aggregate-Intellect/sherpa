@@ -2,7 +2,6 @@ import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
 
-import chromadb
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
@@ -24,7 +23,14 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def from_index(cls, namespace, openai_api_key, index_name, text_key="text"):
-        import pinecone
+        try:
+            import pinecone
+        except ImportError:
+            raise ImportError(
+                "Could not import pinecone-client python package. "
+                "This is needed in order to to use ConversationStore. "
+                "Please install it with `pip install pinecone-client`"
+            )
 
         pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         logger.info(f"Loading index {index_name} from Pinecone")
@@ -102,7 +108,15 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def delete(cls, namespace, index_name):
-        import pinecone
+        try:
+            import pinecone
+        except ImportError:
+            raise ImportError(
+                "Could not import pinecone-client python package. "
+                "This is needed in order to to use ConversationStore. "
+                "Please install it with `pip install pinecone-client`"
+            )
+
 
         pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
         index = pinecone.Index(index_name)
@@ -154,6 +168,15 @@ class LocalChromaStore(Chroma):
 
 
 def configure_chroma(host: str, port: int, index_name: str, openai_api_key: str):
+    try:
+        import chromadb
+    except ImportError:
+        raise ImportError(
+            "Could not import chromadb python package. "
+            "This is needed in order to to use Chroma. "
+            "Please install it with `pip install chromadb"
+        )
+    
     client = chromadb.HttpClient(host=cfg.CHROMA_HOST, port=cfg.CHROMA_PORT)
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
     chroma = Chroma(
