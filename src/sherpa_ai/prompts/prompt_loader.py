@@ -1,13 +1,16 @@
 from typing import Dict, List, Optional, Union, Any
 import json
 
-# from sherpa_ai.utils import JsonToObject, load_json
+from pydantic import ValidationError
+
+from sherpa_ai.prompts.Base import ChatPrompt, Prompt, PromptGroup, TextPrompt
 
 
-SCHEMA_ATTR = "schema"
 PROMPTS_ATTR = "prompts"
 CONTENT_ATTR = "content"
 RESPONSE_FORMAT_ATTR = "response_format"
+TYPE_ATTR = "type"
+
 
 import json
 from typing import Dict, List
@@ -55,7 +58,7 @@ def get_prompts(data: Dict) -> Dict[str, List[Dict]]:
     for wrapper, items in data.items():
         all_prompts[wrapper] = []
         for item in items:
-            prompts = item.get('schema', {}).get('prompts', [])
+            prompts = item.get(PROMPTS_ATTR, [])
             all_prompts[wrapper].extend(prompts)
     return all_prompts
 
@@ -68,54 +71,114 @@ class PromptLoader:
         raw_data = load_json(json_file_path)
         self.data = JsonToObject(raw_data)
         self.prompts = self._process_prompts()
-        
-    def _validate_prompt_content(self, prompt: JsonToObject) -> bool:
-        """
-        Validate that a prompt has the required content structure.
+
+
+    def _validate_prompt_structure(self, prompt: Dict) -> bool:
+        """ 
+        Validate that the prompt has the required structure and types.
         
         Args:
-            prompt (JsonToObject): The prompt object to validate
-            
-        Returns:
-            bool: True if valid, raises InvalidPromptContentError if invalid
-            
-        Raises:
-            InvalidPromptContentError: If prompt content is invalid
-        """
-        if not hasattr(prompt, CONTENT_ATTR):
-            raise InvalidPromptContentError(f"Prompt must have '{CONTENT_ATTR}' attribute")
-            
-        content = getattr(prompt, CONTENT_ATTR)
-        # Allow any type of content, but ensure it's not None
-        if content is None:
-            raise InvalidPromptContentError("Prompt content cannot be None")
-                
-        return True
-        
-    def _process_prompts(self) -> Dict:
-        """
-        Process the raw prompts data into a structured format.
-        
-        Returns:
-            Dict: Processed prompts organized by wrapper
-        """
-        processed_prompts = {}
-        for wrapper_key, wrapper_data in vars(self.data).items():
-            if isinstance(wrapper_data, list):
-                for prompt_group in wrapper_data:
-                    if hasattr(prompt_group, SCHEMA_ATTR) and hasattr(prompt_group.schema, PROMPTS_ATTR):
-                        wrapper_name = wrapper_key
-                        if wrapper_name not in processed_prompts:
-                            processed_prompts[wrapper_name] = []
-                            
-                        # Validate each prompt before adding
-                        for prompt in prompt_group.schema.prompts:
-                            self._validate_prompt_content(prompt)
-                            processed_prompts[wrapper_name].append(prompt)
-                            
-        return processed_prompts
+            prompt (Dict): The prompt dictionary to validate.
 
-    def get_prompt(self, wrapper: str, name: str, version: str) -> Optional[JsonToObject]:
+        Raises:
+            InvalidPromptContentError: If any part of the prompt structure is invalid.
+        """
+        required_attrs = {
+            "name": str,
+            "version": str,
+            "type": str,
+            "content": (str, list)
+        }
+
+        # Check for required attributes and validate their types
+        for attr, expected_type in required_attrs.items():
+            if attr not in prompt:
+                raise InvalidPromptContentError(f"Prompt must have '{attr}' attribute.")
+            
+            # Check if the attribute matches expected type(s)
+            if not isinstance(prompt[attr], expected_type):
+                # If expected_type is a tuple, create a human-readable type list
+                if isinstance(expected_type, tuple):
+                    type_names = [t.__name__ for t in expected_type]
+                    type_str = " or ".join(type_names)
+                else:
+                    type_str = expected_type.__name__
+                
+                raise InvalidPromptContentError(
+                    f"Prompt '{attr}' must be of type '{type_str}' for the prompt {prompt.get('name', 'Unknown')}. "
+                    f"Found '{type(prompt[attr]).__name__}' instead."
+                )
+
+        # Validate that `content` type matches `type` field specification
+        content_type = prompt.get(TYPE_ATTR)
+        content = prompt.get(CONTENT_ATTR)
+        
+        if content_type == "text" and not isinstance(content, str):
+            raise InvalidPromptContentError(f"Prompt content must be a string when type is 'text' for prompt {prompt.get('name', 'Unknown')}.")
+        elif content_type == "chat" and not isinstance(content, list):
+            raise InvalidPromptContentError(f"Prompt content must be a list when type is 'chat' for prompt {prompt.get('name', 'Unknown')}.")
+        
+        return True
+
+
+    def _process_prompts(self) -> List[PromptGroup]:
+        """
+        Process the loaded data and validate against Pydantic models.
+        
+        Returns:
+            List[PromptGroup]: List of validated prompt groups.
+        """
+        validated_prompts = []
+        for wrapper, items in self.data.__dict__.items():
+            for item in items:
+                try:
+                    item_dict = self._convert_to_dict(item)
+                    # Wrap content based on 'type'
+                    for prompt in item_dict[PROMPTS_ATTR]:
+                        self._validate_prompt_structure(prompt)
+                        content_type = prompt.get(TYPE_ATTR)
+                        if content_type == "chat":
+                            prompt[CONTENT_ATTR] = ChatPrompt(content=prompt[CONTENT_ATTR])
+                        elif content_type == "text":
+                            prompt[CONTENT_ATTR] = TextPrompt(content=prompt[CONTENT_ATTR])
+                        else:
+                            raise InvalidPromptContentError(f"Unknown content type: {content_type}")
+                    prompt_group = PromptGroup(**item_dict)
+                    validated_prompts.append(prompt_group)
+                except ValidationError as e:
+                    # Extract error details and locate specific properties causing the error
+                    error_details = []
+                    for err in e.errors():
+                        error_field = ".".join(str(part) for part in err["loc"])
+                        error_message = err["msg"]
+                        error_details.append(f"Field '{error_field}' - {error_message}")
+                    
+                    raise InvalidPromptContentError(
+                        f"Invalid prompt content in '{wrapper} ({content_type})': "
+                        f"{'; '.join(error_details)}"
+                    ) from e
+
+                
+                
+        return validated_prompts
+
+    def _convert_to_dict(self, obj: Any) -> Any:
+        """
+        Recursively convert JsonToObject instances to dictionaries.
+        
+        Args:
+            obj (Any): The object to convert.
+        
+        Returns:
+            Any: A dictionary or primitive value.
+        """
+        if isinstance(obj, JsonToObject):
+            return {key: self._convert_to_dict(value) for key, value in obj.__dict__.items()}
+        elif isinstance(obj, list):
+            return [self._convert_to_dict(item) for item in obj]
+        else:
+            return obj
+    def get_prompt(self, wrapper: str, name: str, version: str) -> Optional[Prompt]:
         """
         Get a specific prompt by wrapper, name and version.
         
@@ -127,12 +190,12 @@ class PromptLoader:
         Returns:
             Optional[JsonToObject]: The prompt if found, None otherwise.
         """
-        if wrapper in self.prompts:
-            for prompt in self.prompts[wrapper]:
-                if prompt.name == name and prompt.version == version:
-                    return prompt
+        for prompt_group in self.prompts:
+            if prompt_group.name == wrapper:
+                for prompt in prompt_group.prompts:
+                    if prompt.name == name and prompt.version == version:
+                        return prompt
         return None
-
     def get_prompt_content(self, wrapper: str, name: str, version: str) -> Optional[Any]:
         """
         Get the content of a specific prompt by wrapper, name and version.
@@ -147,7 +210,6 @@ class PromptLoader:
         """
         prompt = self.get_prompt(wrapper, name, version)
         if prompt:
-            self._validate_prompt_content(prompt)
             return prompt.content
         return None
 
