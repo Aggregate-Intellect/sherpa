@@ -1,0 +1,36 @@
+{
+  "addition_prompts": [
+    {
+      "name": "addition_prompts",
+      "description": "prompt to add numbers and return structured output",
+      "prompts": [
+        {
+          "name": "add_numbers",
+          "description": "prompt to add numbers and return structured output",
+          "type": "text",
+          "version": "1.0",
+          "content": "Add {first_num} and {second_num}"
+          ,
+          "variables": {
+            "first_num": 5,
+            "second_num": 10
+          },
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "name": "addition_result",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "result": { "type": "number" },
+                  "explanation": { "type": "string" }
+                },
+                "required": ["result", "explanation"]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
