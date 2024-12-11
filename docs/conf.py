@@ -36,6 +36,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
+    'myst_parser'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -73,3 +74,18 @@ html_favicon = ""
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+
+# Extensions for various markdown elements support
+myst_enable_extensions = [
+    "amsmath",
+    "dollarmath",
+    "html_admonition",
+    # "colon_fence",
+    # "deflist",
+    # "html_image",
+    # "linkify",
+    # "replacements",
+    # "smartquotes",
+    # "substitution"
+]
