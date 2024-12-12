@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 
 SELECTION_DESCRIPTION = """{role_description}
 
+## Context
+{context}
+
 ## History of Previous Actions
 {history_of_previous_actions}
 
@@ -82,6 +85,7 @@ class ReactStateMachinePolicy(BasePolicy):
 
         task_description = belief.current_task.content
         possible_actions = "\n".join([str(action) for action in actions])
+        context = belief.get_context(self.llm.get_num_tokens)
         history_of_previous_actions = belief.get_internal_history(
             self.llm.get_num_tokens
         )
@@ -97,6 +101,7 @@ class ReactStateMachinePolicy(BasePolicy):
 
         prompt = self.description.format(
             role_description=self.role_description,
+            context=context,
             task_description=task_description,
             possible_actions=possible_actions,
             history_of_previous_actions=history_of_previous_actions,
