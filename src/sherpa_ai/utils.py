@@ -7,9 +7,7 @@ from urllib.parse import urlparse
 
 import requests
 import tiktoken
-from bs4 import BeautifulSoup
 from loguru import logger
-from word2number import w2n
 
 if TYPE_CHECKING:
     from langchain_core.documents import Document
@@ -20,7 +18,9 @@ HTTP_GET_TIMEOUT = 2.5
 
 def load_files(files: List[str]) -> List[Document]:
     from langchain_community.document_loaders import (
-        UnstructuredMarkdownLoader, UnstructuredPDFLoader)
+        UnstructuredMarkdownLoader,
+        UnstructuredPDFLoader,
+    )
 
     documents = []
     loader = None
@@ -81,6 +81,15 @@ def get_link_from_slack_client_conversation(data):
 
 
 def scrape_with_url(url: str):
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        raise ImportError(
+            "Could not import bs4 python package. "
+            "This is needed in order to to use scrape_with_url. "
+            "Please install it with `pip install beautifulsoup4`."
+        )
+
     response = requests.get(url, timeout=HTTP_GET_TIMEOUT)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)
@@ -245,8 +254,14 @@ def show_commands_only(logs):
 
 
 def extract_text_from_pdf(pdf_path):
-    from pypdf import PdfReader
-
+    try:
+        from pypdf import PdfReader
+    except ImportError:
+        raise ImportError(
+            "Could not import pypdf python package. "
+            "This is needed in order to to use extract_text_from_pdf. "
+            "Please install it with `pip install pypdf`"
+        )
     text = ""
     # Extract text from a PDF using PdfReader
     pdf_file = open(pdf_path, "rb")
@@ -316,6 +331,14 @@ def word_to_float(text):
         - 'data' (float): The converted float value if 'success' is True.
         - 'message' (str): An error message if 'success' is False.
     """
+    try:
+        from word2number import w2n
+    except ImportError:
+        raise ImportError(
+            "Could not import word2number python package. "
+            "This is needed in order to to use word_to_float. "
+            "Please install it with `pip install word2number`."
+        )
 
     try:
         result = w2n.word_to_num(text)
@@ -340,7 +363,14 @@ def extract_numeric_entities(
     Returns:
         List[str]: A list of numeric values extracted from the text.
     """  # noqa: E501
-    import spacy
+    try:
+        import spacy
+    except ImportError:
+        raise ImportError(
+            "Could not import spacy python package. "
+            "This is needed in order to to use extract_numerical_entities. "
+            "Please install it with `pip install spacy`."
+        )
 
     if text is None:
         return []
@@ -466,7 +496,14 @@ def extract_entities(text):
     Returns:
     List[str]: List of extracted entities.
     """
-    import spacy
+    try:
+        import spacy
+    except ImportError:
+        raise ImportError(
+            "Could not import spacy python package. "
+            "This is needed in order to to use extract_entities. "
+            "Please install it with `pip install spacy`."
+        )
 
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)

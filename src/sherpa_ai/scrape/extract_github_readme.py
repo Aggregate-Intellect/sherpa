@@ -97,7 +97,14 @@ def save_to_pine_cone(content, metadatas):
     - content (str): The content to be saved.
     - metadatas (list): List of metadata associated with the content.
     """
-    import pinecone
+    try:
+        import pinecone
+    except ImportError:
+        raise ImportError(
+            "Could not import pinecone-client python package. "
+            "This is needed in order to to use ConversationStore. "
+            "Please install it with `pip install pinecone-client`"
+        )
 
     pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
     index = pinecone.Index("langchain")
