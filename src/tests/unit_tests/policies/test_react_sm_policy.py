@@ -64,7 +64,8 @@ def test_react_sm_policy_prompt_a(prepare_sm):
         llm=FakeListLLM(responses=[]),
     )
 
-    prompt = policy.get_prompt(belief)
+    actions = belief.get_actions()
+    prompt = policy.get_prompt(belief, actions)
 
     logger.debug(prompt)
 
@@ -90,7 +91,8 @@ def test_react_sm_policy_prompt_b(prepare_sm):
 
     # Go to state B
     state_machine.A_to_B_1()
-    prompt = policy.get_prompt(belief)
+    actions = belief.get_actions()
+    prompt = policy.get_prompt(belief, actions)
 
     logger.debug(prompt)
 
@@ -118,7 +120,9 @@ def test_react_sm_policy_prompt_c(prepare_sm):
     state_machine.A_to_B_1()
     # Go to state C
     state_machine.B_to_C()
-    prompt = policy.get_prompt(belief)
+
+    actions = belief.get_actions()
+    prompt = policy.get_prompt(belief, actions)
 
     logger.debug(prompt)
 

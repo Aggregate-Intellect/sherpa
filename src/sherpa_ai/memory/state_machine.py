@@ -7,7 +7,8 @@ from transitions.extensions.states import Tags, add_state_features
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
-from sherpa_ai.memory.utils import StateDesc, TransitionDesc, add_transition_features
+from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
+                                    add_transition_features)
 
 
 class State(ts.State):
@@ -141,7 +142,9 @@ class SherpaStateMachine:
                 **kwargs,
             )
 
-    def get_actions(self, include_waiting: bool = False) -> list[BaseAction]:
+    async def async_get_actions(
+        self, include_waiting: bool = False
+    ) -> list[BaseAction]:
         """
         Get the available transitions as list of actions based on the current state
 
@@ -152,6 +155,9 @@ class SherpaStateMachine:
             list[BaseAction]: list of actions that can be executed from the current
                 state
         """  # noqa: E501
+        if not self.is_async():
+            raise ValueError("Cannot get async actions from a non-async state machine")
+
         state = self.state
         state_obj = self.sm.get_state(state)
 
@@ -165,10 +171,48 @@ class SherpaStateMachine:
             if t not in self.explicit_transitions:
                 continue
 
-            if self.is_async():
-                can_trigger = asyncio.run(self.may_trigger(t))
-            else:
-                can_trigger = self.may_trigger(t)
+            can_trigger = await self.may_trigger(t)
+
+            if not can_trigger:
+                continue
+
+            event = self.sm.events.get(t)
+            for source, transitions in event.transitions.items():
+                if state.startswith(source):
+                    transition = transitions[0]
+                    action = self.transition_to_action(t, transition)
+                    actions.append(action)
+
+        return actions
+
+    def get_actions(self, include_waiting: bool = False) -> list[BaseAction]:
+        """
+        Get the available transitions as list of actions based on the current state
+
+        Args:
+            include_waiting (bool): whether to include transitions from the waiting states
+
+        Returns:
+            list[BaseAction]: list of actions that can be executed from the current
+                state
+        """  # noqa: E501
+        if self.is_async():
+            raise ValueError("Cannot get sync actions from an async state machine")
+
+        state = self.state
+        state_obj = self.sm.get_state(state)
+
+        if not include_waiting and state_obj.is_waiting:
+            return []
+
+        triggers = self.sm.get_triggers(state)
+        actions = []
+
+        for t in triggers:
+            if t not in self.explicit_transitions:
+                continue
+
+            can_trigger = self.may_trigger(t)
 
             if not can_trigger:
                 continue

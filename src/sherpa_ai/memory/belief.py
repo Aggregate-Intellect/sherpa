@@ -191,6 +191,23 @@ class Belief:
                 break
         return result
 
+    async def async_get_actions(self) -> List[BaseAction]:
+        if self.state_machine is None:
+            return self.actions
+
+        return await self.state_machine.async_get_actions()
+
+    async def async_get_action(self, action_name) -> BaseAction:
+        if self.state_machine is not None:
+            self.actions = await self.state_machine.async_get_actions()
+
+        result = None
+        for action in self.actions:
+            if action.name == action_name:
+                result = action
+                break
+        return result
+
     def get_dict(self):
         return self.dict
 

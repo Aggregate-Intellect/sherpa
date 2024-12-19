@@ -136,10 +136,10 @@ def test_extension_features():
     assert sm.get_current_state().description == "This is state A"
 
 
-def test_get_actions_async(async_state_machine):
+async def test_get_actions_async(async_state_machine):
     assert async_state_machine.state == "A"
 
-    actions = async_state_machine.get_actions()
+    actions = await async_state_machine.async_get_actions()
 
     assert len(actions) == 1
     assert actions[0].name == "A_to_B_1"

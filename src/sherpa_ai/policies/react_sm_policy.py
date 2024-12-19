@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from loguru import logger
 
+from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
-from sherpa_ai.policies.utils import (is_selection_trivial,
-                                      transform_json_output)
+from sherpa_ai.policies.utils import is_selection_trivial, transform_json_output
 
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
@@ -71,7 +71,7 @@ class ReactStateMachinePolicy(BasePolicy):
         },
     }
 
-    def get_prompt(self, belief: Belief) -> str:
+    def get_prompt(self, belief: Belief, actions: list[BaseAction]) -> str:
         """
         Create the prompt based on information from the belief
 
@@ -81,8 +81,6 @@ class ReactStateMachinePolicy(BasePolicy):
         Returns:
             str: The prompt to be used for the selection of the action
         """
-        actions = belief.get_actions()
-
         task_description = belief.current_task.content
         possible_actions = "\n".join([str(action) for action in actions])
         context = belief.get_context(self.llm.get_num_tokens)
@@ -128,7 +126,7 @@ class ReactStateMachinePolicy(BasePolicy):
         if is_selection_trivial(actions):
             return PolicyOutput(action=actions[0], args={})
 
-        prompt = self.get_prompt(belief)
+        prompt = self.get_prompt(belief, actions)
         logger.debug(f"Prompt: {prompt}")
         result = self.llm.predict(prompt)
         logger.debug(f"Result: {result}")
@@ -136,6 +134,37 @@ class ReactStateMachinePolicy(BasePolicy):
         name, args = transform_json_output(result)
 
         action = belief.get_action(name)
+
+        if action is None:
+            raise SherpaPolicyException(
+                f"Action {name} not found in the list of possible actions"
+            )
+
+        return PolicyOutput(action=action, args=args)
+
+    async def async_select_action(self, belief: Belief) -> Optional[PolicyOutput]:
+        """
+        Select an action from a list of possible actions based on the current state (belief)
+
+        Args:
+            belief (Belief): The current state of the agent
+
+        Returns:
+            Optional[PolicyOutput]: The selected action and arguments, or None if the selected
+            action is not found in the list of possible actions
+        """  # noqa: E501
+        actions = await belief.async_get_actions()
+        if is_selection_trivial(actions):
+            return PolicyOutput(action=actions[0], args={})
+
+        prompt = self.get_prompt(belief, actions)
+        logger.debug(f"Prompt: {prompt}")
+        result = self.llm.predict(prompt)
+        logger.debug(f"Result: {result}")
+
+        name, args = transform_json_output(result)
+
+        action = await belief.async_get_action(name)
 
         if action is None:
             raise SherpaPolicyException(

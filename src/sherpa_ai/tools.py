@@ -20,7 +20,6 @@ from sherpa_ai.utils import (
     scrape_with_url,
 )
 
-
 HTTP_GET_TIMEOUT = 2.5
 
 
@@ -42,8 +41,8 @@ def get_tools(memory, config):
 
 
 class SearchArxivTool(BaseTool):
-    name = "Arxiv Search"
-    description = (
+    name: str = "Arxiv Search"
+    description: str = (
         "Access all the papers from Arxiv to search for domain-specific scientific publication."  # noqa: E501
         "Only use this tool when you need information in the scientific paper."
     )
@@ -100,10 +99,10 @@ class SearchArxivTool(BaseTool):
 
 
 class SearchTool(BaseTool):
-    name = "Search"
-    config = AgentConfig()
+    name: str = "Search"
+    config: AgentConfig = AgentConfig()
     top_k: int = 10
-    description = (
+    description: str = (
         "Access the internet to search for the information. Only use this tool when "
         "you cannot find the information using internal search."
     )
@@ -253,8 +252,8 @@ class SearchTool(BaseTool):
 
 
 class ContextTool(BaseTool):
-    name = "Context Search"
-    description = (
+    name: str = "Context Search"
+    description: str = (
         "Access internal technical documentation for AI related projects, including"
         + "Fixie, LangChain, GPT index, GPTCache, GPT4ALL, autoGPT, db-GPT, AgentGPT, sherpa."  # noqa: E501
         + "Only use this tool if you need information for these projects specifically."
@@ -294,8 +293,8 @@ class ContextTool(BaseTool):
 
 class UserInputTool(BaseTool):
     # TODO: Make an action for the user input
-    name = "UserInput"
-    description = (
+    name: str = "UserInput"
+    description: str = (
         "Access the user input for the task."
         "You use this tool if you need more context and would like to ask clarifying questions to solve the task"  # noqa: E501
     )
@@ -308,8 +307,8 @@ class UserInputTool(BaseTool):
 
 
 class LinkScraperTool(BaseTool):
-    name = "Link Scraper"
-    description = "Access the content of a link. Only use this tool when you need to extract information from a link."
+    name: str = "Link Scraper"
+    description: str = "Access the content of a link. Only use this tool when you need to extract information from a link."
     llm: Any
 
     def _run(
