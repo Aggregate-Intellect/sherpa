@@ -8,19 +8,28 @@
 To see the documentation, visit: https://sherpa-ai.readthedocs.io/
 
 ## Quick Install
-With pip:
+### With pip:
 ```bash
 pip install sherpa-ai
 ```
 
-From source (with [poetry](https://python-poetry.org/)):
+### From source (with [poetry](https://python-poetry.org/)):
 ```bash
 git clone https://github.com/Aggregate-Intellect/sherpa
 cd sherpa/src
 poetry install
 ```
 
-From source (with pip editable mode):
+Some dependencies such as `chromadb` or `sentence-transformers` are optional and only required to run some specific functionalities (such as the DocumentSearch action). These dependencies are not install by default. You can either install them separated as needed, all install the entire suite using the `--with` flag from `poetry`:
+```bash
+poetry install --with optional
+```
+Similarly, you can install dependencies for testing and linting:
+```bash
+poetry install --with optional,test,lint
+```
+
+### From source (with pip editable mode):
 ```bash
 git clone
 cd sherpa/src
