@@ -76,7 +76,7 @@ def test_get_prompt_content(mock_load_json):
     loader = PromptLoader("./tests/data/prompts.json")
 
     content = loader.get_prompt_content("addition_prompts", "add_numbers", "1.0")
-    assert content.content == "Add {first_num} and {second_num}"
+    assert content == "Add {first_num} and {second_num}"
 
 
 @patch('sherpa_ai.prompts.prompt_loader.load_json')
