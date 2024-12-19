@@ -17,7 +17,7 @@ class PromptTemplate(PromptLoader):
         variables: Optional[Dict[str, Union[str, int, float]]] = None
     ) -> Optional[Union[str, List[Dict[str, str]]]]:
         """
-        Format a prompt by replacing the placeholders with actual values from variables.
+        Format a prompt by replacing placeholders with actual values from variables.
 
         Args:
             wrapper (str): Name of the wrapper.
@@ -29,7 +29,6 @@ class PromptTemplate(PromptLoader):
         Returns:
             Optional[Union[str, List[Dict[str, str]]]]: The formatted prompt content if found and successfully formatted.
         """
-        
         prompt = None
         for pg in self.prompts:
             if pg.name == wrapper:
@@ -49,18 +48,10 @@ class PromptTemplate(PromptLoader):
         if variables:
             final_variables.update(variables)
 
-        if isinstance(content, TextPrompt):
-            # Process text prompt
-            text = content.content
-            for var_name, var_value in final_variables.items():
-                placeholder = f"{{{var_name}}}"
-                if placeholder in text:
-                    text = text.replace(placeholder, str(var_value))
-            return text
-        elif isinstance(content, ChatPrompt):
-            # Process chat prompt
+        # Check if content is a list (which corresponds to ChatPrompt)
+        if isinstance(content, ChatPrompt):
             formatted_prompt = []
-            for message in content.content:
+            for message in content:
                 role = message.get("role")
                 text = message.get("content", "")
 
@@ -72,6 +63,16 @@ class PromptTemplate(PromptLoader):
 
                 formatted_prompt.append({"role": role, "content": text})
             return formatted_prompt
+
+        # If content is a TextPrompt, process it like before
+        elif isinstance(content, TextPrompt):
+            text = content.content
+            for var_name, var_value in final_variables.items():
+                placeholder = f"{{{var_name}}}"
+                if placeholder in text:
+                    text = text.replace(placeholder, str(var_value))
+            return text
+
         else:
             raise ValueError(f"Unknown prompt content type: {type(content)}")
 
@@ -94,7 +95,6 @@ class PromptTemplate(PromptLoader):
         Returns:
             Optional[Dict[str, Union[str, List[Dict[str, str]]]]]: The full formatted prompt with description and schema.
         """
-        
         prompt = None
         for pg in self.prompts:
             if pg.name == wrapper:
