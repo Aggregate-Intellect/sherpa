@@ -100,6 +100,22 @@ class BaseAgent(ABC, BaseModel):
         except Exception as e:
             logger.exception(e)
             return e
+        
+    async def async_select_action(self) -> Optional[PolicyOutput]:
+        try:
+            result = await self.policy.async_select_action(self.belief)
+            return result
+        except SherpaPolicyException as e:
+            self.belief.update_internal(
+                EventType.action_output,
+                self.feedback_agent_name,
+                f"Error in selecting action: {e}",
+            )
+            logger.exception(e)
+            return None
+        except Exception as e:
+            logger.exception(e)
+            return e
 
     def agent_finished(self, result: str) -> str:
         if len(self.validations) > 0:
@@ -153,13 +169,24 @@ class BaseAgent(ABC, BaseModel):
         return action_output
 
     async def async_run(self):
-        self.agent_preparation()
+
+        logger.debug(f"```⏳{self.name} is thinking...```")
+
+        if self.shared_memory is not None:
+            self.shared_memory.observe(self.belief)
+
+        actions = await self.belief.async_get_actions()
+
+        if len(actions) == 0:
+            actions = self.actions if len(self.actions) > 0 else self.create_actions()
+            self.belief.set_actions(actions)
 
         for _ in range(self.num_runs):
-            if len(self.belief.get_actions()) == 0:
+            actions = await self.belief.async_get_actions()
+            if len(actions) == 0:
                 break
 
-            result = self.select_action()
+            result = await self.async_select_action()
 
             if result is None:
                 # this means no action is selected
