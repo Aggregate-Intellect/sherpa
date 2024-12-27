@@ -12,13 +12,9 @@ from typing_extensions import Literal
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.scrape.extract_github_readme import extract_github_readme
-from sherpa_ai.utils import (
-    chunk_and_summarize,
-    count_string_tokens,
-    get_links_from_text,
-    rewrite_link_references,
-    scrape_with_url,
-)
+from sherpa_ai.utils import (chunk_and_summarize, count_string_tokens,
+                             get_links_from_text, rewrite_link_references,
+                             scrape_with_url)
 
 HTTP_GET_TIMEOUT = 2.5
 
@@ -309,11 +305,11 @@ class UserInputTool(BaseTool):
 class LinkScraperTool(BaseTool):
     name: str = "Link Scraper"
     description: str = "Access the content of a link. Only use this tool when you need to extract information from a link."
-    llm: Any
 
     def _run(
         self,
         query: str,
+        llm: Any,
     ) -> str:
 
         query_links = get_links_from_text(query)
@@ -346,7 +342,7 @@ class LinkScraperTool(BaseTool):
                         text_data=scraped_data["data"],
                         # TODO_ user id is not going to be needed here in the future
                         # user_id="",
-                        llm=self.llm,
+                        llm=llm,
                     )
 
                     while (
@@ -358,7 +354,7 @@ class LinkScraperTool(BaseTool):
                             question=query,
                             text_data=chunk_summary,
                             # user_id="",
-                            llm=self.llm,
+                            llm=llm,
                         )
 
                     final_summary.append({"data": chunk_summary, "link": link})
