@@ -8,7 +8,8 @@ from loguru import logger
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
-from sherpa_ai.policies.utils import is_selection_trivial, transform_json_output
+from sherpa_ai.policies.utils import (is_selection_trivial,
+                                      transform_json_output)
 
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief

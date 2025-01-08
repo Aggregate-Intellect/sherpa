@@ -53,7 +53,7 @@ def test_qa_agent_policy_selection_exception():
 
     result = agent.run()
 
-    assert result == "success"
+    assert result.content == "success"
 
 
 def test_qa_agent_policy_selection_failed():
@@ -72,7 +72,7 @@ def test_qa_agent_policy_selection_failed():
     )
 
     result = agent.run()
-    assert "exception" in result.lower()
+    assert "exception" in result.content.lower()
 
 
 def test_qa_agent_action_execution_exception():
@@ -92,7 +92,7 @@ def test_qa_agent_action_execution_exception():
 
     result = agent.run()
 
-    assert result == "success"
+    assert result.content == "success"
 
 
 def test_qa_agent_action_execution_failed():
@@ -111,7 +111,7 @@ def test_qa_agent_action_execution_failed():
     )
 
     result = agent.run()
-    assert "exception" in result.lower()
+    assert "exception" in result.content.lower()
 
 
 class MockPolicy(BasePolicy):
