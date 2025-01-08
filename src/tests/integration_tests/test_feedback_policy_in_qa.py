@@ -61,7 +61,7 @@ def test_feedback_policy_in_qa_incomplete(get_llm, mock_google_search):
 
     result = qa_agent.run()
 
-    assert "Jupiter" in result
+    assert "Jupiter" in result.content
 
 
 def test_feedback_policy_in_qa_complete(get_llm, mock_google_search):
@@ -97,4 +97,4 @@ def test_feedback_policy_in_qa_complete(get_llm, mock_google_search):
 
     result = qa_agent.run()
 
-    assert "Jupiter" in result
+    assert "Jupiter" in result.content
