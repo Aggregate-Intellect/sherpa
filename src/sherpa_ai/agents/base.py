@@ -8,7 +8,9 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.actions.exceptions import SherpaActionExecutionException
+from sherpa_ai.actions.exceptions import (SherpaActionExecutionException,
+                                          SherpaMissingInformationException)
+from sherpa_ai.config.task_result import TaskResult
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
@@ -100,7 +102,7 @@ class BaseAgent(ABC, BaseModel):
         except Exception as e:
             logger.exception(e)
             return e
-        
+
     async def async_select_action(self) -> Optional[PolicyOutput]:
         try:
             result = await self.policy.async_select_action(self.belief)
@@ -129,7 +131,7 @@ class BaseAgent(ABC, BaseModel):
             self.shared_memory.add(EventType.result, self.name, result)
         return result
 
-    def run(self):
+    def run(self) -> TaskResult:
         self.agent_preparation()
 
         for _ in range(self.num_runs):
@@ -144,7 +146,8 @@ class BaseAgent(ABC, BaseModel):
             elif isinstance(result, Exception):
                 tb_exception = traceback.TracebackException.from_exception(result)
                 stack_trace = "".join(tb_exception.format())
-                return stack_trace
+                task_result = TaskResult(content=stack_trace, status="failed")
+                return task_result
 
             logger.debug(f"Action selected: {result}")
             logger.debug(
@@ -154,21 +157,27 @@ class BaseAgent(ABC, BaseModel):
             action_output = self.act(result.action, result.args)
             if action_output is None:
                 continue
+            elif isinstance(action_output, SherpaMissingInformationException):
+                question = action_output.message
+                task_result = TaskResult(content=question, status="waiting")
+                return task_result
             elif isinstance(action_output, Exception):
                 tb_exception = traceback.TracebackException.from_exception(
                     action_output
                 )
                 stack_trace = "".join(tb_exception.format())
-                return stack_trace
+                task_result = TaskResult(content=stack_trace, status="failed")
+                return task_result
 
             action_output = self.belief.get(result.action.name, action_output)
 
             logger.debug(f"```Action output: {action_output}```")
 
         action_output = self.agent_finished(action_output)
-        return action_output
+        task_result = TaskResult(content=action_output, status="success")
+        return task_result
 
-    async def async_run(self):
+    async def async_run(self) -> TaskResult:
 
         logger.debug(f"```⏳{self.name} is thinking...```")
 
@@ -194,7 +203,8 @@ class BaseAgent(ABC, BaseModel):
             elif isinstance(result, Exception):
                 tb_exception = traceback.TracebackException.from_exception(result)
                 stack_trace = "".join(tb_exception.format())
-                return stack_trace
+                task_result = TaskResult(content=stack_trace, status="failed")
+                return task_result
 
             logger.debug(f"Action selected: {result}")
             logger.debug(
@@ -204,19 +214,25 @@ class BaseAgent(ABC, BaseModel):
             action_output = await self.async_act(result.action, result.args)
             if action_output is None:
                 continue
+            elif isinstance(action_output, SherpaMissingInformationException):
+                question = action_output.message
+                task_result = TaskResult(content=question, status="waiting")
+                return task_result
             elif isinstance(action_output, Exception):
                 tb_exception = traceback.TracebackException.from_exception(
                     action_output
                 )
                 stack_trace = "".join(tb_exception.format())
-                return stack_trace
+                task_result = TaskResult(content=stack_trace, status="failed")
+                return task_result
 
             action_output = self.belief.get(result.action.name, action_output)
 
             logger.debug(f"```Action output: {action_output}```")
 
-        result = self.agent_finished(result)
-        return result
+        action_output = self.agent_finished(action_output)
+        task_result = TaskResult(content=action_output, status="success")
+        return task_result
 
     # The validation_iterator function is responsible for iterating through each
     # instantiated validation in the 'self.validations' list.
