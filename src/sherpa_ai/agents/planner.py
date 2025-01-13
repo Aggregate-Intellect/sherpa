@@ -7,15 +7,9 @@ from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import EventType
 
-PLANNER_DESCRIPTION = """You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each.
-By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.
-Your adaptability ensures customized solutions for diverse needs.
-"""  # noqa: E501
-
-
 class Planner(BaseAgent):
     name: str = "Planner"
-    description: str = PLANNER_DESCRIPTION
+    description: str = None
 
     planning: TaskPlanning = None
     agent_pool: AgentPool
@@ -23,7 +17,12 @@ class Planner(BaseAgent):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        template = self.prompt_template
+        self.description = template.format_prompt(
+            wrapper="planner_prompts",
+            name="PLANNER_DESCRIPTION",
+            version="1.0",
+        )
         self.planning = TaskPlanning(
             llm=self.llm,
             num_steps=self.num_runs,

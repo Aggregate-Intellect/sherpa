@@ -1,0 +1,247 @@
+{
+    "synthesize_prompts": [
+      {
+        "name": "synthesize_prompts",
+        "description": "Generate a response based on context and task with history.",
+        "prompts": [
+          {
+            "name": "SYNTHESIZE_DESCRIPTION",
+            "version": "1.0",
+            "description": "Generate a response based on context and task with history.",
+            "type": "chat",
+            "content": [
+              {
+                "role": "system",
+                "content": "{role_description}"
+              },
+              {
+                "role": "user",
+                "content": "Context: {context}\n\nAction - Result History:\n{history}\n\nGiven the context and the action-result history, please complete the task mentioned. Task: {task} Result:"
+              }
+            ],
+            "variables": {
+              "role_description": "",
+              "context": "",
+              "history": "",
+              "task": ""
+            },
+            "response_format": {}
+          },
+          {
+            "name": "SYNTHESIZE_DESCRIPTION_CITATION",
+            "version": "1.0",
+            "description": "Generate a response with citations based on context and task with history.",
+            "type": "chat",
+            "content": [
+              {
+                "role": "system",
+                "content": "{role_description}"
+              },
+              {
+                "role": "user",
+                "content": "Context: {context}\n\nAction - Result History:\n{history}\n\nGiven the context and the action-result history, please complete the task mentioned and cite context as much as possible. Task: {task} Result:"
+              }
+            ],
+            "variables": {
+              "role_description": "",
+              "context": "",
+              "history": "",
+              "task": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ],
+    "qa_agent_prompts": [
+      {
+        "name": "qa_agent_prompts",
+        "description": "The QA agent handles a single question-answering task.",
+        "prompts": [
+          {
+            "name": "ACTION_PLAN_DESCRIPTION",
+            "version": "1.0",
+            "description": "Describe the action plan to solve the problem",
+            "type": "text",
+            "content": "{action_plan_description}",
+            "variables": {
+              "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."
+            },
+            "response_format": {}
+          },
+          {
+            "name": "TASK_AGENT_DESCRIPTION",
+            "version": "1.0",
+            "description": "Describe the role of a task agent",
+            "type": "text",
+            "content": "{task_agent_description}",
+            "variables": {
+              "task_agent_description": "You are a **question answering assistant** who solves user questions and offers a detailed solution."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ],
+    "ml_engineer_prompts": [
+      {
+        "name": "ml_engineer_prompts",
+        "description": "The machine learning agent answers questions or research about ML-related topics",
+        "prompts": [
+          {
+            "name": "ACTION_PLAN_DESCRIPTION",
+            "version": "1.0",
+            "description": "Describe the action plan to solve the problem",
+            "type": "text",
+            "content": "{action_plan_description}",
+            "variables": {
+              "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task"
+            },
+            "response_format": {}
+          },
+          {
+            "name": "ML_ENGINEER_DESCRIPTION",
+            "version": "1.0",
+            "description": "Describe the role of a machine learning engineer",
+            "type": "text",
+            "content": "{ml_engineer_description}",
+            "variables": {
+              "ml_engineer_description": "You are a skilled machine learning engineer with a deep-rooted expertise in understanding and analyzing various Machine Learnng algorithm and use it to solve practical problems. \n Your primary role is to assist individuals, organizations, and researchers in using machine learning models to solve Machine-Learning-Related chalenges, \n using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes.\n If you encounter a question or challenge outside your current knowledge base, you acknowledge your limitations and seek assistance or additional resources to fill the gaps."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ],
+    "physicist_prompts": [
+      {
+        "name": "physicist_prompts",
+        "description": " The physicist agent answers questions or research about physics-related topics",
+        "prompts": [
+          {
+            "name": "ACTION_PLAN_DESCRIPTION",
+            "version": "1.0",
+            "description": "Describe the action plan to solve the problem",
+            "type": "text",
+            "content": "{action_plan_description}",
+            "variables": {
+              "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate physics-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."
+            },
+            "response_format": {}
+          },
+          {
+            "name": "PHYSICIST_DESCRIPTION",
+            "version": "1.0",
+            "description": "Describe the role of a physicist",
+            "type": "text",
+            "content": "{physicist_description}",
+            "variables": {
+              "physicist_description": "You are a physicist with a deep-rooted expertise in understanding and analyzing the fundamental principles of the universe, spanning from the tiniest subatomic particles to vast cosmic phenomena. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex physics-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ],
+    "planner_prompts": [
+      {
+        "name": "planner_prompts",
+        "description": "Provide a sequential steps by breaking down complex steps",
+        "prompts": [
+          {
+            "name": "PLANNER_DESCRIPTION",
+            "version": "1.0",
+            "description": "Describe the role of a planner",
+            "type": "text",
+            "content": "{planner_description}",
+            "variables": {
+              "planner_description": "You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each. \n By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.\n Your adaptability ensures customized solutions for diverse needs."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ],
+    "critic_prompts": [
+      {
+        "name": "critic_prompts",
+        "description": "The critic agent receives a plan from the planner and evaluate the plan based on some pre-defined metrics. At the same time, it gives the feedback to the planner.",
+        "prompts": [
+          {
+            "name": "DESCRIPTION_PROMPT",
+            "version": "1.0",
+            "description": "Describe the role of a critic",
+            "type": "text",
+            "content": "{description_prompt}",
+            "variables": {
+              "description_prompt": "You are a Critic agent that receive a plan from the planner to execuate a task from user.\n Your goal is to output the {} most necessary feedback given the corrent plan to solve the task."
+            },
+            "response_format": {}
+          },
+          {
+            "name": "IMPORTANCE_PROMPT",
+            "version": "1.0",
+            "description": "describe the role of importance prompt",
+            "type": "text",
+            "content": "Task: {task} \n Plan: {plan} {importance_prompt}",
+            "variables": {
+              "importance_prompt": "The plan you should be necessary and important to complete the task.\n Evaluate if the content of plan and selected actions/ tools are important and necessary. \n Output format:\n Score: <Integer score from 1 - 10>\n Evaluation: <evaluation in text>\n Do not include other text in your resonse.\n Output:",
+              "task": "",
+              "plan": ""
+            },
+            "response_format": {}
+          },
+          {
+            "name": "DETAIL_PROMPT",
+            "version": "1.0",
+            "description": "describe the role of detail prompt",
+            "type": "text",
+            "content": "Task: {task} \n Plan: {plan} {detail_prompt}",
+            "variables": {
+              "detail_prompt": "The plan you should be detailed enough to complete the task.\n Evaluate if the content of plan and selected actions/ tools contains all the details the task needed.\n Output format:\n Score: <Integer score from 1 - 10>\n Evaluation: <evaluation in text>\n Do not include other text in your resonse.\n Output:",
+              "task": "",
+              "plan": ""
+            },
+            "response_format": {}
+          },
+          {
+            "name": "INSIGHT_PROMPT",
+            "version": "1.0",
+            "description": "describe the role of insight prompt",
+            "type": "text",
+            "content": "Observation: {observation} \n {insight_prompt}",
+            "variables": {
+              "insight_prompt": "What are the top 5 high-level insights you can infer from the all the memory you have?\n Only output insights with high confidence.\n Insight:",
+              "observation": ""
+            },
+            "response_format": {}
+          },
+          {
+            "name": "EVALUATION_PROMPT",
+            "version": "1.0",
+            "description": "describe the role of evaluation prompt",
+            "type": "text",
+            "content": "Task: {task} \n Evaluation in the importance matrices: {i_evaluation}\n Evaluation in the detail matrices: {d_evaluation} ",
+            "variables": {
+              "task": "",
+              "i_evaluation": "",
+              "d_evaluation": ""
+            },
+            "response_format": {}
+          },
+          {
+            "name": "FEEDBACK_PROMPT",
+            "version": "1.0",
+            "description": "describe the role of feedback prompt",
+            "type": "text",
+            "content": "What are the {num_feedback} most important feedback for the plan received from the planner, using the\n insight you have from current observation, evaluation using the importance matrices and detail matrices.\n Feedback:",
+            "variables": {
+              "num_feedback": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  }
+  
