@@ -16,7 +16,7 @@ from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
-
+from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 
 class BaseAgent(ABC, BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
@@ -34,6 +34,10 @@ class BaseAgent(ABC, BaseModel):
     global_regen_max: int = 12
     do_synthesize_output: bool = False
     llm: Any = None
+    prompt_template: PromptTemplate = None 
+
+    if prompt_template is None:
+        prompt_template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
 
     @abstractmethod
     def create_actions(self) -> List[BaseAction]:
