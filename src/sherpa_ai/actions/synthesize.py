@@ -19,7 +19,6 @@ class SynthesizeOutput(BaseAction):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.template = self.prompt_template
          
 
     def execute(self, task: str, context: str, history: str) -> str:
@@ -37,7 +36,7 @@ class SynthesizeOutput(BaseAction):
                 "context": context,
                 "history": history,
             }
-            prompt = self.template.format_prompt(
+            prompt = self.prompt_template.format_prompt(
                 wrapper="synthesize_prompts",
                 name="SYNTHESIZE_DESCRIPTION_CITATION" if self.add_citation else "SYNTHESIZE_DESCRIPTION",
                 version="1.0",
@@ -45,5 +44,6 @@ class SynthesizeOutput(BaseAction):
             )
 
         logger.debug("Prompt: {}", prompt)
-        result = self.llm.generate(prompt)
+        prompt_str= str(prompt)
+        result = self.llm.predict(prompt_str)
         return result
