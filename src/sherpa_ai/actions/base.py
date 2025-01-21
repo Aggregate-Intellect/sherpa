@@ -166,12 +166,13 @@ class BaseAction(ABC, BaseModel):
 
     def __str__(self):
         arguments = {}
-
         for arg in self.args:
             if arg.source != "agent":
                 continue
             arguments[arg.name] = (
-                arg.type if arg.description == "" else f"{arg.type}, {arg.description}"
+                arg.type
+                if arg.description == ""
+                else f"{arg.description}. Type: {arg.type}"
             )
 
         tool_desc = {"name": self.name, "args": arguments, "usage": self.usage}
