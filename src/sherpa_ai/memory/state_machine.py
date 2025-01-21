@@ -1,14 +1,13 @@
 import asyncio
 from typing import Any, Callable, Optional, Union
-
+from sherpa_ai.actions.base import ActionArgument
 import transitions as ts
 from loguru import logger
 from transitions.extensions.states import Tags, add_state_features
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
-from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
-                                    add_transition_features)
+from sherpa_ai.memory.utils import StateDesc, TransitionDesc, add_transition_features
 
 
 class State(ts.State):
@@ -285,15 +284,17 @@ class SherpaStateMachine:
                 for arg in action.args:
                     if type(arg) is str:
                         arg_usage = action.args[arg]
+                        new_arg = ActionArgument(name=arg, description=arg_usage)
+                        arg_name = arg
                     else:
-                        arg_usage = arg.description
-                        arg = arg.name
+                        new_arg = arg.model_copy()
+                        arg_name = new_arg.name
 
-                    if arg in args:
+                    if arg_name in args:
                         logger.warning(
                             f"Duplicate argument {arg} in action {action.name}"
                         )
-                    args[arg] = arg_usage
+                    args[arg_name] = new_arg
 
                 description += f". Next, {action.usage}"
 
@@ -341,6 +342,9 @@ class SherpaStateMachine:
         args, usage = self.extract_actions_info(transition.before, args, usage)
         args, usage = self.extract_actions_info(dest_state.on_enter, args, usage)
         args, usage = self.extract_actions_info(transition.after, args, usage)
+
+        # convert arguments back to list
+        args = list(args.values())
 
         name = trigger
         # Append the transition to the usage
