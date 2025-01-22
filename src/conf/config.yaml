@@ -39,6 +39,10 @@ google_search:
   llm: ${llm}
   config: ${agent_config}
 
+prompt_template:
+  _target_: sherpa_ai.prompts.prompt_template_loader.PromptTemplate(template_path)
+  template_path: "sherpa_ai/prompts/prompts.json"
+
 qa_agent:
   _target_: sherpa_ai.agents.qa_agent.QAAgent
   llm: ${llm}
@@ -54,3 +58,4 @@ qa_agent:
     - ${entity_validation}
     - ${number_validation}
     - ${citation_validation}
+  prompt_template: ${prompt_template}

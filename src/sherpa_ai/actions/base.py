@@ -9,6 +9,7 @@ from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.actions.utils.refinement import BaseRefinement
 from sherpa_ai.actions.utils.reranking import BaseReranking
 from sherpa_ai.events import EventType
+from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 
 
 class ActionResource(BaseModel):
@@ -74,6 +75,11 @@ class BaseAction(ABC, BaseModel):
     usage: str
     belief: Any = None
     output_key: Optional[str] = None
+
+    prompt_template: PromptTemplate = None
+
+    if prompt_template is None:
+        prompt_template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
