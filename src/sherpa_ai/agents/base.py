@@ -174,6 +174,8 @@ class BaseAgent(ABC, BaseModel):
             logger.debug(f"```Action output: {action_output}```")
 
         action_output = self.agent_finished(action_output)
+        if action_output is None:
+            action_output = ""
         task_result = TaskResult(content=action_output, status="success")
         return task_result
 
