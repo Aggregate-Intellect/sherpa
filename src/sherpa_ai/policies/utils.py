@@ -32,7 +32,9 @@ def transform_json_output(output_str: str) -> Tuple[str, dict]:
             f"Output does not contain proper json format {output_str}"
         )
 
-    command = output["command"]
+    command = output.get("command", output.get("action", None))
+    if command is None:
+        raise SherpaPolicyException(f"Output does not contain a command {output_str}")
     name = command["name"]
     args = command.get("args", {})
     return name, args
@@ -70,7 +72,7 @@ def construct_conversation_from_belief(
     """
     conversation = []
 
-    for event in belief.events:
+    for event in belief.internal_events:
         if event.event_type == EventType.action:
             action = event.data["action"]
             conversation.append(("assistant", f"```json\n{action}\n```"))
