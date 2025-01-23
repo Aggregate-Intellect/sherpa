@@ -46,7 +46,7 @@ STATE_DESCRIPTION_PROMPT = """The {state} state has the following instruction:
 """
 
 
-class ReactStateMachinePolicy(BasePolicy):
+class ChatStateMachinePolicy(BasePolicy):
     """
     The policy to select an action from the belief based on the ReACT framework.
 
