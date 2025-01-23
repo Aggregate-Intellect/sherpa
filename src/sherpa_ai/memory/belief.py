@@ -40,8 +40,9 @@ class Belief:
         event_type: EventType,
         agent: str,
         content: str,
+        data: dict = {},
     ):
-        event = Event(event_type=event_type, agent=agent, content=content)
+        event = Event(event_type=event_type, agent=agent, content=content, data=data)
         self.internal_events.append(event)
 
     def get_by_type(self, event_type):

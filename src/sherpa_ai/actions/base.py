@@ -144,6 +144,7 @@ class BaseAction(ABC, BaseModel):
                 EventType.action,
                 self.name,
                 f"Action: {self.name} starts, Args: {args}",
+                data={"action": {"name": self.name, "args": args}},
             )
 
     def action_end(self, result: Any):
@@ -153,6 +154,7 @@ class BaseAction(ABC, BaseModel):
                 EventType.action_output,
                 self.name,
                 f"Action: {self.name} finishes, Observation: {result}",
+                data={"result": result},
             )
 
     def __call__(self, **kwargs):

@@ -136,6 +136,7 @@ def test_extension_features():
     assert sm.get_current_state().description == "This is state A"
 
 
+@pytest.mark.asyncio
 async def test_get_actions_async(async_state_machine):
     assert async_state_machine.state == "A"
 

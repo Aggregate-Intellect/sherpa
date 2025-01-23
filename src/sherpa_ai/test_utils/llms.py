@@ -1,28 +1,31 @@
 import json
 import re
 
-import pytest 
-from langchain_core.language_models import BaseLanguageModel 
-from langchain_community.chat_models import ChatOpenAI 
-from langchain_core.language_models import FakeListLLM 
+import pytest
+from langchain_community.chat_models import ChatOpenAI
+from langchain_core.language_models import BaseLanguageModel, FakeListLLM
+from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
 from sherpa_ai.models.chat_model_with_logging import ChatModelWithLogging
 from sherpa_ai.test_utils.loggers import get_new_logger
 
 
-def get_fake_llm(filename) -> FakeListLLM:
+def get_fake_llm(filename, is_chat=False) -> FakeListLLM:
     responses = []
     with open(filename) as f:
         for line in f:
             responses.append(json.loads(line))
     # restore new line characters
-    responses = [response["output"].replace(
-        "\\n", "\n") for response in responses]
-    return FakeListLLM(responses=responses)
+    responses = [response["output"].replace("\\n", "\n") for response in responses]
+
+    if not is_chat:
+        return FakeListLLM(responses=responses)
+    else:
+        return FakeListChatModel(responses=responses)
 
 
 def get_real_llm(
-    filename: str, model_name: str = "gpt-3.5-turbo", temperature: int = 0
+    filename: str, model_name: str = "gpt-4o-mini", temperature: int = 0
 ) -> ChatModelWithLogging:
     logger = get_new_logger(filename)
     llm = ChatModelWithLogging(
@@ -39,10 +42,15 @@ def format_cache_name(filename: str, method_name: str) -> str:
 @pytest.fixture
 def get_llm(external_api: bool):
     if external_api:
-        import sherpa_ai.config
+        # initialize the configuration loading
+        import sherpa_ai.config  # noqa: F401
 
     def get(
-        filename: str, method_name: str, folder: str = "data", **kwargs
+        filename: str,
+        method_name: str,
+        folder: str = "data",
+        is_chat: bool = False,
+        **kwargs,
     ) -> BaseLanguageModel:
         path = re.split("(\\\\|/)tests", filename)[0]
         folder = f"{path}/tests/{folder}"
@@ -52,6 +60,6 @@ def get_llm(external_api: bool):
         if external_api:
             return get_real_llm(filename, **kwargs)
         else:
-            return get_fake_llm(filename)
+            return get_fake_llm(filename, is_chat)
 
     return get

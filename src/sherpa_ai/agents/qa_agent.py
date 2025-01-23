@@ -13,6 +13,7 @@ from sherpa_ai.policies import ReactPolicy
 # Some of the feature may be added to the agent base class, such as
 # the verbose logger.
 
+
 class QAAgent(BaseAgent):
     """
     The task agent is the agent handles a single task.
@@ -45,7 +46,6 @@ class QAAgent(BaseAgent):
     num_runs: int = 3
     global_regen_max: int = 5
     citation_enabled: bool = False
-    
 
     def __init__(self, *args, **kwargs):
         """
