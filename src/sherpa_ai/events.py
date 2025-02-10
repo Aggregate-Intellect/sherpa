@@ -12,10 +12,13 @@ class EventType(Enum):
 
 
 class Event:
-    def __init__(self, event_type: EventType, agent: str, content: str) -> None:
+    def __init__(
+        self, event_type: EventType, agent: str, content: str, data: dict = {}
+    ) -> None:
         self.event_type = event_type
         self.agent = agent
         self.content = content
+        self.data = data
 
     def __str__(self) -> str:
         return f"{self.agent}: {self.event_type} - {self.content}"
@@ -26,6 +29,7 @@ class Event:
             "event_type": self.event_type,
             "agent": self.agent,
             "content": self.content,
+            "data": self.data,
         }
 
     @classmethod
@@ -34,4 +38,5 @@ class Event:
             event_type=data["event_type"],
             agent=data["agent"],
             content=data["content"],
+            data=data["data"],
         )
