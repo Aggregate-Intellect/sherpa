@@ -1,5 +1,3 @@
-from typing import Any
-
 from sherpa_ai.actions.base import BaseAction
 
 
@@ -10,5 +8,5 @@ class EmptyAction(BaseAction):
     args: dict = {}
     usage: str = "Make a decision"
 
-    def execute(self) -> str:
+    def execute(self, **kwargs) -> str:
         pass

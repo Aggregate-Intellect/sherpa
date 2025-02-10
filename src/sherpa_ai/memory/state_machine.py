@@ -1,13 +1,14 @@
 import asyncio
 from typing import Any, Callable, Optional, Union
-from sherpa_ai.actions.base import ActionArgument
+
 import transitions as ts
 from loguru import logger
 from transitions.extensions.states import Tags, add_state_features
 
-from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.base import ActionArgument, BaseAction
 from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
-from sherpa_ai.memory.utils import StateDesc, TransitionDesc, add_transition_features
+from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
+                                    add_transition_features)
 
 
 class State(ts.State):
@@ -154,9 +155,6 @@ class SherpaStateMachine:
             list[BaseAction]: list of actions that can be executed from the current
                 state
         """  # noqa: E501
-        if not self.is_async():
-            raise ValueError("Cannot get async actions from a non-async state machine")
-
         state = self.state
         state_obj = self.sm.get_state(state)
 
@@ -170,7 +168,10 @@ class SherpaStateMachine:
             if t not in self.explicit_transitions:
                 continue
 
-            can_trigger = await self.may_trigger(t)
+            if asyncio.iscoroutinefunction(self.may_trigger):
+                can_trigger = await self.may_trigger(t)
+            else:
+                can_trigger = self.may_trigger(t)
 
             if not can_trigger:
                 continue

@@ -1,9 +1,8 @@
 import uuid
 
-import chromadb 
-from chromadb.utils import embedding_functions 
-from langchain_core.documents import Document 
-from langchain_text_splitters import CharacterTextSplitter 
+import chromadb
+from chromadb.utils import embedding_functions
+from langchain_core.documents import Document
 
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.base import BaseVectorDB
@@ -13,8 +12,8 @@ class ChromaVectorStore(BaseVectorDB):
     """
     A class used to represent a Chroma Vector Store.
 
-    This class provides methods to create a Chroma Vector Store from texts or from an existing store,
-    split file text, and perform a similarity search.
+    This class provides methods to create a Chroma Vector Store from texts or from an 
+    existing store, split file text, and perform a similarity search.
 
     ...
 
@@ -47,8 +46,8 @@ class ChromaVectorStore(BaseVectorDB):
         meta_datas=None,
         path="./db",
     ):
-        # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in the
-        # method signature for mocking purposes
+        # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in
+        # the method signature for mocking purposes
         if embedding is None:
             embedding = embedding_functions.OpenAIEmbeddingFunction(
                 model_name="text-embedding-ada-002"
@@ -60,6 +59,7 @@ class ChromaVectorStore(BaseVectorDB):
         db = client.get_or_create_collection(
             name=cfg.INDEX_NAME_FILE_STORAGE, embedding_function=embedding
         )
+
         db.add(
             embeddings=embeded_data,
             documents=texts,
@@ -75,8 +75,8 @@ class ChromaVectorStore(BaseVectorDB):
         embedding=None,
         path="./db",
     ):
-        # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in the
-        # method signature for mocking purposes
+        # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in
+        # the method signature for mocking purposes
         if embedding is None:
             embedding = embedding_functions.OpenAIEmbeddingFunction(
                 model_name="text-embedding-ada-002"
@@ -92,7 +92,7 @@ class ChromaVectorStore(BaseVectorDB):
     def similarity_search(
         self, query: str = "", session_id: str = None, number_of_results=2, k: int = 1
     ):
-        filter = {} if session_id is None else {"session_id": session_id}
+        filter = None if session_id is None else {"session_id": session_id}
         results = self.db.query(
             query_texts=[query],
             n_results=number_of_results,
