@@ -4,39 +4,15 @@ import json
 from typing import TYPE_CHECKING, Any, Optional
 
 from loguru import logger
-
+from pydantic import BaseModel, ConfigDict
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
+from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 from sherpa_ai.policies.utils import (is_selection_trivial,
                                       transform_json_output)
 
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
-
-SELECTION_DESCRIPTION = """{role_description}
-
-{output_instruction}
-
-**Task Description**: {task_description}
-
-**Possible Actions**:
-{possible_actions}
-
-**Task Context**:
-{task_context}
-
-**History of Previous Actions**:
-{history_of_previous_actions}
-
-You should only select the actions specified in **Possible Actions**
-You should only respond in JSON format as described below without any extra text.
-Response Format:
-{response_format}
-Ensure the response can be parsed by Python json.loads
-
-Follow the described format strictly.
-
-"""  # noqa: E501
 
 
 class ReactPolicy(BasePolicy):
@@ -49,15 +25,18 @@ class ReactPolicy(BasePolicy):
         role_description (str): The description of the agent role to help select an action
         output_instruction (str): The instruction to output the action in JSON format
         llm (BaseLanguageModel): The large language model used to generate text
-        description (str): Description to select the action from the belief
         response_format (dict): The response format for the policy in JSON format
     """  # noqa: E501
+    
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+    )
 
     role_description: str
     output_instruction: str
     # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
     llm: Any = None
-    description: str = SELECTION_DESCRIPTION
+    prompt_template: PromptTemplate = PromptTemplate("./sherpa_ai/prompts/prompts.json")
     response_format: dict = {
         "command": {
             "name": "tool/command name you choose",
@@ -90,14 +69,20 @@ class ReactPolicy(BasePolicy):
 
         response_format = json.dumps(self.response_format, indent=4)
 
-        prompt = self.description.format(
-            role_description=self.role_description,
-            task_description=task_description,
-            possible_actions=possible_actions,
-            history_of_previous_actions=history_of_previous_actions,
-            task_context=task_context,
-            output_instruction=self.output_instruction,
-            response_format=response_format,
+        variables = {
+            "role_description":self.role_description,
+            "output_instruction": self.output_instruction,
+            "task_description":task_description,
+            "possible_actions":possible_actions,
+            "task_context":task_context,
+            "history_of_previous_actions":history_of_previous_actions,
+            "response_format":response_format
+        }
+        prompt = self.prompt_template.format_prompt(
+            wrapper= "react_policy_prompt",
+            name= "SELECTION_DESCRIPTION",
+            version="1.0",
+            variables=variables
         )
         logger.debug(f"Prompt: {prompt}")
         result = self.llm.predict(prompt)
