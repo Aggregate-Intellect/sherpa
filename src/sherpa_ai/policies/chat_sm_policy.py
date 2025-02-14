@@ -2,78 +2,73 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, ClassVar, Optional
+from pydantic import BaseModel, ConfigDict
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.prompts.chat import ChatPromptTemplate
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
-from sherpa_ai.policies.utils import (construct_conversation_from_belief,
-                                      is_selection_trivial,
-                                      transform_json_output)
+from sherpa_ai.policies.utils import (
+    construct_conversation_from_belief,
+    is_selection_trivial,
+    transform_json_output,
+)
 
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
 
-SYSTEM_PROMPT = """You are an assistant that must parse the user’s instructions and select the most appropriate action from the provided possibilities. Only respond with valid JSON as described, without any extra text. Comply strictly with the specified format.
-
-## Context
-{context}
-
-**Task Description**: {task_description}
-
-You should only respond in JSON format as described below without any extra text.
-Response Format:
-{response_format}
-Ensure the response can be parsed by Python json.loads
-"""  # noqa: E501
-
-ACTION_SELECTION_PROMPT = """You have a state machine to help you with the action execution. You are currently in the {state} state.
-{state_description}
-
-## Possible Actions:
-{possible_actions}
-
-You should only select the actions specified in **Possible Actions**
-First, reason about what to do next based on the information, then select the best action.
-"""  # noqa: E501
-
-STATE_DESCRIPTION_PROMPT = """The {state} state has the following instruction:
-{state_description}
-"""
-
-
 class ChatStateMachinePolicy(BasePolicy):
     """
     The policy to select an action from the belief based on the ReACT framework.
-
-    If uses information from the state machine
-
-    Attributes:
-        chat_template: The template used to generate the chat prompt, it should have
-            the following placeholder variable: {conversation} It should at least have
-            the following valued variables to support state machine information:
-            {state}, {state_description}, {possible_actions}
-        llm (BaseChatLanguageModel): The large language model used to generate text
-        response_format (dict): The response format for the policy in JSON format,
-        ignored if chat_template is provided
-        max_conversation_tokens (int): The maximum number of tokens to generate for the
-            conversation, defaults to 8000
     """
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+    )
+    
+    # Initialize PromptTemplate as a class variable
+    _prompt_template: ClassVar[PromptTemplate] = PromptTemplate("./sherpa_ai/prompts/prompts.json")
 
+    # Initialize base templates with placeholder variables
+    SYSTEM_PROMPT: ClassVar[str] = _prompt_template.format_prompt(
+        wrapper="system_prompt",
+        name="SYSTEM_PROMPT",
+        version="1.0",
+        variables={
+            "context": "{context}",
+            "task_description": "{task_description}",
+            "response_format": "{response_format}"
+        }
+    )
+
+    ACTION_SELECTION_PROMPT: ClassVar[str] = _prompt_template.format_prompt(
+        wrapper="action_selection_prompt",
+        name="ACTION_SELECTION_PROMPT",
+        version="1.0",
+        variables={
+            "state": "{state}",
+            "state_description": "{state_description}",
+            "possible_actions": "{possible_actions}"
+        }
+    )
+
+    # Initialize base chat template
     chat_template: ChatPromptTemplate = ChatPromptTemplate(
         [
-            ("system", SYSTEM_PROMPT),
+            ("system", str(SYSTEM_PROMPT)),
             ("placeholder", "{conversation}"),
-            ("human", ACTION_SELECTION_PROMPT),
+            ("human", str(ACTION_SELECTION_PROMPT)),
         ]
     )
-    # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
-    llm: BaseChatModel = None
+    print("%"*70)
+    print(chat_template,flush=True)
+    print("%"*70)
 
+    llm: Optional[BaseChatModel] = None
     response_format: dict = {
         "action": {
             "name": "action name you choose",
@@ -83,15 +78,7 @@ class ChatStateMachinePolicy(BasePolicy):
     max_conversation_tokens: int = 8000
 
     def get_prompt_data(self, belief: Belief, actions: list[BaseAction]) -> dict:
-        """
-        Create the prompt based on information from the belief
-
-        Args:
-            belief (Belief): The current state of the agent
-
-        Returns:
-            dict: The prompt data to be used for the selection of the action
-        """
+        """Create the prompt based on information from the belief"""
         task_description = belief.current_task.content
         possible_actions = "\n".join([str(action) for action in actions])
         context = belief.get_context(self.llm.get_num_tokens)
@@ -101,62 +88,47 @@ class ChatStateMachinePolicy(BasePolicy):
             belief, self.llm.get_num_tokens, self.max_conversation_tokens
         )
 
-        if len(state_description) > 0:
-            state_description = STATE_DESCRIPTION_PROMPT.format(
-                state=current_state, state_description=state_description
+        formatted_state_description = ""
+        if state_description:
+            variables = {
+                "state": current_state,
+                "state_description": state_description
+            }
+            formatted_state_description = self._prompt_template.format_prompt(
+                wrapper="state_description_prompt",
+                name="STATE_DESCRIPTION_PROMPT",
+                version="1.0",
+                variables=variables
             )
-
-        response_format = json.dumps(self.response_format, indent=4)
 
         return {
             "context": context,
             "task_description": task_description,
             "possible_actions": possible_actions,
             "state": current_state,
-            "state_description": state_description,
-            "response_format": response_format,
+            "state_description": formatted_state_description,
+            "response_format": json.dumps(self.response_format, indent=4),
             "conversation": conversations,
         }
 
     def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
-        """
-        Select an action from a list of possible actions based on the current state (belief)
-        Calling the async version of the method with asyncio
-
-        Args:
-            belief (Belief): The current state of the agent
-
-        Returns:
-            Optional[PolicyOutput]: The selected action and arguments, or None if the selected
-            action is not found in the list of possible actions
-        """  # noqa: E501
-        result = asyncio.run(self.async_select_action(belief))
-
-        return result
+        """Synchronous wrapper for async_select_action"""
+        return asyncio.run(self.async_select_action(belief))
 
     async def async_select_action(self, belief: Belief) -> Optional[PolicyOutput]:
-        """
-        Select an action from a list of possible actions based on the current state (belief)
-
-        Args:
-            belief (Belief): The current state of the agent
-
-        Returns:
-            Optional[PolicyOutput]: The selected action and arguments, or None if the selected
-            action is not found in the list of possible actions
-        """  # noqa: E501
+        """Select an action based on the current belief state"""
         actions = await belief.async_get_actions()
         if is_selection_trivial(actions):
             return PolicyOutput(action=actions[0], args={})
 
         prompt_data = self.get_prompt_data(belief, actions)
         logger.debug(f"Prompt: {self.chat_template.invoke(prompt_data)}")
+        
         chain = self.chat_template | self.llm
         result = chain.invoke(prompt_data).content
         logger.debug(f"Result: {result}")
 
         name, args = transform_json_output(result)
-
         action = await belief.async_get_action(name)
 
         if action is None:
@@ -165,3 +137,4 @@ class ChatStateMachinePolicy(BasePolicy):
             )
 
         return PolicyOutput(action=action, args=args)
+
