@@ -33,8 +33,12 @@ def load_json(file_path: str) -> Dict:
     """
     Load JSON data from a file.
     """
-    with resources.files("sherpa_ai").joinpath(file_path).open('r') as f:
-        return json.load(f)
+    try:
+        clean_path = file_path.replace('sherpa_ai/','')
+        with resources.files("sherpa_ai").joinpath(clean_path).open('r') as f:
+            return json.load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"File not found: {clean_path}") from e
 
 
 def get_prompts(data: Dict) -> Dict[str, List[Dict]]:
