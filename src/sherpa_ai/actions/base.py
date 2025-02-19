@@ -78,10 +78,8 @@ class BaseAction(ABC, BaseModel):
 
     prompt_template: PromptTemplate = None
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        if self.prompt_template is None:
-            self.prompt_template = PromptTemplate("prompts/prompts.json")
+    if prompt_template is None:
+        prompt_template = PromptTemplate("prompts/prompts.json")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
