@@ -1,3 +1,4 @@
+from importlib import resources
 from typing import Dict, List, Optional, Any, Union
 import json
 from pydantic import ValidationError
@@ -32,8 +33,8 @@ def load_json(file_path: str) -> Dict:
     """
     Load JSON data from a file.
     """
-    with open(file_path, 'r') as file:
-        return json.load(file)
+    with resources.files("sherpa_ai").joinpath(file_path).open('r') as f:
+        return json.load(f)
 
 
 def get_prompts(data: Dict) -> Dict[str, List[Dict]]:

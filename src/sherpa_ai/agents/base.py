@@ -36,8 +36,10 @@ class BaseAgent(ABC, BaseModel):
     llm: Any = None
     prompt_template: PromptTemplate = None 
 
-    if prompt_template is None:
-        prompt_template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.prompt_template is None:
+            self.prompt_template = PromptTemplate("prompts/prompts.json")
 
     @abstractmethod
     def create_actions(self) -> List[BaseAction]:
