@@ -7,6 +7,7 @@
 
 To see the documentation, visit: https://sherpa-ai.readthedocs.io/
 
+## Quick Install
 
 ### From source (with [poetry](https://python-poetry.org/)):
 ```bash
