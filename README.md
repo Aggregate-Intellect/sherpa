@@ -8,10 +8,6 @@
 To see the documentation, visit: https://sherpa-ai.readthedocs.io/
 
 ## Quick Install
-### With pip:
-```bash
-pip install sherpa-ai
-```
 
 ### From source (with [poetry](https://python-poetry.org/)):
 ```bash
