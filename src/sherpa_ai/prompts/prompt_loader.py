@@ -31,14 +31,20 @@ class JsonToObject:
 
 def load_json(file_path: str) -> Dict:
     """
-    Load JSON data from a file.
+    Load JSON data from a file, supporting both installed package resources and local paths.
     """
     try:
-        clean_path = file_path.replace('sherpa_ai/','')
-        with resources.files("sherpa_ai").joinpath(clean_path).open('r') as f:
-            return json.load(f)
+        if file_path.startswith("./") or file_path.startswith("/"):
+            # If it's an absolute or relative path, open it directly (for when we use sherpa prompt loader in other projects)
+            with open(file_path, 'r') as f:
+                return json.load(f)
+        else:
+            # Assume it's inside the package `sherpa_ai`
+            clean_path = file_path.replace('sherpa_ai/', '')
+            with resources.files("sherpa_ai").joinpath(clean_path).open('r') as f:
+                return json.load(f)
     except FileNotFoundError as e:
-        raise FileNotFoundError(f"File not found: {clean_path}") from e
+        raise FileNotFoundError(f"File not found: {file_path}") from e
 
 
 def get_prompts(data: Dict) -> Dict[str, List[Dict]]:
