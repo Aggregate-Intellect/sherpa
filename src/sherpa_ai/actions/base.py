@@ -79,7 +79,7 @@ class BaseAction(ABC, BaseModel):
     prompt_template: PromptTemplate = None
 
     if prompt_template is None:
-        prompt_template = PromptTemplate("./sherpa_ai/prompts/prompts.json")
+        prompt_template = PromptTemplate("prompts/prompts.json")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
