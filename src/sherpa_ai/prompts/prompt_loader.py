@@ -1,6 +1,8 @@
+from importlib import resources
 from typing import Dict, List, Optional, Any, Union
 import json
 from pydantic import ValidationError
+from pathlib import Path
 
 from sherpa_ai.prompts.Base import ChatPrompt, Prompt, PromptGroup, TextPrompt
 
@@ -30,10 +32,34 @@ class JsonToObject:
 
 def load_json(file_path: str) -> Dict:
     """
-    Load JSON data from a file.
+    Load JSON data from either a package resource or a filesystem path.
+    
+    Args:
+        file_path: Path to JSON file (can be relative to sherpa_ai package or absolute)
+    Returns:
+        Dict containing the JSON data
+    Raises:
+        FileNotFoundError: If the file cannot be found
     """
-    with open(file_path, 'r') as file:
-        return json.load(file)
+    try:
+        # First try to load as a package resource
+        clean_path = file_path.replace('sherpa_ai/', '').strip('./')
+        resource_path = resources.files("sherpa_ai").joinpath(clean_path)
+        
+        if resource_path.exists():  # Check if resource exists
+            with resource_path.open('r') as f:
+                return json.load(f)
+        
+        # If not found as resource, try as filesystem path
+        abs_path = Path(file_path).resolve()
+        if abs_path.exists():
+            with abs_path.open('r') as f:
+                return json.load(f)
+                
+        raise FileNotFoundError(f"File not found at either resource path: {clean_path} or absolute path: {abs_path}")
+        
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"File not found: {file_path}") from e
 
 
 def get_prompts(data: Dict) -> Dict[str, List[Dict]]:
