@@ -33,6 +33,6 @@ class Deliberation(BaseAction):
             task=task, role_description=self.role_description
         )
 
-        result = self.llm.predict(prompt)
+        result = self.llm.invoke(prompt)
 
         return result

@@ -6,7 +6,7 @@ from sherpa_ai.events import EventType
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.tools import SearchArxivTool
-from langchain.base_language import BaseLanguageModel
+from langchain_core.language_models import BaseLanguageModel
 from sherpa_ai.output_parsers.validation_result import ValidationResult
 from loguru import logger
 from sherpa_ai.utils import (

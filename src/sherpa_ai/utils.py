@@ -570,16 +570,11 @@ def text_similarity_by_llm(
         Entities inside the question = {source_entity}
 
         Answer = {result}
-       """  # noqa: E501
-    prompt = (
-        instruction
-        + """
-           only return {"entity_exist": true , "messages":"" } if all entities are mentioned inside the answer in
-           only return {"entity_exist": false , "messages": " Entity x hasn't been mentioned inside the answer"} if the entity is not mentioned properly .
-          """  # noqa: E501
-    )
-
-    llm_result = llm.predict(prompt)
+       
+           only return {{"entity_exist": true , "messages":\"\" }} if all entities are mentioned inside the answer in
+           only return {{"entity_exist": false , "messages": \" Entity x hasn't been mentioned inside the answer\"}} if the entity is not mentioned properly .
+          """
+    llm_result = llm.invoke(instruction)
     checkup_json = json_from_text(llm_result)
 
     return checkup_json.get("entity_exist", False), checkup_json.get("messages", "")

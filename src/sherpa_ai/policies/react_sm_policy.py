@@ -114,10 +114,11 @@ class ReactStateMachinePolicy(BasePolicy):
 
         prompt = self.get_prompt(belief, actions)
         logger.debug(f"Prompt: {prompt}")
-        result = self.llm.predict(prompt)
-        logger.debug(f"Result: {result}")
+        result = self.llm.invoke(prompt)
+        result_text = result.content if hasattr(result, 'content') else str(result)
+        logger.debug(f"Result: {result_text}")
 
-        name, args = transform_json_output(result)
+        name, args = transform_json_output(result_text)
 
         action = belief.get_action(name)
 
@@ -145,10 +146,11 @@ class ReactStateMachinePolicy(BasePolicy):
 
         prompt = self.get_prompt(belief, actions)
         logger.debug(f"Prompt: {prompt}")
-        result = self.llm.predict(prompt)
-        logger.debug(f"Result: {result}")
+        result = await self.llm.ainvoke(prompt)
+        result_text = result.content if hasattr(result, 'content') else str(result)
+        logger.debug(f"Result: {result_text}")
 
-        name, args = transform_json_output(result)
+        name, args = transform_json_output(result_text)
 
         action = await belief.async_get_action(name)
 

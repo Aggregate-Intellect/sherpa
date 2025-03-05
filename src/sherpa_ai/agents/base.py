@@ -137,6 +137,7 @@ class BaseAgent(ABC, BaseModel):
 
     def run(self) -> TaskResult:
         self.agent_preparation()
+        action_output = ""  # Initialize with default value
 
         for _ in range(self.num_runs):
             if len(self.belief.get_actions()) == 0:

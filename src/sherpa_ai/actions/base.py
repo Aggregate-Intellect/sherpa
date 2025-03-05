@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.actions.utils.refinement import BaseRefinement
@@ -67,8 +67,7 @@ class BaseAction(ABC, BaseModel):
             action)
     """
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     name: str
     args: Union[dict, list[ActionArgument]]
@@ -76,7 +75,7 @@ class BaseAction(ABC, BaseModel):
     belief: Any = None
     output_key: Optional[str] = None
 
-    prompt_template: PromptTemplate = None
+    prompt_template: Optional[PromptTemplate] = None
 
     if prompt_template is None:
         prompt_template = PromptTemplate("prompts/prompts.json")
