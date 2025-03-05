@@ -85,10 +85,12 @@ class ReactPolicy(BasePolicy):
             variables=variables
         )
         logger.debug(f"Prompt: {prompt}")
-        result = self.llm.predict(prompt)
-        logger.debug(f"Result: {result}")
+        result = self.llm.invoke(prompt)
+        # Handle both string and Message responses
+        result_text = result.content if hasattr(result, 'content') else str(result)
+        logger.debug(f"Result: {result_text}")
 
-        name, args = transform_json_output(result)
+        name, args = transform_json_output(result_text)
 
         action = belief.get_action(name)
 
