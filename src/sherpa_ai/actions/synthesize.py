@@ -44,6 +44,12 @@ class SynthesizeOutput(BaseAction):
             )
 
         logger.debug("Prompt: {}", prompt)
-        prompt_str= str(prompt)
-        result = self.llm.predict(prompt_str)
-        return result
+        prompt_str = self.prompt_template.format_prompt(
+            wrapper="synthesize_prompts",
+            name="SYNTHESIZE_DESCRIPTION",
+            version="1.0",
+            variables=variables
+        )
+        result = self.llm.invoke(prompt_str)
+        result_text = result.content if hasattr(result, 'content') else str(result)
+        return result_text

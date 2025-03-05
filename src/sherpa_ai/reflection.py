@@ -61,6 +61,6 @@ class Reflection:
                     f"Ensure the response can be parsed by Python json.loads"
                     f"New reply:\n\n"
                 )
-                return self.llm.predict(instruction)
+                return self.llm.invoke(instruction)
             else:
                 return assistant_reply

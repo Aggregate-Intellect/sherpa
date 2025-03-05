@@ -46,5 +46,4 @@ class ArxivSearch(BaseRetrievalAction):
             n=self.num_documents,
             role_description=self.role_description,
         )
-
-        return self.llm.predict(prompt)
+        return self.llm.invoke(prompt)

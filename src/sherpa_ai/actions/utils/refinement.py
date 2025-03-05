@@ -42,7 +42,7 @@ class RefinementByQuery(BaseRefinement):
     def refinement(self, documents: list[str], query: str) -> list[str]:
         refined_result = []
         for doc in documents:
-            res = self.llm.predict(
+            res = self.llm.invoke(
                 self.description.format(question=query, answer=doc, k=self.k)
             )
             if res.lower() != "not relevant.":
@@ -63,7 +63,7 @@ class RefinementBySentence(BaseRefinement):
             answer_bullet = ""
             for key, value in ans_bullet.items():
                 answer_bullet += str(key) + ". " + value + "\n"
-            res = self.llm.predict(
+            res = self.llm.invoke(
                 self.description.format(question=query, answer=answer_bullet)
             )
             list_res = res.split(",")
