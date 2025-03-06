@@ -1,4 +1,5 @@
 import pytest
+from loguru import logger
 from transitions.extensions import AsyncMachine
 
 from sherpa_ai.actions.empty import EmptyAction
@@ -141,6 +142,8 @@ async def test_get_actions_async(async_state_machine):
     assert async_state_machine.state == "A"
 
     actions = await async_state_machine.async_get_actions()
+
+    logger.error(actions)
 
     assert len(actions) == 1
     assert actions[0].name == "A_to_B_1"
