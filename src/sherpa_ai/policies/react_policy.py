@@ -5,11 +5,12 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
+
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
-from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 from sherpa_ai.policies.utils import (is_selection_trivial,
                                       transform_json_output)
+from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
@@ -27,7 +28,7 @@ class ReactPolicy(BasePolicy):
         llm (BaseLanguageModel): The large language model used to generate text
         response_format (dict): The response format for the policy in JSON format
     """  # noqa: E501
-    
+
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
     )
@@ -43,6 +44,9 @@ class ReactPolicy(BasePolicy):
             "args": {"arg name": "value"},
         },
     }
+
+    async def async_select_action(self, belief: Belief) -> Optional[PolicyOutput]:
+        return self.select_action(belief)
 
     def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
         """
@@ -70,19 +74,19 @@ class ReactPolicy(BasePolicy):
         response_format = json.dumps(self.response_format, indent=4)
 
         variables = {
-            "role_description":self.role_description,
+            "role_description": self.role_description,
             "output_instruction": self.output_instruction,
-            "task_description":task_description,
-            "possible_actions":possible_actions,
-            "task_context":task_context,
-            "history_of_previous_actions":history_of_previous_actions,
-            "response_format":response_format
+            "task_description": task_description,
+            "possible_actions": possible_actions,
+            "task_context": task_context,
+            "history_of_previous_actions": history_of_previous_actions,
+            "response_format": response_format,
         }
         prompt = self.prompt_template.format_prompt(
-            wrapper= "react_policy_prompt",
-            name= "SELECTION_DESCRIPTION",
+            wrapper="react_policy_prompt",
+            name="SELECTION_DESCRIPTION",
             version="1.0",
-            variables=variables
+            variables=variables,
         )
         logger.debug(f"Prompt: {prompt}")
         result = self.llm.predict(prompt)
