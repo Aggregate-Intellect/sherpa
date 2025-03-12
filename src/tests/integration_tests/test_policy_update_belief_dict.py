@@ -175,6 +175,6 @@ def test_retrieve_and_calculate(get_llm, get_actions_belief):
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = task_agent.synthesize_output()
 
-    assert "7" in results[0].content
+    assert "7" in results
