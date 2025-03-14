@@ -1,0 +1,2 @@
+defaults:
+  - optional foo: missing

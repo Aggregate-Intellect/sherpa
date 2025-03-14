@@ -1,0 +1,2 @@
+defaults:
+  - optional group1: file1
