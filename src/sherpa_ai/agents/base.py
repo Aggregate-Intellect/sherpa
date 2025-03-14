@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+import asyncio.runners
 import traceback
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
@@ -18,6 +20,7 @@ from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
 from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 
+
 class BaseAgent(ABC, BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
@@ -32,9 +35,12 @@ class BaseAgent(ABC, BaseModel):
     validations: List[BaseOutputProcessor] = []
     feedback_agent_name: str = "critic"
     global_regen_max: int = 12
-    do_synthesize_output: bool = False
     llm: Any = None
-    prompt_template: PromptTemplate = None 
+    prompt_template: PromptTemplate = None
+
+    # Checks whether the execution of the agent should be stopped
+    # default to never stop
+    stop_checker: Callable[[Belief], bool] = lambda _: False
 
     if prompt_template is None:
         prompt_template = PromptTemplate("prompts/prompts.json")
@@ -126,8 +132,6 @@ class BaseAgent(ABC, BaseModel):
     def agent_finished(self, result: str) -> str:
         if len(self.validations) > 0:
             result = self.validate_output()
-        elif self.do_synthesize_output:
-            result = self.synthesize_output()
 
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
@@ -136,53 +140,7 @@ class BaseAgent(ABC, BaseModel):
         return result
 
     def run(self) -> TaskResult:
-        self.agent_preparation()
-        action_output = ""  # Initialize with default value
-
-        for _ in range(self.num_runs):
-            if len(self.belief.get_actions()) == 0:
-                break
-
-            result = self.select_action()
-
-            if result is None:
-                # this means no action is selected
-                continue
-            elif isinstance(result, Exception):
-                tb_exception = traceback.TracebackException.from_exception(result)
-                stack_trace = "".join(tb_exception.format())
-                task_result = TaskResult(content=stack_trace, status="failed")
-                return task_result
-
-            logger.debug(f"Action selected: {result}")
-            logger.debug(
-                f"🤖{self.name} is executing```" "``` {result.action.name}...```"
-            )
-
-            action_output = self.act(result.action, result.args)
-            if action_output is None:
-                continue
-            elif isinstance(action_output, SherpaMissingInformationException):
-                question = action_output.message
-                task_result = TaskResult(content=question, status="waiting")
-                return task_result
-            elif isinstance(action_output, Exception):
-                tb_exception = traceback.TracebackException.from_exception(
-                    action_output
-                )
-                stack_trace = "".join(tb_exception.format())
-                task_result = TaskResult(content=stack_trace, status="failed")
-                return task_result
-
-            action_output = self.belief.get(result.action.name, action_output)
-
-            logger.debug(f"```Action output: {action_output}```")
-
-        action_output = self.agent_finished(action_output)
-        if action_output is None:
-            action_output = ""
-        task_result = TaskResult(content=action_output, status="success")
-        return task_result
+        return asyncio.run(self.async_run())
 
     async def async_run(self) -> TaskResult:
 
@@ -234,6 +192,9 @@ class BaseAgent(ABC, BaseModel):
                 return task_result
 
             action_output = self.belief.get(result.action.name, action_output)
+
+            if self.stop_checker(self.belief):
+                break
 
             logger.debug(f"```Action output: {action_output}```")
 
@@ -386,24 +347,15 @@ class BaseAgent(ABC, BaseModel):
         return self.shared_memory.observe(self.belief)
 
     def act(self, action: BaseAction, inputs: dict) -> Union[Optional[str], Exception]:
-        try:
-            action_output = action(**inputs)
-            return action_output
-        except SherpaActionExecutionException as e:
-            self.belief.update_internal(
-                EventType.action_output,
-                self.feedback_agent_name,
-                f"Error in executing action: {action.name}. Error: {e}",
-            )
-            logger.exception(e)
-            return None
-        except Exception as e:
-            logger.exception(e)
-            return e
+        asyncio.run(self.async_act(action, inputs))
 
     async def async_act(self, action: BaseAction, inputs: dict) -> Optional[str]:
         try:
-            action_output = await action(**inputs)
+            if asyncio.iscoroutinefunction(action):
+                action_output = await action(**inputs)
+            else:
+                action_output = action(**inputs)
+
             return action_output
         except SherpaActionExecutionException as e:
             self.belief.update_internal(
