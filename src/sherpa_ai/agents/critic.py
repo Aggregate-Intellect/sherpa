@@ -40,7 +40,7 @@ class Critic(BaseAgent):
             version="1.0",
             variables=variables,
         )
-        output = self.llm.predict(prompt)
+        output = self.llm.invoke(prompt)
         score = int(output.split("Score:")[1].split("Evaluation")[0])
         evaluation = output.split("Evaluation: ")[1]
         return score, evaluation
@@ -57,7 +57,7 @@ class Critic(BaseAgent):
             version="1.0",
             variables=variables,
         )
-        output = self.llm.predict(prompt)
+        output = self.llm.invoke(prompt)
         logger.info(prompt)
         score = int(output.split("Score:")[1].split("Evaluation")[0])
         evaluation = output.split("Evaluation: ")[1]
@@ -75,7 +75,7 @@ class Critic(BaseAgent):
             version="1.0",
             variables=variables,
         )
-        result = self.llm.predict(prompt)
+        result = self.llm.invoke(prompt)
         insights = [i for i in result.split("\n") if len(i.strip()) > 0][:5]
         return insights
 
@@ -112,7 +112,7 @@ class Critic(BaseAgent):
                 variables=variables,
             )
             prompt = Evaluation_prompt + feedback_prompt
-            feedback = self.llm.predict(str(self.description) + prompt)
+            feedback = self.llm.invoke(str(self.description) + prompt)
 
             self.shared_memory.add(EventType.feedback, self.name, feedback)
             logger.info(f"feedback: {feedback}")
