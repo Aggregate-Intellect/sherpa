@@ -172,7 +172,6 @@ class SherpaStateMachine:
                 can_trigger = await self.may_trigger(t)
             else:
                 can_trigger = self.may_trigger(t)
-
             if not can_trigger:
                 continue
 
