@@ -36,7 +36,8 @@ class AgentFeedbackPolicy(ReactPolicy):
             version="1.0",
             variables=variables
         )
-        question = self.llm.predict(agent_feedback_prompt)
+        result = self.llm.invoke(agent_feedback_prompt)
+        question = result.content if hasattr(result, 'content') else str(result)
         logger.info(f"Question to the user: {question}")
         self.agent.shared_memory.add_event(Event(EventType.task, "Agent", question))
         result = self.agent.run()
