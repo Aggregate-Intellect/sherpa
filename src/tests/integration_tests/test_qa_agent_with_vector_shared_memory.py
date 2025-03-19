@@ -164,8 +164,8 @@ def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):  # noqa F
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
-    logger.debug(results[0].content)
+    result = task_agent.synthesize_output()
+
     expected = [
         "Avocados",
         "Eiffel Tower",
@@ -189,6 +189,5 @@ def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):  # noqa F
         "French Burgundy",
     ]
     assert any(
-        item in results[0].content for item in expected
+        item in result for item in expected
     ), "Result does not contain any expected items"
-    assert len(results) == 1
