@@ -1,11 +1,14 @@
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.actions.dynamic import DynamicAction
+from sherpa_ai.actions.empty import EmptyAction
 from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
+from sherpa_ai.memory.state_machine import SherpaStateMachine
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
 from sherpa_ai.test_utils.llms import get_llm  # noqa: F401
@@ -52,6 +55,8 @@ def test_qa_agent_policy_selection_exception():
     )
 
     result = agent.run()
+
+    logger.error(result.content)
 
     assert result.content == "success"
 
@@ -119,6 +124,9 @@ class MockPolicy(BasePolicy):
     current_fail_count: int = 0
     exception_type: type
 
+    async def async_select_action(self, belief: Belief) -> PolicyOutput:
+        return self.select_action(belief)
+
     def select_action(self, belief: Belief) -> PolicyOutput:
         if self.current_fail_count < self.fail_count:
             self.current_fail_count += 1
@@ -142,3 +150,32 @@ class MockAction(BaseAction):
             raise self.exception_type("Action execution failed")
 
         return "success"
+
+
+def test_execution_stop_before():
+    belief = Belief()
+
+    action_a = EmptyAction(name="A_to_B_1", belief=belief)
+    action_b = DynamicAction(
+        name="B_to_C", belief=belief, action=lambda: "stop", args=[], usage=""
+    )
+    action_c = EmptyAction(name="C_to_A", belief=belief)
+
+    sm = SherpaStateMachine(states=["A", "B", "C"], initial="A")
+    sm.update_transition(action_a.name, "A", "B", action=action_a)
+    sm.update_transition(action_b.name, "B", "C", action=action_b)
+    sm.update_transition(action_c.name, "C", "A", action=action_c)
+
+    belief.state_machine = sm
+
+    agent = QAAgent(
+        llm=None,
+        belief=belief,
+        max_runs=100,
+        stop_checker=lambda belief: belief.get("B_to_C") == "stop",
+    )
+
+    result = agent.run()
+
+    assert result.status == "success"
+    assert belief.get_state() == "C"
