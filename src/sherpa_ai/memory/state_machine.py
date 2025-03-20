@@ -9,6 +9,7 @@ from sherpa_ai.actions.base import ActionArgument, BaseAction
 from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
 from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
                                     add_transition_features)
+from sherpa_ai.utils import is_coroutine_function
 
 
 class State(ts.State):
@@ -167,8 +168,8 @@ class SherpaStateMachine:
         for t in triggers:
             if t not in self.explicit_transitions:
                 continue
-
-            if asyncio.iscoroutinefunction(self.may_trigger):
+            
+            if is_coroutine_function(self.may_trigger):
                 can_trigger = await self.may_trigger(t)
             else:
                 can_trigger = self.may_trigger(t)
