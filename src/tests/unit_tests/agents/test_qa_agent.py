@@ -177,5 +177,5 @@ def test_execution_stop_before():
 
     result = agent.run()
 
-    assert result.status == "success"
+    assert result.status == "waiting"
     assert belief.get_state() == "C"
