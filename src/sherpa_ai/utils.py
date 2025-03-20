@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+import functools
 import json
 import re
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -18,9 +20,7 @@ HTTP_GET_TIMEOUT = 2.5
 
 def load_files(files: List[str]) -> List[Document]:
     from langchain_community.document_loaders import (
-        UnstructuredMarkdownLoader,
-        UnstructuredPDFLoader,
-    )
+        UnstructuredMarkdownLoader, UnstructuredPDFLoader)
 
     documents = []
     loader = None
@@ -683,3 +683,21 @@ def get_links_from_text(text: str) -> List[str]:
 
     result = [{"url": url, "base_url": get_base_url(url)} for url in urls]
     return result
+
+
+def is_coroutine_function(func: Any):
+    """
+    Check if a function is a coroutine function.
+
+    Args:
+    - func (Any): The function to check.
+
+    Returns:
+    bool: True if the function is a coroutine function, False otherwise.
+    """
+    while isinstance(func, functools.partial):
+        func = func.func
+
+    return asyncio.iscoroutinefunction(func) or (
+        callable(func) and asyncio.iscoroutinefunction(func.__call__)
+    )
