@@ -144,7 +144,6 @@ class BaseAgent(ABC, BaseModel):
         return asyncio.run(self.async_run())
 
     async def async_run(self) -> TaskResult:
-
         logger.debug(f"```⏳{self.name} is thinking...```")
 
         if self.shared_memory is not None:
@@ -195,7 +194,8 @@ class BaseAgent(ABC, BaseModel):
             action_output = self.belief.get(result.action.name, action_output)
 
             if self.stop_checker(self.belief):
-                break
+                task_result = TaskResult(content=action_output, status="waiting")
+                return task_result
 
             logger.debug(f"```Action output: {action_output}```")
 
