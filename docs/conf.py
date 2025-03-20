@@ -36,8 +36,12 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
+    'sphinx.ext.autosummary',
     'myst_parser'
 ]
+autosummary_generate = True
+autodoc_member_order = 'bysource'
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
