@@ -19,6 +19,7 @@ from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
 from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
+from sherpa_ai.utils import is_coroutine_function
 
 
 class BaseAgent(ABC, BaseModel):
@@ -143,7 +144,6 @@ class BaseAgent(ABC, BaseModel):
         return asyncio.run(self.async_run())
 
     async def async_run(self) -> TaskResult:
-
         logger.debug(f"```⏳{self.name} is thinking...```")
 
         if self.shared_memory is not None:
@@ -194,7 +194,8 @@ class BaseAgent(ABC, BaseModel):
             action_output = self.belief.get(result.action.name, action_output)
 
             if self.stop_checker(self.belief):
-                break
+                task_result = TaskResult(content=action_output, status="waiting")
+                return task_result
 
             logger.debug(f"```Action output: {action_output}```")
 
@@ -351,7 +352,7 @@ class BaseAgent(ABC, BaseModel):
 
     async def async_act(self, action: BaseAction, inputs: dict) -> Optional[str]:
         try:
-            if asyncio.iscoroutinefunction(action):
+            if is_coroutine_function(action):
                 action_output = await action(**inputs)
             else:
                 action_output = action(**inputs)
