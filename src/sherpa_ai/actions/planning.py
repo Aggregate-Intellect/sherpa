@@ -150,7 +150,7 @@ class TaskPlanning(BaseAction):
 
         logger.debug(f"Prompt: {prompt}")
 
-        action_output = self.llm.predict(prompt)
+        action_output = self.llm.invoke(prompt)
 
         return self.post_process(action_output)
 

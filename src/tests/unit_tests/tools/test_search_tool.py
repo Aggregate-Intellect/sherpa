@@ -4,7 +4,6 @@ import pytest
 from loguru import logger
 
 from sherpa_ai.config import AgentConfig
-from sherpa_ai.output_parser import TaskAction
 from sherpa_ai.tools import SearchTool
 
 
