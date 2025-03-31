@@ -1,5 +1,5 @@
 Sherpa AI API Reference
-====================
+=======================
 
 .. image:: https://img.shields.io/badge/Sherpa-AI-blue
    :alt: Sherpa AI

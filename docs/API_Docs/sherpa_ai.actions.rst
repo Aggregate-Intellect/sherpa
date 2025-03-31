@@ -15,7 +15,7 @@ The ``actions`` package contains a collection of specialized actions that Sherpa
    * **Mathematical Tools**: Arithmetic problem-solving actions
 
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 
@@ -40,8 +40,6 @@ Submodules
 
    * - Module
      - Description
-   * - :mod:`sherpa_ai.actions.answer_arithmetic`
-     - Provides actions for solving mathematical problems and calculations.
    * - :mod:`sherpa_ai.actions.arxiv_search`
      - Implements search capabilities for academic papers and research on arXiv.
    * - :mod:`sherpa_ai.actions.base`
@@ -60,7 +58,6 @@ Submodules
 .. toctree::
    :hidden:
 
-   sherpa_ai.actions.answer_arithmetic
    sherpa_ai.actions.arxiv_search
    sherpa_ai.actions.base
    sherpa_ai.actions.context_search
@@ -69,13 +66,6 @@ Submodules
    sherpa_ai.actions.planning
    sherpa_ai.actions.synthesize
 
-sherpa\_ai.actions.answer\_arithmetic module
---------------------------------------------
-
-.. automodule:: sherpa_ai.actions.answer_arithmetic
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 sherpa\_ai.actions.arxiv\_search module
 ---------------------------------------

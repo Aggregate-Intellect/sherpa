@@ -14,7 +14,7 @@ The ``verbose_loggers`` package provides advanced logging capabilities for Sherp
    * **Formatting Tools**: Utilities for formatting and presenting log information
 
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 

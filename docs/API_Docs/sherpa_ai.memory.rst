@@ -14,7 +14,7 @@ The ``memory`` package provides persistence and knowledge management capabilitie
    * **Knowledge Management**: Tools for organizing and retrieving stored information
 
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 

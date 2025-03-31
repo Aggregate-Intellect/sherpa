@@ -14,7 +14,7 @@ The ``database`` package provides database interaction capabilities for Sherpa A
    * **Usage Analytics**: Capabilities for analyzing usage patterns
 
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 

@@ -14,7 +14,7 @@ The ``error_handling`` package provides robust error management capabilities for
    * **Recovery Mechanisms**: Techniques for recovering from various error types
 
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 

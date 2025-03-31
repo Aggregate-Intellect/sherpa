@@ -14,7 +14,7 @@ The ``config`` package provides configuration management tools for Sherpa AI app
    * **Parameter Validation**: Ensures configuration parameters are valid
 
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 

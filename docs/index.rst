@@ -25,6 +25,14 @@
    About_Sherpa/Updates/index
    About_Sherpa/multi_agent_framework.rst
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   About_Sherpa/index
+   Architecture
+   How_To/index
+   API_Docs/modules
 
 Sherpa: AI-Augmented Thinking Companion
 =======================================

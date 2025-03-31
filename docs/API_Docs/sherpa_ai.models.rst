@@ -14,7 +14,7 @@ The ``models`` package provides interfaces and wrappers for language models in S
    * **ChatModelWithLogging**: Chat model wrapper with integrated logging capabilities
 
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 

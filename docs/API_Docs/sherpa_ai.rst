@@ -9,18 +9,19 @@ The ``sherpa_ai`` package is a comprehensive AI framework for building intellige
 .. admonition:: Key Components
    :class: tip
    
-   * **Orchestrator**: Coordinates the flow of information between agents and manages the execution of tasks
-   * **Task Agent**: Specialized agent for handling specific user tasks and generating appropriate responses
-   * **Action Planners**: Creates and executes strategic sequences of actions to accomplish goals
    * **Agents**: Domain-specific AI agents with different expertise and capabilities
+   * **Actions**: Specialized operations that agents can perform to accomplish tasks
+   * **Policies**: Decision-making strategies for agent behavior and reasoning
    * **Memory Systems**: Persistent storage for knowledge, beliefs, and conversation history
    * **Models**: Interfaces with various LLM providers with enhanced logging and error handling
+   * **Prompts**: Template-based system for creating and managing prompts for language models
    * **Tools**: Utility functions and interfaces for common AI operations
    * **Reflection**: Capabilities for self-evaluation and improvement
    * **Events**: Event-driven architecture for coordinating system components
+   * **Test Utilities**: Testing tools for data, language models, and logging
 
 Installation
------------
+------------
 
 The Sherpa AI package can be installed via pip:
 
@@ -28,64 +29,6 @@ The Sherpa AI package can be installed via pip:
 
    pip install sherpa-ai
 
-Quick Usage
-----------
-
-.. code-block:: python
-
-   # Basic orchestrated multi-agent system
-   from sherpa_ai.orchestrator import Orchestrator
-   from sherpa_ai.agents import QAAgent, Critic
-   from sherpa_ai.models import SherpaBaseChatModel
-   
-   # Initialize models and agents
-   model = SherpaBaseChatModel(model_name="gpt-4")
-   qa_agent = QAAgent(model=model)
-   critic = Critic(model=model)
-   
-   # Create an orchestrator with multiple agents
-   orchestrator = Orchestrator(
-       agents=[qa_agent, critic],
-       primary_agent=qa_agent
-   )
-   
-   # Process a user query
-   result = orchestrator.process("Explain how neural networks learn through backpropagation")
-   
-   print(result)
-
-Advanced Usage
--------------
-
-.. code-block:: python
-
-   # Advanced system with memory and action planning
-   from sherpa_ai.orchestrator import Orchestrator
-   from sherpa_ai.agents import QAAgent
-   from sherpa_ai.memory import SharedMemory
-   from sherpa_ai.action_planner import SimplePlanner
-   from sherpa_ai.actions import GoogleSearch, Synthesize
-   
-   # Set up memory
-   memory = SharedMemory()
-   
-   # Set up action planner with actions
-   planner = SimplePlanner(actions=[
-       GoogleSearch(),
-       Synthesize()
-   ])
-   
-   # Create agent with memory and planner
-   agent = QAAgent(memory=memory, action_planner=planner)
-   
-   # Create orchestrator
-   orchestrator = Orchestrator(agents=[agent])
-   
-   # Process queries with memory persistence
-   orchestrator.process("What are quantum computers?")
-   
-   # The next query can reference previous interactions
-   orchestrator.process("How do they compare to classical computers?")
 
 Subpackages
 -----------
@@ -96,14 +39,14 @@ Subpackages
 
    * - Package
      - Description
-   * - :mod:`sherpa_ai.action_planner`
-     - Strategic planning capabilities for generating and executing action sequences.
    * - :mod:`sherpa_ai.actions`
      - Collection of specialized actions that agents can perform to accomplish tasks.
    * - :mod:`sherpa_ai.agents`
      - Specialized AI agents with different roles and expertise for various domains.
    * - :mod:`sherpa_ai.config`
      - Configuration management tools for customizing system behavior.
+   * - :mod:`sherpa_ai.connectors`
+     - Interfaces for connecting to external systems and databases.
    * - :mod:`sherpa_ai.database`
      - Database interaction capabilities for persistence and analytics.
    * - :mod:`sherpa_ai.error_handling`
@@ -114,6 +57,14 @@ Subpackages
      - Interfaces with language model providers and enhanced model functionality.
    * - :mod:`sherpa_ai.output_parsers`
      - Tools for validating and transforming model outputs.
+   * - :mod:`sherpa_ai.policies`
+     - Decision-making strategies for agents to handle different scenarios.
+   * - :mod:`sherpa_ai.prompts`
+     - Template-based system for creating, loading, and formatting prompts.
+   * - :mod:`sherpa_ai.scrape`
+     - Utilities for extracting information from files and repositories.
+   * - :mod:`sherpa_ai.test_utils`
+     - Testing utilities for data, language models, and logging.
    * - :mod:`sherpa_ai.verbose_loggers`
      - Advanced logging capabilities for debugging and monitoring.
 
@@ -121,15 +72,19 @@ Subpackages
    :maxdepth: 4
    :hidden:
 
-   sherpa_ai.action_planner
    sherpa_ai.actions
    sherpa_ai.agents
    sherpa_ai.config
+   sherpa_ai.connectors
    sherpa_ai.database
    sherpa_ai.error_handling
    sherpa_ai.memory
    sherpa_ai.models
    sherpa_ai.output_parsers
+   sherpa_ai.policies
+   sherpa_ai.prompts
+   sherpa_ai.scrape
+   sherpa_ai.test_utils
    sherpa_ai.verbose_loggers
 
 Submodules
@@ -143,8 +98,6 @@ Submodules
      - Description
    * - :mod:`sherpa_ai.events`
      - Event system for coordinating component interactions and message passing.
-   * - :mod:`sherpa_ai.orchestrator`
-     - Core orchestration engine that coordinates agents and manages workflow.
    * - :mod:`sherpa_ai.output_parser`
      - Tools for parsing and processing model outputs into usable formats.
    * - :mod:`sherpa_ai.post_processors`
@@ -155,8 +108,6 @@ Submodules
      - Dynamic prompt generation based on context and requirements.
    * - :mod:`sherpa_ai.reflection`
      - Self-evaluation and improvement capabilities for agents.
-   * - :mod:`sherpa_ai.task_agent`
-     - Specialized agent for handling specific user tasks.
    * - :mod:`sherpa_ai.tools`
      - Utility functions and tools for common AI operations.
    * - :mod:`sherpa_ai.utils`
@@ -166,13 +117,11 @@ Submodules
    :hidden:
 
    sherpa_ai.events
-   sherpa_ai.orchestrator
    sherpa_ai.output_parser
    sherpa_ai.post_processors
    sherpa_ai.prompt
    sherpa_ai.prompt_generator
    sherpa_ai.reflection
-   sherpa_ai.task_agent
    sherpa_ai.tools
    sherpa_ai.utils
 
@@ -184,13 +133,6 @@ sherpa\_ai.events module
    :undoc-members:
    :show-inheritance:
 
-sherpa\_ai.orchestrator module
-------------------------------
-
-.. automodule:: sherpa_ai.orchestrator
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 sherpa\_ai.output\_parser module
 --------------------------------
@@ -228,14 +170,6 @@ sherpa\_ai.reflection module
 ----------------------------
 
 .. automodule:: sherpa_ai.reflection
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.task\_agent module
------------------------------
-
-.. automodule:: sherpa_ai.task_agent
    :members:
    :undoc-members:
    :show-inheritance:

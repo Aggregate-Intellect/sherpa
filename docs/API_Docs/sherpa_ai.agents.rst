@@ -16,8 +16,43 @@ The ``agents`` package provides specialized AI agents with different roles and c
    * **Critic**: Evaluates and provides feedback on other agents' outputs
    * **AgentPool**: Manages multiple agents and their interactions
 
+Class Hierarchy
+--------------
+
+The following diagram shows the inheritance relationships between the core agent classes:
+
+.. inheritance-diagram:: sherpa_ai.agents.base sherpa_ai.agents.qa_agent sherpa_ai.agents.critic sherpa_ai.agents.ml_engineer sherpa_ai.agents.physicist sherpa_ai.agents.planner
+   :parts: 1
+   :caption: Agent Class Hierarchy
+
+Component Relationships
+---------------------
+
+The diagram below shows how agents interact with other components of the Sherpa AI framework:
+
+.. graphviz::
+   :caption: Agent Component Relationships
+   :align: center
+
+   digraph "Agent Relationships" {
+      graph [fontname="Helvetica", fontsize=14, rankdir=LR, nodesep=0.8, ranksep=0.8];
+      node [fontname="Helvetica", fontsize=12, shape=box, style="filled,rounded", fillcolor="#f5f5f5", color="#336790", margin=0.3];
+      edge [fontname="Helvetica", fontsize=10, color="#555555"];
+
+      Agent [fillcolor="#d5f5e3", label="Agent"];
+      Model [fillcolor="#fadbd8", label="Model"];
+      Memory [fillcolor="#ebdef0", label="Memory"];
+      Policy [fillcolor="#fdebd0", label="Policy"];
+      Tools [fillcolor="#d6eaf8", label="Tools"];
+      
+      Agent -> Model [label="uses"];
+      Agent -> Memory [label="reads/writes"];
+      Agent -> Policy [label="follows"];
+      Agent -> Tools [label="utilizes"];
+   }
+
 Example Usage
-------------
+-------------
 
 .. code-block:: python
 
