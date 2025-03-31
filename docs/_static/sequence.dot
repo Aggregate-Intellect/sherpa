@@ -5,7 +5,6 @@ digraph "Sherpa AI Query Flow" {
 
     /* Participants */
     User [fillcolor="#f8f9f9", label="User"];
-    Orchestrator [fillcolor="#d4e6f1", label="Orchestrator"];
     Agent [fillcolor="#d5f5e3", label="QA Agent"];
     Policy [fillcolor="#fdebd0", label="React Policy"];
     Memory [fillcolor="#ebdef0", label="Memory"];
@@ -14,25 +13,22 @@ digraph "Sherpa AI Query Flow" {
     
     /* Invisible edges for layout */
     edge [style=invis];
-    User -> Orchestrator -> Agent -> Policy -> Memory -> Model -> Action;
+    User -> Agent -> Policy -> Memory -> Model -> Action;
     
     /* Sequence edges */
     edge [style=solid, color="#555555", constraint=false];
     
-    User -> Orchestrator [label="1. Query", constraint=false];
-    Orchestrator -> Agent [label="2. Process Query", constraint=false];
-    Agent -> Memory [label="3. Check Memory", constraint=false];
-    Memory -> Agent [label="4. Return Context", constraint=false];
-    Agent -> Policy [label="5. Apply Policy", constraint=false];
-    Policy -> Action [label="6. Select Action", constraint=false];
-    Action -> Model [label="7. Get Result", constraint=false];
-    Model -> Agent [label="8. Generate Response", constraint=false];
-    Agent -> Orchestrator [label="9. Return Result", constraint=false];
-    Orchestrator -> User [label="10. Final Answer", constraint=false];
+    User -> Agent [label="1. Query", constraint=false];
+    Agent -> Memory [label="2. Check Memory", constraint=false];
+    Memory -> Agent [label="3. Return Context", constraint=false];
+    Agent -> Policy [label="4. Apply Policy", constraint=false];
+    Policy -> Action [label="5. Select Action", constraint=false];
+    Action -> Model [label="6. Get Result", constraint=false];
+    Model -> Agent [label="7. Generate Response", constraint=false];
+    Agent -> User [label="8. Final Answer", constraint=false];
     
     /* Rankings for proper sequence layout */
     { rank=same; User; }
-    { rank=same; Orchestrator; }
     { rank=same; Agent; }
     { rank=same; Policy; Memory; }
     { rank=same; Model; Action; }

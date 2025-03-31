@@ -4,7 +4,6 @@ digraph "Sherpa AI Architecture" {
     edge [fontname="Helvetica", fontsize=10, color="#555555"];
 
     /* Main Components */
-    Orchestrator [fillcolor="#d4e6f1", label="Orchestrator\nCoordinates agents and workflow"];
     Agents [fillcolor="#d5f5e3", label="Agents\nDomain-specific AI agents"];
     Policies [fillcolor="#fdebd0", label="Policies\nDecision-making strategies"];
     Memory [fillcolor="#ebdef0", label="Memory\nKnowledge persistence"];
@@ -16,15 +15,14 @@ digraph "Sherpa AI Architecture" {
     Config [fillcolor="#f2f3f4", label="Config\nConfiguration management"];
 
     /* Connections */
-    Orchestrator -> Agents [label="coordinates"];
-    Orchestrator -> Policies [label="applies"];
     Agents -> Models [label="uses"];
     Agents -> Prompts [label="loads"];
     Agents -> Memory [label="stores/retrieves"];
     Agents -> Actions [label="executes"];
+    Agents -> Policies [label="follows"];
     Policies -> Actions [label="selects"];
     Actions -> Tools [label="utilizes"];
     Actions -> Connectors [label="interacts"];
     Models -> Prompts [label="applies"];
-    Config -> {Orchestrator, Agents, Models, Connectors} [style="dashed"];
+    Config -> {Agents, Models, Connectors} [style="dashed"];
 } 

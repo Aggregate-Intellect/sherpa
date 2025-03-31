@@ -17,7 +17,7 @@ The ``agents`` package provides specialized AI agents with different roles and c
    * **AgentPool**: Manages multiple agents and their interactions
 
 Class Hierarchy
---------------
+---------------
 
 The following diagram shows the inheritance relationships between the core agent classes:
 
@@ -26,7 +26,7 @@ The following diagram shows the inheritance relationships between the core agent
    :caption: Agent Class Hierarchy
 
 Component Relationships
----------------------
+-----------------------
 
 The diagram below shows how agents interact with other components of the Sherpa AI framework:
 

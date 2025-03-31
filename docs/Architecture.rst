@@ -1,9 +1,9 @@
-====================
+======================
 Sherpa AI Architecture
-====================
+======================
 
 Architecture Overview
--------------------
+---------------------
 
 Sherpa AI is designed with a modular architecture that enables flexibility and extensibility. The framework consists of several key components that work together to create powerful AI agents and workflows.
 
@@ -13,27 +13,7 @@ Sherpa AI is designed with a modular architecture that enables flexibility and e
    :alt: Diagram showing Sherpa AI's component architecture and interactions
 
 Components
----------
-
-Orchestrator
-~~~~~~~~~~~
-
-The Orchestrator is the central coordination component of Sherpa AI. It:
-
-* Manages the flow of information between agents
-* Coordinates the execution of tasks
-* Handles the overall workflow of the system
-
-.. code-block:: python
-
-   from sherpa_ai.orchestrator import Orchestrator
-   from sherpa_ai.agents import QAAgent
-   
-   # Create an orchestrator with an agent
-   orchestrator = Orchestrator(agents=[QAAgent()])
-   
-   # Process user queries
-   result = orchestrator.process("How do neural networks work?")
+----------
 
 Agents
 ~~~~~~
@@ -51,7 +31,7 @@ Agents build on a common interface while providing specialized functionality for
 * **MLEngineer**: Specialized for machine learning tasks
 
 Policies
-~~~~~~~
+~~~~~~~~
 
 Policies determine how agents make decisions and process information:
 
@@ -69,7 +49,7 @@ Memory systems provide persistence across sessions and interactions:
 * **VectorMemory**: Enables semantic retrieval of information
 
 Integration
-----------
+-----------
 
 The power of Sherpa AI comes from the seamless integration of these components. The following diagram shows how data flows through a typical Sherpa AI application:
 
@@ -81,18 +61,13 @@ The power of Sherpa AI comes from the seamless integration of these components. 
                           │
                           ▼
    ┌───────────────────────────────────────┐
-   │             Orchestrator              │
+   │              Agent                    │
    └───┬───────────────┬──────────────┬────┘
        │               │              │
        ▼               ▼              ▼
    ┌───────┐      ┌────────┐     ┌────────┐
-   │ Agent │      │ Memory │     │ Policy │
-   └───┬───┘      └────┬───┘     └────┬───┘
-       │               │              │
-       ▼               │              │
-   ┌───────┐           │              │
-   │ Model │◄──────────┘              │
-   └───┬───┘                          │
+   │ Model │      │ Memory │     │ Policy │
+   └───┬───┘      └────────┘     └────┬───┘
        │                              │
        ▼                              │
    ┌───────┐                          │
@@ -121,10 +96,9 @@ The sequence diagram below illustrates how a user query flows through the Sherpa
 
 This sequence shows:
 
-1. A user submits a query to the Orchestrator
-2. The Orchestrator routes the query to an appropriate Agent
-3. The Agent checks Memory for relevant context
-4. The Agent's Policy determines the next action
-5. Actions are executed to gather information
-6. The Model generates a response based on all inputs
-7. The final response is returned to the user through the Orchestrator 
+1. A user submits a query to the Agent
+2. The Agent checks Memory for relevant context
+3. The Agent's Policy determines the next action
+4. Actions are executed to gather information
+5. The Model generates a response based on all inputs
+6. The final response is returned to the user 
