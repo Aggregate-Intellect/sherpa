@@ -10,8 +10,10 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.actions.exceptions import (SherpaActionExecutionException,
-                                          SherpaMissingInformationException)
+from sherpa_ai.actions.exceptions import (
+    SherpaActionExecutionException,
+    SherpaMissingInformationException,
+)
 from sherpa_ai.config.task_result import TaskResult
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief, SharedMemory
@@ -182,13 +184,6 @@ class BaseAgent(ABC, BaseModel):
             elif isinstance(action_output, SherpaMissingInformationException):
                 question = action_output.message
                 task_result = TaskResult(content=question, status="waiting")
-                return task_result
-            elif isinstance(action_output, Exception):
-                tb_exception = traceback.TracebackException.from_exception(
-                    action_output
-                )
-                stack_trace = "".join(tb_exception.format())
-                task_result = TaskResult(content=stack_trace, status="failed")
                 return task_result
 
             action_output = self.belief.get(result.action.name, action_output)
@@ -364,8 +359,4 @@ class BaseAgent(ABC, BaseModel):
                 self.feedback_agent_name,
                 f"Error in executing action: {action.name}. Error: {e}",
             )
-            logger.exception(e)
             return None
-        except Exception as e:
-            logger.exception(e)
-            return e
