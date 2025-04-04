@@ -5,7 +5,6 @@ import pytest
 from sherpa_ai.actions.google_search import GoogleSearch
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.agents.user import UserAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.policies.agent_feedback_policy import AgentFeedbackPolicy
 from sherpa_ai.test_utils.llms import get_llm
@@ -57,7 +56,7 @@ def test_feedback_policy_in_qa_incomplete(get_llm, mock_google_search):
         actions=[google_search],
         policy=policy,
     )
-    qa_agent.shared_memory.add(EventType.task, "human", question)
+    qa_agent.shared_memory.add("task", "human", content=question)
 
     result = qa_agent.run()
 
@@ -93,7 +92,7 @@ def test_feedback_policy_in_qa_complete(get_llm, mock_google_search):
         actions=[google_search],
         policy=policy,
     )
-    qa_agent.shared_memory.add(EventType.task, "human", question)
+    qa_agent.shared_memory.add("task", "human", content=question)
 
     result = qa_agent.run()
 

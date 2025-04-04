@@ -2,20 +2,15 @@ from unittest.mock import patch
 
 import pytest
 from loguru import logger
-from nltk.metrics import jaccard_distance
 
+import sherpa_ai.config as cfg
 from sherpa_ai.actions.entity_validation import EntityValidationAction
 from sherpa_ai.actions.google_search import GoogleSearch
-import sherpa_ai.config as cfg
 from sherpa_ai.agents.qa_agent import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
-from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
-from sherpa_ai.output_parsers.entity_validation import EntityValidation
 from sherpa_ai.test_utils.llms import get_llm
 from sherpa_ai.tools import SearchTool
-from sherpa_ai.utils import extract_entities
 
 
 @pytest.mark.parametrize(
@@ -64,14 +59,14 @@ def test_entity_citation_succeeds_in_qa(
         )
 
         shared_memory.add(
-            EventType.task,
+            "task",
             "Planner",
-            objective,
+            content=objective,
         )
 
         task_agent.run()
 
-        results = shared_memory.get_by_type(EventType.result)
+        results = shared_memory.get_by_type("result")
         logger.info(results[0].content)
         validation_exist = False
         for event in belief.internal_events:

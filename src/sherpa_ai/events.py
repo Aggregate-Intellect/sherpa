@@ -1,42 +1,57 @@
-from enum import Enum
+from abc import ABC
+from typing import Any
+
+from pydantic import BaseModel
 
 
-class EventType(Enum):
-    planning = 1
-    task = 2
-    result = 3
-    feedback = 4
-    action = 5
-    action_output = 6
-    user_input = 7
+class Event(BaseModel, ABC):
+    """
+    Base class for an event.
+    """
 
-
-class Event:
-    def __init__(
-        self, event_type: EventType, agent: str, content: str, data: dict = {}
-    ) -> None:
-        self.event_type = event_type
-        self.agent = agent
-        self.content = content
-        self.data = data
+    name: str
 
     def __str__(self) -> str:
-        return f"{self.agent}: {self.event_type} - {self.content}"
+        return repr(self)
 
-    @property
-    def __dict__(self):
-        return {
-            "event_type": self.event_type,
-            "agent": self.agent,
-            "content": self.content,
-            "data": self.data,
-        }
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(
-            event_type=data["event_type"],
-            agent=data["agent"],
-            content=data["content"],
-            data=data["data"],
-        )
+class GenericEvent(Event):
+    """
+    Base class for an event.
+    """
+
+    name: str
+    content: Any
+    event_type: str = "generic"
+
+
+class ActionStartEvent(Event):
+    """
+    Event triggered when an action is executed.
+    """
+
+    name: str
+    args: dict[str, Any]
+    event_type: str = "action_start"
+
+
+class ActionFinishEvent(Event):
+    """
+    Event triggered when an action is executed.
+    """
+
+    name: str
+    outputs: Any
+    event_type: str = "action_finish"
+
+
+def build_event(event_type: str, name: str, **kwargs) -> Event:
+    """
+    Build an event based on the event type.
+    """
+    if event_type == "action_start":
+        return ActionStartEvent(**kwargs, event_type=event_type, name=name)
+    elif event_type == "action_finish":
+        return ActionFinishEvent(**kwargs, event_type=event_type, name=name)
+    else:
+        return GenericEvent(**kwargs, event_type=event_type, name=name)

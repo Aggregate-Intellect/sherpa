@@ -5,10 +5,9 @@ from pytest import mark
 
 from sherpa_ai.actions.base import ActionResource
 from sherpa_ai.agents import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
-from sherpa_ai.test_utils.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm  # noqa: F401
 
 
 def test_citation_validation():
@@ -56,9 +55,9 @@ def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "Planner",
-        "What is AutoGPT?",
+        content="What is AutoGPT?",
     )
 
     if not external_api:
@@ -81,7 +80,7 @@ def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
     else:
         task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type("result")
     logger.error(results[-1].content)
 
     # e.g. [7](https://neilpatel.com/blog/autogpt/)

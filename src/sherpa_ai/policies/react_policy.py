@@ -8,8 +8,7 @@ from pydantic import BaseModel, ConfigDict
 
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
-from sherpa_ai.policies.utils import (is_selection_trivial,
-                                      transform_json_output)
+from sherpa_ai.policies.utils import is_selection_trivial, transform_json_output
 from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 
 if TYPE_CHECKING:
@@ -65,7 +64,6 @@ class ReactPolicy(BasePolicy):
             return PolicyOutput(action=actions[0], args={})
 
         task_description = belief.current_task.content
-        task_context = belief.get_context(self.llm.get_num_tokens)
         possible_actions = "\n".join([str(action) for action in actions])
         history_of_previous_actions = belief.get_internal_history(
             self.llm.get_num_tokens
@@ -78,7 +76,6 @@ class ReactPolicy(BasePolicy):
             "output_instruction": self.output_instruction,
             "task_description": task_description,
             "possible_actions": possible_actions,
-            "task_context": task_context,
             "history_of_previous_actions": history_of_previous_actions,
             "response_format": response_format,
         }

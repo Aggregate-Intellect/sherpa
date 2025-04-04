@@ -3,10 +3,9 @@ from unittest.mock import patch
 import pytest
 from loguru import logger
 
-from sherpa_ai.actions.number_validation import NumberValidationAction
 import sherpa_ai.config as cfg
+from sherpa_ai.actions.number_validation import NumberValidationAction
 from sherpa_ai.agents import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
@@ -53,14 +52,14 @@ def test_number_citation_succeeds_in_qa(
         )
 
         shared_memory.add(
-            EventType.task,
+            "task",
             "Planner",
-            objective,
+            content=objective,
         )
 
         task_agent.run()
 
-        results = shared_memory.get_by_type(EventType.result)
+        results = shared_memory.get_by_type("result")
         logger.info(results[0].content)
         validation_exist = False
         for event in belief.internal_events:

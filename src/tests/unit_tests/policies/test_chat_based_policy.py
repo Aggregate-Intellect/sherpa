@@ -5,7 +5,6 @@ from loguru import logger
 
 from sherpa_ai.actions.empty import EmptyAction
 from sherpa_ai.agents.qa_agent import QAAgent
-from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.memory.state_machine import SherpaStateMachine
 from sherpa_ai.policies.chat_sm_policy import ChatStateMachinePolicy
@@ -47,25 +46,19 @@ def test_policy_prompts(get_llm):  # noqa: F811
     belief.state_machine = state_machine
 
     belief.set_current_task(
-        Event(
-            EventType.task,
-            "User",
-            "Move to state D",
-        )
+        "Move to state D",
     )
     # Add some dummy action history
     belief.update_internal(
-        EventType.action,
-        "assistant",
-        "A_to_A",
-        {"action": {"name": "action_a", "args": {"a": "a"}}},
+        "action_start",
+        "action_a",
+        args={"a": "a"},
     )
 
     belief.update_internal(
-        EventType.action_output,
+        "action_finish",
         "assistant",
-        "Success!",
-        {"result": "success"},
+        outputs={"result": "success"},
     )
 
     prompt_data = policy.get_prompt_data(belief, belief.get_actions())
@@ -91,11 +84,7 @@ def test_chat_based_policy_with_agent(get_llm):  # noqa: F811
     belief.state_machine = state_machine
 
     belief.set_current_task(
-        Event(
-            EventType.task,
-            "User",
-            "Move to state D",
-        )
+        "Move to state D",
     )
 
     agent = QAAgent(

@@ -5,7 +5,6 @@ from sherpa_ai.actions.dynamic import DynamicAction
 from sherpa_ai.actions.empty import EmptyAction
 from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.agents import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.memory.state_machine import SherpaStateMachine
@@ -28,14 +27,14 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "Planner",
-        "What is AutoGPT?",
+        content="What is AutoGPT?",
     )
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type("result")
     assert len(results) == 1
 
 

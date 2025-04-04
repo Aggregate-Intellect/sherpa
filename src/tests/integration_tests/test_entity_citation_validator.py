@@ -4,13 +4,11 @@ import pytest
 from loguru import logger
 from nltk.metrics import jaccard_distance
 
-import sherpa_ai.config as cfg
+import sherpa_ai.config as cfg  # noqa: F401
 from sherpa_ai.agents.qa_agent import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
-from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.output_parsers.entity_validation import EntityValidation
-from sherpa_ai.test_utils.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm  # noqa: F401
 from sherpa_ai.tools import SearchTool
 from sherpa_ai.utils import extract_entities
 
@@ -65,14 +63,14 @@ def test_entity_citation_succeeds_in_qa(
         )
 
         shared_memory.add(
-            EventType.task,
+            "task",
             "Planner",
-            objective,
+            content=objective,
         )
 
         task_agent.run()
 
-        results = shared_memory.get_by_type(EventType.result)
+        results = shared_memory.get_by_type("result")
         logger.info(results[0].content)
         result_entities = [s.lower() for s in extract_entities(results[0].content)]
         expected_entities = [s.lower() for s in expected_entities]
