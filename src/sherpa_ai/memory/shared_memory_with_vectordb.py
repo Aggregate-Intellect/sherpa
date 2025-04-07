@@ -1,12 +1,10 @@
 from typing import List, Optional
 
-from langchain_openai import OpenAIEmbeddings 
-
 from sherpa_ai.actions.planning import Plan
 
 # from sherpa_ai.agents import AgentPool
 from sherpa_ai.connectors.base import BaseVectorDB
-from sherpa_ai.events import Event, EventType
+from sherpa_ai.events import Event
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
 
@@ -37,7 +35,7 @@ class SharedMemoryWithVectorDB(SharedMemory):
         self.vectorStorage = vectorStorage
 
     def observe(self, belief: Belief):
-        tasks = super().get_by_type(EventType.task)
+        tasks = super().get_by_type("task")
 
         task = tasks[-1] if len(tasks) > 0 else None
 
@@ -49,17 +47,17 @@ class SharedMemoryWithVectorDB(SharedMemory):
         # Loop through the similarity search results, add the chunks as user_input events which will be added as a context in the belief class.
         for context in contexts:
             super().add(
-                agent="",
-                event_type=EventType.user_input,
+                name="",
+                event_type="user_input",
                 content=context.page_content,
             )
 
-        belief.set_current_task(task)
+        belief.set_current_task(task.content)
 
         for event in self.events:
             if event.event_type in [
-                EventType.task,
-                EventType.result,
-                EventType.user_input,
+                "task",
+                "result",
+                "user_input",
             ]:
                 belief.update(event)

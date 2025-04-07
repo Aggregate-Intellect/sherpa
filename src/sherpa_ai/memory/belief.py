@@ -6,10 +6,10 @@ import pydash
 import transitions as ts
 from loguru import logger
 
-from sherpa_ai.actions.base import BaseAction, BaseRetrievalAction
-from sherpa_ai.events import Event, EventType
+from sherpa_ai.events import Event, build_event
 
 if TYPE_CHECKING:
+    from sherpa_ai.actions.base import BaseAction
     from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
@@ -35,24 +35,6 @@ class Belief:
 
         self.events.append(observation)
 
-    def update_internal(
-        self,
-        event_type: EventType,
-        agent: str,
-        content: str,
-        data: dict = {},
-    ):
-        event = Event(event_type=event_type, agent=agent, content=content, data=data)
-        self.internal_events.append(event)
-
-    def get_by_type(self, event_type):
-        return [
-            event for event in self.internal_events if event.event_type == event_type
-        ]
-
-    def set_current_task(self, task: Event):
-        self.current_task = task
-
     def get_context(self, token_counter: Callable[[str], int]):
         """
         Get the context of the agent
@@ -67,17 +49,30 @@ class Belief:
         context = ""
         for event in reversed(self.events):
             if event.event_type in [
-                EventType.task,
-                EventType.result,
-                EventType.user_input,
+                "task",
+                "result",
+                "user_input",
             ]:
-                message = f"{event.agent}: {event.content}({event.event_type})"
+                message = f"{event.name}: {event.content}({event.event_type})"
                 context = message + "\n" + context
 
                 if token_counter(context) > self.max_tokens:
                     break
 
         return context
+
+    def update_internal(self, event_type: str, name: str, **kwargs):
+        event = build_event(event_type, name, **kwargs)
+        self.internal_events.append(event)
+
+    def get_by_type(self, event_type):
+        return [
+            event for event in self.internal_events if event.event_type == event_type
+        ]
+
+    def set_current_task(self, content):
+        event = build_event("task", "current_task", content=content)
+        self.current_task = event
 
     def get_internal_history(self, token_counter: Callable[[str], int]):
         """
@@ -94,8 +89,9 @@ class Belief:
         current_tokens = 0
 
         for event in reversed(self.internal_events):
-            results.append(event.content)
-            current_tokens += token_counter(event.content)
+            event_str = str(event)
+            results.append(event_str)
+            current_tokens += token_counter(event_str)
             if current_tokens > self.max_tokens:
                 break
 
@@ -108,7 +104,7 @@ class Belief:
 
     def get_histories_excluding_types(
         self,
-        exclude_types: list[EventType],
+        exclude_types: list[str],
         token_counter: Optional[Callable[[str], int]] = None,
         max_tokens=4000,
     ):
@@ -134,11 +130,11 @@ class Belief:
         current_tokens = 0
         for event in reversed(self.internal_events):
             if event.event_type not in exclude_types:
-                if event.event_type == EventType.feedback:
-                    feedback.append(event.content)
+                if event.event_type == "feedback":
+                    feedback.append(str(event))
                 else:
-                    results.append(event.content)
-            current_tokens += token_counter(event.content)
+                    results.append(str(event))
+            current_tokens += token_counter(str(event))
             if current_tokens > max_tokens:
                 break
         context = "\n".join(set(reversed(results))) + "\n".join(set(feedback))
@@ -156,7 +152,7 @@ class Belief:
         # TODO: This is a quick an dirty way to set the current task
         # in actions, need to find a better way
         for action in actions:
-            if isinstance(action, BaseRetrievalAction):
+            if action.__class__.__name__ == "BaseRetrievalAction":
                 action.current_task = self.current_task.content
 
     @property

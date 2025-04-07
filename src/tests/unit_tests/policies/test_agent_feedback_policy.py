@@ -4,11 +4,10 @@ import pytest
 
 from sherpa_ai.actions import EmptyAction
 from sherpa_ai.agents import UserAgent
-from sherpa_ai.events import Event, EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.policies.agent_feedback_policy import AgentFeedbackPolicy
-from sherpa_ai.test_utils.llms import get_llm
+from sherpa_ai.test_utils.llms import get_llm  # noqa: F401
 
 
 @pytest.fixture
@@ -31,7 +30,7 @@ def test_agent_feedback_policy(mock_agent_run, get_llm):  # noqa: F811
         agent=agent, llm=llm, role_description="", output_instruction=""
     )
     belief = Belief()
-    belief.set_current_task(Event(EventType.task, "Agent", "task"))
+    belief.set_current_task("task")
 
     belief.actions = [
         EmptyAction(name="Deliberation"),

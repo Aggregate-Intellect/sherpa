@@ -20,7 +20,9 @@ HTTP_GET_TIMEOUT = 2.5
 
 def load_files(files: List[str]) -> List[Document]:
     from langchain_community.document_loaders import (
-        UnstructuredMarkdownLoader, UnstructuredPDFLoader)
+        UnstructuredMarkdownLoader,
+        UnstructuredPDFLoader,
+    )
 
     documents = []
     loader = None
@@ -384,6 +386,8 @@ def extract_numeric_entities(
     numbers = []
     filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
     for entity in filtered_entities:
+        if "'" in entity:
+            entity = entity.split("'")[1]
         if any(char.isdigit() for char in entity):
             result = extract_numbers_from_text(entity)
             numbers.extend(result)

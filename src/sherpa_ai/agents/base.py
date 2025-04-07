@@ -10,10 +10,11 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.actions.exceptions import (SherpaActionExecutionException,
-                                          SherpaMissingInformationException)
+from sherpa_ai.actions.exceptions import (
+    SherpaActionExecutionException,
+    SherpaMissingInformationException,
+)
 from sherpa_ai.config.task_result import TaskResult
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
@@ -104,9 +105,9 @@ class BaseAgent(ABC, BaseModel):
             return result
         except SherpaPolicyException as e:
             self.belief.update_internal(
-                EventType.action_output,
+                "action_start",
                 self.feedback_agent_name,
-                f"Error in selecting action: {e}",
+                outputs=f"Error in selecting action: {e}",
             )
             logger.exception(e)
             return None
@@ -120,9 +121,9 @@ class BaseAgent(ABC, BaseModel):
             return result
         except SherpaPolicyException as e:
             self.belief.update_internal(
-                EventType.action_output,
+                "action_finish",
                 self.feedback_agent_name,
-                f"Error in selecting action: {e}",
+                outputs=f"Error in selecting action: {e}",
             )
             logger.exception(e)
             return None
@@ -137,7 +138,7 @@ class BaseAgent(ABC, BaseModel):
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
         if self.shared_memory is not None:
-            self.shared_memory.add(EventType.result, self.name, result)
+            self.shared_memory.add("result", self.name, content=result)
         return result
 
     def run(self) -> TaskResult:
@@ -226,16 +227,16 @@ class BaseAgent(ABC, BaseModel):
             # this checks if the validator has already exceeded the validation steps
             # limit.
             if validation.count < self.validation_steps:
-                self.belief.update_internal(EventType.result, self.name, result)
+                self.belief.update_internal("result", self.name, content=result)
                 validation_result = validation.process_output(
                     text=result, belief=self.belief, llm=self.llm
                 )
                 logger.info(f"validation_result: {validation_result}")
                 if not validation_result.is_valid:
                     self.belief.update_internal(
-                        EventType.feedback,
+                        "feedback",
                         self.feedback_agent_name,
-                        validation_result.feedback,
+                        content=validation_result.feedback,
                     )
                     result = self.synthesize_output()
                     global_regen_count += 1
@@ -297,7 +298,7 @@ class BaseAgent(ABC, BaseModel):
             iteration_count += 1
             logger.info(f"main_iteration: {iteration_count}")
             logger.info(f"regen_count: {global_regen_count}")
-
+            logger.info("result: " + result)
             (
                 global_regen_count,
                 all_pass,
@@ -341,7 +342,7 @@ class BaseAgent(ABC, BaseModel):
                 for inst_val in validations
             )
 
-        self.belief.update_internal(EventType.result, self.name, result)
+        self.belief.update_internal("result", self.name, content=result)
         return result
 
     def observe(self):
@@ -360,9 +361,9 @@ class BaseAgent(ABC, BaseModel):
             return action_output
         except SherpaActionExecutionException as e:
             self.belief.update_internal(
-                EventType.action_output,
+                "action_finish",
                 self.feedback_agent_name,
-                f"Error in executing action: {action.name}. Error: {e}",
+                outputs=f"Error in executing action: {action.name}. Error: {e}",
             )
             logger.exception(e)
             return None

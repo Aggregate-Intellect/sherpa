@@ -5,7 +5,6 @@ from loguru import logger
 
 import sherpa_ai.config as cfg
 from sherpa_ai.agents import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.output_parsers.number_validation import NumberValidation
@@ -137,14 +136,14 @@ def test_number_citation_succeeds_in_qa(
         )
 
         shared_memory.add(
-            EventType.task,
+            "task",
             "Planner",
-            objective,
+            content=objective,
         )
 
         task_agent.run()
 
-        results = shared_memory.get_by_type(EventType.result)
+        results = shared_memory.get_by_type("result")
         data_numbers = expected_numbers
 
         logger.debug(results[0].content)

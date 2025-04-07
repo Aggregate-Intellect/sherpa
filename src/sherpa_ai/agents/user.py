@@ -4,7 +4,6 @@ from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.events import EventType
 
 
 class UserAgent(BaseAgent):
@@ -37,9 +36,7 @@ class UserAgent(BaseAgent):
             logger.warning("No event logger provided. Using print instead.")
             print(message)
             result = input()
-            self.shared_memory.add(
-                event_type=EventType.result, agent=self.name, content=result
-            )
+            self.shared_memory.add(event_type="result", name=self.name, content=result)
             return result
         else:
             self.verbose_logger.log(message)

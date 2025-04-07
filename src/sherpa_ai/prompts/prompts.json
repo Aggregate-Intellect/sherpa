@@ -253,7 +253,7 @@
                   "version": "1.0",
                   "description": "Description of system prompt",
                   "type": "text",
-                  "content": "You are an assistant that must parse the user's instructions and select the most appropriate action from the provided possibilities. Only respond with valid JSON as described, without any extra text. Comply strictly with the specified format.\n\n## Context\n{context}\n\n**Task Description**: {task_description}\n\nYou should only respond in JSON format as described below without any extra text.\nResponse Format:\n{response_format}\nEnsure the response can be parsed by Python json.loads",
+                  "content": "You are an assistant that must parse the user's instructions and select the most appropriate action from the provided possibilities. Only respond with valid JSON as described, without any extra text. Comply strictly with the specified format.\n\n**Task Description**: {task_description}\n\nYou should only respond in JSON format as described below without any extra text.\nResponse Format:\n{response_format}\nEnsure the response can be parsed by Python json.loads",
                   "variables":{
                       "context": "",
                       "task_description": "",
@@ -363,7 +363,7 @@
                   "version": "1.0",
                   "description": "Description of react sm policy prompt",
                   "type": "text",
-                  "content": "{role_description}\\n\\n## Context\\n{context}\\n\\n## History of Previous Actions\\n{history_of_previous_actions}\\n\\nYou have a state machine to help you with the action execution. You are currently in the {state} state.\\n{state_description}\\n\\n## Possible Actions:\\n{possible_actions}\\n\\n**Task Description**: {task_description}\\n\\nYou should only select the actions specified in **Possible Actions**.\\nYou should only respond in JSON format as described below without any extra text.\\n\\nResponse Format:\\n{response_format}\\n\\nEnsure the response can be parsed by Python json.loads.\\n\\n{output_instruction}",
+                  "content": "{role_description}\\n\\n## History of Previous Actions\\n{history_of_previous_actions}\\n\\nYou have a state machine to help you with the action execution. You are currently in the {state} state.\\n{state_description}\\n\\n## Possible Actions:\\n{possible_actions}\\n\\n**Task Description**: {task_description}\\n\\nYou should only select the actions specified in **Possible Actions**.\\nYou should only respond in JSON format as described below without any extra text.\\n\\nResponse Format:\\n{response_format}\\n\\nEnsure the response can be parsed by Python json.loads.\\n\\n{output_instruction}",
                   "variables":{
                     "role_description":"",
                     "context":"",

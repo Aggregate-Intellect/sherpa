@@ -1,14 +1,12 @@
 from enum import Enum
 from typing import Any, List
 
-from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.events import EventType
-from sherpa_ai.memory.belief import Belief
 from loguru import logger
+
+from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.memory.belief import Belief
 from sherpa_ai.output_parsers.validation_result import ValidationResult
-from sherpa_ai.utils import (
-    verify_numbers_against_source,
-)
+from sherpa_ai.utils import verify_numbers_against_source
 
 
 class NumberValidationAction(BaseAction):
@@ -40,7 +38,7 @@ class NumberValidationAction(BaseAction):
         """
 
         source = self.belief.get_histories_excluding_types(
-            exclude_types=[EventType.feedback, EventType.result],
+            exclude_types=["feedback", "result"],
         )
 
         if not source:

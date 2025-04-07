@@ -3,7 +3,7 @@ from langchain_core.language_models import FakeListLLM
 from loguru import logger
 
 from sherpa_ai.actions import EmptyAction
-from sherpa_ai.events import Event, EventType
+from sherpa_ai.events import build_event
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.memory.state_machine import SherpaStateMachine
 from sherpa_ai.policies.react_sm_policy import ReactStateMachinePolicy
@@ -55,7 +55,7 @@ def prepare_sm():
 def test_react_sm_policy_prompt_a(prepare_sm):
     state_machine, states, transitions = prepare_sm
     belief = Belief()
-    belief.set_current_task(Event(EventType.task, "", "Task"))
+    belief.set_current_task("Task")
     belief.state_machine = state_machine
 
     policy = ReactStateMachinePolicy(
@@ -80,7 +80,7 @@ def test_react_sm_policy_prompt_a(prepare_sm):
 def test_react_sm_policy_prompt_b(prepare_sm):
     state_machine, states, transitions = prepare_sm
     belief = Belief()
-    belief.set_current_task(Event(EventType.task, "", "Task"))
+    belief.set_current_task("Task")
     belief.state_machine = state_machine
 
     policy = ReactStateMachinePolicy(
@@ -107,7 +107,7 @@ def test_react_sm_policy_prompt_b(prepare_sm):
 def test_react_sm_policy_prompt_c(prepare_sm):
     state_machine, states, transitions = prepare_sm
     belief = Belief()
-    belief.set_current_task(Event(EventType.task, "", "Task"))
+    belief.set_current_task("Task")
     belief.state_machine = state_machine
 
     policy = ReactStateMachinePolicy(

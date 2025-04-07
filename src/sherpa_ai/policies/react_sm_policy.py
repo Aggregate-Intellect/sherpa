@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
+
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
+from sherpa_ai.policies.utils import is_selection_trivial, transform_json_output
 from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
-from sherpa_ai.policies.utils import (is_selection_trivial,
-                                      transform_json_output)
 
 if TYPE_CHECKING:
     from sherpa_ai.memory.belief import Belief
@@ -28,6 +28,7 @@ class ReactStateMachinePolicy(BasePolicy):
         llm (BaseLanguageModel): The large language model used to generate text
         response_format (dict): The response format for the policy in JSON format
     """  # noqa: E501
+
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
     )
@@ -56,43 +57,38 @@ class ReactStateMachinePolicy(BasePolicy):
         """
         task_description = belief.current_task.content
         possible_actions = "\n".join([str(action) for action in actions])
-        context = belief.get_context(self.llm.get_num_tokens)
         history_of_previous_actions = belief.get_internal_history(
             self.llm.get_num_tokens
         )
         current_state = belief.get_state_obj().name
         state_description = belief.get_state_obj().description
 
-        variables ={
-            "state": current_state,
-            "state_description": state_description
-        }
+        variables = {"state": current_state, "state_description": state_description}
 
         if len(state_description) > 0:
             state_description = self.prompt_template.format_prompt(
-                wrapper= "react_sm_policy_prompt",
+                wrapper="react_sm_policy_prompt",
                 name="STATE_DESCRIPTION_PROMPT",
                 version="1.0",
-                variables=variables
+                variables=variables,
             )
 
         response_format = json.dumps(self.response_format, indent=4)
 
         prompt = self.prompt_template.format_prompt(
             wrapper="react_sm_policy_prompt",
-            name = "SELECTION_DESCRIPTION",
+            name="SELECTION_DESCRIPTION",
             version="1.0",
             variables={
-                "role_description":self.role_description,
-                "context":context,
-                "history_of_previous_actions":history_of_previous_actions,
-                "state":current_state,
-                "state_description":state_description,
-                "possible_actions":possible_actions,
-                "task_description":task_description,
-                "response_format":response_format,
-                "output_instruction":self.output_instruction
-            }
+                "role_description": self.role_description,
+                "history_of_previous_actions": history_of_previous_actions,
+                "state": current_state,
+                "state_description": state_description,
+                "possible_actions": possible_actions,
+                "task_description": task_description,
+                "response_format": response_format,
+                "output_instruction": self.output_instruction,
+            },
         )
 
         return prompt
@@ -115,7 +111,7 @@ class ReactStateMachinePolicy(BasePolicy):
         prompt = self.get_prompt(belief, actions)
         logger.debug(f"Prompt: {prompt}")
         result = self.llm.invoke(prompt)
-        result_text = result.content if hasattr(result, 'content') else str(result)
+        result_text = result.content if hasattr(result, "content") else str(result)
         logger.debug(f"Result: {result_text}")
 
         name, args = transform_json_output(result_text)
@@ -147,7 +143,7 @@ class ReactStateMachinePolicy(BasePolicy):
         prompt = self.get_prompt(belief, actions)
         logger.debug(f"Prompt: {prompt}")
         result = await self.llm.ainvoke(prompt)
-        result_text = result.content if hasattr(result, 'content') else str(result)
+        result_text = result.content if hasattr(result, "content") else str(result)
         logger.debug(f"Result: {result_text}")
 
         name, args = transform_json_output(result_text)

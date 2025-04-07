@@ -1,14 +1,11 @@
 from enum import Enum
 from typing import Any
 
-from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.events import EventType
-from sherpa_ai.memory.belief import Belief
-from sherpa_ai.memory.shared_memory import SharedMemory
-from sherpa_ai.tools import SearchArxivTool
 from langchain_core.language_models import BaseLanguageModel
-from sherpa_ai.output_parsers.validation_result import ValidationResult
 from loguru import logger
+
+from sherpa_ai.actions.base import BaseAction
+from sherpa_ai.output_parsers.validation_result import ValidationResult
 from sherpa_ai.utils import (
     extract_entities,
     text_similarity,
@@ -33,9 +30,7 @@ class EntityValidationAction(BaseAction):
         "target_text": "the value to validate.",
         "source_text": "the value to compare against. where the answer generated from",
     }
-    usage: str = (
-        "simple entity validation that checks if entities in the target_text exist in the source_text text."
-    )
+    usage: str = "simple entity validation that checks if entities in the target_text exist in the source_text text."
 
     count: int = 0
 
@@ -59,8 +54,8 @@ class EntityValidationAction(BaseAction):
             Otherwise, validation is valid.
         """
         source = self.belief.get_histories_excluding_types(
-            exclude_types=[EventType.feedback, EventType.result, EventType.action],
-        )   
+            exclude_types=["feedback", "result", "action"],
+        )
 
         if not source:
             source = source_text
