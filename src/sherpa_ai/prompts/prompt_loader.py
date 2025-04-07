@@ -4,7 +4,7 @@ import json
 from pydantic import ValidationError
 from pathlib import Path
 
-from sherpa_ai.prompts.Base import ChatPrompt, Prompt, PromptGroup, TextPrompt
+from sherpa_ai.prompts.Base import ChatPrompt, Prompt, PromptGroup, TextPrompt,JsonPrompt
 
 PROMPTS_ATTR = "prompts"
 CONTENT_ATTR = "content"
@@ -94,7 +94,7 @@ class PromptLoader:
             "name": str,
             "version": str,
             "type": str,
-            "content": (str, list),
+            "content": (str, list, dict),
         }
 
         for attr, expected_type in required_attrs.items():
@@ -110,9 +110,11 @@ class PromptLoader:
         content = prompt.get(CONTENT_ATTR)
 
         if content_type == "text" and not isinstance(content, str):
-            raise InvalidPromptContentError(f"'content' must be a string when 'type' is 'text'.")
+            raise InvalidPromptContentError("'content' must be a string when 'type' is 'text'.")
         elif content_type == "chat" and not isinstance(content, list):
-            raise InvalidPromptContentError(f"'content' must be a list when 'type' is 'chat'.")
+            raise InvalidPromptContentError("'content' must be a list when 'type' is 'chat'.")
+        elif content_type == "json" and not isinstance(content, dict):
+            raise InvalidPromptContentError("'content' must be a dict when 'type' is 'json'.")
         return True
 
     def _process_prompts(self) -> List[PromptGroup]:
@@ -133,6 +135,8 @@ class PromptLoader:
                             prompt = ChatPrompt(**prompt_data)
                         elif content_type == "text":
                             prompt = TextPrompt(**prompt_data)
+                        elif content_type == "json":
+                            prompt = JsonPrompt(**prompt_data)
                         else:
                             raise InvalidPromptContentError(f"Unknown 'type': {content_type}")
                         processed_prompts.append(prompt)
