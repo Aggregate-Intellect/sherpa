@@ -7,4 +7,5 @@ apps/slackbot/.env
 **/__pycache__
 *.db
 **/.venv
+**/venv
 **/log.txt

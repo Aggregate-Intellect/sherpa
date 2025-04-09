@@ -4,6 +4,8 @@ __pycache__
 **/testing*
 **/dist/
 **/env
+**/.venv
+**/venv
 **/.coverage
 **/db
 **.db
