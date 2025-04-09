@@ -4,7 +4,7 @@ import socket
 import pytest
 
 from sherpa_ai.actions import ArxivSearch, GoogleSearch
-from sherpa_ai.actions.mockaction import MockAction
+from sherpa_ai.actions.mock import MockAction
 from sherpa_ai.agents import QAAgent
 from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
