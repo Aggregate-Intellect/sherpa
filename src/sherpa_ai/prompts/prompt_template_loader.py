@@ -1,5 +1,6 @@
+import json
 from typing import Dict, List, Optional, Union
-from sherpa_ai.prompts.Base import ChatPrompt, TextPrompt
+from sherpa_ai.prompts.Base import ChatPrompt, TextPrompt,JsonPrompt
 from sherpa_ai.prompts.prompt_loader import PromptLoader
 
 class PromptTemplate(PromptLoader):
@@ -12,7 +13,7 @@ class PromptTemplate(PromptLoader):
         name: str,
         version: str,
         variables: Optional[Dict[str, Union[str, int, float]]] = None
-    ) -> Optional[Union[str, List[Dict[str, str]]]]:
+    ) -> Optional[Union[str, List[Dict[str, str]],Dict]]:
         """
         Format a prompt by replacing placeholders with actual values from variables.
 
@@ -41,8 +42,17 @@ class PromptTemplate(PromptLoader):
                                 variables=p.variables,
                                 response_format=p.response_format
                             )
-                        else:
+                        elif isinstance(p.content, str):
                             prompt = TextPrompt(
+                                name=p.name,
+                                description=p.description,
+                                version=p.version,
+                                content=p.content,
+                                variables=p.variables,
+                                response_format=p.response_format
+                            )
+                        elif isinstance(p.content, dict):
+                            prompt = JsonPrompt(
                                 name=p.name,
                                 description=p.description,
                                 version=p.version,
@@ -85,6 +95,21 @@ class PromptTemplate(PromptLoader):
                     text = text.replace(placeholder, str(var_value))
             return text
 
+        elif isinstance(prompt, JsonPrompt):
+            import copy
+            formatted_prompt = copy.deepcopy(prompt.content) 
+            def replace_in_dict(data: Dict) -> Dict:
+                for key, value in data.items():
+                    if isinstance(value, str):
+                        for var_name, var_value in final_variables.items():
+                            placeholder = f"{{{var_name}}}"
+                            if placeholder in value:
+                                data[key] = value.replace(placeholder, str(var_value))
+                    elif isinstance(value, dict):
+                        data[key] = replace_in_dict(value)
+                return data
+            return replace_in_dict(formatted_prompt)
+
         else:
             raise ValueError(f"Unknown prompt type: {type(prompt)}")
 
@@ -94,7 +119,7 @@ class PromptTemplate(PromptLoader):
         name: str,
         version: str,
         variables: Optional[Dict[str, Union[str, int, float]]] = None
-    ) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    ) -> Optional[Dict[str, Union[str, List[Dict[str, str]], Dict]]]:
         prompt = None
         for pg in self.prompts:
             if pg.name == wrapper:
@@ -110,8 +135,17 @@ class PromptTemplate(PromptLoader):
                                 variables=p.variables,
                                 response_format=p.response_format
                             )
-                        else:
+                        elif isinstance(p.content, str):
                             prompt = TextPrompt(
+                                name=p.name,
+                                description=p.description,
+                                version=p.version,
+                                content=p.content,
+                                variables=p.variables,
+                                response_format=p.response_format
+                            )
+                        elif isinstance(p.content, dict):
+                            prompt = JsonPrompt( 
                                 name=p.name,
                                 description=p.description,
                                 version=p.version,

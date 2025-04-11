@@ -6,7 +6,7 @@ class Prompt(BaseModel):
     name: str
     description: str
     version: str
-    content: str
+    content: Union[str, List[Dict[str, str]], Dict] 
     variables: Dict
     response_format: Dict
 
@@ -16,6 +16,8 @@ class ChatPrompt(Prompt):
 class TextPrompt(Prompt):
     content: str
 
+class JsonPrompt(Prompt):
+    content: Dict
 
 class PromptGroup(BaseModel):
     name: str
