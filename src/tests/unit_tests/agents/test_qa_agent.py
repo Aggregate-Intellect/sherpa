@@ -1,3 +1,4 @@
+import pytest
 from loguru import logger
 
 from sherpa_ai.actions.base import BaseAction
@@ -114,8 +115,8 @@ def test_qa_agent_action_execution_failed():
         max_runs=3,
     )
 
-    result = agent.run()
-    assert "exception" in result.content.lower()
+    with pytest.raises(Exception):
+        agent.run()
 
 
 class MockPolicy(BasePolicy):
