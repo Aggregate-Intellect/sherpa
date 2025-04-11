@@ -8,7 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.actions.utils.refinement import BaseRefinement
 from sherpa_ai.actions.utils.reranking import BaseReranking
-from sherpa_ai.events import EventType
+from sherpa_ai.events import build_event
+from sherpa_ai.memory import Belief
 from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 
 
@@ -72,7 +73,7 @@ class BaseAction(ABC, BaseModel):
     name: str
     args: Union[dict, list[ActionArgument]]
     usage: str
-    belief: Any = None
+    belief: Belief = None
     output_key: Optional[str] = None
 
     prompt_template: Optional[PromptTemplate] = None
@@ -115,7 +116,7 @@ class BaseAction(ABC, BaseModel):
             )
 
     @abstractmethod
-    def execute(self, **kwargs):
+    def execute(self, **kwargs) -> Any:
         pass
 
     def input_validation(self, **kwargs) -> dict:
@@ -140,23 +141,21 @@ class BaseAction(ABC, BaseModel):
     def action_start(self, args: dict):
         if self.belief is not None:
             self.belief.update_internal(
-                EventType.action,
+                "action_start",
                 self.name,
-                f"Action: {self.name} starts, Args: {args}",
-                data={"action": {"name": self.name, "args": args}},
+                args=args
             )
 
     def action_end(self, result: Any):
         if self.belief is not None:
             self.belief.set(self.output_key, result)
             self.belief.update_internal(
-                EventType.action_output,
+                "action_finish",
                 self.name,
-                f"Action: {self.name} finishes, Observation: {result}",
-                data={"result": result},
+                outputs=result
             )
 
-    def __call__(self, **kwargs):
+    def __call__(self, **kwargs) -> Any:
         # Retrieve the arguments from the belief or agent
         filtered_kwargs = self.input_validation(**kwargs)
 

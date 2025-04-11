@@ -2,7 +2,6 @@ import pytest
 
 from sherpa_ai.actions.belief_actions import RetrieveBelief, UpdateBelief
 from sherpa_ai.agents.qa_agent import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.memory.shared_memory import SharedMemory
 from sherpa_ai.test_utils.llms import get_llm
@@ -35,13 +34,13 @@ def test_update_belief(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
-        do_synthesize_output=True
+        do_synthesize_output=True,
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "User",
-        "Remember that the answer value to question q1 is 42",
+        content="Remember that the answer value to question q1 is 42",
     )
 
     task_agent.run()
@@ -54,7 +53,9 @@ def test_update_belief(get_llm, get_actions_belief):
 
 
 def test_update_belief_nested(get_llm, get_actions_belief):
-    llm = get_llm(__file__, test_update_belief_nested.__name__, model_name="gpt-4o-mini")
+    llm = get_llm(
+        __file__, test_update_belief_nested.__name__, model_name="gpt-4o-mini"
+    )
     actions, belief = get_actions_belief
 
     shared_memory = SharedMemory(
@@ -68,13 +69,13 @@ def test_update_belief_nested(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
-        do_synthesize_output=True
+        do_synthesize_output=True,
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "User",
-        "Remember that the name of p1 is 'Sherpa'",
+        content="Remember that the name of p1 is 'Sherpa'",
     )
 
     task_agent.run()
@@ -101,13 +102,13 @@ def test_update_belief_exist(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
-        do_synthesize_output=True
+        do_synthesize_output=True,
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "User",
-        "Remember that property c of a is 3",
+        content="Remember that property c of a is 3",
     )
 
     task_agent.run()
@@ -133,24 +134,26 @@ def test_retrieve_value(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
-        do_synthesize_output=True
+        do_synthesize_output=True,
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "User",
-        "What is value of b of a?",
+        content="What is value of b of a?",
     )
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type("result")
 
     assert "1" in results[0].content
 
 
 def test_retrieve_and_calculate(get_llm, get_actions_belief):
-    llm = get_llm(__file__, test_retrieve_and_calculate.__name__, model_name="gpt-4o-mini")
+    llm = get_llm(
+        __file__, test_retrieve_and_calculate.__name__, model_name="gpt-4o-mini"
+    )
     actions, belief = get_actions_belief
 
     shared_memory = SharedMemory(
@@ -164,13 +167,13 @@ def test_retrieve_and_calculate(get_llm, get_actions_belief):
         shared_memory=shared_memory,
         actions=actions,
         description="You are a helpful agent help user to complete the task",
-        do_synthesize_output=True
+        do_synthesize_output=True,
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "User",
-        "What is the sum of the value of e and value of f in d of a?",
+        content="What is the sum of the value of e and value of f in d of a?",
     )
 
     task_agent.run()

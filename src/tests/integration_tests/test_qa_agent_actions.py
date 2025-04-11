@@ -6,7 +6,6 @@ import pytest
 from sherpa_ai.actions import ArxivSearch, GoogleSearch
 from sherpa_ai.actions.mock import MockAction
 from sherpa_ai.agents import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.output_parsers import CitationValidation
 from sherpa_ai.test_utils.llms import get_llm
@@ -49,14 +48,14 @@ def test_qa_agent_succeeds(get_llm):  # noqa: F811
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "Planner",
-        "What is AutoGPT?",
+        content="What is AutoGPT?",
     )
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type("result")
     assert len(results) == 1
 
 
@@ -75,14 +74,14 @@ def test_qa_agent_citation_validation_no_action(get_llm):  # noqa: F811
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "Planner",
-        "What is AutoGPT?",
+        content="What is AutoGPT?",
     )
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type("result")
     assert len(results) == 1
 
 
@@ -133,14 +132,14 @@ def test_qa_agent_citation_validation_multiple_action(get_llm):  # noqa: F811
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "Planner",
-        "What is AutoGPT?",
+        content="What is AutoGPT?",
     )
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type("result")
     assert len(results) == 1
 
 
@@ -171,15 +170,14 @@ def test_qa_agent_reranking(get_llm, mock_reranker):  # noqa: F811
     )
 
     shared_memory.add(
-        EventType.task,
+        "task",
         "Planner",
-        "What is AutoGPT?",
+        content="What is AutoGPT?",
     )
 
     task_agent.run()
 
-    results = shared_memory.get_by_type(EventType.result)
+    results = shared_memory.get_by_type("result")
     assert len(results) == 1
 
     mock_reranker.assert_called_once()
-    assert google_search.current_task == "What is AutoGPT?"

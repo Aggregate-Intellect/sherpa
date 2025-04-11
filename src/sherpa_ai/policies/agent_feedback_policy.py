@@ -2,10 +2,11 @@ from loguru import logger
 from pydantic import ConfigDict
 
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.events import Event, EventType
+from sherpa_ai.events import Event, build_event
 from sherpa_ai.memory import Belief
 from sherpa_ai.policies import ReactPolicy
 from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
+
 
 class AgentFeedbackPolicy(ReactPolicy):
     """
@@ -39,8 +40,8 @@ class AgentFeedbackPolicy(ReactPolicy):
         result = self.llm.invoke(agent_feedback_prompt)
         question = result.content if hasattr(result, 'content') else str(result)
         logger.info(f"Question to the user: {question}")
-        self.agent.shared_memory.add_event(Event(EventType.task, "Agent", question))
+        self.agent.shared_memory.add("task", name="Agent", content=question)
         result = self.agent.run()
 
-        belief.update(Event(EventType.user_input, "Agent", result))
+        belief.update(build_event("user_input", "Agent", content=result))
         return super().select_action(belief, **kwargs)

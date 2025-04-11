@@ -6,7 +6,6 @@ from nltk.metrics import jaccard_distance
 
 import sherpa_ai.config as cfg
 from sherpa_ai.agents.qa_agent import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
 from sherpa_ai.output_parsers.citation_validation import CitationValidation
@@ -72,14 +71,14 @@ def test_regression_validator_flow(
         )
 
         shared_memory.add(
-            EventType.task,
+            "task",
             "Planner",
-            objective,
+            content=objective,
         )
 
         task_agent.run()
 
-        results = shared_memory.get_by_type(EventType.result)
+        results = shared_memory.get_by_type("result")
         logger.info(results[0].content)
         final_result = results[0].content
 

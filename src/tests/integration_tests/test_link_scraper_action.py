@@ -7,7 +7,6 @@ import sherpa_ai.config as cfg
 from sherpa_ai.actions.google_search import GoogleSearch
 from sherpa_ai.actions.link_scraper import LinkScraperAction
 from sherpa_ai.agents.qa_agent import QAAgent
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import SharedMemory
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.models.sherpa_base_chat_model import SherpaChatOpenAI
@@ -80,9 +79,9 @@ def test_link_scraper_succeeds_in_qa(
         )
 
         shared_memory.add(
-            EventType.task,
+            "task",
             "Scraper",
-            objective,
+            content=objective,
         )
 
         task_agent.run()

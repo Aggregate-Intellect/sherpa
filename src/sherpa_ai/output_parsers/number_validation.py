@@ -1,6 +1,7 @@
 from typing import Tuple
 
-from sherpa_ai.events import EventType
+from loguru import logger
+
 from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
@@ -34,7 +35,7 @@ class NumberValidation(BaseOutputProcessor):
             Otherwise validation is valid.
         """
         source = belief.get_histories_excluding_types(
-            exclude_types=[EventType.feedback, EventType.result],
+            exclude_types=["feedback", "result"],
         )
 
         numbers_exist_in_source, error_message = verify_numbers_against_source(

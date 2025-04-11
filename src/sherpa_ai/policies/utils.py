@@ -3,7 +3,6 @@ import re
 from typing import Callable, Optional, Tuple
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.events import EventType
 from sherpa_ai.memory.belief import Belief
 from sherpa_ai.policies.exceptions import SherpaPolicyException
 
@@ -73,11 +72,11 @@ def construct_conversation_from_belief(
     conversation = []
 
     for event in belief.internal_events:
-        if event.event_type == EventType.action:
-            action = event.data["action"]
+        if event.event_type == "action_start":
+            action = event.name
             conversation.append(("assistant", f"```json\n{action}\n```"))
-        elif event.event_type == EventType.action_output:
-            result = event.data.get("result", event.content)
+        elif event.event_type == "action_finish":
+            result = event.outputs
             conversation.append(("human", f"Action output: {result}"))
 
     if token_counter is None:

@@ -1,9 +1,8 @@
 from enum import Enum
 from typing import Tuple
 
-from langchain_core.language_models import BaseLanguageModel 
+from langchain_core.language_models import BaseLanguageModel
 
-from sherpa_ai.events import EventType
 from sherpa_ai.memory import Belief
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.output_parsers.validation_result import ValidationResult
@@ -57,7 +56,7 @@ class EntityValidation(BaseOutputProcessor):
         """
 
         source = belief.get_histories_excluding_types(
-            exclude_types=[EventType.feedback, EventType.result, EventType.action],
+            exclude_types=["feedback", "result", "action"],
         )
         entity_exist_in_source, error_message = self.check_entities_match(
             text, source, self.similarity_picker(self.count), llm
