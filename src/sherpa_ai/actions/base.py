@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from sherpa_ai.actions.exceptions import SherpaActionExecutionException
 from sherpa_ai.actions.utils.refinement import BaseRefinement
