@@ -86,14 +86,6 @@ Submodules
      - Provides the AgentPool class for managing multiple agents and their interactions.
    * - :mod:`sherpa_ai.agents.base`
      - Contains abstract base classes defining the agent interface and core functionality.
-   * - :mod:`sherpa_ai.agents.critic`
-     - Implements the Critic agent that evaluates and provides feedback on outputs.
-   * - :mod:`sherpa_ai.agents.ml_engineer`
-     - Provides the MLEngineer agent specialized in machine learning tasks.
-   * - :mod:`sherpa_ai.agents.physicist`
-     - Implements the Physicist agent for physics-related questions and calculations.
-   * - :mod:`sherpa_ai.agents.planner`
-     - Contains the Planner agent for creating strategic plans and workflows.
    * - :mod:`sherpa_ai.agents.qa_agent`
      - Implements the QAAgent specialized in question answering tasks.
    * - :mod:`sherpa_ai.agents.user`
@@ -104,10 +96,6 @@ Submodules
 
    sherpa_ai.agents.agent_pool
    sherpa_ai.agents.base
-   sherpa_ai.agents.critic
-   sherpa_ai.agents.ml_engineer
-   sherpa_ai.agents.physicist
-   sherpa_ai.agents.planner
    sherpa_ai.agents.qa_agent
    sherpa_ai.agents.user
 
@@ -123,38 +111,6 @@ sherpa\_ai.agents.base module
 -----------------------------
 
 .. automodule:: sherpa_ai.agents.base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.agents.critic module
--------------------------------
-
-.. automodule:: sherpa_ai.agents.critic
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.agents.ml\_engineer module
--------------------------------------
-
-.. automodule:: sherpa_ai.agents.ml_engineer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.agents.physicist module
-----------------------------------
-
-.. automodule:: sherpa_ai.agents.physicist
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.agents.planner module
---------------------------------
-
-.. automodule:: sherpa_ai.agents.planner
    :members:
    :undoc-members:
    :show-inheritance:
