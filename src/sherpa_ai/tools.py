@@ -16,7 +16,7 @@ from sherpa_ai.utils import (chunk_and_summarize, count_string_tokens,
                              get_links_from_text, rewrite_link_references,
                              scrape_with_url)
 
-HTTP_GET_TIMEOUT = 2.5
+HTTP_GET_TIMEOUT = 20.0
 
 
 def get_tools(memory, config):

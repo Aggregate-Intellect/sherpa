@@ -15,7 +15,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../src"))
 
-
 # -- Project information -----------------------------------------------------
 
 project = "Sherpa - Thinking Companion"
@@ -36,8 +35,16 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
-    'myst_parser'
+    'sphinx.ext.autosummary',
+    'myst_parser',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.graphviz',
+    'sphinx_autodoc_typehints',
 ]
+autosummary_generate = True
+autodoc_member_order = 'bysource'
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -89,3 +96,14 @@ myst_enable_extensions = [
     # "smartquotes",
     # "substitution"
 ]
+
+# Configure inheritance diagrams
+inheritance_graph_attrs = {
+    'rankdir': 'TB',  # Top to bottom layout
+    'size': '"12.0, 12.0"',
+    'bgcolor': 'transparent',
+    'fontsize': 12,
+}
+
+# Configure graphviz
+graphviz_output_format = 'svg'  # Use SVG for better quality

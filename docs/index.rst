@@ -21,6 +21,8 @@
    :hidden:
 
    About Sherpa <About_Sherpa/index>
+   Concepts
+   Architecture
    About_Sherpa/Resources/index
    About_Sherpa/Updates/index
    About_Sherpa/multi_agent_framework.rst

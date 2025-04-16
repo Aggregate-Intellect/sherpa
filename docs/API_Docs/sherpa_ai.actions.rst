@@ -1,16 +1,71 @@
 sherpa\_ai.actions package
 ==========================
 
+Overview
+--------
+
+The ``actions`` package contains a collection of specialized actions that Sherpa AI agents can perform to accomplish tasks. These actions range from web searches to mathematical operations and content synthesis.
+
+.. admonition:: Key Components
+   :class: note
+   
+   * **Web Interactions**: Google and arXiv search capabilities
+   * **Reasoning Actions**: Deliberation and planning mechanisms
+   * **Content Processing**: Context search and synthesis operations
+   * **Mathematical Tools**: Arithmetic problem-solving actions
+
+Example Usage
+-------------
+
+.. code-block:: python
+
+   from sherpa_ai.actions import GoogleSearch, Synthesize
+   
+   # Perform a Google search
+   search_action = GoogleSearch()
+   search_results = search_action.run("latest developments in quantum computing")
+   
+   # Synthesize information from search results
+   synthesize_action = Synthesize()
+   summary = synthesize_action.run(context=search_results)
+   
+   print(summary)
+
 Submodules
 ----------
 
-sherpa\_ai.actions.answer\_arithmetic module
---------------------------------------------
+.. list-table::
+   :widths: 30 70
+   :header-rows: 1
 
-.. automodule:: sherpa_ai.actions.answer_arithmetic
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   * - Module
+     - Description
+   * - :mod:`sherpa_ai.actions.arxiv_search`
+     - Implements search capabilities for academic papers and research on arXiv.
+   * - :mod:`sherpa_ai.actions.base`
+     - Contains the abstract base classes that define the action interface.
+   * - :mod:`sherpa_ai.actions.context_search`
+     - Offers tools for searching within provided context or documents.
+   * - :mod:`sherpa_ai.actions.deliberation`
+     - Provides reasoning and reflection capabilities for decision-making.
+   * - :mod:`sherpa_ai.actions.google_search`
+     - Implements web search functionality using Google search engine.
+   * - :mod:`sherpa_ai.actions.planning`
+     - Contains actions for creating plans and strategic action sequences.
+   * - :mod:`sherpa_ai.actions.synthesize`
+     - Offers capabilities for generating summaries and synthesizing information.
+
+.. toctree::
+   :hidden:
+
+   sherpa_ai.actions.arxiv_search
+   sherpa_ai.actions.base
+   sherpa_ai.actions.context_search
+   sherpa_ai.actions.deliberation
+   sherpa_ai.actions.google_search
+   sherpa_ai.actions.planning
+   sherpa_ai.actions.synthesize
+
 
 sherpa\_ai.actions.arxiv\_search module
 ---------------------------------------

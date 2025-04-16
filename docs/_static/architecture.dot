@@ -1,0 +1,28 @@
+digraph "Sherpa AI Architecture" {
+    graph [fontname="Helvetica", fontsize=14, rankdir=TB, splines=ortho, nodesep=0.8, ranksep=0.8];
+    node [fontname="Helvetica", fontsize=12, shape=box, style="filled,rounded", fillcolor="#f5f5f5", color="#336790", margin=0.3];
+    edge [fontname="Helvetica", fontsize=10, color="#555555"];
+
+    /* Main Components */
+    Agents [fillcolor="#d5f5e3", label="Agents\nDomain-specific AI agents"];
+    Policies [fillcolor="#fdebd0", label="Policies\nDecision-making strategies"];
+    Memory [fillcolor="#ebdef0", label="Memory\nKnowledge persistence"];
+    Models [fillcolor="#fadbd8", label="Models\nLLM interfaces"];
+    Prompts [fillcolor="#e8daef", label="Prompts\nTemplate system"];
+    Actions [fillcolor="#f9e79f", label="Actions\nSpecialized operations"];
+    Tools [fillcolor="#d6eaf8", label="Tools\nUtility functions"];
+    Connectors [fillcolor="#d5f5e3", label="Connectors\nExternal system interfaces"];
+    Config [fillcolor="#f2f3f4", label="Config\nConfiguration management"];
+
+    /* Connections */
+    Agents -> Models [label="uses"];
+    Agents -> Prompts [label="loads"];
+    Agents -> Memory [label="stores/retrieves"];
+    Agents -> Actions [label="executes"];
+    Agents -> Policies [label="follows"];
+    Policies -> Actions [label="selects"];
+    Actions -> Tools [label="utilizes"];
+    Actions -> Connectors [label="interacts"];
+    Models -> Prompts [label="applies"];
+    Config -> {Agents, Models, Connectors} [style="dashed"];
+} 
