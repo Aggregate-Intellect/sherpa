@@ -29,17 +29,59 @@ Review answer and return only bullet point number which are related to the quest
 
 
 class BaseRefinement(ABC, BaseModel):
+    """Abstract base class for refinement actions.
+    
+    This class provides a base implementation for refinement actions that can be
+    used to refine search results or extract relevant information from documents.
+    
+    Attributes:
+        llm (Any): Language model used for refinement.
+        description (str): Description of the refinement action.
+        k (int): Number of results to return.
+    
+    Example:
+        >>> from sherpa_ai.actions.utils import RefinementByQuery
+        >>> refinement = RefinementByQuery(llm=my_llm)
+        >>> results = refinement.refinement(documents, query)
+    """
     @abstractmethod
     def refinement(self, documents: list[str], **kwargs) -> str:
         pass
 
 
 class RefinementByQuery(BaseRefinement):
+    """Refinement action that refines search results based on a query.
+    
+    This class provides a refinement action that refines search results based on a query.
+    It uses an LLM to refine the search results and return the most relevant sentences.
+    
+    Attributes:
+        llm (Any): Language model used for refinement.
+        description (str): Description of the refinement action.
+        k (int): Number of results to return.
+    
+    Example:
+        >>> from sherpa_ai.actions.utils import RefinementByQuery
+        >>> refinement = RefinementByQuery(llm=my_llm)
+        >>> results = refinement.refinement(documents, query)
+    """
     llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SEARCH_SUMMARY_DESCRIPTION
     k: int = 3
 
     def refinement(self, documents: list[str], query: str) -> list[str]:
+        """Refine the search results based on the query.
+
+        Args:
+            documents (list[str]): The documents to refine.
+            query (str): The query to refine the documents.
+        
+        Returns:
+            list[str]: The refined search results.
+
+        Raises:
+            SherpaActionExecutionException: If the action fails to execute.
+        """
         refined_result = []
         for doc in documents:
             res = self.llm.invoke(
@@ -51,10 +93,37 @@ class RefinementByQuery(BaseRefinement):
 
 
 class RefinementBySentence(BaseRefinement):
+    """Refinement action that refines search results based on a sentence.
+    
+    This class provides a refinement action that refines search results based on a sentence.
+    It uses an LLM to refine the search results and return the most relevant sentences.
+    
+    Attributes:
+        llm (Any): Language model used for refinement.
+        description (str): Description of the refinement action.
+        k (int): Number of results to return.
+    
+    Example:
+        >>> from sherpa_ai.actions.utils import RefinementBySentence
+        >>> refinement = RefinementBySentence(llm=my_llm)
+        >>> results = refinement.refinement(documents, query)
+    """
     llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = SEARCH_SUMMARY_DESCRIPTION_SENT
 
     def refinement(self, documents: list[str], query: str) -> list[str]:
+        """Refine the search results based on the sentence.
+
+        Args:
+            documents (list[str]): The documents to refine.
+            query (str): The query to refine the documents.
+        
+        Returns:
+            list[str]: The refined search results.
+
+        Raises:
+            SherpaActionExecutionException: If the action fails to execute.
+        """
         refined_result = []
         for doc in documents:
             ans_value = tokenize.sent_tokenize(doc)

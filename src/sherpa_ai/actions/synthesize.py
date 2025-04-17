@@ -7,6 +7,40 @@ from sherpa_ai.actions.base import BaseAction
 
 
 class SynthesizeOutput(BaseAction):
+    """An action for synthesizing information into a coherent response.
+    
+    This class provides functionality to generate responses by combining task
+    requirements, context, and conversation history, with optional citation support.
+    
+    This class inherits from :class:`BaseAction` and provides methods to:
+      - Generate synthesized responses based on multiple inputs
+      - Format responses with or without citations
+      - Process and structure output using templates
+    
+    Attributes:
+        role_description (str): Description of the role context for response generation.
+        llm (Any): Language model used for generating responses.
+        description (str): Custom description template for response generation.
+        add_citation (bool): Whether to include citations in the response.
+        name (str): Name of the action, set to "SynthesizeOutput".
+        args (dict): Arguments required by the action.
+        usage (str): Description of the action's usage.
+    
+    Example:
+        >>> synthesizer = SynthesizeOutput(
+        ...     role_description="AI assistant",
+        ...     llm=my_llm,
+        ...     add_citation=True
+        ... )
+        >>> response = synthesizer.execute(
+        ...     task="Summarize the benefits of exercise",
+        ...     context="Exercise improves cardiovascular health and mental well-being",
+        ...     history="User: Tell me about exercise benefits"
+        ... )
+        >>> print(response)
+        Exercise provides numerous health benefits, including improved cardiovascular health and mental well-being [1].
+    """
+    
     role_description: str
     llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     description: str = None
@@ -18,10 +52,28 @@ class SynthesizeOutput(BaseAction):
     usage: str = "Answer the question using conversation history with the user"
 
     def __init__(self, **kwargs):
+        """Initialize a SynthesizeOutput action with the provided parameters.
+        
+        Args:
+            **kwargs: Keyword arguments passed to the parent class.
+        """
         super().__init__(**kwargs)
          
 
     def execute(self, task: str, context: str, history: str) -> str:
+        """Generate a synthesized response based on the provided inputs.
+        
+        This method combines task requirements, context, and conversation history
+        to generate a coherent response, with optional citation support.
+        
+        Args:
+            task (str): The task or question to address.
+            context (str): Relevant context information for the response.
+            history (str): Conversation history for context.
+            
+        Returns:
+            str: The generated response text.
+        """
         if self.description:
             prompt =self.description.format(
                 task=task,

@@ -15,12 +15,55 @@ from sherpa_ai.utils import (
 
 
 class TextSimilarityMethod(Enum):
+    """Enumeration of text similarity comparison methods.
+    
+    This enum defines the different methods available for comparing text similarity,
+    with increasing levels of sophistication.
+    
+    Attributes:
+        BASIC (int): Basic text similarity comparison using simple matching.
+        METRICS (int): Text similarity comparison using various metrics.
+        LLM (int): Text similarity comparison using a language model.
+    
+    Example:
+        >>> method = TextSimilarityMethod.BASIC
+        >>> print(method.value)
+        0
+    """
     BASIC = 0
     METRICS = 1
     LLM = 2
 
 
 class EntityValidationAction(BaseAction):
+    """An action for validating entities in text against a source.
+    
+    This class provides functionality to verify that entities extracted from a target
+    text exist in a source text, using various similarity comparison methods.
+    
+    This class inherits from :class:`BaseAction` and provides methods to:
+      - Validate entities in text against a source
+      - Compare text similarity using different methods
+      - Extract and check entities for matches
+    
+    Attributes:
+        llm (Any): Language model used for advanced text similarity comparison.
+        belief (Any): Belief system for storing and retrieving information.
+        name (str): Name of the action, set to "Entity Validator".
+        args (dict): Arguments required by the action.
+        usage (str): Description of the action's usage.
+        count (int): Counter for tracking validation iterations.
+    
+    Example:
+        >>> validator = EntityValidationAction(llm=my_llm)
+        >>> result = validator.execute(
+        ...     target_text="The capital of France is Paris",
+        ...     source_text="Paris is the capital city of France"
+        ... )
+        >>> print(result)
+        {"is_valid": true, "result": "The capital of France is Paris", "feedback": ""}
+    """
+    
     llm: Any  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
     belief: Any = None
 
@@ -35,23 +78,26 @@ class EntityValidationAction(BaseAction):
     count: int = 0
 
     def __init__(self, **kwargs):
+        """Initialize an EntityValidationAction with the provided parameters.
+        
+        Args:
+            **kwargs: Keyword arguments passed to the parent class.
+        """
         super().__init__(**kwargs)
 
     def execute(self, target_text: str, source_text: str, **kwargs) -> str:
-        """
-        Verifies that entities within `text` exist in the `source` text.
+        """Verify that entities within the target text exist in the source text.
+        
+        This method extracts entities from both texts and compares them using
+        different similarity methods based on the iteration count.
+        
         Args:
-            target_text: The text to be processed
-            source_text: The source text to compare against
-            iteration_count (int, optional): The iteration count for validation processing.
-                1 means basic text similarity.
-                2 means text similarity by metrics.
-                3 means text similarity by llm.
+            target_text (str): The text to be validated.
+            source_text (str): The source text to compare against.
+            **kwargs: Additional keyword arguments.
+            
         Returns:
-            ValidationResult: The result of the validation. If any entity in the
-            text to be processed doesn't exist in the source text,
-            validation is invalid and contains a feedback string.
-            Otherwise, validation is valid.
+            str: A string representation of a ValidationResult object.
         """
         source = self.belief.get_histories_excluding_types(
             exclude_types=["feedback", "result", "action"],
@@ -83,23 +129,30 @@ class EntityValidationAction(BaseAction):
                 )
             )
 
-    def similarity_picker(self, value: int):
-        """
-        Picks a text similarity state based on the provided iteration count value.
-
+    def similarity_picker(self, value: int) -> TextSimilarityMethod:
+        """Select a text similarity method based on the iteration count.
+        
+        This method determines which similarity comparison method to use based
+        on the current iteration count.
+        
         Args:
-            value (int): The iteration count value used to determine the text similarity state.
-                        - 0: Use BASIC text similarity.
-                        - 1: Use text similarity BY_METRICS.
-                        - Default: Use text similarity BY_LLM.
-
+            value (int): The iteration count value.
+                0: Use BASIC text similarity.
+                1: Use text similarity BY_METRICS.
+                Default: Use text similarity BY_LLM.
+            
         Returns:
-            TextSimilarityState: The selected text similarity state.
+            TextSimilarityMethod: The selected text similarity method.
         """
         switch_dict = {0: TextSimilarityMethod.BASIC, 1: TextSimilarityMethod.METRICS}
         return switch_dict.get(value, TextSimilarityMethod.LLM)
 
     def get_failure_message(self) -> str:
+        """Return a standard failure message for entity validation.
+        
+        Returns:
+            str: A message indicating that some entities might not be mentioned.
+        """
         return "Some entities from the source might not be mentioned."
 
     def check_entities_match(
@@ -113,10 +166,11 @@ class EntityValidationAction(BaseAction):
         Check if entities extracted from a question are present in an answer.
 
         Args:
-        - result (str): Answer text.
-        - source (str): Question text.
-        - stage (int): Stage of the check (0, 1, or 2).
-
+            result (str): The text to check for entities.
+            source (str): The source text to compare against.
+            stage (TextSimilarityMethod): The similarity method to use.
+            llm (BaseLanguageModel): Language model for LLM-based comparison.
+            
         Returns:
         dict: Result of the check containing
         """
