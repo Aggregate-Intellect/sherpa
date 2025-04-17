@@ -70,6 +70,54 @@ class Belief:
             event for event in self.internal_events if event.event_type == event_type
         ]
 
+    def get_events_by_type(self, event_type: str) -> List[dict]:
+        """Retrieve events of a specific type as JSON objects.
+
+        This function filters the internal events based on the specified event type and converts
+        each matching event to a JSON-compatible dictionary using Pydantic's model_dump() method.
+        The function is useful for processing specific types of events in a structured format.
+
+        Args:
+            event_type (str): The type of events to retrieve (e.g., "action_start", "feedback").
+
+        Returns:
+            List[dict]: A list of events as JSON objects, where each object contains the event's
+                properties (name, content, event_type, etc.).
+
+        Example:
+            >>> belief = Belief()
+            >>> belief.update_internal("action_start", "test_action", args={"param": "value"})
+            >>> events = belief.get_events_by_type("action_start")
+            >>> print(events[0]["name"])
+            test_action
+        """
+        return [event.model_dump() for event in self.internal_events if event.event_type == event_type]
+
+    def get_events_excluding_types(self, exclude_types: List[str]) -> List[dict]:
+        """Retrieve events excluding specific types as JSON objects.
+
+        This function filters out events whose types are in the exclude_types list and converts
+        the remaining events to JSON-compatible dictionaries. It's useful for getting a subset
+        of events while excluding certain event types from the results.
+
+        Args:
+            exclude_types (List[str]): List of event types to exclude from the results
+                (e.g., ["feedback", "action_start"]).
+
+        Returns:
+            List[dict]: A list of events as JSON objects, excluding events whose types are
+                in the exclude_types list. Each object contains the event's properties.
+
+        Example:
+            >>> belief = Belief()
+            >>> belief.update_internal("action_start", "action1", args={})
+            >>> belief.update_internal("feedback", "feedback1", content="good")
+            >>> events = belief.get_events_excluding_types(["feedback"])
+            >>> print(events[0]["event_type"])
+            action_start
+        """
+        return [event.model_dump() for event in self.internal_events if event.event_type not in exclude_types]
+
     def set_current_task(self, content):
         event = build_event("task", "current_task", content=content)
         self.current_task = event
