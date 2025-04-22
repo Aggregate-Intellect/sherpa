@@ -20,7 +20,7 @@ Agents
 
 Agents are specialized AI components designed for specific domains or tasks:
 
-.. inheritance-diagram:: sherpa_ai.agents.qa_agent sherpa_ai.agents.critic sherpa_ai.agents.ml_engineer
+.. inheritance-diagram:: sherpa_ai.agents.qa_agent sherpa_ai.agents.user
    :parts: 1
    :caption: Agent Class Hierarchy
 
