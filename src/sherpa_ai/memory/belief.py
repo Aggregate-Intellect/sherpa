@@ -103,7 +103,7 @@ class Belief:
         if token_counter is None or max_tokens is None:
             # If no token counter or max_tokens is provided, return all events of the specified type
             return [event.model_dump() for event in self.internal_events if event.event_type == event_type]
-        
+
         # if no token counter is provided, use the default word counter
         if token_counter is None:
             def token_counter(x):
