@@ -20,6 +20,27 @@ HTTP_GET_TIMEOUT = 20.0
 
 
 def get_tools(memory, config):
+    """Factory function to create and configure a set of tools for the agent.
+
+    This function creates and returns a list of tools that the agent can use,
+    including search tools and user input handling. The tools are configured
+    based on the provided memory and configuration parameters.
+
+    Args:
+        memory: The memory component for tools that require memory access.
+        config: Configuration object containing tool settings.
+
+    Returns:
+        List[BaseTool]: A list of configured tool instances.
+
+    Example:
+        >>> from sherpa_ai.tools import get_tools
+        >>> tools = get_tools(memory=memory, config=config)
+        >>> for tool in tools:
+        ...     print(tool.name)
+        UserInput
+        Search
+    """
     tools = []
 
     # tools.append(ContextTool(memory=memory))
@@ -37,6 +58,30 @@ def get_tools(memory, config):
 
 
 class SearchArxivTool(BaseTool):
+    """Tool for searching and retrieving scientific papers from Arxiv.
+
+    This class provides functionality to search Arxiv's database for scientific papers
+    and retrieve their titles, summaries, and IDs. It's particularly useful for
+    research-related queries and academic information gathering.
+
+    This class inherits from :class:`BaseTool` and provides methods to:
+        - Search Arxiv's database
+        - Parse and format search results
+        - Return paper metadata and summaries
+
+    Attributes:
+        name (str): The name of the tool, set to "Arxiv Search".
+        description (str): A description of when to use this tool.
+
+    Example:
+        >>> from sherpa_ai.tools import SearchArxivTool
+        >>> tool = SearchArxivTool()
+        >>> result = tool._run("machine learning")
+        >>> print(result)
+        Title: Example Paper
+        Summary: This paper discusses...
+    """
+
     name: str = "Arxiv Search"
     description: str = (
         "Access all the papers from Arxiv to search for domain-specific scientific publication."  # noqa: E501
@@ -46,6 +91,24 @@ class SearchArxivTool(BaseTool):
     def _run(
         self, query: str, return_resources=False
     ) -> Union[str, Tuple[str, List[dict]]]:
+        """Execute the Arxiv search with the given query.
+
+        Args:
+            query (str): The search query to find papers.
+            return_resources (bool, optional): Whether to return resources for citation.
+                Defaults to False.
+
+        Returns:
+            Union[str, Tuple[str, List[dict]]]: Either a formatted string of results
+                or a tuple containing the results and resource list for citation.
+
+        Example:
+            >>> tool = SearchArxivTool()
+            >>> result = tool._run("neural networks")
+            >>> print(result)
+            Title: Neural Networks in Practice
+            Summary: This paper explores...
+        """
         top_k = 10
 
         logger.debug(f"Search query: {query}")
@@ -91,10 +154,44 @@ class SearchArxivTool(BaseTool):
             return result
 
     def _arun(self, query: str) -> str:
+        """Asynchronous version of the run method (not implemented).
+
+        Args:
+            query (str): The search query.
+
+        Raises:
+            NotImplementedError: This method is not supported.
+        """
         raise NotImplementedError("SearchArxivTool does not support async run")
 
 
 class SearchTool(BaseTool):
+    """Tool for performing internet searches using the Google Serper API.
+
+    This class provides functionality to search the internet for information using
+    the Google Serper API. It supports domain-specific searches and can return
+    both formatted results and resources for citation.
+
+    This class inherits from :class:`BaseTool` and provides methods to:
+        - Perform general internet searches
+        - Execute domain-specific searches
+        - Parse and format search results
+        - Handle knowledge graph and answer box results
+
+    Attributes:
+        name (str): The name of the tool, set to "Search".
+        config (AgentConfig): Configuration object for search settings.
+        top_k (int): Number of results to return, defaults to 10.
+        description (str): A description of when to use this tool.
+
+    Example:
+        >>> from sherpa_ai.tools import SearchTool
+        >>> tool = SearchTool(config=config)
+        >>> result = tool._run("python programming")
+        >>> print(result)
+        Answer: Python is a high-level programming language...
+    """
+
     name: str = "Search"
     config: AgentConfig = AgentConfig()
     top_k: int = 10
@@ -104,6 +201,27 @@ class SearchTool(BaseTool):
     )
 
     def _run(self, query: str, return_resources=False) -> Union[str, List[dict]]:
+        """Execute the search with the given query.
+
+        This method handles both general and domain-specific searches, processing
+        the results and returning them in the requested format.
+
+        Args:
+            query (str): The search query.
+            return_resources (bool, optional): Whether to return resources for citation.
+                Defaults to False.
+
+        Returns:
+            Union[str, List[dict]]: Either a formatted string of results or a list
+                of resources for citation.
+
+        Example:
+            >>> tool = SearchTool(config=config)
+            >>> result = tool._run("python tutorials")
+            >>> print(result)
+            Answer: Python tutorials for beginners...
+            Link: https://example.com/tutorials
+        """
         result = ""
         if self.config.search_domains:
             query_list = [
@@ -139,11 +257,48 @@ class SearchTool(BaseTool):
             return result
 
     def formulate_site_search(self, query: str, site: str) -> str:
+        """Formulate a site-specific search query.
+
+        Args:
+            query (str): The base search query.
+            site (str): The site to restrict the search to.
+
+        Returns:
+            str: The formatted site-specific search query.
+
+        Example:
+            >>> tool = SearchTool()
+            >>> query = tool.formulate_site_search("python", "python.org")
+            >>> print(query)
+            python site:python.org
+        """
         return query + " site:" + site
 
     def _run_single_query(
         self, query: str, top_k: int, return_resources=False
     ) -> Union[str, List[dict]]:
+        """Execute a single search query and process its results.
+
+        This method handles different types of search results including answer boxes,
+        knowledge graphs, and general search results.
+
+        Args:
+            query (str): The search query to execute.
+            top_k (int): Number of results to return.
+            return_resources (bool, optional): Whether to return resources for citation.
+                Defaults to False.
+
+        Returns:
+            Union[str, List[dict]]: Either a formatted string of results or a list
+                of resources for citation.
+
+        Example:
+            >>> tool = SearchTool()
+            >>> result = tool._run_single_query("python programming", top_k=5)
+            >>> print(result)
+            Answer: Python is a versatile programming language...
+            Link: https://example.com/python
+        """
         logger.debug(f"Search query: {query}")
         google_serper = GoogleSerperAPIWrapper()
         search_results = google_serper._google_serper_api_results(query)
@@ -244,11 +399,43 @@ class SearchTool(BaseTool):
             return full_result
 
     def _arun(self, query: str) -> str:
+        """Asynchronous version of the run method (not implemented).
+
+        Args:
+            query (str): The search query.
+
+        Raises:
+            NotImplementedError: This method is not supported.
+        """
         raise NotImplementedError("SearchTool does not support async run")
 
 
 class ContextTool(BaseTool):
-    name: str = "Context Search"
+    """Tool for accessing internal technical documentation.
+
+    This class provides functionality to search and retrieve information from internal
+    technical documentation for various AI-related projects. It uses a vector store
+    retriever to find relevant documentation based on queries.
+
+    This class inherits from :class:`BaseTool` and provides methods to:
+        - Search internal documentation
+        - Retrieve relevant context
+        - Format search results
+
+    Attributes:
+        name (str): The name of the tool, set to "Context".
+        description (str): A description of when to use this tool.
+        memory (VectorStoreRetriever): The vector store retriever for searching documentation.
+
+    Example:
+        >>> from sherpa_ai.tools import ContextTool
+        >>> tool = ContextTool(memory=memory)
+        >>> result = tool._run("How to use LangChain?")
+        >>> print(result)
+        LangChain is a framework for developing applications...
+    """
+
+    name: str = "Context"
     description: str = (
         "Access internal technical documentation for AI related projects, including"
         + "Fixie, LangChain, GPT index, GPTCache, GPT4ALL, autoGPT, db-GPT, AgentGPT, sherpa."  # noqa: E501
@@ -259,6 +446,23 @@ class ContextTool(BaseTool):
     def _run(
         self, query: str, return_resources=False
     ) -> Union[str, Tuple[str, List[dict]]]:
+        """Execute the context search with the given query.
+
+        Args:
+            query (str): The search query.
+            return_resources (bool, optional): Whether to return resources for citation.
+                Defaults to False.
+
+        Returns:
+            Union[str, Tuple[str, List[dict]]]: Either a formatted string of results
+                or a tuple containing the results and resource list for citation.
+
+        Example:
+            >>> tool = ContextTool(memory=memory)
+            >>> result = tool._run("LangChain documentation")
+            >>> print(result)
+            LangChain is a framework...
+        """
         docs = self.memory.get_relevant_documents(query)
         result = ""
         resources = []
@@ -284,25 +488,98 @@ class ContextTool(BaseTool):
             return result
 
     def _arun(self, query: str) -> str:
+        """Asynchronous version of the run method (not implemented).
+
+        Args:
+            query (str): The search query.
+
+        Raises:
+            NotImplementedError: This method is not supported.
+        """
         raise NotImplementedError("ContextTool does not support async run")
 
 
 class UserInputTool(BaseTool):
+    """Tool for handling user input in the agent system.
+
+    This class provides functionality to process and handle user input within the
+    agent system. It serves as an interface for receiving and processing user queries.
+
+    This class inherits from :class:`BaseTool` and provides methods to:
+        - Process user input
+        - Return user queries
+
+    Attributes:
+        name (str): The name of the tool, set to "UserInput".
+        description (str): A description of when to use this tool.
+
+    Example:
+        >>> from sherpa_ai.tools import UserInputTool
+        >>> tool = UserInputTool()
+        >>> result = tool._run("What is Python?")
+        >>> print(result)
+        What is Python?
+    """
+
     # TODO: Make an action for the user input
     name: str = "UserInput"
     description: str = (
-        "Access the user input for the task."
-        "You use this tool if you need more context and would like to ask clarifying questions to solve the task"  # noqa: E501
+        "Use this tool when you need to get input from the user. "
+        "The input will be passed to the user and the response will be returned."
     )
 
     def _run(self, query: str) -> str:
+        """Process and return the user input.
+
+        Args:
+            query (str): The user's input query.
+
+        Returns:
+            str: The processed user input.
+
+        Example:
+            >>> tool = UserInputTool()
+            >>> result = tool._run("Tell me about Python")
+            >>> print(result)
+            Tell me about Python
+        """
         return input(query)
 
     def _arun(self, query: str) -> str:
+        """Asynchronous version of the run method (not implemented).
+
+        Args:
+            query (str): The user's input query.
+
+        Raises:
+            NotImplementedError: This method is not supported.
+        """
         raise NotImplementedError("UserInputTool does not support async run")
 
 
 class LinkScraperTool(BaseTool):
+    """Tool for extracting content from web links.
+
+    This class provides functionality to scrape and extract content from web links.
+    It's useful for retrieving information from specific URLs when needed.
+
+    This class inherits from :class:`BaseTool` and provides methods to:
+        - Scrape web content
+        - Extract information from links
+        - Process and format scraped content
+
+    Attributes:
+        name (str): The name of the tool, set to "Link Scraper".
+        description (str): A description of when to use this tool.
+
+    Example:
+        >>> from sherpa_ai.tools import LinkScraperTool
+        >>> tool = LinkScraperTool()
+        >>> result = tool._run("https://example.com", llm=llm)
+        >>> print(result)
+        Content from the webpage...
+    """
+
     name: str = "Link Scraper"
     description: str = "Access the content of a link. Only use this tool when you need to extract information from a link."
 
@@ -311,7 +588,21 @@ class LinkScraperTool(BaseTool):
         query: str,
         llm: Any,
     ) -> str:
+        """Scrape and extract content from a web link.
 
+        Args:
+            query (str): The URL to scrape.
+            llm (Any): The language model to use for processing.
+
+        Returns:
+            str: The processed user input.
+
+        Example:
+            >>> tool = LinkScraperTool()
+            >>> result = tool._run("https://example.com", llm=llm)
+            >>> print(result)
+            Content from the webpage...
+        """
         query_links = get_links_from_text(query)
         # if there is a link inside the question scrape then summarize based
         # on question and then aggregate to the question
@@ -372,4 +663,12 @@ class LinkScraperTool(BaseTool):
         return resources
 
     def _arun(self, query: str) -> str:
+        """Asynchronous version of the run method (not implemented).
+
+        Args:
+            query (str): The URL to scrape.
+
+        Raises:
+            NotImplementedError: This method is not supported.
+        """
         raise NotImplementedError("LinkScraperTool does not support async run")

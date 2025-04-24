@@ -5,8 +5,20 @@ from pydantic import BaseModel, Field
 
 
 class Event(BaseModel, ABC):
-    """
-    Base class for an event.
+    """Base class for all events in the system.
+
+    This abstract base class defines the common interface for all event types in the system.
+    It inherits from both Pydantic's BaseModel for data validation and ABC for abstract base class functionality.
+
+    Attributes:
+        name (str): Name of the event, used for identification and logging.
+
+    Example:
+        >>> class CustomEvent(Event):
+        ...     pass
+        >>> event = CustomEvent(name="custom_event")
+        >>> print(event.name)
+        custom_event
     """
 
     #: Name of the event.
@@ -17,18 +29,23 @@ class Event(BaseModel, ABC):
 
 
 class GenericEvent(Event):
-    """
-    Represents a generic event with default behavior.
+    """A flexible event type that can handle various event scenarios.
 
-    The `GenericEvent` class is a flexible event type that can store the event's name,
-    content, and type. It can be used to handle a variety of event scenarios specific
-    to the need of the application.
+    This class provides a generic event implementation that can store any type of content
+    and event type. It's particularly useful for handling user inputs and task registrations.
 
-    Handled Event Types (Handled internally in Sherpa):
-        - `task`: Indicates an event for registering a task for the agent.
-        - `user_input`: Indicates an event for adding user inputs.
+    This class inherits from :class:`Event` and provides methods to:
+        - Store and retrieve event content
+        - Handle different event types
+        - Provide string representation of events
+
+    Attributes:
+        name (str): The name of the event.
+        content (Any): The content or payload associated with the event.
+        event_type (str): The type of the event, defaults to "generic".
 
     Example:
+        >>> from sherpa_ai.events import GenericEvent
         >>> event = GenericEvent(name="user_message", content="Hello, world!", event_type="user_input")
         >>> print(event.name)
         user_message
@@ -51,14 +68,23 @@ class GenericEvent(Event):
 
 
 class ActionStartEvent(Event):
-    """
-    Represents an event triggered when an action is executed.
+    """Event triggered when an action begins execution.
 
-    This class is a specialized type of `Event` that captures the details of an action
-    being started. It includes the name of the action, any arguments passed to the
-    action, and a predefined event type (`action_start`).
+    This class represents the start of an action execution, capturing the action name
+    and its arguments. It's used for tracking and logging action execution flow.
+
+    This class inherits from :class:`Event` and provides methods to:
+        - Track action execution start
+        - Store action arguments
+        - Provide immutable event type
+
+    Attributes:
+        name (str): The name of the action being executed.
+        args (dict[str, Any]): Dictionary containing the arguments passed to the action.
+        event_type (str): The type of the event, fixed to "action_start".
 
     Example:
+        >>> from sherpa_ai.events import ActionStartEvent
         >>> event = ActionStartEvent(name="fetch_data", args={"url": "https://example.com"})
         >>> print(event.name)
         fetch_data
@@ -80,14 +106,23 @@ class ActionStartEvent(Event):
 
 
 class ActionFinishEvent(Event):
-    """
-    Represents an event triggered when an action is completed.
+    """Event triggered when an action completes execution.
 
-    This class is a specialized type of `Event` that captures the details of an action
-    that has finished execution. It includes the name of the action, the outputs or results
-    of the action, and a predefined event type (`action_finish`).
+    This class represents the completion of an action execution, capturing the action name
+    and its outputs. It's used for tracking and logging action execution results.
+
+    This class inherits from :class:`Event` and provides methods to:
+        - Track action execution completion
+        - Store action outputs
+        - Provide immutable event type
+
+    Attributes:
+        name (str): The name of the action that was executed.
+        outputs (Any): The outputs or results produced by the action.
+        event_type (str): The type of the event, fixed to "action_finish".
 
     Example:
+        >>> from sherpa_ai.events import ActionFinishEvent
         >>> event = ActionFinishEvent(name="fetch_data", outputs={"status": "success", "data": [1, 2, 3]})
         >>> print(event.name)
         fetch_data
@@ -109,32 +144,33 @@ class ActionFinishEvent(Event):
 
 
 def build_event(event_type: str, name: str, **kwargs) -> Event:
-    """
-    Build an event based on the event type.
+    """Factory function to create appropriate Event objects based on event type.
 
-    This is a factory function creating and returning the appropriate Event object based on
-    the specified event_type. It handles creating specialized events like ActionStartEvent
-    and ActionFinishEvent, falling back to GenericEvent for other event types.
+    This function creates and returns the appropriate Event subclass instance based on
+    the specified event_type. It handles specialized events like ActionStartEvent and
+    ActionFinishEvent, falling back to GenericEvent for other event types.
 
     Args:
         event_type (str): The type of event to create. Special handling for "action_start"
-            and "action_finish" (Mapped to their respective classes). All other values create
-            a GenericEvent.
+            and "action_finish". All other values create a GenericEvent.
         name (str): The name of the event.
         **kwargs: Additional keyword arguments to pass to the event constructor.
-            - For "action_start": Should include 'args' dictionary.
-            - For "action_finish": Should include 'outputs' with results.
-            - For other event types: Should include 'content' for the event payload.
+            For "action_start": Should include 'args' dictionary.
+            For "action_finish": Should include 'outputs' with results.
+            For other event types: Should include 'content' for the event payload.
+
     Returns:
         Event: An instance of the appropriate Event subclass:
             - ActionStartEvent for "action_start" event_type
             - ActionFinishEvent for "action_finish" event_type
             - GenericEvent for all other event_type values
+
     Example:
+        >>> from sherpa_ai.events import build_event
         >>> start_event = build_event("action_start", "fetch_data", args={"url": "example.com"})
         >>> finish_event = build_event("action_finish", "fetch_data", outputs={"status": "success"})
         >>> generic_event = build_event("user_input", "user_query", content="How are you?")
-    """  # noqa: E501
+    """
 
     if event_type == "action_start":
         return ActionStartEvent(**kwargs, name=name)
