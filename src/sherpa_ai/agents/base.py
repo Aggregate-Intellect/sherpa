@@ -24,6 +24,40 @@ from sherpa_ai.utils import is_coroutine_function
 
 
 class BaseAgent(ABC, BaseModel):
+    """Base class for all agents in the Sherpa AI system.
+
+    This abstract class defines the core functionality and interface that all agents
+    must implement. It provides methods for action selection, execution, validation,
+    and output synthesis.
+
+    Attributes:
+        name (str): The name of the agent.
+        description (str): A description of the agent's purpose and capabilities.
+        shared_memory (SharedMemory): Memory shared between agents for information exchange.
+        belief (Belief): The agent's internal state and knowledge.
+        policy (BasePolicy): The policy that determines which actions to take.
+        num_runs (int): Number of action execution cycles to perform. Defaults to 1.
+        actions (List[BaseAction]): List of actions the agent can perform.
+        validation_steps (int): Number of validation attempts per validation. Defaults to 1.
+        validations (List[BaseOutputProcessor]): List of output validators.
+        feedback_agent_name (str): Name of the agent providing feedback. Defaults to "critic".
+        global_regen_max (int): Maximum number of output regeneration attempts. Defaults to 12.
+        llm (Any): Language model used for text generation.
+        prompt_template (PromptTemplate): Template for generating prompts.
+        stop_checker (Callable[[Belief], bool]): Function to determine if execution should stop.
+
+    Example:
+        >>> from sherpa_ai.agents.base import BaseAgent
+        >>> from sherpa_ai.actions.base import BaseAction
+        >>> class MyAgent(BaseAgent):
+        ...     def create_actions(self) -> List[BaseAction]:
+        ...         return []
+        ...     def synthesize_output(self) -> str:
+        ...         return "Output"
+        >>> agent = MyAgent(name="TestAgent", description="A test agent")
+        >>> print(agent.name)
+        TestAgent
+    """
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
     name: str
@@ -49,19 +83,72 @@ class BaseAgent(ABC, BaseModel):
 
     @abstractmethod
     def create_actions(self) -> List[BaseAction]:
+        """Create and return the list of actions available to this agent.
+
+        This method must be implemented by all agent subclasses to define
+        the specific actions that the agent can perform.
+
+        Returns:
+            List[BaseAction]: List of action objects that the agent can use.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> from sherpa_ai.actions.base import BaseAction
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return [MyCustomAction()]
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> actions = agent.create_actions()
+            >>> print(len(actions))
+            1
+        """
         pass
 
     @abstractmethod
     def synthesize_output(self) -> str:
+        """Generate the final output based on the agent's actions and belief state.
+
+        This method must be implemented by all agent subclasses to define
+        how the agent produces its final output from its internal state.
+
+        Returns:
+            str: The synthesized output string.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "This is my final answer."
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> output = agent.synthesize_output()
+            >>> print(output)
+            This is my final answer.
+        """
         pass
 
     def send_event(self, event: str, args: dict):
-        """
-        Send an event to the state machine in the belief
+        """Send an event to the state machine in the belief.
+
+        This method dispatches an event to the agent's belief state machine,
+        allowing the agent to update its internal state based on external events.
 
         Args:
-            event (str): The event name
-            args (dict): The arguments for the event
+            event (str): The name of the event to send.
+            args (dict): Arguments to pass to the event handler.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> agent.send_event("task_start", {"task_id": "123"})
         """
         if self.belief.state_machine is None:
             logger.error("State machine is not defined in the belief")
@@ -70,12 +157,25 @@ class BaseAgent(ABC, BaseModel):
         getattr(self.belief.state_machine, event)(**args)
 
     async def async_send_event(self, event: str, args: dict):
-        """
-        Send an event to the state machine in the belief
+        """Send an event to the state machine in the belief asynchronously.
+
+        This method dispatches an event to the agent's belief state machine
+        asynchronously, allowing for non-blocking state updates.
 
         Args:
-            event (str): The event name
-            args (dict): The arguments for the event
+            event (str): The name of the event to send.
+            args (dict): Arguments to pass to the event handler.
+
+        Example:
+            >>> import asyncio
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> asyncio.run(agent.async_send_event("task_start", {"task_id": "123"}))
         """
         if self.belief.state_machine is None:
             logger.error("State machine is not defined in the belief")
@@ -90,6 +190,21 @@ class BaseAgent(ABC, BaseModel):
         await func(**args)
 
     def agent_preparation(self):
+        """Prepare the agent for execution.
+
+        This method initializes the agent's state, observes the shared memory,
+        and sets up the agent's actions if they haven't been defined yet.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> agent.agent_preparation()
+        """
         logger.debug(f"```⏳{self.name} is thinking...```")
 
         if self.shared_memory is not None:
@@ -100,6 +215,27 @@ class BaseAgent(ABC, BaseModel):
             self.belief.set_actions(actions)
 
     def select_action(self) -> Optional[PolicyOutput]:
+        """Select the next action to execute based on the current belief state.
+
+        This method uses the agent's policy to determine which action to take
+        next based on the current state of the agent's belief.
+
+        Returns:
+            Optional[PolicyOutput]: The selected action and its arguments, or None if
+                no action could be selected.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> action = agent.select_action()
+            >>> print(action is None)
+            True
+        """
         try:
             result = self.policy.select_action(self.belief)
             return result
@@ -116,6 +252,28 @@ class BaseAgent(ABC, BaseModel):
             return e
 
     async def async_select_action(self) -> Optional[PolicyOutput]:
+        """Select the next action to execute asynchronously.
+
+        This method uses the agent's policy to determine which action to take
+        next based on the current state of the agent's belief, in an asynchronous manner.
+
+        Returns:
+            Optional[PolicyOutput]: The selected action and its arguments, or None if
+                no action could be selected.
+
+        Example:
+            >>> import asyncio
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> action = asyncio.run(agent.async_select_action())
+            >>> print(action is None)
+            True
+        """
         try:
             result = await self.policy.async_select_action(self.belief)
             return result
@@ -132,6 +290,29 @@ class BaseAgent(ABC, BaseModel):
             return e
 
     def agent_finished(self, result: str) -> str:
+        """Process the final result after all actions have been executed.
+
+        This method validates the output if validators are present, logs the result,
+        and stores it in the shared memory.
+
+        Args:
+            result (str): The final result to process.
+
+        Returns:
+            str: The processed result.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> final_result = agent.agent_finished("My answer")
+            >>> print(final_result)
+            My answer
+        """
         if len(self.validations) > 0:
             result = self.validate_output()
 
@@ -142,9 +323,50 @@ class BaseAgent(ABC, BaseModel):
         return result
 
     def run(self) -> TaskResult:
+        """Run the agent synchronously.
+
+        This method executes the agent's action selection and execution loop
+        synchronously, returning a TaskResult with the final output.
+
+        Returns:
+            TaskResult: The result of the agent's execution.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> result = agent.run()
+            >>> print(result.status)
+            success
+        """
         return asyncio.run(self.async_run())
 
     async def async_run(self) -> TaskResult:
+        """Run the agent asynchronously.
+
+        This method executes the agent's action selection and execution loop
+        asynchronously, returning a TaskResult with the final output.
+
+        Returns:
+            TaskResult: The result of the agent's execution.
+
+        Example:
+            >>> import asyncio
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> result = asyncio.run(agent.async_run())
+            >>> print(result.status)
+            success
+        """
         logger.debug(f"```⏳{self.name} is thinking...```")
 
         if self.shared_memory is not None:
@@ -197,14 +419,6 @@ class BaseAgent(ABC, BaseModel):
         task_result = TaskResult(content=action_output, status="success")
         return task_result
 
-    # The validation_iterator function is responsible for iterating through each
-    # instantiated validation in the 'self.validations' list.
-    # It performs the necessary validation steps for each validation, updating the
-    # belief system and synthesizing output if needed.
-    # It keeps track of the global regeneration count, whether all validations have
-    # passed, and if any validation has been escaped.
-    # The function returns the updated global regeneration count, the status of all
-    # validations, whether any validation has been escaped, and the synthesized output.
     def validation_iterator(
         self,
         validations,
@@ -213,6 +427,39 @@ class BaseAgent(ABC, BaseModel):
         validation_is_scaped,
         result,
     ):
+        """Iterate through validations and process their results.
+
+        This method processes each validation in sequence, updating the belief
+        and regenerating output if necessary.
+
+        Args:
+            validations: List of validators to process.
+            global_regen_count: Current count of regeneration attempts.
+            all_pass: Whether all validations have passed so far.
+            validation_is_scaped: Whether any validation has been skipped.
+            result: Current result to validate.
+
+        Returns:
+            tuple: Updated values for global_regen_count, all_pass, validation_is_scaped, and result.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> count, passed, escaped, output = agent.validation_iterator(
+            ...     validations=[],
+            ...     global_regen_count=0,
+            ...     all_pass=False,
+            ...     validation_is_scaped=False,
+            ...     result="Test output"
+            ... )
+            >>> print(count)
+            0
+        """
         for i in range(len(validations)):
             validation = validations[i]
             logger.info(f"validation_running: {validation.__class__.__name__}")
@@ -255,8 +502,7 @@ class BaseAgent(ABC, BaseModel):
         return global_regen_count, all_pass, validation_is_scaped, result
 
     def validate_output(self):
-        """
-        Validate the synthesized output through a series of validation steps.
+        """Validate the synthesized output through a series of validation steps.
 
         This method iterates through each validation in the 'validations' list, and for
         each validation, it performs 'validation_steps' attempts to synthesize output
@@ -268,6 +514,18 @@ class BaseAgent(ABC, BaseModel):
 
         Returns:
             str: The synthesized output after validation.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Validated output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> result = agent.validate_output()
+            >>> print(result)
+            Validated output
         """
         result = ""
         # create array of instance of validation so that we can keep track of how many
@@ -339,12 +597,88 @@ class BaseAgent(ABC, BaseModel):
         return result
 
     def observe(self):
+        """Observe the current state of the shared memory.
+
+        This method allows the agent to observe the current state of the shared memory,
+        updating its belief based on the observations.
+
+        Returns:
+            The result of the observation operation.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return []
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> agent.observe()
+        """
         return self.shared_memory.observe(self.belief)
 
     def act(self, action: BaseAction, inputs: dict) -> Union[Optional[str], Exception]:
+        """Execute an action synchronously.
+
+        This method executes the specified action with the given inputs,
+        handling any exceptions that may occur during execution.
+
+        Args:
+            action (BaseAction): The action to execute.
+            inputs (dict): Input parameters for the action.
+
+        Returns:
+            Union[Optional[str], Exception]: The result of the action execution,
+                or an exception if execution failed.
+
+        Example:
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> from sherpa_ai.actions.base import BaseAction
+            >>> class MyAction(BaseAction):
+            ...     def execute(self, **kwargs):
+            ...         return "Action executed"
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return [MyAction()]
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> result = agent.act(MyAction(), {"param": "value"})
+            >>> print(result)
+            Action executed
+        """
         asyncio.run(self.async_act(action, inputs))
 
     async def async_act(self, action: BaseAction, inputs: dict) -> Optional[str]:
+        """Execute an action asynchronously.
+
+        This method executes the specified action with the given inputs asynchronously,
+        handling any exceptions that may occur during execution.
+
+        Args:
+            action (BaseAction): The action to execute.
+            inputs (dict): Input parameters for the action.
+
+        Returns:
+            Optional[str]: The result of the action execution, or None if execution failed.
+
+        Example:
+            >>> import asyncio
+            >>> from sherpa_ai.agents.base import BaseAgent
+            >>> from sherpa_ai.actions.base import BaseAction
+            >>> class MyAction(BaseAction):
+            ...     async def execute(self, **kwargs):
+            ...         return "Action executed"
+            >>> class MyAgent(BaseAgent):
+            ...     def create_actions(self) -> List[BaseAction]:
+            ...         return [MyAction()]
+            ...     def synthesize_output(self) -> str:
+            ...         return "Output"
+            >>> agent = MyAgent(name="TestAgent", description="A test agent")
+            >>> result = asyncio.run(agent.async_act(MyAction(), {"param": "value"}))
+            >>> print(result)
+            Action executed
+        """
         try:
             if is_coroutine_function(action):
                 action_output = await action(**inputs)
