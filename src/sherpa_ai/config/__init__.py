@@ -1,6 +1,11 @@
 """
 App configuration settings.
 
+This module provides configuration settings for the Sherpa AI application,
+loading values from environment variables or a .env file. It includes settings
+for logging, language models, Slack integration, vector databases, and various
+API keys.
+
 Usage:
 
     First define variables in runtime environment or in your `.env` file.
@@ -94,6 +99,18 @@ this = sys.modules[__name__]
 
 
 def check_vectordb_setting():
+    """Determine which vector database to use based on environment variables.
+
+    This function checks the environment variables for Pinecone and Chroma
+    settings and sets the VECTORDB variable accordingly. If neither is configured,
+    it defaults to an in-memory Chroma database.
+
+    Example:
+        >>> from sherpa_ai.config import check_vectordb_setting
+        >>> check_vectordb_setting()
+        >>> print(VECTORDB)
+        in-memory
+    """
     if (
         this.PINECONE_API_KEY
         and this.PINECONE_NAMESPACE
