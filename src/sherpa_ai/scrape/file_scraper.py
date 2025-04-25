@@ -1,3 +1,10 @@
+"""File scraping and handling module for Sherpa AI.
+
+This module provides functionality for downloading, processing, and analyzing
+files attached to questions. It handles various file types including PDF,
+text, markdown, HTML, and XML files.
+"""
+
 import os
 
 import requests
@@ -15,19 +22,45 @@ DOWNLOAD_TIMEOUT = 2.5
 
 
 class QuestionWithFileHandler:
-    def __init__(self, question, files, token, user_id, team_id, llm):
-        """
-        Initializes the QuestionWithFileHandler instance.
+    """Handler for questions with attached files.
 
-        currently works for one file only.
+    This class manages the process of downloading, processing, and analyzing
+    files attached to questions. It supports various file types and handles
+    token limits and content summarization.
+
+    Attributes:
+        question (str): The user's question to be answered.
+        token (str): OAuth token for file access.
+        files (list): List of file information dictionaries.
+        user_id (str): ID of the user asking the question.
+        llm (Any): Language model for text processing.
+
+    Example:
+        >>> handler = QuestionWithFileHandler(
+        ...     question="What's in the document?",
+        ...     files=[{"id": "123", "filetype": "pdf"}],
+        ...     token="oauth_token",
+        ...     user_id="user123",
+        ...     llm=language_model
+        ... )
+        >>> result = handler.reconstruct_prompt_with_file()
+        >>> print(result["status"])
+        'success'
+    """
+
+    def __init__(self, question, files, token, user_id, team_id, llm):
+        """Initialize the file handler.
+
+        Currently works for one file only.
 
         Args:
             question (str): The user's question.
-            files (list): List of files associated with the question.
-            token (str): OAuth token.
-            user_id (str): User ID.
+            files (list): List of file information dictionaries.
+            token (str): OAuth token for file access.
+            user_id (str): ID of the user asking the question.
+            team_id (str): ID of the team context.
+            llm (Any): Language model for text processing.
         """
-
         self.question = question
         self.token = token
         self.files = files
@@ -35,13 +68,23 @@ class QuestionWithFileHandler:
         self.llm = llm
 
     def reconstruct_prompt_with_file(self):
-        """
-        Reconstructs the prompt using the associated file.
+        """Reconstruct the prompt using the attached file.
+
+        This method downloads the file, processes its content, and combines
+        it with the original question to create a more informed prompt.
 
         Returns:
-            dict: A dictionary with status and reconstructed prompt data.
-        """
+            dict: A dictionary containing:
+                - status (str): 'success' or 'error'
+                - data (str): Reconstructed prompt if successful
+                - message (str): Error message if failed
 
+        Example:
+            >>> result = handler.reconstruct_prompt_with_file()
+            >>> if result["status"] == "success":
+            ...     print(result["data"])
+            'Based on the PDF content...'
+        """
         file_text_format = self.download_file(self.files[0])
         if file_text_format["status"] == "success":
             reconstructed_prompt = self.prompt_reconstruct(
@@ -55,14 +98,34 @@ class QuestionWithFileHandler:
             return {"status": "error", "message": file_text_format["message"]}
 
     def download_file(self, file):
-        """
-        Gets the specified file via HTTP and returns the file content.
+        """Download and extract content from a file.
+
+        This method downloads a file using its URL and extracts its content
+        based on the file type. Supports PDF, text, markdown, HTML, and XML.
 
         Args:
-            file (dict): Information about the file to be downloaded. Example name, title, filetype etc
+            file (dict): File information dictionary containing:
+                - id (str): File identifier
+                - mimetype (str): MIME type
+                - url_private_download (str): Download URL
+                - filetype (str): File extension
 
         Returns:
-            dict: A dictionary with status and downloaded file content.
+            dict: A dictionary containing:
+                - status (str): 'success' or 'error'
+                - data (str): File content if successful
+                - message (str): Error message if failed
+
+        Example:
+            >>> file_info = {
+            ...     "id": "123",
+            ...     "filetype": "pdf",
+            ...     "url_private_download": "https://example.com/doc.pdf"
+            ... }
+            >>> result = handler.download_file(file_info)
+            >>> if result["status"] == "success":
+            ...     print(len(result["data"]))
+            1024
         """
         headers = {
             "Authorization": f"Bearer {self.token}",
@@ -99,17 +162,36 @@ class QuestionWithFileHandler:
             }
 
     def prompt_reconstruct(self, file_info, data=str):
-        """
-        Reconstructs the prompt with the file content.
+        """Reconstruct the prompt with file content.
+
+        This method processes the file content, handles token limits, and
+        combines the content with the original question to create an
+        enhanced prompt.
 
         Args:
-            file_info (dict): Information about the file being reconstructed. Example name, title, filetype etc
+            file_info (dict): File information dictionary containing:
+                - filetype (str): File extension
+                - name (str): File name
+                - title (str): File title
             data (str): Content of the file.
 
         Returns:
-            dict: A dictionary with status and reconstructed prompt data.
-        """
+            dict: A dictionary containing:
+                - status (str): 'success' or 'error'
+                - data (str): Reconstructed prompt if successful
+                - message (str): Error message if failed
 
+        Example:
+            >>> file_info = {
+            ...     "filetype": "pdf",
+            ...     "name": "document.pdf",
+            ...     "title": "Important Doc"
+            ... }
+            >>> result = handler.prompt_reconstruct(file_info, "content...")
+            >>> if result["status"] == "success":
+            ...     print(result["data"])
+            'Based on the PDF "Important Doc"...'
+        """
         chunk_summary = data
         data_token_size = count_string_tokens(self.question + data, "gpt-3.5-turbo")
 

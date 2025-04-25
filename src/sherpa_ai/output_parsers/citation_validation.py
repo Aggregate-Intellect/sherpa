@@ -1,3 +1,10 @@
+"""Citation validation and addition module for Sherpa AI.
+
+This module provides functionality for validating and adding citations to text.
+It defines the CitationValidation class which analyzes text against source
+materials and adds appropriate citations using various similarity metrics.
+"""
+
 import nltk
 from loguru import logger
 from nltk.tokenize import sent_tokenize, word_tokenize
@@ -13,28 +20,43 @@ nltk.download("punkt_tab")
 
 
 class CitationValidation(BaseOutputProcessor):
-    """
-    A class for adding citations to generated text based on a list of resources.
+    """Validator and citation adder for text content.
 
-    This class inherits from the abstract class BaseOutputParser and provides
-    methods to add citations to each sentence in the generated text based on
-    reference texts and links provided in the 'resources' list.
+    This class analyzes text against source materials to validate content and
+    add appropriate citations. It uses multiple similarity metrics to determine
+    when citations are needed and which sources to cite.
 
     Attributes:
-        sequence_threshold (float): Threshold for common longest subsequence / text. Default is 0.7.
-        jaccard_threshold (float): Jaccard similarity threshold. Default is 0.7.
-        token_overlap (float): Token overlap threshold. Default is 0.7.
+        sequence_threshold (float): Minimum ratio of common subsequence length
+            to text length for citation. Default is 0.7.
+        jaccard_threshold (float): Minimum Jaccard similarity for citation.
+            Default is 0.7.
+        token_overlap (float): Minimum token overlap ratio for citation.
+            Default is 0.7.
 
-    Typical usage example:
-    ```python
-    citation_parser = CitationValidation(seq_thresh=0.7, jaccard_thresh=0.7, token_overlap=0.7)
-    result = citation_parser.parse_output(generated_text, list_of_resources)
-    ```
+    Example:
+        >>> validator = CitationValidation(sequence_threshold=0.8)
+        >>> belief = Belief()  # Contains source about "Python is great"
+        >>> result = validator.process_output("Python is great!", belief)
+        >>> print("[1]" in result.result)  # Has citation
+        True
     """
 
     def __init__(
         self, sequence_threshold=0.7, jaccard_threshold=0.7, token_overlap=0.7
     ):
+        """Initialize a new CitationValidation instance.
+
+        Args:
+            sequence_threshold (float): Subsequence length ratio threshold.
+            jaccard_threshold (float): Jaccard similarity threshold.
+            token_overlap (float): Token overlap ratio threshold.
+
+        Example:
+            >>> validator = CitationValidation(sequence_threshold=0.8)
+            >>> print(validator.sequence_threshold)
+            0.8
+        """
         self.sequence_threshold = sequence_threshold
         self.jaccard_threshold = jaccard_threshold
         self.token_overlap = token_overlap
@@ -43,17 +65,25 @@ class CitationValidation(BaseOutputProcessor):
         """
         Calculates the percentage of token overlap between two sentences.
 
-        Tokenizes the input sentences and calculates the percentage of token overlap
-        by finding the intersection of the token sets and dividing it by the length
-        of each sentence's token set.
+        This method tokenizes both sentences and calculates the percentage of
+        shared tokens relative to each sentence's length.
 
         Args:
-            sentence1 (str): The first sentence for token overlap calculation.
-            sentence2 (str): The second sentence for token overlap calculation.
+            sentence1 (str): First sentence to compare.
+            sentence2 (str): Second sentence to compare.
 
         Returns:
-            tuple: A tuple containing two float values representing the percentage
-            of token overlap for sentence1 and sentence2, respectively.
+            tuple: (overlap_ratio_1, overlap_ratio_2) where each ratio is the
+                  proportion of shared tokens to total tokens in that sentence.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> ratio1, ratio2 = validator.calculate_token_overlap(
+            ...     "The cat is black",
+            ...     "The cat is white"
+            ... )
+            >>> print(f"{ratio1:.2f}, {ratio2:.2f}")
+            '0.75, 0.75'
         """
         # Tokenize the sentences
         tokens1 = word_tokenize(sentence1)
@@ -76,15 +106,24 @@ class CitationValidation(BaseOutputProcessor):
         """
         Calculates the Jaccard index between two sentences.
 
-        The Jaccard index is a measure of similarity between two sets, defined as the
-        size of the intersection divided by the size of the union of the sets.
+        This method computes the Jaccard index (intersection over union)
+        between the sets of tokens from both sentences.
 
         Args:
-            sentence1 (str): The first sentence for Jaccard index calculation.
-            sentence2 (str): The second sentence for Jaccard index calculation.
+            sentence1 (str): First sentence to compare.
+            sentence2 (str): Second sentence to compare.
 
         Returns:
-            float: The Jaccard index representing the similarity between the two sentences.
+            float: Jaccard similarity score between 0 and 1.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> score = validator.jaccard_index(
+            ...     "The cat is black",
+            ...     "The cat is white"
+            ... )
+            >>> print(f"{score:.2f}")
+            '0.60'
         """
         # Convert the sentences to sets of words
         set1 = set(word_tokenize(sentence1))
@@ -99,19 +138,26 @@ class CitationValidation(BaseOutputProcessor):
         return jaccard_index
 
     def longest_common_subsequence(self, text1: str, text2: str) -> int:
-        """
-        Calculates the length of the longest common subsequence between two texts.
+        """Calculate length of longest common subsequence.
 
-        A subsequence of a string is a new string generated from the original
-        string with some characters (can be none) deleted without changing
-        the relative order of the remaining characters.
+        This method finds the length of the longest subsequence of characters
+        that appear in both texts in the same order.
 
         Args:
-        - text1 (str): The first text for calculating the longest common subsequence.
-        - text2 (str): The second text for calculating the longest common subsequence.
+            text1 (str): First text to compare.
+            text2 (str): Second text to compare.
 
         Returns:
-        - int: The length of the longest common subsequence between the two texts.
+            int: Length of longest common subsequence.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> length = validator.longest_common_subsequence(
+            ...     "hello world",
+            ...     "hello there"
+            ... )
+            >>> print(length)
+            6
         """
         dp = [[0 for i in range(len(text1) + 1)] for i in range(len(text2) + 1)]
 
@@ -124,14 +170,19 @@ class CitationValidation(BaseOutputProcessor):
         return dp[-1][-1]
 
     def flatten_nested_list(self, nested_list: list[list[str]]) -> list[str]:
-        """
-        Flattens a nested list of strings into a single list of strings.
+        """Flatten a nested list of strings.
 
         Args:
-            nested_list (list[list[str]]): The nested list of strings to be flattened.
+            nested_list (list[list[str]]): List of lists of strings.
 
         Returns:
-            list[str]: A flat list containing all non-empty strings from the nested list.
+            list[str]: Single list containing all non-empty strings.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> flat = validator.flatten_nested_list([["a", "b"], ["c", ""]])
+            >>> print(flat)
+            ['a', 'b', 'c']
         """
         sentences = []
         for sublist in nested_list:
@@ -141,21 +192,40 @@ class CitationValidation(BaseOutputProcessor):
         return sentences
 
     def split_paragraph_into_sentences(self, paragraph: str) -> list[str]:
-        """
-        Uses NLTK's sent_tokenize to split the given paragraph into a list of sentences.
+        """Split paragraph into sentences using NLTK.
 
         Args:
-            paragraph (str): The input paragraph to be tokenized into sentences.
+            paragraph (str): Text to split into sentences.
 
         Returns:
-            list[str]: A list of sentences extracted from the input paragraph.
+            list[str]: List of sentences from the paragraph.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> sentences = validator.split_paragraph_into_sentences(
+            ...     "Hello there. How are you?"
+            ... )
+            >>> print(sentences)
+            ['Hello there.', 'How are you?']
         """
         sentences = sent_tokenize(paragraph)
         return sentences
 
     def resources_from_belief(self, belief: Belief) -> list[ActionResource]:
-        """
-        Returns a list of all resources within belief.actions.
+        """Extract resources from belief state actions.
+
+        Args:
+            belief (Belief): Agent's belief state containing actions.
+
+        Returns:
+            list[ActionResource]: List of resources from retrieval actions.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> belief = Belief()  # Contains retrieval action with resource
+            >>> resources = validator.resources_from_belief(belief)
+            >>> print(len(resources))
+            1
         """
         resources = []
         for action in belief.actions:
@@ -164,26 +234,28 @@ class CitationValidation(BaseOutputProcessor):
         return resources
 
     def process_output(self, text: str, belief: Belief, **kwargs) -> ValidationResult:
-        """
-         Add citations to sentences in the generated text using resources based on fact checking model.
+        """Process text and add citations from belief resources.
 
-         Args:
-             text (str): The text which needs citations/references added
-             belief (Belief): Belief of the agent that generated `text`
+        This method analyzes the input text against resources in the belief
+        state and adds citations where appropriate based on similarity metrics.
 
-         Returns:
-             ValidationResult: The result of citation processing.
-             `is_valid` is True when citation processing succeeds or no citation resources are provided,
-             False otherwise.
-             `result` contains the formatted text with citations.
-             `feedback` providing additional optional information.
+        Args:
+            text (str): Text to process and add citations to.
+            belief (Belief): Agent's belief state containing resources.
+            **kwargs: Additional arguments for processing.
 
-        Typical usage example:
-         ```python
-         resources = ActionResource(source="http://example.com/source1", content="Some reference text.")]
-         citation_parser = CitationValidation()
-         result = citation_parser.parse_output("Text needing citations.", resources)
-         ```
+        Returns:
+            ValidationResult: Result containing text with citations added.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> belief = Belief()  # Contains source about "Python"
+            >>> result = validator.process_output(
+            ...     "Python is a great language.",
+            ...     belief
+            ... )
+            >>> print("[1]" in result.result)  # Has citation
+            True
         """
         resources = self.resources_from_belief(belief)
 
@@ -198,12 +270,31 @@ class CitationValidation(BaseOutputProcessor):
         return self.add_citations(text, resources)
 
     def add_citation_to_sentence(self, sentence: str, resources: list[ActionResource]):
-        """
-        Uses a list of resources to add citations to a sentence
+        """Add citations to a single sentence.
+
+        This method checks the sentence against each resource using similarity
+        metrics to determine which sources to cite.
+
+        Args:
+            sentence (str): Sentence to add citations to.
+            resources (list[ActionResource]): Available citation sources.
 
         Returns:
             citation_ids: a list of citation identifiers
             citation_links: a list of citation links (URLs)
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> resource = ActionResource(
+            ...     source="http://example.com",
+            ...     content="Python is great"
+            ... )
+            >>> ids, urls = validator.add_citation_to_sentence(
+            ...     "Python is great!",
+            ...     [resource]
+            ... )
+            >>> print(len(ids), urls[0])
+            1 http://example.com
         """
         citation_ids = []
         citation_links = []
@@ -236,8 +327,28 @@ class CitationValidation(BaseOutputProcessor):
         return citation_ids, citation_links
 
     def format_sentence_with_citations(self, sentence, ids, links):
-        """
-        Appends citations to sentence
+        """Format a sentence with its citations.
+
+        This method adds citation references to the end of a sentence in
+        the format [id](url).
+
+        Args:
+            sentence (str): Sentence to add citations to.
+            ids (list[int]): Citation ID numbers.
+            links (list[str]): Citation URLs.
+
+        Returns:
+            str: Sentence with citations added.
+
+        Example:
+            >>> validator = CitationValidation()
+            >>> result = validator.format_sentence_with_citations(
+            ...     "Python is great.",
+            ...     [1],
+            ...     ["http://example.com"]
+            ... )
+            >>> print(result)
+            'Python is great [1](http://example.com).'
         """
         if len(ids) == 0:
             return sentence

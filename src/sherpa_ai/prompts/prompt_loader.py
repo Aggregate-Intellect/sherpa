@@ -1,10 +1,17 @@
+"""Prompt loading and validation module for Sherpa AI.
+
+This module provides functionality for loading and validating prompts from
+JSON files. It includes classes and functions for converting JSON data into
+prompt objects, validating their structure, and managing prompt collections.
+"""
+
 from importlib import resources
 from typing import Dict, List, Optional, Any, Union
 import json
 from pydantic import ValidationError
 from pathlib import Path
 
-from sherpa_ai.prompts.Base import ChatPrompt, Prompt, PromptGroup, TextPrompt,JsonPrompt
+from sherpa_ai.prompts.Base import ChatPrompt, Prompt, PromptGroup, TextPrompt, JsonPrompt
 
 PROMPTS_ATTR = "prompts"
 CONTENT_ATTR = "content"
@@ -13,7 +20,25 @@ TYPE_ATTR = "type"
 
 
 class JsonToObject:
+    """Utility class for converting JSON data to Python objects.
+
+    This class recursively converts JSON data into Python objects with
+    attributes matching the JSON structure.
+
+    Example:
+        >>> data = {"name": "test", "config": {"value": 42}}
+        >>> obj = JsonToObject(data)
+        >>> print(obj.name)
+        'test'
+        >>> print(obj.config.value)
+        42
+    """
     def __init__(self, json_data):
+        """Initialize from JSON data.
+
+        Args:
+            json_data (Union[str, dict]): JSON string or dictionary to convert.
+        """
         if isinstance(json_data, str):
             data = json.loads(json_data)
         else:
@@ -31,15 +56,24 @@ class JsonToObject:
 
 
 def load_json(file_path: str) -> Dict:
-    """
-    Load JSON data from either a package resource or a filesystem path.
+    """Load JSON data from a file path or package resource.
+    
+    This function attempts to load JSON data first from the package resources,
+    then from the filesystem if not found in resources.
     
     Args:
-        file_path: Path to JSON file (can be relative to sherpa_ai package or absolute)
+        file_path (str): Path to JSON file (relative to sherpa_ai or absolute).
+
     Returns:
-        Dict containing the JSON data
+        Dict: Loaded JSON data as a dictionary.
+
     Raises:
-        FileNotFoundError: If the file cannot be found
+        FileNotFoundError: If file not found in resources or filesystem.
+
+    Example:
+        >>> data = load_json("prompts/templates.json")
+        >>> print(data["version"])
+        '1.0'
     """
     try:
         # First try to load as a package resource
@@ -63,8 +97,22 @@ def load_json(file_path: str) -> Dict:
 
 
 def get_prompts(data: Dict) -> Dict[str, List[Dict]]:
-    """
-    Extract prompts from the loaded JSON data.
+    """Extract prompts from loaded JSON data.
+
+    This function processes the JSON data structure to extract all prompts,
+    organizing them by their wrapper names.
+
+    Args:
+        data (Dict): JSON data containing prompt definitions.
+
+    Returns:
+        Dict[str, List[Dict]]: Dictionary mapping wrapper names to prompt lists.
+
+    Example:
+        >>> data = {"wrapper1": [{"prompts": [{"name": "p1"}, {"name": "p2"}]}]}
+        >>> prompts = get_prompts(data)
+        >>> print(len(prompts["wrapper1"]))
+        2
     """
     all_prompts = {}
     for wrapper, items in data.items():
@@ -76,19 +124,62 @@ def get_prompts(data: Dict) -> Dict[str, List[Dict]]:
 
 
 class InvalidPromptContentError(Exception):
-    """Raised when prompt content doesn't match expected structure."""
+    """Exception for invalid prompt content.
+
+    This exception is raised when prompt content doesn't match the expected
+    structure or types.
+
+    Example:
+        >>> try:
+        ...     raise InvalidPromptContentError("Missing 'content' field")
+        ... except InvalidPromptContentError as e:
+        ...     print(str(e))
+        'Missing 'content' field'
+    """
     pass
 
 
 class PromptLoader:
+    """Loader class for managing prompt collections.
+
+    This class handles loading prompts from JSON files, validating their
+    structure, and providing access to individual prompts.
+
+    Attributes:
+        data (JsonToObject): Raw JSON data converted to objects.
+        prompts (List[PromptGroup]): Validated prompt groups.
+
+    Example:
+        >>> loader = PromptLoader("prompts.json")
+        >>> prompt = loader.get_prompt("wrapper", "name", "1.0")
+        >>> print(prompt.content)
+        'Hello {name}!'
+    """
+
     def __init__(self, json_file_path: str):
+        """Initialize the prompt loader.
+
+        Args:
+            json_file_path (str): Path to JSON file containing prompts.
+        """
         raw_data = load_json(json_file_path)
         self.data = JsonToObject(raw_data)
         self.prompts = self._process_prompts()
 
     def _validate_prompt_structure(self, prompt: Dict) -> bool:
-        """
-        Validate that the prompt has the required structure and types.
+        """Validate prompt structure and types.
+
+        This method checks that a prompt dictionary has all required fields
+        with correct types.
+
+        Args:
+            prompt (Dict): Prompt dictionary to validate.
+
+        Returns:
+            bool: True if validation passes.
+
+        Raises:
+            InvalidPromptContentError: If validation fails.
         """
         required_attrs = {
             "name": str,
@@ -118,8 +209,16 @@ class PromptLoader:
         return True
 
     def _process_prompts(self) -> List[PromptGroup]:
-        """
-        Process the loaded data and validate against Pydantic models.
+        """Process and validate loaded prompts.
+
+        This method converts raw JSON data into validated prompt objects,
+        organizing them into prompt groups.
+
+        Returns:
+            List[PromptGroup]: List of validated prompt groups.
+
+        Raises:
+            InvalidPromptContentError: If validation fails.
         """
         validated_prompts = []
         for wrapper, items in self.data.__dict__.items():
@@ -157,8 +256,13 @@ class PromptLoader:
         return validated_prompts
 
     def _convert_to_dict(self, obj: Any) -> Any:
-        """
-        Recursively convert JsonToObject instances to dictionaries.
+        """Recursively convert JsonToObject instances to dictionaries.
+
+        Args:
+            obj (Any): Object to convert.
+
+        Returns:
+            Any: Converted object (dict if input was JsonToObject).
         """
         if isinstance(obj, JsonToObject):
             return {key: self._convert_to_dict(value) for key, value in obj.__dict__.items()}
@@ -167,8 +271,21 @@ class PromptLoader:
         return obj
 
     def get_prompt(self, wrapper: str, name: str, version: str) -> Optional[Prompt]:
-        """
-        Get a specific prompt by wrapper, name, and version.
+        """Get a specific prompt by its identifiers.
+
+        Args:
+            wrapper (str): Wrapper name containing the prompt.
+            name (str): Name of the prompt.
+            version (str): Version of the prompt.
+
+        Returns:
+            Optional[Prompt]: The requested prompt if found, None otherwise.
+
+        Example:
+            >>> prompt = loader.get_prompt("chat", "greeting", "1.0")
+            >>> if prompt:
+            ...     print(prompt.content)
+            'Hello {name}!'
         """
         for prompt_group in self.prompts:
             if prompt_group.name == wrapper:
@@ -178,8 +295,20 @@ class PromptLoader:
         return None
 
     def get_prompt_content(self, wrapper: str, name: str, version: str) -> Optional[Any]:
-        """
-        Get the content of a specific prompt by wrapper, name, and version.
+        """Get the content of a specific prompt.
+
+        Args:
+            wrapper (str): Wrapper name containing the prompt.
+            name (str): Name of the prompt.
+            version (str): Version of the prompt.
+
+        Returns:
+            Optional[Any]: The prompt content if found, None otherwise.
+
+        Example:
+            >>> content = loader.get_prompt_content("chat", "greeting", "1.0")
+            >>> print(content)
+            'Hello {name}!'
         """
         prompt = self.get_prompt(wrapper, name, version)
         if prompt:
@@ -187,8 +316,20 @@ class PromptLoader:
         return None
 
     def get_prompt_output_schema(self, wrapper: str, name: str, version: str) -> Optional[Any]:
-        """
-        Get the output schema of a specific prompt by wrapper, name, and version.
+        """Get the output schema of a specific prompt.
+
+        Args:
+            wrapper (str): Wrapper name containing the prompt.
+            name (str): Name of the prompt.
+            version (str): Version of the prompt.
+
+        Returns:
+            Optional[Any]: The prompt's output schema if found, None otherwise.
+
+        Example:
+            >>> schema = loader.get_prompt_output_schema("chat", "greeting", "1.0")
+            >>> print(schema["type"])
+            'string'
         """
         prompt = self.get_prompt(wrapper, name, version)
         if prompt and hasattr(prompt, RESPONSE_FORMAT_ATTR):

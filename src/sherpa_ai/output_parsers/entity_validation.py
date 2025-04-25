@@ -1,3 +1,10 @@
+"""Entity validation module for Sherpa AI.
+
+This module provides functionality for validating named entities in text.
+It defines the EntityValidation class which verifies that entities mentioned
+in generated text exist in the source material, using various similarity methods.
+"""
+
 from enum import Enum
 from typing import Tuple
 
@@ -15,46 +22,68 @@ from sherpa_ai.utils import (
 
 
 class TextSimilarityMethod(Enum):
+    """Methods for comparing text similarity.
+
+    This enum defines the available methods for comparing text similarity
+    when validating entities.
+
+    Attributes:
+        BASIC (int): Simple text matching.
+        METRICS (int): Similarity metrics-based comparison.
+        LLM (int): Language model-based comparison.
+    """
+
     BASIC = 0
     METRICS = 1
     LLM = 2
 
 
 class EntityValidation(BaseOutputProcessor):
-    """
-     Process and validate the presence of entities in the generated text.
+    """Validator for named entities in text.
 
-    This class inherits from the BaseOutputProcessor and provides a method to process
-    the generated text and validate the presence of entities based on a specified source.
+    This class validates that entities mentioned in generated text can be
+    found in the source material, using progressively more sophisticated
+    similarity comparison methods if initial validation fails.
 
-    Methods:
-    - process_output(text: str, belief: Belief) -> ValidationResult:
-        Process the generated text and validate the presence of entities.
-
-    - get_failure_message() -> str:
-        Returns a failure message to be displayed when the validation fails.
-
+    Example:
+        >>> validator = EntityValidation()
+        >>> belief = Belief()  # Contains source text about "John Smith"
+        >>> result = validator.process_output("John Smith is CEO.", belief)
+        >>> print(result.is_valid)
+        True
+        >>> result = validator.process_output("Jane Doe is CEO.", belief)
+        >>> print(result.is_valid)
+        False
     """
 
     def process_output(
         self, text: str, belief: Belief, llm: BaseLanguageModel = None, **kwargs
     ) -> ValidationResult:
-        """
-        Verifies that entities within `text` exist in the `belief` source text.
-        Args:
-            text: The text to be processed
-            belief: The belief object of the agent that generated the output
-            iteration_count (int, optional): The iteration count for validation processing.
-                    1. means basic text similarity.
-                    2  means text similarity by metrics.
-                    3 means text similarity by llm.
-        Returns:
-            ValidationResult: The result of the validation. If any entity in the
-            text to be processed doesn't exist in the source text,
-            validation is invalid and contains a feedback string.
-            Otherwise, validation is valid.
-        """
+        """Validate entities in text against source material.
 
+        This method checks that entities mentioned in the input text can be
+        found in the source material stored in the belief state. It uses
+        increasingly sophisticated comparison methods on validation failures.
+
+        Args:
+            text (str): Text containing entities to validate.
+            belief (Belief): Agent's belief state containing source material.
+            llm (BaseLanguageModel, optional): Language model for advanced comparison.
+            **kwargs: Additional arguments for processing.
+
+        Returns:
+            ValidationResult: Result indicating whether all entities are valid,
+                           with feedback if validation fails.
+
+        Example:
+            >>> validator = EntityValidation()
+            >>> belief = Belief()  # Contains text about "Microsoft"
+            >>> result = validator.process_output("Microsoft announced...", belief)
+            >>> print(result.is_valid)
+            True
+            >>> print(result.feedback)
+            ''
+        """
         source = belief.get_histories_excluding_types(
             exclude_types=["feedback", "result", "action"],
         )
@@ -76,22 +105,43 @@ class EntityValidation(BaseOutputProcessor):
             )
 
     def similarity_picker(self, value: int):
-        """
-        Picks a text similarity state based on the provided iteration count value.
+        """Select text similarity comparison method.
+
+        This method determines which similarity comparison method to use
+        based on the number of previous validation attempts.
 
         Args:
             value (int): The iteration count value used to determine the text similarity state.
-                        - 0: Use BASIC text similarity.
-                        - 1: Use text similarity BY_METRICS.
-                        - Default: Use text similarity BY_LLM.
+                         0: Use BASIC text similarity.
+                         1: Use text similarity BY_METRICS.
+                         Default: Use text similarity BY_LLM.
 
         Returns:
-            TextSimilarityState: The selected text similarity state.
+            TextSimilarityMethod: Selected comparison method.
+
+        Example:
+            >>> validator = EntityValidation()
+            >>> method = validator.similarity_picker(0)
+            >>> print(method)
+            TextSimilarityMethod.BASIC
+            >>> method = validator.similarity_picker(2)
+            >>> print(method)
+            TextSimilarityMethod.LLM
         """
         switch_dict = {0: TextSimilarityMethod.BASIC, 1: TextSimilarityMethod.METRICS}
         return switch_dict.get(value, TextSimilarityMethod.LLM)
 
     def get_failure_message(self) -> str:
+        """Get a message describing validation failures.
+
+        Returns:
+            str: Warning message about potential missing entities.
+
+        Example:
+            >>> validator = EntityValidation()
+            >>> print(validator.get_failure_message())
+            'Some enitities from the source might not be mentioned.'
+        """
         return "Some enitities from the source might not be mentioned."
 
     def check_entities_match(
@@ -101,18 +151,31 @@ class EntityValidation(BaseOutputProcessor):
         stage: TextSimilarityMethod,
         llm: BaseLanguageModel,
     ):
-        """
-        Check if entities extracted from a question are present in an answer.
+        """Check if entities in result match those in source.
+
+        This method compares entities between result and source text using
+        the specified similarity comparison method.
 
         Args:
-        - result (str): Answer text.
-        - source (str): Question text.
-        - stage (int): Stage of the check (0, 1, or 2).
+            result (str): Text containing entities to validate.
+            source (str): Source text to validate against.
+            stage (TextSimilarityMethod): Comparison method to use.
+            llm (BaseLanguageModel): Language model for LLM-based comparison.
 
         Returns:
-        dict: Result of the check containing
-        """
+            Tuple[bool, str]: Whether entities match and error message if not.
 
+        Example:
+            >>> validator = EntityValidation()
+            >>> match, msg = validator.check_entities_match(
+            ...     "Apple released...",
+            ...     "Apple announced...",
+            ...     TextSimilarityMethod.BASIC,
+            ...     None
+            ... )
+            >>> print(match)
+            True
+        """
         stage = stage.value
         source_entity = extract_entities(source)
         check_entity = extract_entities(result)
