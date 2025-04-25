@@ -1,3 +1,15 @@
+"""User usage tracking module for Sherpa AI.
+
+This module provides functionality for tracking and managing user token usage,
+including whitelisting users and enforcing daily token limits.
+
+Example:
+    >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+    >>> tracker = UserUsageTracker()
+    >>> tracker.check_usage("user123", 100)
+    {'token-left': 900, 'can_execute': True, 'message': '', 'time_left': '23 hours : 59 min : 59 sec'}
+"""
+
 import time
 
 from loguru import logger
@@ -14,7 +26,25 @@ Base = declarative_base()
 
 
 class UsageTracker(Base):
-    """SQLAlchemy base model for tracking LLM token usage on per-user basis"""
+    """SQLAlchemy model for tracking LLM token usage on a per-user basis.
+
+    This class represents the database table that stores token usage information
+    for each user, including timestamps and reset flags.
+
+    Attributes:
+        id (int): Primary key, auto-incrementing.
+        user_id (str): ID of the user.
+        token (int): Number of tokens used.
+        timestamp (int): Unix timestamp of the usage.
+        reset_timestamp (bool): Whether this entry represents a usage reset.
+        reminded_timestamp (bool): Whether the user has been reminded about usage limits.
+
+    Example:
+        >>> from sherpa_ai.database.user_usage_tracker import UsageTracker
+        >>> usage = UsageTracker(user_id="user123", token=100, timestamp=1234567890)
+        >>> print(usage.user_id)
+        user123
+    """
 
     __tablename__ = "usage_tracker"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -26,7 +56,21 @@ class UsageTracker(Base):
 
 
 class Whitelist(Base):
-    """Represents a trusted list of users whose usage is not tracked"""
+    """Represents a trusted list of users whose usage is not tracked.
+
+    This class represents the database table that stores whitelisted user IDs.
+    Whitelisted users are not subject to token usage limits.
+
+    Attributes:
+        id (int): Primary key, auto-incrementing.
+        user_id (str): Unique ID of the whitelisted user.
+
+    Example:
+        >>> from sherpa_ai.database.user_usage_tracker import Whitelist
+        >>> whitelist = Whitelist(user_id="trusted_user123")
+        >>> print(whitelist.user_id)
+        trusted_user123
+    """
 
     __tablename__ = "whitelist"
 
@@ -35,7 +79,33 @@ class Whitelist(Base):
 
 
 class UserUsageTracker:
-    """Enables an app to track LLM token usage on per-user basis"""
+    """Enables tracking of LLM token usage on a per-user basis.
+
+    This class provides functionality to track, manage, and enforce token usage limits
+    for users. It supports whitelisting users, tracking usage over time periods,
+    and providing usage statistics.
+
+    Attributes:
+        db_name (str): Name of the database.
+        db_url (str): URL for database connection.
+        engine: SQLAlchemy engine instance.
+        session: SQLAlchemy session instance.
+        max_daily_token (int): Maximum daily token limit per user.
+        verbose_logger: Logger for verbose output.
+        is_reminded (bool): Whether the user has been reminded about usage limits.
+        usage_percentage_allowed (int): Percentage of limit at which to remind users.
+        limit_time_size_in_hours (float): Time window for usage limits in hours.
+        bucket_name (str): S3 bucket name for database backup.
+        s3_file_key (str): S3 key for database backup file.
+        local_file_path (str): Local path for database file.
+
+    Example:
+        >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+        >>> tracker = UserUsageTracker()
+        >>> result = tracker.check_usage("user123", 100)
+        >>> print(result["token-left"])
+        900
+    """
 
     def __init__(
         self,
@@ -47,6 +117,26 @@ class UserUsageTracker:
         engine=None,
         session=None,
     ):
+        """Initialize the UserUsageTracker.
+
+        Args:
+            db_name (str, optional): Name of the database. Defaults to cfg.DB_NAME.
+            db_url (str, optional): URL for database connection. Defaults to cfg.DB_URL.
+            s3_file_key (str, optional): S3 key for database backup. Defaults to "token_counter.db".
+            bucket_name (str, optional): S3 bucket name. Defaults to "sherpa-sqlight".
+            verbose_logger (BaseVerboseLogger, optional): Logger for verbose output. Defaults to DummyVerboseLogger().
+            engine (optional): SQLAlchemy engine instance. Defaults to None.
+            session (optional): SQLAlchemy session instance. Defaults to None.
+
+        Raises:
+            ImportError: If boto3 package is not installed.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker(db_name="my_db", db_url="sqlite:///my_db.db")
+            >>> print(tracker.db_name)
+            my_db
+        """
         try:
             import boto3
             UserUsageTracker.boto3 = boto3
@@ -57,13 +147,6 @@ class UserUsageTracker:
                 "Please install boto3 with 'pip install boto3'."
             )
 
-        """
-        Initialize the UserUsageTracker.
-
-        Args:
-            db_name (str): Name of the database.
-            max_daily_token (int): Maximum daily token limit.
-        """
         self.db_name = db_name
         self.db_url = db_url
         self.engine = engine or create_engine(self.db_url)
@@ -92,17 +175,28 @@ class UserUsageTracker:
         bucket_name="sherpa-sqlight",
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
     ):
-        """
-        Download usage tracking database from Amazon S3 to local file.
+        """Download usage tracking database from Amazon S3 to local file.
+
+        This method downloads the database file from S3 and creates a new UserUsageTracker
+        instance with the downloaded database.
 
         Args:
-            bucket_name (str): Name of the S3 bucket.
-            s3_file_key (str): Key of the file in the S3 bucket.
-            local_file_path (str): Local path where the file will be downloaded.
+            db_name (str, optional): Name of the database. Defaults to cfg.DB_NAME.
+            db_url (str, optional): URL for database connection. Defaults to cfg.DB_URL.
+            s3_file_key (str, optional): S3 key for database backup. Defaults to "token_counter.db".
+            bucket_name (str, optional): S3 bucket name. Defaults to "sherpa-sqlight".
+            verbose_logger (BaseVerboseLogger, optional): Logger for verbose output. Defaults to DummyVerboseLogger().
+
+        Returns:
+            UserUsageTracker: A new UserUsageTracker instance with the downloaded database.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker.download_from_s3(bucket_name="my-bucket")
+            >>> print(tracker.db_name)
+            token_counter
         """
         local_file_path = f"./{db_name}"
-        # file_path = Path(self.local_file_path)
-        # if not file_path.exists():
         s3 = cls.boto3.client("s3")
         try:
             s3.download_file(bucket_name, s3_file_key, local_file_path)
@@ -117,15 +211,15 @@ class UserUsageTracker:
         )
 
     def upload_to_s3(self):
-        """
-        Upload usage tracking database file from local file to Amazon S3.
+        """Upload usage tracking database file to Amazon S3.
 
-        Args:
-            local_file_path (str): Local path of the file to be uploaded.
-            bucket_name (str): Name of the S3 bucket.
-            s3_file_key (str): Key of the file in the S3 bucket.
-        """
+        This method uploads the local database file to the specified S3 bucket.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.upload_to_s3()  # Uploads the database to S3
+        """
         s3 = UserUsageTracker.boto3.client("s3")
         try:
             s3.upload_file(self.local_file_path, self.bucket_name, self.s3_file_key)
@@ -133,18 +227,31 @@ class UserUsageTracker:
             logger.error(f"Error uploading file to S3: {str(e)}")
 
     def create_table(self):
-        """Create the necessary tables in the database."""
+        """Create the necessary tables in the database.
 
+        This method creates the UsageTracker and Whitelist tables if they don't exist.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.create_table()  # Creates the tables in the database
+        """
         Base.metadata.create_all(self.engine)
 
     def add_to_whitelist(self, user_id):
-        """
-        Add a user to the whitelist table.
+        """Add a user to the whitelist.
+
+        This method adds a user ID to the whitelist table. Whitelisted users are not
+        subject to token usage limits.
 
         Args:
             user_id (str): ID of the user to be added to the whitelist.
-        """
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.add_to_whitelist("trusted_user123")
+        """
         user = Whitelist(user_id=user_id)
         try:
             self.session.add(user)
@@ -157,48 +264,76 @@ class UserUsageTracker:
             self.upload_to_s3()
 
     def get_all_whitelisted_ids(self):
-        """Get a list of all user IDs in the whitelist."""
+        """Get a list of all whitelisted user IDs.
+
+        Returns:
+            list: List of whitelisted user IDs.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> whitelisted_ids = tracker.get_all_whitelisted_ids()
+            >>> print(whitelisted_ids)
+            ['user1', 'user2', 'user3']
+        """
         whitelisted_ids = [user.user_id for user in self.session.query(Whitelist).all()]
         return whitelisted_ids
 
     def get_whitelist_by_user_id(self, user_id):
-        """
-        Get whitelist information for a specific user.
+        """Get whitelist information for a specific user.
 
         Args:
-            user_id (str): ID of the user.
+            user_id (str): ID of the user to look up.
 
         Returns:
-            list: List of dictionaries containing whitelist information.
-        """
+            list: List of dictionaries containing whitelist information for the user.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> whitelist_info = tracker.get_whitelist_by_user_id("user123")
+            >>> print(whitelist_info)
+            [{'id': 1, 'user_id': 'user123'}]
+        """
         data = self.session.query(Whitelist).filter_by(user_id=user_id).all()
         return [{"id": item.id, "user_id": item.user_id} for item in data]
 
     def is_in_whitelist(self, user_id):
-        """
-        Check if a user is in the whitelist.
+        """Check if a user is in the whitelist.
 
         Args:
-            user_id (str): ID of the user.
+            user_id (str): ID of the user to check.
 
         Returns:
-            bool: True if the user is in the whitelist, False otherwise.
-        """
+            bool: True if the user is whitelisted, False otherwise.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> is_whitelisted = tracker.is_in_whitelist("user123")
+            >>> print(is_whitelisted)
+            False
+        """
         return bool(self.get_whitelist_by_user_id(user_id))
 
     def add_and_check_data(
         self, user_id, token, reset_timestamp=False, reminded_timestamp=False
     ):
-        """
-        Add usage data for a user and check for reminders.
+        """Add usage data and check for usage limits.
+
+        This method adds usage data for a user and checks if they need to be
+        reminded about their usage limits.
 
         Args:
             user_id (str): ID of the user.
             token (int): Number of tokens used.
-            reset_timestamp (bool): Whether to reset the timestamp.
-            reminded_timestamp (bool): Set reminded_timestamp.
+            reset_timestamp (bool, optional): Whether to reset the timestamp. Defaults to False.
+            reminded_timestamp (bool, optional): Whether to mark as reminded. Defaults to False.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.add_and_check_data("user123", 100)
         """
         self.add_data(
             user_id=user_id,
@@ -209,15 +344,18 @@ class UserUsageTracker:
         self.remind_user_of_daily_token_limit(user_id=user_id)
 
     def add_data(self, user_id, token, reset_timestamp=False, reminded_timestamp=False):
-        """
-        Add usage data for a user.
+        """Add usage data for a user.
 
         Args:
             user_id (str): ID of the user.
             token (int): Number of tokens used.
-            reset_timestamp (bool): Whether to reset the timestamp.
-            reminded_timestamp (bool): Set reminded_timestamp.
+            reset_timestamp (bool, optional): Whether to reset the timestamp. Defaults to False.
+            reminded_timestamp (bool, optional): Whether to mark as reminded. Defaults to False.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.add_data("user123", 100)
         """
         data = UsageTracker(
             user_id=user_id,
@@ -231,27 +369,39 @@ class UserUsageTracker:
         self.upload_to_s3()
 
     def percentage_used(self, user_id):
-        """
-        Calculate the percentage of daily token quota used by a user.
+        """Calculate the percentage of daily token limit used by a user.
 
         Args:
             user_id (str): ID of the user.
 
         Returns:
-            float: Percentage of daily tokens used since last reset.
-        """
+            float: Percentage of daily token limit used.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> percentage = tracker.percentage_used("user123")
+            >>> print(f"{percentage}% of daily limit used")
+            10.0% of daily limit used
+        """
         total_token_since_last_reset = self.get_sum_of_tokens_since_last_reset(
             user_id=user_id
         )
         return (total_token_since_last_reset * 100) / self.max_daily_token
 
     def remind_user_of_daily_token_limit(self, user_id):
-        """
-        Remind the user when their token usage exceeds a certain percentage.
+        """Remind user when they approach their daily token limit.
+
+        This method checks if a user has used more than the allowed percentage of their
+        daily token limit and sends a reminder if needed.
 
         Args:
-            user_id (str): ID of the user.
+            user_id (str): ID of the user to check.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.remind_user_of_daily_token_limit("user123")
         """
         user_is_whitelisted = self.is_in_whitelist(user_id)
         self.is_reminded = self.check_if_reminded(user_id=user_id)
@@ -266,16 +416,21 @@ class UserUsageTracker:
                 )
 
     def get_data_since_last_reset(self, user_id):
-        """
-        Get usage since the user's usage data was last reset.
+        """Get usage data since the last reset for a user.
 
         Args:
             user_id (str): ID of the user.
 
         Returns:
-            list: List of dictionaries containing usage data.
-        """
+            list: List of dictionaries containing usage data since last reset.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> data = tracker.get_data_since_last_reset("user123")
+            >>> print(data)
+            [{'id': 1, 'user_id': 'user123', 'token': 100, 'timestamp': 1234567890, 'reset_timestamp': False, 'reminded_timestamp': False}]
+        """
         last_reset_info = self.get_last_reset_info(user_id)
         # if there is no reset point before all the users interaction will be taken as a data since last reset
         if last_reset_info is None or last_reset_info["id"] is None:
@@ -315,6 +470,21 @@ class UserUsageTracker:
         ]
 
     def check_if_reminded(self, user_id):
+        """Check if a user has been reminded about their usage limits.
+
+        Args:
+            user_id (str): ID of the user to check.
+
+        Returns:
+            bool: True if the user has been reminded, False otherwise.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> is_reminded = tracker.check_if_reminded("user123")
+            >>> print(is_reminded)
+            False
+        """
         data_list = self.get_data_since_last_reset(user_id)
         is_reminded_true = any(
             item.get("reminded_timestamp", False) for item in data_list
@@ -323,16 +493,21 @@ class UserUsageTracker:
         return is_reminded_true
 
     def get_sum_of_tokens_since_last_reset(self, user_id):
-        """
-        Calculate the sum of tokens used since the last reset for a user.
+        """Calculate total tokens used since last reset for a user.
 
         Args:
             user_id (str): ID of the user.
 
         Returns:
-            int: Sum of tokens used since the last reset.
-        """
+            int: Total number of tokens used since last reset.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> total_tokens = tracker.get_sum_of_tokens_since_last_reset("user123")
+            >>> print(f"Total tokens used: {total_tokens}")
+            Total tokens used: 500
+        """
         data_since_last_reset = self.get_data_since_last_reset(user_id)
 
         if len(data_since_last_reset) == 1 and "user_id" in data_since_last_reset[0]:
@@ -342,28 +517,38 @@ class UserUsageTracker:
         return token_sum
 
     def reset_usage(self, user_id, token_amount):
-        """
-        Reset the usage data for a user to zero.
+        """Reset usage data for a user.
 
         Args:
             user_id (str): ID of the user.
             token_amount (int): Number of tokens to reset.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.reset_usage("user123", 0)
         """
         self.add_and_check_data(
             user_id=user_id, token=token_amount, reset_timestamp=True
         )
 
     def get_last_reset_info(self, user_id):
-        """
-        Get information about the most recent usage data reset for a user.
+        """Get information about the last usage reset for a user.
 
         Args:
             user_id (str): ID of the user.
 
         Returns:
-            dict or None: Dictionary containing last reset information or None if not found.
-        """
+            dict or None: Dictionary containing last reset information or None if no reset found.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> reset_info = tracker.get_last_reset_info("user123")
+            >>> if reset_info:
+            ...     print(f"Last reset at timestamp: {reset_info['timestamp']}")
+            Last reset at timestamp: 1234567890
+        """
         data = (
             self.session.query(UsageTracker.id, UsageTracker.timestamp)
             .filter(UsageTracker.user_id == user_id, UsageTracker.reset_timestamp == 1)
@@ -378,16 +563,21 @@ class UserUsageTracker:
             return None
 
     def seconds_to_hms(self, seconds):
-        """
-        Convert seconds to hours, minutes, and seconds.
+        """Convert seconds to hours, minutes, and seconds format.
 
         Args:
-            seconds (int): Number of seconds.
+            seconds (int): Number of seconds to convert.
 
         Returns:
-            str: Formatted string in the format "hours : minutes : seconds".
-        """
+            str: Formatted string in "hours : minutes : seconds" format.
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> time_str = tracker.seconds_to_hms(3665)
+            >>> print(time_str)
+            23 hours : 0 min : 55 sec
+        """
         remaining_seconds = int(float(self.limit_time_size_in_hours) * 3600 - seconds)
         hours = remaining_seconds // 3600
         minutes = (remaining_seconds % 3600) // 60
@@ -396,19 +586,29 @@ class UserUsageTracker:
         return f"{hours} hours : {minutes} min : {seconds} sec"
 
     def check_usage(self, user_id, token_amount):
-        """
-        Check user usage and determine whether user is allowed to consume more tokens.
+        """Check if a user can consume more tokens.
+
+        This method checks if a user has exceeded their daily token limit and
+        determines if they can consume more tokens.
 
         Args:
             user_id (str): ID of the user.
             token_amount (int): Number of tokens to check.
 
         Returns:
-            dict: Result containing information about tokens remaining,
-                  whether more tokens can be consumed (can_execute),
-                  any associated message, and the time left.
-        """
+            dict: Dictionary containing usage information including:
+                - token-left: Remaining tokens
+                - can_execute: Whether the user can consume more tokens
+                - message: Any relevant message about usage limits
+                - time_left: Time remaining until next reset
 
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> result = tracker.check_usage("user123", 100)
+            >>> print(f"Can execute: {result['can_execute']}, Tokens left: {result['token-left']}")
+            Can execute: True, Tokens left: 900
+        """
         user_is_whitelisted = self.is_in_whitelist(user_id)
         if user_is_whitelisted:
             return {
@@ -468,10 +668,30 @@ class UserUsageTracker:
                     }
 
     def get_all_data(self):
+        """Get all usage tracking data.
+
+        Returns:
+            list: List of all UsageTracker records.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> all_data = tracker.get_all_data()
+            >>> print(f"Total records: {len(all_data)}")
+            Total records: 42
+        """
         data = self.session.query(UsageTracker).all()
         return [item for item in data]
 
     def close_connection(self):
-        """Close the database connection."""
+        """Close the database connection.
 
+        This method should be called when the UserUsageTracker is no longer needed
+        to properly close the database connection.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> tracker.close_connection()  # Closes the database connection
+        """
         self.session.close()
