@@ -1,5 +1,8 @@
-"""
-Post-processors for outputs from the LLM.
+"""Markdown to Slack format conversion module for Sherpa AI.
+
+This module provides functionality for converting Markdown-formatted text to
+Slack-compatible format. It defines the MDToSlackParse class which handles
+the conversion of Markdown links to Slack's link format.
 """
 
 import re
@@ -8,26 +11,28 @@ from sherpa_ai.output_parsers import BaseOutputParser
 
 
 class MDToSlackParse(BaseOutputParser):
-    """
-    A post-processor for converting Markdown links to Slack-compatible format.
+    """Parser for converting Markdown links to Slack format.
 
-    This class inherits from the BaseOutputParser and provides a method to parse
-    and convert Markdown-style links to Slack-compatible format in the input text.
+    This class converts Markdown-style links ([text](url)) to Slack's link
+    format (<url|text>). It maintains the link text and URL while changing
+    only the syntax to match Slack's requirements.
 
     Attributes:
-    - pattern (str): Regular expression pattern for identifying Markdown links.
+        pattern (str): Regex pattern for identifying Markdown links.
 
-    Methods:
-    - parse_output(text: str) -> str:
-        Parses and converts Markdown links to Slack-compatible format in the input text.
-
-    Example Usage:
-    ```python
-    md_to_slack_parser = MDToSlackParse()
-    result = md_to_slack_parser.parse_output("Check out [this link](http://example.com)!")
-    ```
-
+    Example:
+        >>> parser = MDToSlackParse()
+        >>> text = "Check out [this link](http://example.com)!"
+        >>> result = parser.parse_output(text)
+        >>> print(result)
+        'Check out <http://example.com|this link>!'
     """
+
+    def __init__(self) -> None:
+        """Initialize a new MDToSlackParse instance.
+
+        Sets up the regex pattern for matching Markdown-style links in text.
+        """
 
     def __init__(self) -> None:
         """
@@ -36,14 +41,23 @@ class MDToSlackParse(BaseOutputParser):
         self.pattern = r"\[([^\]]+)\]\(([^)]+)\)"
 
     def parse_output(self, text: str) -> str:
-        """
-        Parses and converts Markdown links to Slack-compatible format in the input text.
-        Replace with Slack link
+        """Convert Markdown links to Slack format.
+
+        This method finds all Markdown-style links in the input text and
+        converts them to Slack's link format while preserving the link
+        text and URL.
 
         Args:
-        - text (str): The input text containing Markdown-style links.
+            text (str): Text containing Markdown-style links.
 
         Returns:
-        - str: The modified text with Markdown links replaced by Slack-compatible links.
+            str: Text with links converted to Slack format.
+
+        Example:
+            >>> parser = MDToSlackParse()
+            >>> text = "See [docs](https://docs.com) and [code](https://code.com)"
+            >>> result = parser.parse_output(text)
+            >>> print(result)
+            'See <https://docs.com|docs> and <https://code.com|code>'
         """
         return re.sub(self.pattern, r"<\2|\1>", text)

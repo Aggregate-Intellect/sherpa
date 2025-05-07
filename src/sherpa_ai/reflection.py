@@ -10,9 +10,46 @@ from sherpa_ai.prompt_generator import PromptGenerator
 
 
 class Reflection:
+    """Class for performing reflection on AI actions.
+
+    This class provides functionality to evaluate and refine AI actions based on
+    feedback and previous actions. It includes methods for creating message history,
+    evaluating action outcomes, and updating the AI's response format.
+
+    Attributes:
+        llm (BaseLanguageModel): The language model to use for evaluation.
+        tools (List[BaseTool]): The tools available to the AI.
+        action_list (List): The list of previous actions.
+
+    Example:
+        >>> from langchain_core.language_models import BaseLanguageModel
+        >>> from langchain_core.tools import BaseTool
+        >>> from sherpa_ai.reflection import Reflection
+        >>> llm = ChatOpenAI(model="gpt-4o-mini")
+        >>> tools = [MyTool()]
+        >>> reflection = Reflection(llm, tools)
+        >>> reflection.evaluate_action("action", "reply", "task", "previous_message")
+        "new_reply"
+    """
+    
     def __init__(
         self, llm: BaseLanguageModel, tools: List[BaseTool], action_list: List = []
     ):
+        """Initialize the Reflection class.
+
+        Args:
+            llm (BaseLanguageModel): The language model to use for evaluation.
+            tools (List[BaseTool]): The tools available to the AI.
+            action_list (List, optional): The list of previous actions. Defaults to an empty list.
+
+        Example:
+            >>> from langchain_core.language_models import BaseLanguageModel
+            >>> from langchain_core.tools import BaseTool
+            >>> from sherpa_ai.reflection import Reflection
+            >>> llm = ChatOpenAI(model="gpt-4o-mini")
+            >>> tools = [MyTool()]
+            >>> reflection = Reflection(llm, tools)
+        """
         self.llm = llm
         self.action_list = action_list
 
@@ -27,6 +64,26 @@ class Reflection:
     def create_message_history(
         self, messages: List[BaseMessage], max_token=2000
     ) -> str:
+        """Create a message history from a list of messages.
+
+        This method takes a list of BaseMessage objects and returns a string
+        representing the message history. It reverses the order of the messages
+        and stops adding tokens when the maximum token limit is reached.
+
+        Args:
+            messages (List[BaseMessage]): The list of messages to create a history from.
+            max_token (int, optional): The maximum number of tokens to include in the history. Defaults to 2000.
+
+        Returns:
+            str: The message history as a string.
+
+        Example:
+            >>> from langchain_core.messages import HumanMessage, AIMessage
+            >>> messages = [HumanMessage(content="Hello"), AIMessage(content="Hi")]
+            >>> reflection = Reflection(llm, [])
+            >>> message_history = reflection.create_message_history(messages)
+            >>> print(message_history)
+        """
         result = ""
         current_tokens = 0
 
@@ -41,6 +98,27 @@ class Reflection:
 
     # we will also include previous_messages in the sherpa system
     def evaluate_action(self, action, assistant_reply, task, previous_message):
+        """Evaluate the action taken by the AI.
+
+        This method evaluates the action taken by the AI based on the feedback
+        and previous actions. It updates the AI's response format if necessary.
+
+        Args:
+            action (str): The action taken by the AI.
+            assistant_reply (str): The reply from the AI.
+            task (str): The task to solve.
+            previous_message (List[BaseMessage]): The previous messages.
+
+        Returns:
+            str: The new reply from the AI.
+
+        Example:
+            >>> from langchain_core.messages import HumanMessage, AIMessage
+            >>> messages = [HumanMessage(content="Hello"), AIMessage(content="Hi")]
+            >>> reflection = Reflection(llm, [])
+            >>> new_reply = reflection.evaluate_action("action", "reply", "task", messages)
+            >>> print(new_reply)
+        """
         self.action_list.append(action)
         if len(self.action_list) == 1:  # first action, no previous action
             return assistant_reply

@@ -1,3 +1,10 @@
+"""Vector database-enhanced shared memory module for Sherpa AI.
+
+This module extends the shared memory functionality with vector database integration
+for semantic search capabilities. It defines the SharedMemoryWithVectorDB class
+which combines shared memory with vector storage for context retrieval.
+"""
+
 from typing import List, Optional
 
 from sherpa_ai.actions.planning import Plan
@@ -10,13 +17,23 @@ from sherpa_ai.memory.belief import Belief
 
 
 class SharedMemoryWithVectorDB(SharedMemory):
-    """
-    Custom implementation of SharedMemory that integrates with ChromaVectorStore.
+    """Shared memory with vector database integration for semantic search.
 
-    Use this class whenever context retrieval from a vector database is needed.
+    This class extends SharedMemory to provide context retrieval capabilities
+    using a vector database. It allows for semantic search of relevant context
+    based on the current task.
 
     Attributes:
         session_id (str): Unique identifier for the current session.
+        vectorStorage (BaseVectorDB): Vector database for semantic search.
+
+    Example:
+        >>> memory = SharedMemoryWithVectorDB("Complete task", "session1", vectorStorage=db)
+        >>> memory.add("task", "initial_task", content="Process data")
+        >>> belief = Belief()
+        >>> memory.observe(belief)
+        >>> print(belief.current_task.content)
+        'Process data'
     """
 
     def __init__(
@@ -26,6 +43,19 @@ class SharedMemoryWithVectorDB(SharedMemory):
         agent_pool: None,
         vectorStorage: BaseVectorDB = None,
     ):
+        """Initialize shared memory with vector database integration.
+
+        Args:
+            objective (str): The overall objective to pursue.
+            session_id (str): Unique identifier for the current session.
+            agent_pool (None): Pool of agents sharing this memory (unused).
+            vectorStorage (BaseVectorDB, optional): Vector database for semantic search.
+
+        Example:
+            >>> memory = SharedMemoryWithVectorDB("Complete task", "session1")
+            >>> print(memory.session_id)
+            'session1'
+        """
         self.objective = objective
         self.agent_pool = agent_pool
         self.events: List[Event] = []
@@ -35,6 +65,22 @@ class SharedMemoryWithVectorDB(SharedMemory):
         self.vectorStorage = vectorStorage
 
     def observe(self, belief: Belief):
+        """Synchronize agent belief with shared memory state and vector database context.
+
+        Updates the agent's belief with the current task, relevant events from shared memory,
+        and semantically relevant context from the vector database.
+
+        Args:
+            belief (Belief): Agent belief to update.
+
+        Example:
+            >>> memory = SharedMemoryWithVectorDB("Complete task", "session1", vectorStorage=db)
+            >>> memory.add("task", "initial_task", content="Process data")
+            >>> belief = Belief()
+            >>> memory.observe(belief)
+            >>> print(belief.current_task.content)
+            'Process data'
+        """
         tasks = super().get_by_type("task")
 
         task = tasks[-1] if len(tasks) > 0 else None

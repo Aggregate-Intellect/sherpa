@@ -19,6 +19,22 @@ HTTP_GET_TIMEOUT = 2.5
 
 
 def load_files(files: List[str]) -> List[Document]:
+    """Load files from a list of file paths.
+
+    Args:
+        files (List[str]): A list of file paths to load.
+
+    Returns:
+        List[Document]: A list of loaded documents.
+
+    Example:
+        >>> from langchain_core.documents import Document
+        >>> from sherpa_ai.utils import load_files
+        >>> files = ["file1.pdf", "file2.md"]
+        >>> documents = load_files(files)
+        >>> print(len(documents))
+        2
+    """
     from langchain_community.document_loaders import (
         UnstructuredMarkdownLoader,
         UnstructuredPDFLoader,
@@ -43,6 +59,21 @@ def load_files(files: List[str]) -> List[Document]:
 
 
 def get_links_from_string(text):
+    """Extract links from a string.
+
+    Args:
+        text (str): The input string to extract links from.
+
+    Returns:
+        List[dict]: A list of dictionaries containing the extracted links and their base URLs.
+
+    Example:
+        >>> from sherpa_ai.utils import get_links_from_string
+        >>> text = "Check out this link: <https://www.example.com>"
+        >>> links = get_links_from_string(text)
+        >>> print(links)
+        [{'url': 'https://www.example.com', 'base_url': 'https://www.example.com'}]
+    """
     # Define the regular expression pattern to find links inside angle brackets
     pattern = r"<([^>]*)>"
 
@@ -61,12 +92,42 @@ def get_links_from_string(text):
 
 
 def get_base_url(link):
+    """Get the base URL from a link.
+
+    Args:
+        link (str): The input link.
+
+    Returns:
+        str: The base URL of the link.
+
+    Example:
+        >>> from sherpa_ai.utils import get_base_url
+        >>> link = "https://www.example.com/path/to/resource"
+        >>> base_url = get_base_url(link)
+        >>> print(base_url)
+        "https://www.example.com"
+    """
     parsed_url = urlparse(link)
     base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
     return base_url
 
 
 def get_link_from_slack_client_conversation(data):
+    """Get links from a Slack client conversation.
+
+    Args:
+        data (list): The input data containing the conversation.
+
+    Returns:
+        list: A list of dictionaries containing the extracted links and their base URLs.    
+
+    Example:
+        >>> from sherpa_ai.utils import get_link_from_slack_client_conversation
+        >>> data = [{"blocks": [{"elements": [{"elements": [{"type": "link", "url": "https://www.example.com"}]}]}]}]
+        >>> links = get_link_from_slack_client_conversation(data)
+        >>> print(links)
+        [{'url': 'https://www.example.com', 'base_url': 'https://www.example.com'}]
+    """
     links = []
     for item in data:
         if "blocks" in item:
@@ -83,6 +144,21 @@ def get_link_from_slack_client_conversation(data):
 
 
 def scrape_with_url(url: str):
+    """Scrape a URL and return the text.
+
+    Args:
+        url (str): The URL to scrape.
+
+    Returns:
+        dict: A dictionary containing the scraped text and the status code.
+
+    Example:
+        >>> from sherpa_ai.utils import scrape_with_url
+        >>> url = "https://www.example.com"
+        >>> result = scrape_with_url(url)
+        >>> print(result)
+        {'data': 'Example text', 'status': 200}
+    """
     try:
         from bs4 import BeautifulSoup
     except ImportError:
@@ -103,6 +179,23 @@ def scrape_with_url(url: str):
 
 
 def rewrite_link_references(data: any, question: str):
+    """Rewrite link references in a text.
+
+    Args:
+        data (any): The input data containing the links.
+        question (str): The question to rewrite the links for.
+
+    Returns:
+        str: The rewritten text with link references.
+
+    Example:
+        >>> from sherpa_ai.utils import rewrite_link_references
+        >>> data = [{"link": "https://www.example.com"}]
+        >>> question = "What is the link?"
+        >>> result = rewrite_link_references(data, question)
+        >>> print(result)
+        "What is the link? [1] link: https://www.example.com"
+    """
     result = question + "./n Reference:"
     for count, chunk in enumerate(data):
         reference = f"[{ count + 1}]"
@@ -130,6 +223,27 @@ def count_string_tokens(string: str, model_name: str) -> int:
 
 
 def chunk_and_summarize(text_data: str, question: str, link: str, llm):
+    """Chunk and summarize text.
+
+    Args:
+        text_data (str): The text to chunk and summarize.
+        question (str): The question to answer.
+        link (str): The link to the text.
+        llm (BaseLanguageModel): The language model to use for summarization.
+
+    Returns:
+        str: The summarized text.
+
+    Example:
+        >>> from sherpa_ai.utils import chunk_and_summarize
+        >>> text_data = "This is a test text."
+        >>> question = "What is the text?"
+        >>> link = "https://www.example.com"
+        >>> llm = ChatOpenAI(model="gpt-3.5-turbo")
+        >>> result = chunk_and_summarize(text_data, question, link, llm)
+        >>> print(result)
+        "This is a test text."
+    """
     from langchain_text_splitters import TokenTextSplitter
 
     instruction = (
@@ -163,8 +277,30 @@ def chunk_and_summarize_file(
     llm,
     title: str = None,
 ):
-    from langchain_text_splitters import TokenTextSplitter
+    """Chunk and summarize a file.
 
+    Args:
+        text_data (str): The text to chunk and summarize.
+        question (str): The question to answer.
+        file_name (str): The name of the file.
+        file_format (str): The format of the file.
+        llm (BaseLanguageModel): The language model to use for summarization.
+        title (str): The title of the file.
+
+    Returns:
+        str: The summarized text.
+
+    Example:
+        >>> from sherpa_ai.utils import chunk_and_summarize_file
+        >>> text_data = "This is a test text."
+        >>> question = "What is the text?"
+        >>> file_name = "test.txt"
+        >>> file_format = "txt"
+        >>> llm = ChatOpenAI(model="gpt-3.5-turbo")
+        >>> result = chunk_and_summarize_file(text_data, question, file_name, file_format, llm)
+        >>> print(result)
+        "This is a test text."
+    """
     title = f",title {title} " if title is not None else ""
 
     instruction = (
@@ -193,6 +329,29 @@ def chunk_and_summarize_file(
 def question_with_file_reconstructor(
     data: str, file_name: str, title: Union[str, None], file_format: str, question: str
 ):
+    """Reconstruct a question with a file reference.
+
+    Args:
+        data (str): The data to reconstruct the question with.
+        file_name (str): The name of the file.
+        title (str): The title of the file.
+        file_format (str): The format of the file.
+        question (str): The question to reconstruct.
+
+    Returns:
+        str: The reconstructed question.
+
+    Example:
+        >>> from sherpa_ai.utils import question_with_file_reconstructor
+        >>> data = "This is a test text."
+        >>> file_name = "test.txt"
+        >>> title = "Test Title"
+        >>> file_format = "txt"
+        >>> question = "What is the text?"
+        >>> result = question_with_file_reconstructor(data, file_name, title, file_format, question)
+        >>> print(result)
+        "What is the text? [1] link: https://www.example.com"
+    """
     result = question + "./n Reference:"
     title = f"'title':'{title}'" if title is not None else ""
     result = (
@@ -207,7 +366,14 @@ def question_with_file_reconstructor(
 
 
 def log_formatter(logs):
-    """Formats the logger into readable string"""
+    """Format logs for verbose output.
+
+    Args:
+        logs (list): The logs to format.
+
+    Returns:
+        str: The formatted logs.
+    """
     log_strings = []
     for log in logs:
         reply = log["reply"]
@@ -232,7 +398,14 @@ def log_formatter(logs):
 
 
 def show_commands_only(logs):
-    """Modified version of log_formatter that only shows commands"""
+    """Modified version of log_formatter that only shows commands.
+
+    Args:
+        logs (list): The logs to format.
+
+    Returns:
+        str: The formatted logs.
+    """
     log_strings = []
     if not isinstance(logs, list):  # for single log, turn it into a list
         logs = [logs]
@@ -264,6 +437,14 @@ def extract_text_from_pdf(pdf_path):
             "This is needed in order to to use extract_text_from_pdf. "
             "Please install it with `pip install pypdf`"
         )
+    """Extract text from a PDF file.
+
+    Args:
+        pdf_path (str): The path to the PDF file.
+
+    Returns:
+        str: The extracted text from the PDF file.
+    """
     text = ""
     # Extract text from a PDF using PdfReader
     pdf_file = open(pdf_path, "rb")
@@ -278,9 +459,14 @@ def extract_text_from_pdf(pdf_path):
 
 
 def extract_urls(text):
-    # extract urls from natrual language texts
-    # return a list of urls [a,b,c]. Each url is a string
+    """Extract URLs from a text.
 
+    Args:
+        text (str): The text to extract URLs from.
+
+    Returns:
+        list: A list of URLs.
+    """
     # Split the text into words
     words = text.split()
 
@@ -291,12 +477,14 @@ def extract_urls(text):
 
 
 def check_url(url):
-    """
-    Performs an HTTP GET request on `url` to test its validity.
+    """Check if a URL is valid.
 
-    Returns True if GET succeeds, False otherwise.
-    """
+    Args:
+        url (str): The URL to check.
 
+    Returns:
+        bool: True if the URL is valid, False otherwise.
+    """
     if urlparse(url).scheme in ["http", "https"]:
         try:
             _ = requests.get(url, timeout=HTTP_GET_TIMEOUT)
@@ -309,7 +497,14 @@ def check_url(url):
 
 
 def extract_numbers_from_text(text):
-    """Returns a list, possibly empty, of the strings of digits within text"""
+    """Extract numbers from a text.
+
+    Args:
+        text (str): The text to extract numbers from.
+
+    Returns:
+        list: A list of numbers.
+    """
     if text is not None:
         text = text.lower()
         text_without_commas = re.sub(",", "", text)
@@ -321,17 +516,23 @@ def extract_numbers_from_text(text):
 
 
 def word_to_float(text):
-    """
-    Converts a textual representation of a number to a float.
+    """Convert a word to a float.
 
-    Parameters:
-    - text (str): The input text containing a textual representation of a number.
+    Args:
+        text (str): The text to convert to a float.
 
     Returns:
-    dict: A dictionary with keys:
-        - 'success' (bool): True if the conversion was successful, False otherwise.
-        - 'data' (float): The converted float value if 'success' is True.
-        - 'message' (str): An error message if 'success' is False.
+        dict: A dictionary containing the success and data.
+            'success' (bool): True if the conversion was successful, False otherwise.
+            'data' (float): The converted float value if 'success' is True.
+            'message' (str): An error message if 'success' is False.
+
+    Example:
+        >>> from sherpa_ai.utils import word_to_float
+        >>> text = "one"
+        >>> result = word_to_float(text)
+        >>> print(result)
+        {'success': True, 'data': 1}
     """
     try:
         from word2number import w2n
@@ -354,17 +555,15 @@ def extract_numeric_entities(
     text: Optional[str],
     entity_types: List[str] = ["DATE", "CARDINAL", "QUANTITY", "MONEY"],
 ):
-    """
-    Extracts numeric entities from the given text using spaCy and converts textualrepresentations of numbers to floats using the word_to_float function.
+    """Extract numeric entities from a text.
 
     Args:
-        text (str): The input text from which numeric entities will be extracted.
+        text (str): The text to extract numeric entities from.
         entity_types (List[str]): A list of spaCy entity types to consider for extraction.
-                                Default is ["DATE", "CARDINAL", "QUANTITY", "MONEY"].
 
     Returns:
-        List[str]: A list of numeric values extracted from the text.
-    """  # noqa: E501
+        list: A list of numeric entities.
+    """
     try:
         import spacy
     except ImportError:
@@ -400,15 +599,13 @@ def extract_numeric_entities(
 
 
 def combined_number_extractor(text: str):
-    """
-    Extracts unique numeric values from the given text by combining results
-    from two different extraction methods.
+    """Extract unique numeric values from a text by combining results from two different extraction methods.
 
-    Parameters:
-    - text (str): The input text from which numeric values are to be extracted.
+    Args:
+        text (str): The text to extract numeric values from.
 
     Returns:
-    - set: A set containing unique numeric values extracted from the input text.
+        list: A list of unique numeric values.
     """
     result = set()
     result.update(extract_numbers_from_text(text))
@@ -420,7 +617,17 @@ def combined_number_extractor(text: str):
 def verify_numbers_against_source(
     text_to_test: Optional[str], source_text: Optional[str]
 ):
-    """Verifies that all numbers in text_to_test exist in source_text. Returns True on success. Returns False and a feedback string on failure."""  # noqa: E501
+    """Verify that all numbers in text_to_test exist in source_text.
+
+    Args:
+        text_to_test (Optional[str]): The text to test.
+        source_text (Optional[str]): The source text.
+
+    Returns:
+        tuple: A tuple containing a boolean and a message.
+            - boolean: True if all numbers in text_to_test exist in source_text, False otherwise.
+            - message: A message indicating whether the numbers in text_to_test exist in source_text.
+    """
     candidate_numbers = set(combined_number_extractor(text_to_test))
     source_numbers = set(combined_number_extractor(source_text))
 
@@ -429,12 +636,23 @@ def verify_numbers_against_source(
     if len(incorrect_candidates) > 0:
         joined_numbers = ", ".join(incorrect_candidates)
         message = "Don't use the numbers"
-        f"{joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context."  # noqa: E501
+        f"{joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context." 
         return False, message
     return True, None
 
 
 def check_if_number_exist(result: str, source: str):
+    """Check if a number exists in a text.
+
+    Args:
+        result (str): The text to check.
+        source (str): The source text.
+
+    Returns:
+        tuple: A tuple containing a boolean and a message.
+            - boolean: True if the number exists in the source text, False otherwise.
+            - message: A message indicating whether the number exists in the source text.
+    """
     check_numbers = extract_numbers_from_text(result)
     source_numbers = extract_numbers_from_text(source)
     error_numbers = []
@@ -453,9 +671,15 @@ def check_if_number_exist(result: str, source: str):
 
 
 def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_constant):
-    """
-    Calculate a combined similarity metric using Jaccard similarity and normalized Levenshtein distance.
+    """Calculate a combined similarity metric using Jaccard similarity and normalized Levenshtein distance.
 
+    Args:
+        word1 (str): First input string.
+        word2 (str): Second input string.
+        levenshtein_constant (float): Weight for the Levenshtein distance in the combined metric.
+
+    Returns:
+    float: Combined similarity metric.
     Args:
     - word1 (str): First input string.
     - word2 (str): Second input string.
@@ -463,7 +687,7 @@ def string_comparison_with_jaccard_and_levenshtein(word1, word2, levenshtein_con
 
     Returns:
     float: Combined similarity metric.
-    """  # noqa: E501
+    """
     from nltk.metrics import edit_distance, jaccard_distance
 
     word1_set = set(word1)
@@ -495,10 +719,10 @@ def extract_entities(text):
     LOC (Location) using spaCy.
 
     Args:
-    - text (str): Input text.
+        text (str): The text to extract entities from.
 
     Returns:
-    List[str]: List of extracted entities.
+        list: A list of extracted entities.
     """
     try:
         import spacy
@@ -522,10 +746,10 @@ def json_from_text(text: str):
     Extract and parse JSON data from a text.
 
     Args:
-    - text (str): Input text containing JSON data.
+        text (str): Input text containing JSON data.
 
     Returns:
-    dict: Parsed JSON data.
+        dict: Parsed JSON data.
     """
     if isinstance(text, str):
         text = text.replace("\n", "")
@@ -557,15 +781,15 @@ def text_similarity_by_llm(
     Check if entities from a question are mentioned in some form inside the answer using a language model.
 
     Args:
-    - source_entity (List[str]): List of entities from the question.
-    - source (str): Question text.
-    - result (str): Answer text.
-    - user_id (str): User ID (optional).
-    - team_id (str): Team ID (optional).
+        source_entity (List[str]): List of entities from the question.
+        source (str): Question text.
+        result (str): Answer text.
+        user_id (str): User ID (optional).
+        team_id (str): Team ID (optional).
 
     Returns:
-    dict: Result of the check containing 'entity_exist' and 'messages'.
-    """  # noqa: E501
+        dict: Result of the check containing 'entity_exist' and 'messages'.
+    """
 
     instruction = f"""
         I have a question and an answer. I want you to confirm whether the entities from the question are all mentioned in some form within the answer.
@@ -589,11 +813,11 @@ def text_similarity_by_metrics(check_entity: List[str], source_entity: List[str]
     Check entity similarity based on Jaccard and Levenshtein metrics.
 
     Args:
-    - check_entity (List[str]): List of entities to check.
-    - source_entity (List[str]): List of reference entities.
+        check_entity (List[str]): List of entities to check.
+        source_entity (List[str]): List of reference entities.
 
     Returns:
-    dict: Result of the check containing 'entity_exist' and 'messages'.
+        dict: Result of the check containing 'entity_exist' and 'messages'.
     """
 
     check_entity_lower = [s.lower() for s in check_entity]
@@ -643,11 +867,11 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
     Check if entities from a reference list are present in another list.
 
     Args:
-    - check_entity ([str]): List of entities to check.
-    - source_entity ([str]): List of reference entities.
+        check_entity ([str]): List of entities to check.
+        source_entity ([str]): List of reference entities.
 
     Returns:
-    dict: Result of the check containing 'entity_exist' and 'messages'.
+        dict: Result of the check containing 'entity_exist' and 'messages'.
     """
 
     error_entity = []
@@ -667,6 +891,16 @@ def text_similarity(check_entity: List[str], source_entity: List[str]):
 
 
 def file_text_splitter(data, meta_data):
+    """Split a text into chunks of a given size.
+
+    Args:
+        data (str): The text to split.
+        meta_data (dict): The metadata to include in the chunks.
+
+    Returns:
+        dict: A dictionary containing the texts and meta_datas.
+    """
+
     from langchain_text_splitters import CharacterTextSplitter
 
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
@@ -694,10 +928,10 @@ def is_coroutine_function(func: Any):
     Check if a function is a coroutine function.
 
     Args:
-    - func (Any): The function to check.
+        func (Any): The function to check.
 
     Returns:
-    bool: True if the function is a coroutine function, False otherwise.
+        bool: True if the function is a coroutine function, False otherwise.
     """
     while isinstance(func, functools.partial):
         func = func.func

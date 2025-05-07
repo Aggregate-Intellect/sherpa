@@ -1,3 +1,11 @@
+"""ReAct State Machine policy implementation for Sherpa AI.
+
+This module provides a policy implementation that combines the ReAct framework
+with state machine information for action selection. It defines the
+ReactStateMachinePolicy class which uses both the current state and state
+machine transitions to guide action selection.
+"""
+
 from __future__ import annotations
 
 import json
@@ -17,17 +25,30 @@ if TYPE_CHECKING:
 
 
 class ReactStateMachinePolicy(BasePolicy):
-    """
-    The policy to select an action from the belief based on the ReACT framework.
+    """Policy implementation combining ReAct framework with state machine.
 
-    If uses information from the state machine
+    This class extends the ReAct framework by incorporating state machine
+    information into the action selection process. It considers both the
+    current state and possible state transitions when choosing actions.
 
     Attributes:
-        role_description (str): The description of the agent role to help select an action
-        output_instruction (str): The instruction to output the action in JSON format
-        llm (BaseLanguageModel): The large language model used to generate text
-        response_format (dict): The response format for the policy in JSON format
-    """  # noqa: E501
+        role_description (str): Description of agent role for action selection.
+        output_instruction (str): Instruction for JSON output format.
+        llm (Any): Language model for generating text (BaseLanguageModel).
+        prompt_template (PromptTemplate): Template for generating prompts.
+        response_format (dict): Expected JSON format for responses.
+        model_config (ConfigDict): Configuration allowing arbitrary types.
+
+    Example:
+        >>> policy = ReactStateMachinePolicy(
+        ...     role_description="Assistant that helps with coding",
+        ...     output_instruction="Choose the best action",
+        ...     llm=language_model
+        ... )
+        >>> output = policy.select_action(belief)
+        >>> print(output.action.name)
+        'SearchCode'
+    """
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -46,14 +67,23 @@ class ReactStateMachinePolicy(BasePolicy):
     }
 
     def get_prompt(self, belief: Belief, actions: list[BaseAction]) -> str:
-        """
-        Create the prompt based on information from the belief
+        """Create a prompt for action selection using belief and state info.
+
+        This method generates a prompt that includes the current task,
+        available actions, action history, current state, and state
+        description to help guide action selection.
 
         Args:
-            belief (Belief): The current state of the agent
+            belief (Belief): Current belief state of the agent.
+            actions (list[BaseAction]): List of available actions.
 
         Returns:
-            str: The prompt to be used for the selection of the action
+            str: Formatted prompt for the language model.
+
+        Example:
+            >>> prompt = policy.get_prompt(belief, actions)
+            >>> print(prompt)  # Shows formatted prompt with state info
+            'You are an assistant that helps with coding...'
         """
         task_description = belief.current_task.content
         possible_actions = "\n".join([str(action) for action in actions])
@@ -94,16 +124,30 @@ class ReactStateMachinePolicy(BasePolicy):
         return prompt
 
     def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
-        """
-        Select an action from a list of possible actions based on the current state (belief)
+        """Select an action based on current belief state and state machine.
+
+        This method analyzes the current state, available actions, and state
+        machine information to select the most appropriate next action.
+        For trivial cases (single action with no args), it skips the
+        language model reasoning.
 
         Args:
-            belief (Belief): The current state of the agent
+            belief (Belief): Current belief state of the agent.
 
         Returns:
-            Optional[PolicyOutput]: The selected action and arguments, or None if the selected
-            action is not found in the list of possible actions
-        """  # noqa: E501
+            Optional[PolicyOutput]: Selected action and arguments, or None
+                                  if selected action not found.
+
+        Raises:
+            SherpaPolicyException: If selected action not in available actions.
+
+        Example:
+            >>> policy = ReactStateMachinePolicy(llm=language_model)
+            >>> belief.actions = [SearchAction(), AnalyzeAction()]
+            >>> output = policy.select_action(belief)
+            >>> print(output.action.name)  # Based on state and reasoning
+            'SearchAction'
+        """
         actions = belief.get_actions()
         if is_selection_trivial(actions):
             return PolicyOutput(action=actions[0], args={})
@@ -126,16 +170,29 @@ class ReactStateMachinePolicy(BasePolicy):
         return PolicyOutput(action=action, args=args)
 
     async def async_select_action(self, belief: Belief) -> Optional[PolicyOutput]:
-        """
-        Select an action from a list of possible actions based on the current state (belief)
+        """Asynchronously select an action based on belief state and state machine.
+
+        This method provides an asynchronous version of action selection,
+        considering the current state, available actions, and state machine
+        information.
 
         Args:
-            belief (Belief): The current state of the agent
+            belief (Belief): Current belief state of the agent.
 
         Returns:
-            Optional[PolicyOutput]: The selected action and arguments, or None if the selected
-            action is not found in the list of possible actions
-        """  # noqa: E501
+            Optional[PolicyOutput]: Selected action and arguments, or None
+                                  if selected action not found.
+
+        Raises:
+            SherpaPolicyException: If selected action not in available actions.
+
+        Example:
+            >>> policy = ReactStateMachinePolicy(llm=language_model)
+            >>> output = await policy.async_select_action(belief)
+            >>> if output:
+            ...     print(output.action.name)
+            'SearchAction'
+        """
         actions = await belief.async_get_actions()
         if is_selection_trivial(actions):
             return PolicyOutput(action=actions[0], args={})

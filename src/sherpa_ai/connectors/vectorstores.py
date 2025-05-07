@@ -15,7 +15,36 @@ from sherpa_ai.utils import load_files
 
 
 class ConversationStore(VectorStore):
+    """A vector store for storing and retrieving conversation data.
+
+    This class provides methods to store conversation data in a vector database
+    and retrieve similar conversations based on queries.
+
+    Attributes:
+        db: The underlying database connection.
+        namespace (str): The namespace for the vector store.
+        embeddings_func: The embedding function to use.
+        text_key (str): The key used to store the text in metadata.
+
+    Example:
+        >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+        >>> store = ConversationStore.from_index("my_namespace", "api_key", "my_index")
+        >>> store.add_text("This is a conversation", {"user": "user1"})
+        >>> results = store.similarity_search("conversation", top_k=5)
+    """
     def __init__(self, namespace, db, embeddings, text_key):
+        """Initialize a ConversationStore instance.
+
+        Args:
+            namespace (str): The namespace for the vector store.
+            db: The database connection.
+            embeddings: The embedding function to use.
+            text_key (str): The key used to store the text in metadata.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> store = ConversationStore("my_namespace", db, embeddings, "text")
+        """
         self.db = db
         self.namespace = namespace
         self.embeddings_func = embeddings
@@ -23,6 +52,27 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def from_index(cls, namespace, openai_api_key, index_name, text_key="text"):
+        """Create a ConversationStore from a Pinecone index.
+
+        This method initializes a Pinecone client and creates a ConversationStore
+        instance connected to the specified index.
+
+        Args:
+            namespace (str): The namespace for the vector store.
+            openai_api_key (str): The OpenAI API key.
+            index_name (str): The name of the Pinecone index.
+            text_key (str, optional): The key used to store the text in metadata. Defaults to "text".
+
+        Returns:
+            ConversationStore: A new ConversationStore instance.
+
+        Raises:
+            ImportError: If the pinecone-client package is not installed.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> store = ConversationStore.from_index("my_namespace", "api_key", "my_index")
+        """
         try:
             import pinecone
         except ImportError:
@@ -39,6 +89,25 @@ class ConversationStore(VectorStore):
         return cls(namespace, index, embedding, text_key)
 
     def add_text(self, text: str, metadata={}) -> str:
+        """Add a single text to the vector store.
+
+        This method embeds the text, adds it to the database with the provided metadata,
+        and returns the ID of the added text.
+
+        Args:
+            text (str): The text to add.
+            metadata (dict, optional): Metadata to associate with the text. Defaults to {}.
+
+        Returns:
+            str: The ID of the added text.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> store = ConversationStore.from_index("my_namespace", "api_key", "my_index")
+            >>> id = store.add_text("This is a conversation", {"user": "user1"})
+            >>> print(id)
+            '123e4567-e89b-12d3-a456-426614174000'
+        """
         metadata[self.text_key] = text
         id = str(uuid.uuid4())
         embedding = self.embeddings.embed_query(text)
@@ -53,6 +122,21 @@ class ConversationStore(VectorStore):
         return self.embeddings_func
 
     def add_texts(self, texts: Iterable[str], metadatas: List[dict]) -> List[str]:
+        """Add multiple texts to the vector store.
+
+        This method adds each text with its corresponding metadata to the vector store.
+
+        Args:
+            texts (Iterable[str]): The texts to add.
+            metadatas (List[dict]): The metadata for each text.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> store = ConversationStore.from_index("my_namespace", "api_key", "my_index")
+            >>> texts = ["Text 1", "Text 2"]
+            >>> metadatas = [{"user": "user1"}, {"user": "user2"}]
+            >>> store.add_texts(texts, metadatas)
+        """
         for text, metadata in zip(texts, metadatas):
             self.add_text(text, metadata)
 
@@ -63,6 +147,26 @@ class ConversationStore(VectorStore):
         filter: Optional[dict] = None,
         threshold: float = 0.7,
     ) -> list[Document]:
+        """Perform a similarity search in the vector store.
+
+        This method searches for texts that are semantically similar to the query.
+
+        Args:
+            text (str): The search query.
+            top_k (int, optional): The number of results to return. Defaults to 5.
+            filter (Optional[dict], optional): Filter criteria for the search. Defaults to None.
+            threshold (float, optional): The similarity threshold. Defaults to 0.7.
+
+        Returns:
+            list[Document]: A list of documents that match the query.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> store = ConversationStore.from_index("my_namespace", "api_key", "my_index")
+            >>> results = store.similarity_search("What is machine learning?", top_k=5)
+            >>> for doc in results:
+            ...     print(doc.page_content[:100])
+        """
         query_embedding = self.embeddings.embed_query(text)
         results = self.db.query(
             [query_embedding],
@@ -86,6 +190,26 @@ class ConversationStore(VectorStore):
         k: int = 4,
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
+        """Perform a similarity search and return documents with relevance scores.
+
+        This method searches for texts that are semantically similar to the query
+        and returns them along with their relevance scores.
+
+        Args:
+            query (str): The search query.
+            k (int, optional): The number of results to return. Defaults to 4.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            List[Tuple[Document, float]]: A list of tuples containing documents and their relevance scores.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> store = ConversationStore.from_index("my_namespace", "api_key", "my_index")
+            >>> results = store._similarity_search_with_relevance_scores("What is machine learning?")
+            >>> for doc, score in results:
+            ...     print(f"Score: {score}, Content: {doc.page_content[:100]}")
+        """
         logger.debug("query", query)
         query_embedding = self.embeddings.embed_query(query)
         results = self.db.query(
@@ -108,6 +232,24 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def delete(cls, namespace, index_name):
+        """Delete all vectors in a namespace.
+
+        This method deletes all vectors in the specified namespace of the Pinecone index.
+
+        Args:
+            namespace (str): The namespace to delete.
+            index_name (str): The name of the Pinecone index.
+
+        Returns:
+            The result of the delete operation.
+
+        Raises:
+            ImportError: If the pinecone-client package is not installed.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> ConversationStore.delete("my_namespace", "my_index")
+        """
         try:
             import pinecone
         except ImportError:
@@ -131,6 +273,26 @@ class ConversationStore(VectorStore):
         search_type="similarity",
         search_kwargs={},
     ) -> VectorStoreRetriever:
+        """Create a vector store retriever.
+
+        This method creates a ConversationStore and returns a VectorStoreRetriever
+        for it.
+
+        Args:
+            namespace (str): The namespace for the vector store.
+            openai_api_key (str): The OpenAI API key.
+            index_name (str): The name of the Pinecone index.
+            search_type (str, optional): The type of search to perform. Defaults to "similarity".
+            search_kwargs (dict, optional): Additional keyword arguments for the search. Defaults to {}.
+
+        Returns:
+            VectorStoreRetriever: A retriever for the vector store.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> retriever = ConversationStore.get_vector_retrieval("my_namespace", "api_key", "my_index")
+            >>> results = retriever.get_relevant_documents("What is machine learning?")
+        """
         vectorstore = cls.from_index(namespace, openai_api_key, index_name)
         retriever = VectorStoreRetriever(
             vectorstore=vectorstore,
@@ -141,18 +303,51 @@ class ConversationStore(VectorStore):
 
     @classmethod
     def from_texts(cls, texts: List[str], embedding: Embeddings, metadatas: list[dict]):
+        """Create a ConversationStore from a list of texts.
+
+        This method is not implemented for ConversationStore.
+
+        Args:
+            texts (List[str]): The texts to add.
+            embedding (Embeddings): The embedding function to use.
+            metadatas (list[dict]): The metadata for each text.
+
+        Raises:
+            NotImplementedError: This method is not implemented for ConversationStore.
+        """
         raise NotImplementedError("ConversationStore does not support from_texts")
 
 
 class LocalChromaStore(Chroma):
+    """A local Chroma-based vector store.
+
+    This class extends the Chroma vector store to provide additional functionality
+    for working with local files.
+
+    Example:
+        >>> from sherpa_ai.connectors.vectorstores import LocalChromaStore
+        >>> store = LocalChromaStore.from_folder("path/to/files", "api_key")
+        >>> results = store.similarity_search("query", k=5)
+    """
     @classmethod
     def from_folder(cls, file_path, openai_api_key, index_name="chroma"):
-        """
-        Create a Chroma DB from a folder of files (Currently only supports pdfs and
-        markdown files)
-        file_path: path to the folder
-        openai_api_key: openai api key
-        index_name: name of the index
+        """Create a Chroma DB from a folder of files.
+
+        This method creates a ChromaDB from a folder of files, currently supporting
+        PDFs and markdown files.
+
+        Args:
+            file_path (str): Path to the folder containing files.
+            openai_api_key (str): The OpenAI API key.
+            index_name (str, optional): Name of the index. Defaults to "chroma".
+
+        Returns:
+            LocalChromaStore: A new LocalChromaStore instance.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import LocalChromaStore
+            >>> store = LocalChromaStore.from_folder("path/to/files", "api_key")
+            >>> results = store.similarity_search("query", k=5)
         """
         files = os.listdir(file_path)
         files = [file_path + "/" + file for file in files]
@@ -168,6 +363,27 @@ class LocalChromaStore(Chroma):
 
 
 def configure_chroma(host: str, port: int, index_name: str, openai_api_key: str):
+    """Configure a ChromaDB instance.
+
+    This function creates a ChromaDB instance connected to a remote server.
+
+    Args:
+        host (str): The host of the ChromaDB server.
+        port (int): The port of the ChromaDB server.
+        index_name (str): The name of the index.
+        openai_api_key (str): The OpenAI API key.
+
+    Returns:
+        Chroma: A configured ChromaDB instance.
+
+    Raises:
+        ImportError: If the chromadb package is not installed.
+
+    Example:
+        >>> from sherpa_ai.connectors.vectorstores import configure_chroma
+        >>> chroma = configure_chroma("localhost", 8000, "my_index", "api_key")
+        >>> results = chroma.similarity_search("query", k=5)
+    """
     try:
         import chromadb
     except ImportError:
@@ -186,6 +402,19 @@ def configure_chroma(host: str, port: int, index_name: str, openai_api_key: str)
 
 
 def get_vectordb():
+    """Get a vector database retriever based on configuration.
+
+    This function returns a vector database retriever based on the configuration
+    in the config module. It supports Pinecone, Chroma, and local ChromaDB.
+
+    Returns:
+        VectorStoreRetriever: A retriever for the vector store.
+
+    Example:
+        >>> from sherpa_ai.connectors.vectorstores import get_vectordb
+        >>> retriever = get_vectordb()
+        >>> results = retriever.get_relevant_documents("What is machine learning?")
+    """
     if cfg.VECTORDB == "pinecone":
         return ConversationStore.get_vector_retrieval(
             cfg.PINECONE_NAMESPACE,
