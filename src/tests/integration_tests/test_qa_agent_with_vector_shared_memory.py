@@ -145,7 +145,6 @@ def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):  # noqa F
 
     shared_memory = SharedMemoryWithVectorDB(
         objective="summerize the file rtgfqq.",
-        agent_pool=None,
         session_id=session_id,
         vectorStorage=create_mock_vector_storage(),
     )
@@ -159,6 +158,11 @@ def test_shared_memory_with_vector(get_llm, mock_chroma_vector_store):  # noqa F
         "Planner",
         content="summerize the file rtgfqq",
     )
+
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
 
     task_agent.run()
 

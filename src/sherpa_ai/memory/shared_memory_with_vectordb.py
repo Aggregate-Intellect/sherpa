@@ -40,7 +40,6 @@ class SharedMemoryWithVectorDB(SharedMemory):
         self,
         objective: str,
         session_id: str,
-        agent_pool: None,
         vectorStorage: BaseVectorDB = None,
     ):
         """Initialize shared memory with vector database integration.
@@ -48,7 +47,6 @@ class SharedMemoryWithVectorDB(SharedMemory):
         Args:
             objective (str): The overall objective to pursue.
             session_id (str): Unique identifier for the current session.
-            agent_pool (None): Pool of agents sharing this memory (unused).
             vectorStorage (BaseVectorDB, optional): Vector database for semantic search.
 
         Example:
@@ -57,7 +55,6 @@ class SharedMemoryWithVectorDB(SharedMemory):
             'session1'
         """
         self.objective = objective
-        self.agent_pool = agent_pool
         self.events: List[Event] = []
         self.plan: Optional[Plan] = None
         self.current_step = None

@@ -82,8 +82,6 @@ class UserAgent(BaseAgent):
             >>> # result = agent.run()
             >>> # print(result)
         """
-        self.shared_memory.observe(self.belief)
-
         task = self.belief.current_task
         user_name = self.user_id if self.user_id else self.name
         message = f"@{user_name} Please complete the following task: \n{task.content}"
@@ -92,7 +90,7 @@ class UserAgent(BaseAgent):
             logger.warning("No event logger provided. Using print instead.")
             print(message)
             result = input()
-            self.shared_memory.add(event_type="result", name=self.name, content=result)
+            self.belief.shared_memory.add(event_type="result", name=self.name, content=result)
             return result
         else:
             self.verbose_logger.log(message)

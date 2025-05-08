@@ -19,7 +19,7 @@ class Event(BaseModel, ABC):
         >>> event = CustomEvent(name="custom_event")
         >>> print(event.name)
         custom_event
-    """
+    """  # noqa: E501
 
     #: Name of the event.
     name: str
@@ -170,7 +170,7 @@ def build_event(event_type: str, name: str, **kwargs) -> Event:
         >>> start_event = build_event("action_start", "fetch_data", args={"url": "example.com"})
         >>> finish_event = build_event("action_finish", "fetch_data", outputs={"status": "success"})
         >>> generic_event = build_event("user_input", "user_query", content="How are you?")
-    """
+    """  # noqa: E501
 
     if event_type == "action_start":
         return ActionStartEvent(**kwargs, name=name)

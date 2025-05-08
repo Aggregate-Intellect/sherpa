@@ -58,6 +58,7 @@ class BaseAgent(ABC, BaseModel):
         >>> print(agent.name)
         TestAgent
     """
+
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
     name: str
@@ -206,9 +207,6 @@ class BaseAgent(ABC, BaseModel):
             >>> agent.agent_preparation()
         """
         logger.debug(f"```⏳{self.name} is thinking...```")
-
-        if self.shared_memory is not None:
-            self.shared_memory.observe(self.belief)
 
         if len(self.belief.get_actions()) == 0:
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
@@ -368,9 +366,6 @@ class BaseAgent(ABC, BaseModel):
             success
         """
         logger.debug(f"```⏳{self.name} is thinking...```")
-
-        if self.shared_memory is not None:
-            self.shared_memory.observe(self.belief)
 
         actions = await self.belief.async_get_actions()
 
@@ -595,27 +590,6 @@ class BaseAgent(ABC, BaseModel):
 
         self.belief.update_internal("result", self.name, content=result)
         return result
-
-    def observe(self):
-        """Observe the current state of the shared memory.
-
-        This method allows the agent to observe the current state of the shared memory,
-        updating its belief based on the observations.
-
-        Returns:
-            The result of the observation operation.
-
-        Example:
-            >>> from sherpa_ai.agents.base import BaseAgent
-            >>> class MyAgent(BaseAgent):
-            ...     def create_actions(self) -> List[BaseAction]:
-            ...         return []
-            ...     def synthesize_output(self) -> str:
-            ...         return "Output"
-            >>> agent = MyAgent(name="TestAgent", description="A test agent")
-            >>> agent.observe()
-        """
-        return self.shared_memory.observe(self.belief)
 
     def act(self, action: BaseAction, inputs: dict) -> Union[Optional[str], Exception]:
         """Execute an action synchronously.

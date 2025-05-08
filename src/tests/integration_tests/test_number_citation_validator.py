@@ -123,7 +123,6 @@ def test_number_citation_succeeds_in_qa(
 
     shared_memory = SharedMemory(
         objective=objective,
-        agent_pool=None,
     )
     number_validation = NumberValidation()
     with patch.object(SearchTool, "_run", return_value=data):
@@ -140,6 +139,10 @@ def test_number_citation_succeeds_in_qa(
             "Planner",
             content=objective,
         )
+        event = shared_memory.events[-1]
+        task_agent.belief.current_task = event
+        task_agent.belief.internal_events = [event]
+        task_agent.belief.events = [event]
 
         task_agent.run()
 

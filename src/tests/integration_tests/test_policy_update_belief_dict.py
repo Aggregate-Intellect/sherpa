@@ -25,7 +25,6 @@ def test_update_belief(get_llm, get_actions_belief):
 
     shared_memory = SharedMemory(
         objective="Help user to complete the task",
-        agent_pool=None,
     )
 
     task_agent = QAAgent(
@@ -42,6 +41,11 @@ def test_update_belief(get_llm, get_actions_belief):
         "User",
         content="Remember that the answer value to question q1 is 42",
     )
+
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
 
     task_agent.run()
 
@@ -60,7 +64,6 @@ def test_update_belief_nested(get_llm, get_actions_belief):
 
     shared_memory = SharedMemory(
         objective="Help user to complete the task",
-        agent_pool=None,
     )
 
     task_agent = QAAgent(
@@ -78,6 +81,11 @@ def test_update_belief_nested(get_llm, get_actions_belief):
         content="Remember that the name of p1 is 'Sherpa'",
     )
 
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
+
     task_agent.run()
 
     assert belief.get("a.b") == "1"
@@ -93,7 +101,6 @@ def test_update_belief_exist(get_llm, get_actions_belief):
 
     shared_memory = SharedMemory(
         objective="Help user to complete the task",
-        agent_pool=None,
     )
 
     task_agent = QAAgent(
@@ -111,6 +118,11 @@ def test_update_belief_exist(get_llm, get_actions_belief):
         content="Remember that property c of a is 3",
     )
 
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
+
     task_agent.run()
 
     assert belief.get("a.b") == "1"
@@ -125,7 +137,6 @@ def test_retrieve_value(get_llm, get_actions_belief):
 
     shared_memory = SharedMemory(
         objective="Help user to complete the task",
-        agent_pool=None,
     )
 
     task_agent = QAAgent(
@@ -143,6 +154,11 @@ def test_retrieve_value(get_llm, get_actions_belief):
         content="What is value of b of a?",
     )
 
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
+
     task_agent.run()
 
     results = shared_memory.get_by_type("result")
@@ -158,7 +174,6 @@ def test_retrieve_and_calculate(get_llm, get_actions_belief):
 
     shared_memory = SharedMemory(
         objective="Help user to complete the task",
-        agent_pool=None,
     )
 
     task_agent = QAAgent(
@@ -175,6 +190,11 @@ def test_retrieve_and_calculate(get_llm, get_actions_belief):
         "User",
         content="What is the sum of the value of e and value of f in d of a?",
     )
+
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
 
     task_agent.run()
 
