@@ -1,4 +1,6 @@
 import pytest
+from loguru import logger
+
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.state_machine import SherpaStateMachine, State
 from sherpa_ai.actions.base import BaseAction, AsyncBaseAction
