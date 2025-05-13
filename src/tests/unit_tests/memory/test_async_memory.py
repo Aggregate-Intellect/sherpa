@@ -191,4 +191,5 @@ async def test_belief_with_state_machine():
     # Test getting specific action
     action = await belief.async_get_action("next")
     assert hasattr(action, "name")
-    assert action.name == "next" 
+    assert action.name == "next"
+    
