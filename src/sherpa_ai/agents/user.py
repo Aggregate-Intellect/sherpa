@@ -90,7 +90,7 @@ class UserAgent(BaseAgent):
             logger.warning("No event logger provided. Using print instead.")
             print(message)
             result = input()
-            self.belief.shared_memory.add(event_type="result", name=self.name, content=result)
+            self.shared_memory.add(event_type="result", name=self.name, content=result)
             return result
         else:
             self.verbose_logger.log(message)
