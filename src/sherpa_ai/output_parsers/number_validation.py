@@ -1,3 +1,10 @@
+"""Number validation module for Sherpa AI.
+
+This module provides functionality for validating numerical information in text.
+It defines the NumberValidation class which verifies that numbers mentioned in
+generated text exist in the source material.
+"""
+
 from typing import Tuple
 
 from loguru import logger
@@ -12,13 +19,19 @@ class NumberValidation(BaseOutputProcessor):
     """
     Validates the presence or absence of numerical information in a given piece of text.
 
-    Typical usage example:
+    This class validates that any numbers mentioned in generated text can be
+    found in the source material, helping ensure numerical accuracy and prevent
+    hallucination of numbers.
 
-    ```python
-    number_validator = NumberValidation(source="document")
-    result = number_validator.process_output("The document contains important numbers: 123, 456.")
-    ```
-
+    Example:
+        >>> validator = NumberValidation()
+        >>> belief = Belief()  # Contains source text with "42 items"
+        >>> result = validator.process_output("There are 42 items.", belief)
+        >>> print(result.is_valid)
+        True
+        >>> result = validator.process_output("There are 100 items.", belief)
+        >>> print(result.is_valid)
+        False
     """
 
     def process_output(self, text: str, belief: Belief, **kwargs) -> ValidationResult:
@@ -26,13 +39,22 @@ class NumberValidation(BaseOutputProcessor):
         Verifies that all numbers within `text` exist in the `belief` source text.
 
         Args:
-            text: The text to be analyzed
-            belief: Belief of the Agent that generated `text`
+            text (str): Text containing numbers to validate.
+            belief (Belief): Agent's belief state containing source material.
+            **kwargs: Additional arguments for processing.
+
         Returns:
-            ValidationResult: The result of number validation. If any number in the
-            text to be processed doesn't exist in the source text,
-            validation is invalid and contains a feedback string.
-            Otherwise validation is valid.
+            ValidationResult: Result indicating whether all numbers are valid,
+                           with feedback if validation fails.
+
+        Example:
+            >>> validator = NumberValidation()
+            >>> belief = Belief()  # Contains "The price is $50"
+            >>> result = validator.process_output("It costs $50", belief)
+            >>> print(result.is_valid)
+            True
+            >>> print(result.feedback)
+            ''
         """
         source = belief.get_histories_excluding_types(
             exclude_types=["feedback", "result"],
@@ -57,4 +79,14 @@ class NumberValidation(BaseOutputProcessor):
             )
 
     def get_failure_message(self) -> str:
+        """Get a message describing validation failures.
+
+        Returns:
+            str: Warning message about potential numerical inaccuracies.
+
+        Example:
+            >>> validator = NumberValidation()
+            >>> print(validator.get_failure_message())
+            'The numeric value results might not be fully reliable...'
+        """
         return "The numeric value results might not be fully reliable. Exercise caution and consider alternative sources if possible."

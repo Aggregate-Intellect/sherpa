@@ -1,3 +1,10 @@
+"""ReAct framework policy implementation for Sherpa AI.
+
+This module provides a policy implementation based on the ReAct framework
+(https://arxiv.org/abs/2210.03629). It defines the ReactPolicy class which
+selects actions by reasoning about the current state and available actions.
+"""
+
 from __future__ import annotations
 
 import json
@@ -16,17 +23,31 @@ if TYPE_CHECKING:
 
 
 class ReactPolicy(BasePolicy):
-    """
-    The policy to select an action from the belief based on the ReACT framework.
+    """Policy implementation based on the ReAct framework.
 
-    See this paper for more details: https://arxiv.org/abs/2210.03629
+    This class implements action selection based on the ReAct framework,
+    which combines reasoning and acting. It uses a language model to analyze
+    the current state and available actions to select the most appropriate
+    next action.
 
     Attributes:
-        role_description (str): The description of the agent role to help select an action
-        output_instruction (str): The instruction to output the action in JSON format
-        llm (BaseLanguageModel): The large language model used to generate text
-        response_format (dict): The response format for the policy in JSON format
-    """  # noqa: E501
+        role_description (str): Description of agent role for action selection.
+        output_instruction (str): Instruction for JSON output format.
+        llm (Any): Language model for generating text (BaseLanguageModel).
+        prompt_template (PromptTemplate): Template for generating prompts.
+        response_format (dict): Expected JSON format for responses.
+        model_config (ConfigDict): Configuration allowing arbitrary types.
+
+    Example:
+        >>> policy = ReactPolicy(
+        ...     role_description="Assistant that helps with coding",
+        ...     output_instruction="Choose the best action",
+        ...     llm=language_model
+        ... )
+        >>> output = policy.select_action(belief)
+        >>> print(output.action.name)
+        'SearchCode'
+    """
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -45,19 +66,51 @@ class ReactPolicy(BasePolicy):
     }
 
     async def async_select_action(self, belief: Belief) -> Optional[PolicyOutput]:
+        """Asynchronously select an action based on current belief state.
+
+        This method currently just calls the synchronous version. It exists
+        to provide an async interface for future async implementations.
+
+        Args:
+            belief (Belief): Current belief state of the agent.
+
+        Returns:
+            Optional[PolicyOutput]: Selected action and arguments, or None.
+
+        Example:
+            >>> policy = ReactPolicy(llm=language_model)
+            >>> output = await policy.async_select_action(belief)
+            >>> if output:
+            ...     print(output.action.name)
+            'SearchCode'
+        """
         return self.select_action(belief)
 
     def select_action(self, belief: Belief) -> Optional[PolicyOutput]:
-        """
-        Select an action from a list of possible actions based on the current state (belief)
+        """Select an action based on current belief state.
+
+        This method analyzes the current state and available actions using
+        the ReAct framework to select the most appropriate next action.
+        For trivial cases (single action with no args), it skips the
+        language model reasoning.
 
         Args:
-            belief (Belief): The current state of the agent
+            belief (Belief): Current belief state of the agent.
 
         Returns:
-            Optional[PolicyOutput]: The selected action and arguments, or None if the selected
-            action is not found in the list of possible actions
-        """  # noqa: E501
+            Optional[PolicyOutput]: Selected action and arguments, or None
+                                  if selected action not found.
+
+        Raises:
+            SherpaPolicyException: If selected action not in available actions.
+
+        Example:
+            >>> policy = ReactPolicy(llm=language_model)
+            >>> belief.actions = [SearchAction(), AnalyzeAction()]
+            >>> output = policy.select_action(belief)
+            >>> print(output.action.name)  # Based on reasoning
+            'SearchAction'
+        """
         actions = belief.get_actions()
 
         if is_selection_trivial(actions):
