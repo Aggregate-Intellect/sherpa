@@ -53,4 +53,5 @@ async def test_async_action_with_belief_args():
         ]
     )
     result = await action()
-    assert result == "async_result" 
+    assert result == "async_result"
+    
