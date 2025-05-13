@@ -10,6 +10,30 @@ from sherpa_ai.utils import verify_numbers_against_source
 
 
 class NumberValidationAction(BaseAction):
+    """An action for validating numbers in text against a source.
+    
+    This class provides functionality to verify that numbers extracted from a target
+    text exist in a source text, ensuring numerical accuracy in generated content.
+    
+    This class inherits from :class:`BaseAction` and provides methods to:
+      - Validate numbers in text against a source
+      - Extract and verify numerical values
+      - Provide feedback on validation results
+    
+    Attributes:
+        name (str): Name of the action, set to "Number validator".
+        args (dict): Arguments required by the action.
+        usage (str): Description of the action's usage.
+    
+    Example:
+        >>> validator = NumberValidationAction()
+        >>> result = validator.execute(
+        ...     target_text="The population is 8.9 million",
+        ...     source_text="The city has a population of 8.9 million people"
+        ... )
+        >>> print(result)
+        {"is_valid": true, "result": "The population is 8.9 million", "feedback": ""}
+    """
 
     name: str = "Number validator"
     args: dict = {
@@ -21,22 +45,30 @@ class NumberValidationAction(BaseAction):
     )
 
     def __init__(self, **kwargs):
+        """Initialize a NumberValidationAction with the provided parameters.
+        
+        Args:
+            **kwargs: Keyword arguments passed to the parent class.
+        """
         super().__init__(**kwargs)
 
     def execute(self, target_text: str, source_text: str, **kwargs) -> str:
-        """
-        Verifies that all numbers within `text` exist in the `belief` source text.
-
+        """Verify that all numbers within the target text exist in the source text.
+        
+        This method extracts numbers from both texts and compares them to ensure
+        that all numerical values in the target text are present in the source text.
+        
         Args:
-            text: The text to be analyzed
-            belief: Belief of the Agent that generated `text`
+            target_text (str): The text to be validated.
+            source_text (str): The source text to compare against.
+            **kwargs: Additional keyword arguments.
+            
         Returns:
-            ValidationResult: The result of number validation. If any number in the
+            str: A string of the result of number validation. If any number in the
             text to be processed doesn't exist in the source text,
             validation is invalid and contains a feedback string.
             Otherwise validation is valid.
         """
-
         source = self.belief.get_histories_excluding_types(
             exclude_types=["feedback", "result"],
         )

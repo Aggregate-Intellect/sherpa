@@ -15,29 +15,30 @@ from sherpa_ai.policies import ReactPolicy
 
 
 class QAAgent(BaseAgent):
-    """
-    The task agent is the agent handles a single task.
+    """A specialized agent for answering questions and providing information.
+
+    This agent is designed to handle question-answering tasks by searching for
+    information, synthesizing responses, and validating outputs. It can optionally
+    include citations in its responses.
 
     Attributes:
-        llm (BaseLanguageModel): The language model used to generate text
-        name (str, optional): The name of the agent. Defaults to "QA Agent".
-        description (str, optional): The description of the agent. Defaults to
-            TASK_AGENT_DESCRIPTION.
-        shared_memory (SharedMemory, optional): The shared memory used to store
-            information and shared with other agents. Defaults to None.
-        belief (Optional[Belief], optional): The belief of the agent. Defaults to None.
-        agent_config (AgentConfig, optional): The agent configuration. Defaults to
-            AgentConfig.
-        num_runs (int, optional): The number of runs the agent will perform. Defaults
-            to 3.
-        verbose_logger (BaseVerboseLogger, optional): The verbose logger used to log
-            information. Defaults to DummyVerboseLogger().
-        actions (List[BaseAction], optional): The list of actions the agent can perform.
-            Defaults to [].
-        validation_steps (int, optional): The number of validation steps the agent will
-            perform. Defaults to 1.
-        validations (List[BaseOutputProcessor], optional): The list of validations the
-            agent will perform. Defaults to [].
+        name (str): The name of the agent, defaults to "QA Agent".
+        description (str): A description of the agent's purpose and capabilities.
+        config (AgentConfig): Configuration settings for the agent.
+        num_runs (int): Number of action execution cycles, defaults to 3.
+        global_regen_max (int): Maximum number of output regeneration attempts, defaults to 5.
+        citation_enabled (bool): Whether to include citations in responses, defaults to False.
+
+    Example:
+        >>> from sherpa_ai.agents.qa_agent import QAAgent
+        >>> from sherpa_ai.config import AgentConfig
+        >>> agent = QAAgent(
+        ...     name="Research Assistant",
+        ...     config=AgentConfig(),
+        ...     citation_enabled=True
+        ... )
+        >>> print(agent.name)
+        Research Assistant
     """
 
     name: str = "QA Agent"
@@ -48,11 +49,20 @@ class QAAgent(BaseAgent):
     citation_enabled: bool = False
 
     def __init__(self, *args, **kwargs):
-        """
-        The QA agent handles a single question-answering task.
+        """Initialize a QA agent with appropriate configuration and policy.
+
+        This method sets up the agent's description, policy, and belief system
+        based on the provided arguments and template prompts.
 
         Args:
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
 
+        Example:
+            >>> from sherpa_ai.agents.qa_agent import QAAgent
+            >>> agent = QAAgent(name="Research Assistant")
+            >>> print(agent.name)
+            Research Assistant
         """
         super().__init__(*args, **kwargs)
         template = self.prompt_template
@@ -89,6 +99,23 @@ class QAAgent(BaseAgent):
                 break
 
     def create_actions(self) -> List[BaseAction]:
+        """Create and return the list of actions available to this agent.
+
+        This method defines the specific actions that the QA agent can perform,
+        including Google search for finding information.
+
+        Returns:
+            List[BaseAction]: List of action objects that the agent can use.
+
+        Example:
+            >>> from sherpa_ai.agents.qa_agent import QAAgent
+            >>> agent = QAAgent()
+            >>> actions = agent.create_actions()
+            >>> print(len(actions))
+            1
+            >>> print(actions[0].__class__.__name__)
+            GoogleSearch
+        """
         return [
             GoogleSearch(
                 role_description=self.description,
@@ -100,6 +127,23 @@ class QAAgent(BaseAgent):
         ]
 
     def synthesize_output(self) -> str:
+        """Generate the final answer based on the agent's actions and belief state.
+
+        This method creates a SynthesizeOutput action and executes it with the
+        current task, context, and internal history to produce a coherent response.
+
+        Returns:
+            str: The synthesized answer to the question.
+
+        Example:
+            >>> from sherpa_ai.agents.qa_agent import QAAgent
+            >>> agent = QAAgent()
+            >>> agent.belief.current_task.content = "What is machine learning?"
+            >>> # In a real scenario, this would generate a response based on
+            >>> # the agent's actions and belief state
+            >>> # result = agent.synthesize_output()
+            >>> # print(result)
+        """
         synthesize_action = SynthesizeOutput(
             role_description=self.description,
             llm=self.llm,

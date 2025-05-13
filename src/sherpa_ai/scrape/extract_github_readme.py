@@ -1,3 +1,10 @@
+"""GitHub README extraction module for Sherpa AI.
+
+This module provides functionality for extracting and processing README files
+from GitHub repositories. It handles authentication, content extraction,
+and storage of README content in vector databases.
+"""
+
 import base64
 import re
 
@@ -12,31 +19,50 @@ GITHUB_REQUEST_TIMEOUT = 2.5
 
 
 def get_owner_and_repo(url):
-    """
-    Extracts the owner and repository name from a GitHub repository URL.
+    """Extract owner and repository name from GitHub URL.
 
-    Parameters:
-    - url (str): The GitHub repository URL.
+    This function parses a GitHub repository URL to extract the owner's
+    username and repository name.
+
+    Args:
+        url (str): GitHub repository URL (e.g., 'https://github.com/owner/repo').
 
     Returns:
-    Tuple[str, str]: A tuple containing the owner and repository name.
-    """
+        tuple[str, str]: A tuple containing:
+            - owner (str): Repository owner's username
+            - repo (str): Repository name
 
+    Example:
+        >>> url = "https://github.com/openai/gpt-3"
+        >>> owner, repo = get_owner_and_repo(url)
+        >>> print(owner, repo)
+        'openai' 'gpt-3'
+    """
     url_content_list = url.split("/")
     return url_content_list[3], url_content_list[4].split("#")[0]
 
 
 def extract_github_readme(repo_url):
-    """
-    Extracts the content of the README file from a GitHub repository.
+    """Extract README content from a GitHub repository.
 
-    Parameters:
-    - repo_url (str): The GitHub repository URL.
+    This function downloads and extracts the content of a repository's README
+    file (either .md or .rst). It also saves the content to a vector store
+    for future reference.
+
+    Args:
+        repo_url (str): GitHub repository URL.
 
     Returns:
-    str or None: The content of the README file, or None if the file is not found.
-    """
+        Optional[str]: README content if found and successfully extracted,
+            None otherwise.
 
+    Example:
+        >>> url = "https://github.com/openai/gpt-3"
+        >>> content = extract_github_readme(url)
+        >>> if content:
+        ...     print(content[:50])
+        '# GPT-3: Language Models are Few-Shot Learners...'
+    """
     pattern = r"(?:https?://)?(?:www\.)?github\.com/.*"
     match = re.match(pattern, repo_url)
     if match:
@@ -90,12 +116,23 @@ def extract_github_readme(repo_url):
 
 
 def save_to_pine_cone(content, metadatas):
-    """
-    Saves the content and metadata to Pinecone vector store.
+    """Save content to Pinecone vector store.
 
-    Parameters:
-    - content (str): The content to be saved.
-    - metadatas (list): List of metadata associated with the content.
+    This function saves text content and associated metadata to a Pinecone
+    vector store for efficient retrieval. It uses OpenAI embeddings for
+    vectorization.
+
+    Args:
+        content (str): Text content to be stored.
+        metadatas (list): List of metadata dictionaries for the content.
+
+    Raises:
+        ImportError: If pinecone-client package is not installed.
+
+    Example:
+        >>> content = "# Project Documentation\\nThis is a guide..."
+        >>> metadata = [{"type": "github", "url": "https://github.com/org/repo"}]
+        >>> save_to_pine_cone(content, metadata)  # Saves to vector store
     """
     try:
         import pinecone

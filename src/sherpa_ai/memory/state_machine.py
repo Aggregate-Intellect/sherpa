@@ -1,3 +1,10 @@
+"""State machine module for Sherpa AI.
+
+This module provides state machine functionality for the Sherpa AI system.
+It defines the SherpaStateMachine class which manages agent state transitions
+and actions.
+"""
+
 import asyncio
 from typing import Any, Callable, Optional, Union
 
@@ -13,24 +20,62 @@ from sherpa_ai.utils import is_coroutine_function
 
 
 class State(ts.State):
+    """Extended state class for Sherpa state machine.
+
+    This class extends the transitions library's State class to provide
+    additional functionality for Sherpa's state machine implementation.
+    """
+
     def __init__(self, *args, **kwargs):
+        """Initialize a new State instance.
+
+        Args:
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        """
         super().__init__(*args, **kwargs)
 
 
 class Transition(ts.Transition):
+    """Extended transition class for Sherpa state machine.
+
+    This class extends the transitions library's Transition class to provide
+    additional functionality for Sherpa's state machine implementation.
+    """
+
     def __init__(self, *args, **kwargs):
+        """Initialize a new Transition instance.
+
+        Args:
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        """
         super().__init__(*args, **kwargs)
 
 
 class SherpaStateMachine:
-    """
-    State machine for defining the behavior of an agent in sherpa
+    """State machine for managing agent behavior in Sherpa AI.
 
-    It combines with a set of states and transitions between them
+    This class implements a state machine that defines the behavior of an agent
+    by managing states and transitions between them. It provides functionality
+    for adding transitions, executing actions, and managing state changes.
+
     Attributes:
-        explicit_transitions: set of triggers that are explicitly defined in the
-            transitions
-        sm: the state machine object from pytransitions
+        explicit_transitions (set): Set of triggers that are explicitly defined.
+        sm (ts.Machine): The underlying state machine object.
+
+    Example:
+        >>> machine = SherpaStateMachine(
+        ...     name="agent",
+        ...     states=["idle", "working"],
+        ...     transitions=[{"trigger": "start", "source": "idle", "dest": "working"}],
+        ...     initial="idle"
+        ... )
+        >>> print(machine.state)
+        'idle'
+        >>> machine.start()
+        >>> print(machine.state)
+        'working'
     """
 
     explicit_transitions: set = set()
@@ -46,20 +91,26 @@ class SherpaStateMachine:
         sm_cls: type = ts.Machine,
         action_map: dict[str, BaseAction] = {},
     ):
-        """
-        Initialize the state machine
+        """Initialize the state machine.
 
         Args:
-            name (str): name of the state machine
-            states (list): list of states in the state machine
-            transitions (list): list of transitions connecting all states
-            initial (str): the name of initial state
-            auto_transitions (bool): whether to allow automatically building
-                transitions from each pair of states
-            sm_cls (type): the state machine class to instantiate the state machine
-            action_map (dict): mapping from action name to action object
-        """
+            name (str): Name of the state machine.
+            states (list): List of states in the state machine.
+            transitions (list): List of transitions connecting states.
+            initial (str): Name of initial state.
+            auto_transitions (bool): Whether to allow automatic transitions.
+            sm_cls (type): State machine class to instantiate.
+            action_map (dict): Mapping from action name to action object.
 
+        Example:
+            >>> machine = SherpaStateMachine(
+            ...     name="agent",
+            ...     states=["idle", "working"],
+            ...     initial="idle"
+            ... )
+            >>> print(machine.state)
+            'idle'
+        """
         for name, action in action_map.items():
             self.__setattr__(name, action)
 
@@ -85,13 +136,18 @@ class SherpaStateMachine:
         self.add_explicit_transitions(transitions)
 
     def add_explicit_transitions(self, transitions: list[Any]):
-        """
-        Add explicit transitions to the state machine
+        """Add explicit transitions to the state machine.
 
         Args:
-            transitions (list): list of explicit transitions to add
-        """
+            transitions (list): List of explicit transitions to add.
 
+        Example:
+            >>> machine = SherpaStateMachine()
+            >>> transitions = [{"trigger": "start", "source": "idle", "dest": "working"}]
+            >>> machine.add_explicit_transitions(transitions)
+            >>> print("start" in machine.explicit_transitions)
+            True
+        """
         for t in transitions:
             if isinstance(t, dict):
                 self.explicit_transitions.add(t["trigger"])
@@ -109,16 +165,25 @@ class SherpaStateMachine:
         action: Optional[BaseAction] = None,
         **kwargs,
     ):
-        """
-        Update or add a transition to the state machine
+        """Update or add a transition to the state machine.
 
         Args:
-            trigger (str): the trigger event for the transition
-            source (str): the name of the source state of the transition
-            dest (str): the name of the destination state of the transition
-            conditions (list): list of conditions checking functions that needs to
-                return True before the transition can happen
-            action (BaseAction): the action to be executed before the transition happens
+            trigger (str): Trigger event for the transition.
+            source (str): Source state name.
+            dest (str): Destination state name.
+            conditions (Union[Callable, list[Callable]]): Condition functions.
+            action (Optional[BaseAction]): Action to execute before transition.
+            **kwargs: Additional transition parameters.
+
+        Example:
+            >>> machine = SherpaStateMachine(states=["idle", "working"])
+            >>> def check_condition(): return True
+            >>> machine.update_transition(
+            ...     "start", "idle", "working",
+            ...     conditions=check_condition
+            ... )
+            >>> print("start" in machine.explicit_transitions)
+            True
         """
         self.explicit_transitions.add(trigger)
 
@@ -146,16 +211,21 @@ class SherpaStateMachine:
     async def async_get_actions(
         self, include_waiting: bool = False
     ) -> list[BaseAction]:
-        """
-        Get the available transitions as list of actions based on the current state
+        """Get available transitions as actions from current state.
 
         Args:
-            include_waiting (bool): whether to include transitions from the waiting states
+            include_waiting (bool): Whether to include waiting state transitions.
 
         Returns:
-            list[BaseAction]: list of actions that can be executed from the current
-                state
-        """  # noqa: E501
+            list[BaseAction]: List of executable actions from current state.
+
+        Example:
+            >>> machine = SherpaStateMachine(states=["idle", "working"])
+            >>> machine.update_transition("start", "idle", "working")
+            >>> actions = await machine.async_get_actions()
+            >>> print(len(actions))
+            1
+        """
         state = self.state
         state_obj = self.sm.get_state(state)
 
@@ -186,16 +256,21 @@ class SherpaStateMachine:
         return actions
 
     def get_actions(self, include_waiting: bool = False) -> list[BaseAction]:
-        """
-        Get the available transitions as list of actions based on the current state
+        """Get available transitions as actions from current state.
 
         Args:
-            include_waiting (bool): whether to include transitions from the waiting states
+            include_waiting (bool): Whether to include waiting state transitions.
 
         Returns:
-            list[BaseAction]: list of actions that can be executed from the current
-                state
-        """  # noqa: E501
+            list[BaseAction]: List of executable actions from current state.
+
+        Example:
+            >>> machine = SherpaStateMachine(states=["idle", "working"])
+            >>> machine.update_transition("start", "idle", "working")
+            >>> actions = machine.get_actions()
+            >>> print(len(actions))
+            1
+        """
         if self.is_async():
             raise ValueError("Cannot get sync actions from an async state machine")
 
@@ -227,24 +302,35 @@ class SherpaStateMachine:
         return actions
 
     def is_transition_valid(self, transition: ts.Transition):
-        """
-        Check if a transition is valid based on the current state by checking it's
-            conditions
+        """Check if a transition is valid based on current state conditions.
 
         Args:
-            transition (ts.Transition): the transition object to be checked
+            transition (ts.Transition): Transition to check.
 
         Returns:
-            bool: whether the transition is valid
+            bool: Whether the transition is valid.
+
+        Example:
+            >>> machine = SherpaStateMachine(states=["idle", "working"])
+            >>> transition = ts.Transition(
+            ...     machine.sm, "start", "idle", "working"
+            ... )
+            >>> print(machine.is_transition_valid(transition))
+            True
         """
         return self.sm._transition_for_model(transition)
 
     def get_current_state(self) -> ts.State:
-        """
-        Get the current state of the state machine
+        """Get the current state of the state machine.
 
         Returns:
-            ts.State: the current state object
+            ts.State: Current state object.
+
+        Example:
+            >>> machine = SherpaStateMachine(states=["idle", "working"])
+            >>> state = machine.get_current_state()
+            >>> print(state.name)
+            'idle'
         """
         return self.sm.get_state(self.state)
 
@@ -263,16 +349,22 @@ class SherpaStateMachine:
     def extract_actions_info(
         self, actions: list[BaseAction], args: dict, description: str
     ):
-        """
-        Extract the information from a list of actions
+        """Extract information about available actions.
 
         Args:
-            actions (list[BaseAction]): the list of actions to extract information from
-            args (dict): the argument dictionary to put the action arguments to
-            description (str): the description to concatenate action descriptions to
+            actions (list[BaseAction]): List of actions to extract info from.
+            args (dict): Arguments for the actions.
+            description (str): Description of the action context.
 
         Returns:
-            Tuple(dict, str): the updated argument dictionary and the concatenated
+            dict: Dictionary containing action information.
+
+        Example:
+            >>> machine = SherpaStateMachine()
+            >>> actions = [BaseAction(name="action1")]
+            >>> info = machine.extract_actions_info(actions, {}, "context")
+            >>> print(info["actions"])
+            [{'name': 'action1', 'description': ''}]
         """
         for action in actions:
             if isinstance(action, str):
@@ -304,17 +396,24 @@ class SherpaStateMachine:
     def transition_to_action(
         self, trigger: str, transition: ts.Transition
     ) -> BaseAction:
-        """
-        Wrap a transition into a BaseAction that can be selected by an agent
+        """Convert a transition to an action.
 
         Args:
-            trigger (str): the trigger event for the transition
-            transition (ts.Transition): the transition object to be wrapped
+            trigger (str): Trigger event name.
+            transition (ts.Transition): Transition to convert.
 
         Returns:
-            BaseAction: the action object that can be executed by the agent
-        """
+            BaseAction: Action representing the transition.
 
+        Example:
+            >>> machine = SherpaStateMachine(states=["idle", "working"])
+            >>> transition = ts.Transition(
+            ...     machine.sm, "start", "idle", "working"
+            ... )
+            >>> action = machine.transition_to_action("start", transition)
+            >>> print(action.name)
+            'start'
+        """
         def wrapper_action(**kwargs):
             transit_trigger = getattr(self, trigger)
             result = transit_trigger(**kwargs)
@@ -364,4 +463,14 @@ class SherpaStateMachine:
         return action
 
     def is_async(self):
+        """Check if the state machine is asynchronous.
+
+        Returns:
+            bool: True if the state machine is async, False otherwise.
+
+        Example:
+            >>> machine = SherpaStateMachine()
+            >>> print(machine.is_async())
+            False
+        """
         return "async" in type(self.sm).__name__.lower()

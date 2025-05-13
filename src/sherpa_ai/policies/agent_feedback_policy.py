@@ -1,3 +1,10 @@
+"""Agent feedback-based policy module for Sherpa AI.
+
+This module provides a policy implementation that selects actions based on
+feedback from an agent. It defines the AgentFeedbackPolicy class which
+generates questions for agents and uses their responses to guide action selection.
+"""
+
 from loguru import logger
 from pydantic import ConfigDict
 
@@ -9,15 +16,51 @@ from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
 
 
 class AgentFeedbackPolicy(ReactPolicy):
+    """Policy for selecting actions based on agent feedback.
+
+    This class extends ReactPolicy to incorporate feedback from an agent
+    in the action selection process. It generates questions about possible
+    actions, gets responses from the agent, and uses those responses to
+    guide action selection.
+
+    Attributes:
+        prompt_template (PromptTemplate): Template for generating questions.
+        agent (BaseAgent): Agent to provide feedback on actions.
+        model_config (ConfigDict): Configuration allowing arbitrary types.
+
+    Example:
+        >>> agent = UserAgent()  # Agent that can provide feedback
+        >>> policy = AgentFeedbackPolicy(agent=agent)
+        >>> output = policy.select_action(belief)
+        >>> print(output.action.name)
+        'SearchAction'
     """
-    Select the best next action based on the feedback from an agent
-    """
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
     prompt_template: PromptTemplate = PromptTemplate("./sherpa_ai/prompts/prompts.json")
     # Prompt used to generate question to the user
     agent: BaseAgent
 
     def select_action(self, belief: Belief, **kwargs):
+        """Select action based on agent feedback.
+
+        This method generates a question about possible actions, gets feedback
+        from the agent, and uses that feedback to select the next action.
+
+        Args:
+            belief (Belief): Current belief state containing available actions.
+            **kwargs: Additional arguments for action selection.
+
+        Returns:
+            PolicyOutput: Selected action and arguments based on feedback.
+
+        Example:
+            >>> policy = AgentFeedbackPolicy(agent=user_agent)
+            >>> belief.actions = [SearchAction(), AnalyzeAction()]
+            >>> output = policy.select_action(belief)
+            >>> print(output.action.name)  # Based on agent feedback
+            'SearchAction'
+        """
         actions = belief.actions
 
         task = belief.current_task.content

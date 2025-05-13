@@ -9,32 +9,38 @@ from sherpa_ai.connectors.base import BaseVectorDB
 
 
 class ChromaVectorStore(BaseVectorDB):
-    """
-    A class used to represent a Chroma Vector Store.
+    """A Chroma-based vector store for document retrieval.
 
     This class provides methods to create a Chroma Vector Store from texts or from an 
-    existing store, split file text, and perform a similarity search.
+    existing store, split file text, and perform similarity searches.
 
-    ...
+    Attributes:
+        db: A persistent client to interact with the ChromaDB.
+        path (str): The path to the database storage. Defaults to "./db".
 
-    Attributes
-    ----------
-    db : chromadb.PersistentClient
-        a persistent client to interact with the ChromaDB
-
-    Methods
-    -------
-    chroma_from_texts(texts, embedding, meta_datas)
-        Class method to create a Chroma Vector Store from given texts.
-    chroma_from_existing(embedding)
-        Class method to create a Chroma Vector Store from an existing store.
-    file_text_splitter(data, meta_data)
-        Class method to split file text into chunks.
-    similarity_search(query, session_id)
-        Method to perform a similarity search in the Chroma Vector Store.
+    Example:
+        >>> from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
+        >>> texts = ["This is a sample document", "Another document for testing"]
+        >>> vector_store = ChromaVectorStore.chroma_from_texts(texts)
+        >>> results = vector_store.similarity_search("sample", number_of_results=1)
+        >>> print(results[0].page_content)
+        This is a sample document
     """
 
     def __init__(self, db, path="./db") -> None:
+        """Initialize a ChromaVectorStore instance.
+
+        Args:
+            db: A ChromaDB collection or client.
+            path (str, optional): Path to the database storage. Defaults to "./db".
+
+        Example:
+            >>> from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
+            >>> import chromadb
+            >>> client = chromadb.PersistentClient(path="./db")
+            >>> collection = client.get_or_create_collection("test_collection")
+            >>> vector_store = ChromaVectorStore(collection)
+        """
         self.db = db
         self.path = path
 
@@ -46,6 +52,27 @@ class ChromaVectorStore(BaseVectorDB):
         meta_datas=None,
         path="./db",
     ):
+        """Create a ChromaVectorStore from a list of texts.
+
+        This method creates a new ChromaDB collection, embeds the texts, and adds them
+        to the collection.
+
+        Args:
+            texts: List of text documents to embed and store.
+            embedding: Embedding function to use. If None, uses OpenAI's text-embedding-ada-002.
+            meta_datas: List of metadata dictionaries for each text. Defaults to None.
+            path (str, optional): Path to the database storage. Defaults to "./db".
+
+        Returns:
+            ChromaVectorStore: A new ChromaVectorStore instance.
+
+        Example:
+            >>> from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
+            >>> texts = ["This is a sample document", "Another document for testing"]
+            >>> vector_store = ChromaVectorStore.chroma_from_texts(texts)
+            >>> print(vector_store.db.count())
+            2
+        """
         # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in
         # the method signature for mocking purposes
         if embedding is None:
@@ -75,6 +102,23 @@ class ChromaVectorStore(BaseVectorDB):
         embedding=None,
         path="./db",
     ):
+        """Create a ChromaVectorStore from an existing ChromaDB collection.
+
+        This method connects to an existing ChromaDB collection or creates a new one
+        if it doesn't exist.
+
+        Args:
+            embedding: Embedding function to use. If None, uses OpenAI's text-embedding-ada-002.
+            path (str, optional): Path to the database storage. Defaults to "./db".
+
+        Returns:
+            ChromaVectorStore: A new ChromaVectorStore instance.
+
+        Example:
+            >>> from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
+            >>> vector_store = ChromaVectorStore.chroma_from_existing()
+            >>> results = vector_store.similarity_search("query", number_of_results=5)
+        """
         # Use OpenAIEmbeddingFunction as default embedding function, this cannot be in
         # the method signature for mocking purposes
         if embedding is None:
@@ -92,6 +136,26 @@ class ChromaVectorStore(BaseVectorDB):
     def similarity_search(
         self, query: str = "", session_id: str = None, number_of_results=2, k: int = 1
     ):
+        """Perform a similarity search in the ChromaDB collection.
+
+        This method searches for documents that are semantically similar to the query.
+
+        Args:
+            query (str, optional): The search query. Defaults to "".
+            session_id (str, optional): Session ID to filter results. Defaults to None.
+            number_of_results (int, optional): Number of results to return. Defaults to 2.
+            k (int, optional): Number of nearest neighbors to consider. Defaults to 1.
+
+        Returns:
+            List[Document]: A list of documents that match the query.
+
+        Example:
+            >>> from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
+            >>> vector_store = ChromaVectorStore.chroma_from_existing()
+            >>> results = vector_store.similarity_search("What is machine learning?", number_of_results=5)
+            >>> for doc in results:
+            ...     print(doc.page_content[:100])
+        """
         filter = None if session_id is None else {"session_id": session_id}
         results = self.db.query(
             query_texts=[query],
