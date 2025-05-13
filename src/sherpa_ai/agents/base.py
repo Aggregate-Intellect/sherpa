@@ -15,6 +15,7 @@ from sherpa_ai.actions.exceptions import (
     SherpaMissingInformationException,
 )
 from sherpa_ai.config.task_result import TaskResult
+from sherpa_ai.events import Event
 from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.output_parsers.base import BaseOutputProcessor
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
@@ -57,7 +58,7 @@ class BaseAgent(ABC, BaseModel):
         >>> agent = MyAgent(name="TestAgent", description="A test agent")
         >>> print(agent.name)
         TestAgent
-    """
+    """  # noqa: E501
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
@@ -190,6 +191,24 @@ class BaseAgent(ABC, BaseModel):
 
         await func(**args)
 
+    async def async_handle_event(self, event: Event):
+        """Handle a specific type of event.
+
+        This method processes the event based on its type and updates the agent's
+        belief state accordingly. To create customized event handling,
+        override this method in subclasses.
+
+        Args:
+            event (Event): The event to handle.
+        """
+
+        if event.event_type == "trigger":
+            # explicit trigger event, send it to the state machine
+            await self.async_send_event(event.name, event.args)
+        else:
+            # add the event to the belief
+            self.belief.internal_events.append(event)
+
     def agent_preparation(self):
         """Prepare the agent for execution.
 
@@ -271,7 +290,7 @@ class BaseAgent(ABC, BaseModel):
             >>> action = asyncio.run(agent.async_select_action())
             >>> print(action is None)
             True
-        """
+        """  # noqa: E501
         try:
             result = await self.policy.async_select_action(self.belief)
             return result
@@ -454,7 +473,7 @@ class BaseAgent(ABC, BaseModel):
             ... )
             >>> print(count)
             0
-        """
+        """  # noqa: E501
         for i in range(len(validations)):
             validation = validations[i]
             logger.info(f"validation_running: {validation.__class__.__name__}")
@@ -652,7 +671,7 @@ class BaseAgent(ABC, BaseModel):
             >>> result = asyncio.run(agent.async_act(MyAction(), {"param": "value"}))
             >>> print(result)
             Action executed
-        """
+        """  # noqa: E501
         try:
             if is_coroutine_function(action):
                 action_output = await action(**inputs)
@@ -667,3 +686,37 @@ class BaseAgent(ABC, BaseModel):
                 outputs=f"Error in executing action: {action.name}. Error: {e}",
             )
             return None
+
+    def __hash__(self):
+        """Make BaseAgent hashable based on its name.
+
+        Returns:
+            int: Hash value for the agent
+
+        Example:
+            >>> agent1 = MyAgent(name="Agent1", description="First agent")
+            >>> agent2 = MyAgent(name="Agent2", description="Second agent")
+            >>> agent_set = {agent1, agent2}
+            >>> len(agent_set)
+            2
+        """
+        return hash(self.name)
+
+    def __eq__(self, other):
+        """Define equality for BaseAgent based on name.
+
+        Args:
+            other: Object to compare with
+
+        Returns:
+            bool: True if the objects are equal, False otherwise
+
+        Example:
+            >>> agent1 = MyAgent(name="Agent", description="First instance")
+            >>> agent2 = MyAgent(name="Agent", description="Second instance")
+            >>> agent1 == agent2
+            True
+        """
+        if not isinstance(other, BaseAgent):
+            return False
+        return self.name == other.name
