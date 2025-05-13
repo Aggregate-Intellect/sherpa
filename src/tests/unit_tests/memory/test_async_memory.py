@@ -110,8 +110,8 @@ async def test_state_machine_async_get_actions():
     assert action.name == "next"
     assert hasattr(action, "args")
     assert hasattr(action, "usage")
-    # Print the usage string for debugging
-    print(f"Action usage: {action.usage}")
+    # Log the usage string for debugging
+    logger.debug(f"Action usage: {action.usage}")
     # Check for any part of our mock action description
     assert "mock" in str(action.usage).lower() or "async" in str(action.usage).lower()
 
