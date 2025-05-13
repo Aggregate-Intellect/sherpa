@@ -5,6 +5,7 @@ for semantic search capabilities. It defines the SharedMemoryWithVectorDB class
 which combines shared memory with vector storage for context retrieval.
 """
 
+import threading
 from typing import List, Optional
 
 from sherpa_ai.actions.planning import Plan
@@ -54,9 +55,7 @@ class SharedMemoryWithVectorDB(SharedMemory):
             >>> print(memory.session_id)
             'session1'
         """
-        self.objective = objective
-        self.events: List[Event] = []
-        self.plan: Optional[Plan] = None
+        super().__init__(objective)
         self.current_step = None
         self.session_id = session_id
         self.vectorStorage = vectorStorage

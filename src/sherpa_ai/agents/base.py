@@ -306,7 +306,7 @@ class BaseAgent(ABC, BaseModel):
             logger.exception(e)
             return e
 
-    def agent_finished(self, result: str) -> str:
+    async def agent_finished(self, result: str) -> str:
         """Process the final result after all actions have been executed.
 
         This method validates the output if validators are present, logs the result,
@@ -336,7 +336,7 @@ class BaseAgent(ABC, BaseModel):
         logger.debug(f"```🤖{self.name} wrote: {result}```")
 
         if self.shared_memory is not None:
-            self.shared_memory.add("result", self.name, content=result)
+            await self.shared_memory.async_add("result", self.name, content=result)
         return result
 
     def run(self) -> TaskResult:
@@ -429,7 +429,7 @@ class BaseAgent(ABC, BaseModel):
 
             logger.debug(f"```Action output: {action_output}```")
 
-        action_output = self.agent_finished(action_output)
+        action_output = await self.agent_finished(action_output)
         task_result = TaskResult(content=action_output, status="success")
         return task_result
 
