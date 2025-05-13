@@ -186,7 +186,7 @@ async def test_belief_with_state_machine():
     assert hasattr(action, "args")
     assert hasattr(action, "usage")
     # Log the usage string for debugging
-    logging.debug(f"Action usage: {action.usage}")
+    logger.debug(f"Action usage: {action.usage}")
     # Check for any part of our mock action description
     assert "mock" in str(action.usage).lower() or "async" in str(action.usage).lower()
     
