@@ -85,4 +85,5 @@ async def test_async_act():
     agent = MockAgent(belief=Belief())
     action = MockAsyncAction()
     result = await agent.async_act(action, {})
-    assert result == "async_result" 
+    assert result == "async_result"
+    
