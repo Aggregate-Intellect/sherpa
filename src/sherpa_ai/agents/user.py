@@ -82,8 +82,6 @@ class UserAgent(BaseAgent):
             >>> # result = agent.run()
             >>> # print(result)
         """
-        self.shared_memory.observe(self.belief)
-
         task = self.belief.current_task
         user_name = self.user_id if self.user_id else self.name
         message = f"@{user_name} Please complete the following task: \n{task.content}"

@@ -35,7 +35,7 @@ def test_feedback_policy_in_qa_incomplete(get_llm, mock_google_search):
         model_name="gpt-4o-mini",
     )
     question = "What is the biggest ?"
-    shared_memory = SharedMemory(agent_pool=None, objective=" Answer the question")
+    shared_memory = SharedMemory(objective=" Answer the question")
 
     google_search = GoogleSearch(
         role_description="Act as a question answering agent",
@@ -57,6 +57,10 @@ def test_feedback_policy_in_qa_incomplete(get_llm, mock_google_search):
         policy=policy,
     )
     qa_agent.shared_memory.add("task", "human", content=question)
+    event = shared_memory.events[-1]
+    qa_agent.belief.current_task = event
+    qa_agent.belief.internal_events = [event]
+    qa_agent.belief.events = [event]
 
     result = qa_agent.run()
 
@@ -71,7 +75,7 @@ def test_feedback_policy_in_qa_complete(get_llm, mock_google_search):
         model_name="gpt-4o-mini",
     )
     question = "What is the biggest?, Jupyter, Mars or Earth?"
-    shared_memory = SharedMemory(agent_pool=None, objective=" Answer the question")
+    shared_memory = SharedMemory(objective=" Answer the question")
 
     google_search = GoogleSearch(
         role_description="Act as a question answering agent",
@@ -93,6 +97,11 @@ def test_feedback_policy_in_qa_complete(get_llm, mock_google_search):
         policy=policy,
     )
     qa_agent.shared_memory.add("task", "human", content=question)
+
+    event = shared_memory.events[-1]
+    qa_agent.belief.current_task = event
+    qa_agent.belief.internal_events = [event]
+    qa_agent.belief.events = [event]
 
     result = qa_agent.run()
 

@@ -1,5 +1,5 @@
-from unittest.mock import patch
 import socket
+from unittest.mock import patch
 
 import pytest
 
@@ -17,6 +17,7 @@ def mock_reranker():
         mock_reranker.side_effect = lambda x: x
         yield mock_reranker
 
+
 def is_offline():
     try:
         # Try to connect to a DNS server (Cloudflare)
@@ -25,12 +26,12 @@ def is_offline():
     except OSError:
         return True
 
+
 def test_qa_agent_succeeds(get_llm):  # noqa: F811
     llm = get_llm(__file__, test_qa_agent_succeeds.__name__)
 
     shared_memory = SharedMemory(
         objective="What is AutoGPT?",
-        agent_pool=None,
     )
 
     citation_validation = CitationValidation()
@@ -53,6 +54,11 @@ def test_qa_agent_succeeds(get_llm):  # noqa: F811
         content="What is AutoGPT?",
     )
 
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
+
     task_agent.run()
 
     results = shared_memory.get_by_type("result")
@@ -64,7 +70,6 @@ def test_qa_agent_citation_validation_no_action(get_llm):  # noqa: F811
 
     shared_memory = SharedMemory(
         objective="What is AutoGPT?",
-        agent_pool=None,
     )
 
     citation_validation = CitationValidation()
@@ -79,6 +84,11 @@ def test_qa_agent_citation_validation_no_action(get_llm):  # noqa: F811
         content="What is AutoGPT?",
     )
 
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
+
     task_agent.run()
 
     results = shared_memory.get_by_type("result")
@@ -91,7 +101,6 @@ def test_qa_agent_citation_validation_multiple_action(get_llm):  # noqa: F811
 
     shared_memory = SharedMemory(
         objective="What is AutoGPT?",
-        agent_pool=None,
     )
 
     citation_validation = CitationValidation()
@@ -101,13 +110,13 @@ def test_qa_agent_citation_validation_multiple_action(get_llm):  # noqa: F811
         arxiv_search = MockAction(
             name="ArxivSearch",
             usage="Search arXiv for papers",
-            return_value="AutoGPT is an AI tool from arXiv."
+            return_value="AutoGPT is an AI tool from arXiv.",
         )
 
         google_search = MockAction(
             name="GoogleSearch",
             usage="Search Google for relevant info",
-            return_value="AutoGPT automates tasks."
+            return_value="AutoGPT automates tasks.",
         )
 
     else:
@@ -137,6 +146,11 @@ def test_qa_agent_citation_validation_multiple_action(get_llm):  # noqa: F811
         content="What is AutoGPT?",
     )
 
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
+
     task_agent.run()
 
     results = shared_memory.get_by_type("result")
@@ -149,7 +163,6 @@ def test_qa_agent_reranking(get_llm, mock_reranker):  # noqa: F811
 
     shared_memory = SharedMemory(
         objective="What is AutoGPT?",
-        agent_pool=None,
     )
 
     citation_validation = CitationValidation()
@@ -174,6 +187,11 @@ def test_qa_agent_reranking(get_llm, mock_reranker):  # noqa: F811
         "Planner",
         content="What is AutoGPT?",
     )
+
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.internal_events = [event]
+    task_agent.belief.events = [event]
 
     task_agent.run()
 

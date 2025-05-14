@@ -6,20 +6,21 @@ It defines the Belief class which manages agent state, events, and internal reas
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 import pydash
 import transitions as ts
 from loguru import logger
+from pydantic import BaseModel, ConfigDict, Field
 
 from sherpa_ai.events import Event, build_event
+from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 if TYPE_CHECKING:
     from sherpa_ai.actions.base import BaseAction
-    from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
-class Belief:
+class Belief(BaseModel):
     """Manages agent beliefs and state tracking.
 
     This class maintains the agent's belief state, including observed events,
@@ -45,26 +46,14 @@ class Belief:
         'current_task: Analyze the data(task)'
     """
 
-    def __init__(self):
-        """Initialize a new Belief instance.
-
-        Sets up empty lists for events and internal events, initializes
-        state tracking variables, and sets default token limit.
-
-        Example:
-            >>> belief = Belief()
-            >>> print(belief.events)
-            []
-            >>> print(belief.max_tokens)
-            4000
-        """
-        self.events: List[Event] = []
-        self.internal_events: List[Event] = []
-        self.current_task: Event = None
-        self.state_machine: SherpaStateMachine = None
-        self.actions = []
-        self.dict: dict = {}
-        self.max_tokens = 4000
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    events: List[Event] = Field(default_factory=list)
+    internal_events: List[Event] = Field(default_factory=list)
+    current_task: Event = None
+    state_machine: SherpaStateMachine = None
+    actions: List = Field(default_factory=list)
+    dict: Dict = Field(default_factory=dict)
+    max_tokens: int = 4000
 
     def update(self, observation: Event):
         """Update belief with a new observation event.
@@ -100,7 +89,7 @@ class Belief:
             >>> context = belief.get_context(count_tokens)
             >>> print(context)
             'current_task: Analyze data(task)'
-        """
+        """  # noqa: E501
         context = ""
         for event in reversed(self.events):
             if event.event_type in [
@@ -129,7 +118,7 @@ class Belief:
             >>> belief.update_internal("reasoning", "analysis", content="Processing data")
             >>> print(belief.internal_events[0].event_type)
             'reasoning'
-        """
+        """  # noqa: E501
         event = build_event(event_type, name, **kwargs)
         self.internal_events.append(event)
 
@@ -238,7 +227,7 @@ class Belief:
             >>> history = belief.get_histories_excluding_types(["feedback"], count_tokens)
             >>> print(history)
             'analysis(reasoning)'
-        """
+        """  # noqa: E501
         if token_counter is None:
             # if no token counter is provided, use the default word counter
             def token_counter(x):
@@ -271,10 +260,10 @@ class Belief:
             >>> belief.set_actions(actions)
             >>> print(len(belief.actions))
             2
-        """
+        """  # noqa: E501
         if self.state_machine is not None:
             logger.warning(
-                "State machine exists, please add actions as transitions directly to the state machine"
+                "State machine exists, please add actions as transitions directly to the state machine"  # noqa: E501
             )
             return
 
@@ -312,7 +301,7 @@ class Belief:
             >>> belief.state_machine = StateMachine()
             >>> print(belief.get_state())
             'initial'
-        """
+        """  # noqa: E501
         if self.state_machine is None:
             return None
 
@@ -470,6 +459,7 @@ class Belief:
             >>> print(belief.get_all_keys())
             ['nested.key']
         """
+
         def get_all_keys(d, parent_key=""):
             keys = []
             for k, v in d.items():
@@ -514,38 +504,3 @@ class Belief:
             'value'
         """
         pydash.set_(self.dict, key, value)
-
-    @property
-    def __dict__(self):
-        """Get dictionary representation of belief state.
-
-        Returns:
-            dict: Dictionary containing events, internal events, current task, and belief data.
-
-        Example:
-            >>> belief = Belief()
-            >>> belief.set_current_task("task")
-            >>> print(belief.__dict__)
-            {'events': [], 'internal_events': [], 'current_task': {...}, 'dict': {}}
-        """
-        return {
-            "events": [event.__dict__ for event in self.events],
-            "internal_events": [event.__dict__ for event in self.internal_events],
-            "current_task": self.current_task.__dict__ if self.current_task else None,
-            "dict": self.dict,
-        }
-
-    @classmethod
-    def from_dict(cls, data):
-        belief = cls()
-        belief.events = [Event.from_dict(event) for event in data["events"]]
-        belief.internal_events = [
-            Event.from_dict(event) for event in data["internal_events"]
-        ]
-        belief.current_task = (
-            Event.from_dict(data["current_task"]) if data["current_task"] else None
-        )
-
-        belief.dict = data["dict"]
-
-        return belief

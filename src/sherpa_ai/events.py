@@ -19,10 +19,13 @@ class Event(BaseModel, ABC):
         >>> event = CustomEvent(name="custom_event")
         >>> print(event.name)
         custom_event
-    """
+    """  # noqa: E501
 
     #: Name of the event.
     name: str
+    # Sender of the event, if applicable.
+    sender: str = ""
+    event_type: str
 
     def __str__(self) -> str:
         return repr(self)
@@ -65,6 +68,33 @@ class GenericEvent(Event):
     content: Any
     #: The type of the event. Defaults to "generic".
     event_type: str = "generic"
+
+
+class TriggerEvent(Event):
+    """Event to trigger a state transition.
+
+    This class represents an event that triggers a state transition in the system.
+    It captures the event name and its associated arguments. This is useful for
+    handling user inputs and message communications through the shared memory.
+
+    Attributes:
+        name (str): The name of the event being triggered.
+        content (Any): A dictionary containing the arguments passed to the action.
+        event_type (str): The type of the event, fixed to "trigger".
+
+    Example:
+        >>> from sherpa_ai.events import TriggerEvent
+        >>> event = TriggerEvent(name="user_input", args={"message": "Hello, world!"})
+        >>> print(event.name)
+        user_input
+    """  # noqa: E501
+
+    #: The name of the event being triggered.
+    name: str
+    #: A dictionary containing the arguments passed to the action.
+    args: dict[str, Any]
+    #: The type of the event, which is always set to "action_start".
+    event_type: str = Field("trigger", frozen=True)
 
 
 class ActionStartEvent(Event):
@@ -170,7 +200,7 @@ def build_event(event_type: str, name: str, **kwargs) -> Event:
         >>> start_event = build_event("action_start", "fetch_data", args={"url": "example.com"})
         >>> finish_event = build_event("action_finish", "fetch_data", outputs={"status": "success"})
         >>> generic_event = build_event("user_input", "user_query", content="How are you?")
-    """
+    """  # noqa: E501
 
     if event_type == "action_start":
         return ActionStartEvent(**kwargs, name=name)

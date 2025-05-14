@@ -65,7 +65,6 @@ def test_link_scraper_succeeds_in_qa(
     belief.actions = [link_scraper_action]
     shared_memory = SharedMemory(
         objective=objective,
-        agent_pool=None,
     )
 
     with patch.object(LinkScraperTool, "_run", side_effect=mock_run) as mock_run:
@@ -83,6 +82,11 @@ def test_link_scraper_succeeds_in_qa(
             "Scraper",
             content=objective,
         )
+
+        event = shared_memory.events[-1]
+        task_agent.belief.current_task = event
+        task_agent.belief.internal_events = [event]
+        task_agent.belief.events = [event]
 
         task_agent.run()
         mock_run.assert_called()

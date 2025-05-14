@@ -43,7 +43,6 @@ def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
 
     shared_memory = SharedMemory(
         objective="What is AutoGPT?",
-        agent_pool=None,
     )
 
     citation_module = CitationValidation(0.65, 0.65, 0.65)
@@ -59,6 +58,11 @@ def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
         "Planner",
         content="What is AutoGPT?",
     )
+
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.events.append(event)
+    task_agent.belief.internal_events.append(event)
 
     if not external_api:
         GOOGLE_SEARCH_MOCK = {
@@ -76,14 +80,11 @@ def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
             "langchain_community.utilities.GoogleSerperAPIWrapper._google_serper_api_results"
         ) as mock_search:
             mock_search.return_value = GOOGLE_SEARCH_MOCK
-            task_agent.run()
+            result = task_agent.run()
     else:
-        task_agent.run()
-
-    results = shared_memory.get_by_type("result")
-    logger.error(results[-1].content)
+        result = task_agent.run()
 
     # e.g. [7](https://neilpatel.com/blog/autogpt/)
     # citation headler [?](https://)
 
-    assert "](http" in results[-1].content
+    assert "](http" in result.content

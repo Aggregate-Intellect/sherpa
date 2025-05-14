@@ -19,7 +19,6 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
 
     shared_memory = SharedMemory(
         objective="What is AutoGPT?",
-        agent_pool=None,
     )
 
     task_agent = QAAgent(
@@ -32,6 +31,10 @@ def test_task_agent_succeeds(get_llm):  # noqa: F811
         "Planner",
         content="What is AutoGPT?",
     )
+
+    event = shared_memory.events[-1]
+    task_agent.belief.current_task = event
+    task_agent.belief.events = [event]
 
     task_agent.run()
 

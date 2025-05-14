@@ -48,7 +48,6 @@ def test_regression_validator_flow(
 
     shared_memory = SharedMemory(
         objective=objective,
-        agent_pool=None,
     )
 
     entity_validation = EntityValidation()
@@ -75,6 +74,10 @@ def test_regression_validator_flow(
             "Planner",
             content=objective,
         )
+
+        event = shared_memory.events[-1]
+        task_agent.belief.current_task = event
+        task_agent.belief.events = [event]
 
         task_agent.run()
 
