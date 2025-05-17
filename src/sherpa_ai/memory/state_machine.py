@@ -4,19 +4,19 @@ This module provides state machine functionality for the Sherpa AI system.
 It defines the SherpaStateMachine class which manages agent state transitions
 and actions.
 """
+from __future__ import annotations
 
-import asyncio
-from typing import Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import transitions as ts
 from loguru import logger
 from transitions.extensions.states import Tags, add_state_features
 
-from sherpa_ai.actions.base import ActionArgument, BaseAction
-from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
-from sherpa_ai.memory.utils import (StateDesc, TransitionDesc,
-                                    add_transition_features)
+from sherpa_ai.memory.utils import StateDesc, TransitionDesc, add_transition_features
 from sherpa_ai.utils import is_coroutine_function
+
+if TYPE_CHECKING:
+    from sherpa_ai.actions.base import BaseAction
 
 
 class State(ts.State):
@@ -147,7 +147,7 @@ class SherpaStateMachine:
             >>> machine.add_explicit_transitions(transitions)
             >>> print("start" in machine.explicit_transitions)
             True
-        """
+        """  # noqa: E501
         for t in transitions:
             if isinstance(t, dict):
                 self.explicit_transitions.add(t["trigger"])
@@ -238,7 +238,7 @@ class SherpaStateMachine:
         for t in triggers:
             if t not in self.explicit_transitions:
                 continue
-            
+
             if is_coroutine_function(self.may_trigger):
                 can_trigger = await self.may_trigger(t)
             else:
@@ -366,6 +366,9 @@ class SherpaStateMachine:
             >>> print(info["actions"])
             [{'name': 'action1', 'description': ''}]
         """
+        # late import to avoid circular import issues
+        from sherpa_ai.actions.base import ActionArgument, BaseAction
+
         for action in actions:
             if isinstance(action, str):
                 action = getattr(self, action)
@@ -414,6 +417,9 @@ class SherpaStateMachine:
             >>> print(action.name)
             'start'
         """
+        # late import to avoid circular import issues
+        from sherpa_ai.actions.dynamic import AsyncDynamicAction, DynamicAction
+
         def wrapper_action(**kwargs):
             transit_trigger = getattr(self, trigger)
             result = transit_trigger(**kwargs)

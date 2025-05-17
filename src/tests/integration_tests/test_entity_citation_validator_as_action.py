@@ -38,7 +38,6 @@ def test_entity_citation_succeeds_in_qa(
     belief = Belief()
     shared_memory = SharedMemory(
         objective=objective,
-        agent_pool=None,
     )
     google_search = GoogleSearch(
         role_description="Planner",
@@ -63,6 +62,11 @@ def test_entity_citation_succeeds_in_qa(
             "Planner",
             content=objective,
         )
+
+        event = shared_memory.events[-1]
+        task_agent.belief.current_task = event
+        task_agent.belief.internal_events = [event]
+        task_agent.belief.events = [event]
 
         task_agent.run()
 
