@@ -142,6 +142,45 @@ class Belief(BaseModel):
             event for event in self.internal_events if event.event_type == event_type
         ]
 
+    def get_events_by_type(self, event_type: str) -> List[dict]:
+        """Retrieve events of a specific type as JSON objects.
+
+        Args:
+            event_type (str): The type of events to retrieve (e.g., "action_start", "feedback").
+
+        Returns:
+            List[dict]: A list of events as JSON objects, in chronological order (oldest to newest).
+                Each object contains the event's properties (name, content, event_type, etc.).
+
+        Example:
+            >>> belief = Belief()
+            >>> belief.update_internal("action_start", "test_action", args={"param": "value"})
+            >>> events = belief.get_events_by_type("action_start")
+            >>> print(events[0]["name"])
+            test_action
+        """
+        return [event.model_dump() for event in self.internal_events if event.event_type == event_type]
+
+    def get_events_excluding_types(self, exclude_types: List[str]) -> List[dict]:
+        """Retrieve events excluding specific types as JSON objects.
+
+        Args:
+            exclude_types (List[str]): List of event types to exclude from the results (e.g., ["feedback", "action_start"]).
+
+        Returns:
+            List[dict]: A list of events as JSON objects, in chronological order (oldest to newest),
+                excluding events whose types are in the exclude_types list.
+
+        Example:
+            >>> belief = Belief()
+            >>> belief.update_internal("action_start", "action1", args={})
+            >>> belief.update_internal("feedback", "feedback1", content="good")
+            >>> events = belief.get_events_excluding_types(["feedback"])
+            >>> print(events[0]["event_type"])
+            action_start
+        """
+        return [event.model_dump() for event in self.internal_events if event.event_type not in exclude_types]
+
     def set_current_task(self, content):
         """Set the current task in the belief state.
 
@@ -158,13 +197,18 @@ class Belief(BaseModel):
         self.current_task = event
 
     def get_internal_history(self, token_counter: Callable[[str], int]):
-        """Get the internal history of the agent.
+        """Get the internal history of the agent as a string, with token limiting.
+
+        This method uses get_events_excluding_types to retrieve all internal events as dicts,
+        then converts them to strings in reverse order (most recent first) for LLM context,
+        and applies token limiting.
 
         Args:
             token_counter (Callable[[str], int]): Function to count tokens in text.
 
         Returns:
-            str: Internal history string, truncated if exceeding max_tokens.
+            str: Internal history string, in reverse chronological order (most recent first),
+                truncated if exceeding max_tokens.
 
         Example:
             >>> belief = Belief()
@@ -174,16 +218,59 @@ class Belief(BaseModel):
             >>> print(history)
             'analysis(reasoning)'
         """
+        events = self.get_events_excluding_types([])  # get all events
         results = []
         current_tokens = 0
-
-        for event in reversed(self.internal_events):
+        for event in reversed(events):
             event_str = str(event)
             results.append(event_str)
             current_tokens += token_counter(event_str)
             if current_tokens > self.max_tokens:
                 break
+        context = "\n".join(reversed(results))
+        return context
 
+    def get_histories_excluding_types(
+        self,
+        exclude_types: list[str],
+        token_counter: Optional[Callable[[str], int]] = None,
+        max_tokens=4000,
+    ):
+        """Get internal history excluding specific event types as a string, with token limiting.
+
+        This method uses get_events_excluding_types to retrieve internal events as dicts (excluding specified types),
+        then converts them to strings in reverse order (most recent first) for LLM context, and applies token limiting.
+
+        Args:
+            exclude_types (list[str]): List of event types to exclude.
+            token_counter (Optional[Callable[[str], int]]): Function to count tokens. If None, uses word count.
+            max_tokens (int): Maximum number of tokens in result.
+
+        Returns:
+            str: Filtered history string, in reverse chronological order (most recent first),
+                truncated if exceeding max_tokens.
+
+        Example:
+            >>> belief = Belief()
+            >>> def count_tokens(text): return len(text.split())
+            >>> belief.update_internal("reasoning", "analysis")
+            >>> belief.update_internal("feedback", "comment")
+            >>> history = belief.get_histories_excluding_types(["feedback"], count_tokens)
+            >>> print(history)
+            'analysis(reasoning)'
+        """  # noqa: E501
+        if token_counter is None:
+            def token_counter(x):
+                return len(x.split())
+        events = self.get_events_excluding_types(exclude_types)
+        results = []
+        current_tokens = 0
+        for event in reversed(events):
+            event_str = str(event)
+            results.append(event_str)
+            current_tokens += token_counter(event_str)
+            if current_tokens > max_tokens:
+                break
         context = "\n".join(reversed(results))
         return context
 
@@ -202,51 +289,6 @@ class Belief(BaseModel):
         """
         self.dict.clear()
         self.internal_events.clear()
-
-    def get_histories_excluding_types(
-        self,
-        exclude_types: list[str],
-        token_counter: Optional[Callable[[str], int]] = None,
-        max_tokens=4000,
-    ):
-        """Get internal history excluding specific event types.
-
-        Args:
-            exclude_types (list[str]): List of event types to exclude.
-            token_counter (Optional[Callable[[str], int]]): Function to count tokens.
-            max_tokens (int): Maximum number of tokens in result.
-
-        Returns:
-            str: Filtered history string, truncated if exceeding max_tokens.
-
-        Example:
-            >>> belief = Belief()
-            >>> def count_tokens(text): return len(text.split())
-            >>> belief.update_internal("reasoning", "analysis")
-            >>> belief.update_internal("feedback", "comment")
-            >>> history = belief.get_histories_excluding_types(["feedback"], count_tokens)
-            >>> print(history)
-            'analysis(reasoning)'
-        """  # noqa: E501
-        if token_counter is None:
-            # if no token counter is provided, use the default word counter
-            def token_counter(x):
-                return len(x.split())
-
-        results = []
-        feedback = []
-        current_tokens = 0
-        for event in reversed(self.internal_events):
-            if event.event_type not in exclude_types:
-                if event.event_type == "feedback":
-                    feedback.append(str(event))
-                else:
-                    results.append(str(event))
-            current_tokens += token_counter(str(event))
-            if current_tokens > max_tokens:
-                break
-        context = "\n".join(set(reversed(results))) + "\n".join(set(feedback))
-        return context
 
     def set_actions(self, actions: List[BaseAction]):
         """Set available actions for the agent.
