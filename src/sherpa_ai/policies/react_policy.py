@@ -133,8 +133,8 @@ class ReactPolicy(BasePolicy):
             "response_format": response_format,
         }
         prompt = self.prompt_template.format_prompt(
-            wrapper="react_policy_prompt",
-            name="SELECTION_DESCRIPTION",
+            prompt_parent_id="react_policy_prompt",
+            prompt_id="SELECTION_DESCRIPTION",
             version="1.0",
             variables=variables,
         )

@@ -73,8 +73,8 @@ class AgentFeedbackPolicy(ReactPolicy):
 
         variables = {"task": task, "context": context, "options": options}
         agent_feedback_prompt = self.prompt_template.format_prompt(
-            wrapper="agent_feedback_description_prompt",
-            name="AGENT_FEEDBACK_DESCRIPTION_PROMPT",
+            prompt_parent_id="agent_feedback_description_prompt",
+            prompt_id="AGENT_FEEDBACK_DESCRIPTION_PROMPT",
             version="1.0",
             variables=variables,
         )

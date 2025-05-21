@@ -97,8 +97,8 @@ class ReactStateMachinePolicy(BasePolicy):
 
         if len(state_description) > 0:
             state_description = self.prompt_template.format_prompt(
-                wrapper="react_sm_policy_prompt",
-                name="STATE_DESCRIPTION_PROMPT",
+                prompt_parent_id="react_sm_policy_prompt",
+                prompt_id="STATE_DESCRIPTION_PROMPT",
                 version="1.0",
                 variables=variables,
             )
@@ -106,8 +106,8 @@ class ReactStateMachinePolicy(BasePolicy):
         response_format = json.dumps(self.response_format, indent=4)
 
         prompt = self.prompt_template.format_prompt(
-            wrapper="react_sm_policy_prompt",
-            name="SELECTION_DESCRIPTION",
+            prompt_parent_id="react_sm_policy_prompt",
+            prompt_id="SELECTION_DESCRIPTION",
             version="1.0",
             variables={
                 "role_description": self.role_description,

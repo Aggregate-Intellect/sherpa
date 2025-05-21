@@ -39,8 +39,8 @@ class ChatStateMachinePolicy(BasePolicy):
 
     # Initialize base templates with placeholder variables
     SYSTEM_PROMPT: ClassVar[str] = _prompt_template.format_prompt(
-        wrapper="system_prompt",
-        name="SYSTEM_PROMPT",
+        prompt_parent_id="system_prompt",
+        prompt_id="SYSTEM_PROMPT",
         version="1.0",
         variables={
             "context": "{context}",
@@ -50,8 +50,8 @@ class ChatStateMachinePolicy(BasePolicy):
     )
 
     ACTION_SELECTION_PROMPT: ClassVar[str] = _prompt_template.format_prompt(
-        wrapper="action_selection_prompt",
-        name="ACTION_SELECTION_PROMPT",
+        prompt_parent_id="action_selection_prompt",
+        prompt_id="ACTION_SELECTION_PROMPT",
         version="1.0",
         variables={
             "state": "{state}",
@@ -95,8 +95,8 @@ class ChatStateMachinePolicy(BasePolicy):
         if state_description:
             variables = {"state": current_state, "state_description": state_description}
             formatted_state_description = self._prompt_template.format_prompt(
-                wrapper="state_description_prompt",
-                name="STATE_DESCRIPTION_PROMPT",
+                prompt_parent_id="state_description_prompt",
+                prompt_id="STATE_DESCRIPTION_PROMPT",
                 version="1.0",
                 variables=variables,
             )

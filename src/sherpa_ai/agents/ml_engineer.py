@@ -49,13 +49,13 @@ class MLEngineer(BaseAgent):
         super().__init__(*args, **kwargs)
         template = self.prompt_template
         self.description = template.format_prompt(
-            wrapper="ml_engineer_prompts",
-            name="ML_ENGINEER_DESCRIPTION",
+            prompt_parent_id="ml_engineer_prompts",
+            prompt_id="ML_ENGINEER_DESCRIPTION",
             version="1.0",
         )
         action_planner= template.format_prompt(
-            wrapper="ml_engineer_prompts",
-            name="ACTION_PLAN_DESCRIPTION",
+            prompt_parent_id="ml_engineer_prompts",
+            prompt_id="ACTION_PLAN_DESCRIPTION",
             version="1.0")
         if self.belief is None:
             self.belief = Belief()

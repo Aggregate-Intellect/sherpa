@@ -89,16 +89,16 @@ class SynthesizeOutput(BaseAction):
                 "history": history,
             }
             prompt = self.prompt_template.format_prompt(
-                wrapper="synthesize_prompts",
-                name="SYNTHESIZE_DESCRIPTION_CITATION" if self.add_citation else "SYNTHESIZE_DESCRIPTION",
+                prompt_parent_id="synthesize_prompts",
+                prompt_id="SYNTHESIZE_DESCRIPTION_CITATION" if self.add_citation else "SYNTHESIZE_DESCRIPTION",
                 version="1.0",
                 variables=variables
             )
 
         logger.debug("Prompt: {}", prompt)
         prompt_str = self.prompt_template.format_prompt(
-            wrapper="synthesize_prompts",
-            name="SYNTHESIZE_DESCRIPTION",
+            prompt_parent_id="synthesize_prompts",
+            prompt_id="SYNTHESIZE_DESCRIPTION",
             version="1.0",
             variables=variables
         )

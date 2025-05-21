@@ -1,395 +1,479 @@
-{
-  "synthesize_prompts": [
-    {
-      "name": "synthesize_prompts",
-      "description": "Generate a response based on context and task with history.",
-      "prompts": [
-        {
-          "name": "SYNTHESIZE_DESCRIPTION",
-          "version": "1.0",
-          "description": "Generate a response based on context and task with history.",
-          "type": "chat",
-          "content": [
-            {
-              "role": "system",
-              "content": "{role_description}"
-            },
-            {
-              "role": "user",
-              "content": "Context: {context}\n\nAction - Result History:\n{history}\n\nGiven the context and the action-result history, please complete the task mentioned. Task: {task} Result:"
-            }
-          ],
-          "variables": {
-            "role_description": "",
-            "context": "",
-            "history": "",
-            "task": ""
-          },
-          "response_format": {}
-        },
-        {
-          "name": "SYNTHESIZE_DESCRIPTION_CITATION",
-          "version": "1.0",
-          "description": "Generate a response with citations based on context and task with history.",
-          "type": "chat",
-          "content": [
-            {
-              "role": "system",
-              "content": "{role_description}"
-            },
-            {
-              "role": "user",
-              "content": "Context: {context}\n\nAction - Result History:\n{history}\n\nGiven the context and the action-result history, please complete the task mentioned and cite context as much as possible. Task: {task} Result:"
-            }
-          ],
-          "variables": {
-            "role_description": "",
-            "context": "",
-            "history": "",
-            "task": ""
-          },
-          "response_format": {}
-        }
-      ]
-    }
-  ],
-  "qa_agent_prompts": [
-    {
-      "name": "qa_agent_prompts",
-      "description": "The QA agent handles a single question-answering task.",
-      "prompts": [
-        {
-          "name": "ACTION_PLAN_DESCRIPTION",
-          "version": "1.0",
-          "description": "Describe the action plan to solve the problem",
-          "type": "text",
-          "content": "{action_plan_description}",
-          "variables": {
-            "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."
-          },
-          "response_format": {}
-        },
-        {
-          "name": "TASK_AGENT_DESCRIPTION",
-          "version": "1.0",
-          "description": "Describe the role of a task agent",
-          "type": "text",
-          "content": "{task_agent_description}",
-          "variables": {
-            "task_agent_description": "You are a **question answering assistant** who solves user questions and offers a detailed solution."
-          },
-          "response_format": {}
-        }
-      ]
-    }
-  ],
-  "ml_engineer_prompts": [
-    {
-      "name": "ml_engineer_prompts",
-      "description": "The machine learning agent answers questions or research about ML-related topics",
-      "prompts": [
-        {
-          "name": "ACTION_PLAN_DESCRIPTION",
-          "version": "1.0",
-          "description": "Describe the action plan to solve the problem",
-          "type": "text",
-          "content": "{action_plan_description}",
-          "variables": {
-            "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task"
-          },
-          "response_format": {}
-        },
-        {
-          "name": "ML_ENGINEER_DESCRIPTION",
-          "version": "1.0",
-          "description": "Describe the role of a machine learning engineer",
-          "type": "text",
-          "content": "{ml_engineer_description}",
-          "variables": {
-            "ml_engineer_description": "You are a skilled machine learning engineer with a deep-rooted expertise in understanding and analyzing various Machine Learnng algorithm and use it to solve practical problems. \n Your primary role is to assist individuals, organizations, and researchers in using machine learning models to solve Machine-Learning-Related chalenges, \n using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes.\n If you encounter a question or challenge outside your current knowledge base, you acknowledge your limitations and seek assistance or additional resources to fill the gaps."
-          },
-          "response_format": {}
-        }
-      ]
-    }
-  ],
-  "physicist_prompts": [
-    {
-      "name": "physicist_prompts",
-      "description": " The physicist agent answers questions or research about physics-related topics",
-      "prompts": [
-        {
-          "name": "ACTION_PLAN_DESCRIPTION",
-          "version": "1.0",
-          "description": "Describe the action plan to solve the problem",
-          "type": "text",
-          "content": "{action_plan_description}",
-          "variables": {
-            "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate physics-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."
-          },
-          "response_format": {}
-        },
-        {
-          "name": "PHYSICIST_DESCRIPTION",
-          "version": "1.0",
-          "description": "Describe the role of a physicist",
-          "type": "text",
-          "content": "{physicist_description}",
-          "variables": {
-            "physicist_description": "You are a physicist with a deep-rooted expertise in understanding and analyzing the fundamental principles of the universe, spanning from the tiniest subatomic particles to vast cosmic phenomena. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex physics-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."
-          },
-          "response_format": {}
-        }
-      ]
-    }
-  ],
-  "planner_prompts": [
-    {
-      "name": "planner_prompts",
-      "description": "Provide a sequential steps by breaking down complex steps",
-      "prompts": [
-        {
-          "name": "PLANNER_DESCRIPTION",
-          "version": "1.0",
-          "description": "Describe the role of a planner",
-          "type": "text",
-          "content": "{planner_description}",
-          "variables": {
-            "planner_description": "You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each. \n By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.\n Your adaptability ensures customized solutions for diverse needs."
-          },
-          "response_format": {}
-        }
-      ]
-    }
-  ],
-  "critic_prompts": [
-    {
-      "name": "critic_prompts",
-      "description": "The critic agent receives a plan from the planner and evaluate the plan based on some pre-defined metrics. At the same time, it gives the feedback to the planner.",
-      "prompts": [
-        {
-          "name": "DESCRIPTION_PROMPT",
-          "version": "1.0",
-          "description": "Describe the role of a critic",
-          "type": "text",
-          "content": "{description_prompt}",
-          "variables": {
-            "description_prompt": "You are a Critic agent that receive a plan from the planner to execuate a task from user.\n Your goal is to output the {} most necessary feedback given the corrent plan to solve the task."
-          },
-          "response_format": {}
-        },
-        {
-          "name": "IMPORTANCE_PROMPT",
-          "version": "1.0",
-          "description": "describe the role of importance prompt",
-          "type": "text",
-          "content": "Task: {task} \n Plan: {plan} {importance_prompt}",
-          "variables": {
-            "importance_prompt": "The plan you should be necessary and important to complete the task.\n Evaluate if the content of plan and selected actions/ tools are important and necessary. \n Output format:\n Score: <Integer score from 1 - 10>\n Evaluation: <evaluation in text>\n Do not include other text in your resonse.\n Output:",
-            "task": "",
-            "plan": ""
-          },
-          "response_format": {}
-        },
-        {
-          "name": "DETAIL_PROMPT",
-          "version": "1.0",
-          "description": "describe the role of detail prompt",
-          "type": "text",
-          "content": "Task: {task} \n Plan: {plan} {detail_prompt}",
-          "variables": {
-            "detail_prompt": "The plan you should be detailed enough to complete the task.\n Evaluate if the content of plan and selected actions/ tools contains all the details the task needed.\n Output format:\n Score: <Integer score from 1 - 10>\n Evaluation: <evaluation in text>\n Do not include other text in your resonse.\n Output:",
-            "task": "",
-            "plan": ""
-          },
-          "response_format": {}
-        },
-        {
-          "name": "INSIGHT_PROMPT",
-          "version": "1.0",
-          "description": "describe the role of insight prompt",
-          "type": "text",
-          "content": "Observation: {observation} \n {insight_prompt}",
-          "variables": {
-            "insight_prompt": "What are the top 5 high-level insights you can infer from the all the memory you have?\n Only output insights with high confidence.\n Insight:",
-            "observation": ""
-          },
-          "response_format": {}
-        },
-        {
-          "name": "EVALUATION_PROMPT",
-          "version": "1.0",
-          "description": "describe the role of evaluation prompt",
-          "type": "text",
-          "content": "Task: {task} \n Evaluation in the importance matrices: {i_evaluation}\n Evaluation in the detail matrices: {d_evaluation} ",
-          "variables": {
-            "task": "",
-            "i_evaluation": "",
-            "d_evaluation": ""
-          },
-          "response_format": {}
-        },
-        {
-          "name": "FEEDBACK_PROMPT",
-          "version": "1.0",
-          "description": "describe the role of feedback prompt",
-          "type": "text",
-          "content": "What are the {num_feedback} most important feedback for the plan received from the planner, using the\n insight you have from current observation, evaluation using the importance matrices and detail matrices.\n Feedback:",
-          "variables": {
-            "num_feedback": ""
-          },
-          "response_format": {}
-        }
-      ]
-    }
-  ],
-  "system_prompt":[
+[
+  {
+    "prompt_parent_id": "synthesize_prompts",
+    "description": "Generate a response based on context and task with history.",
+    "prompts": [
       {
-          "name": "system_prompt",
-          "description": "Description of system prompt",
-          "prompts":[
+        "prompt_id": "SYNTHESIZE_DESCRIPTION",
+        "description": "Generate a response based on context and task with history.",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for synthesis with history.",
+            "type": "chat",
+            "content": [
               {
-                  "name": "SYSTEM_PROMPT",
-                  "version": "1.0",
-                  "description": "Description of system prompt",
-                  "type": "text",
-                  "content": "You are an assistant that must parse the user's instructions and select the most appropriate action from the provided possibilities. Only respond with valid JSON as described, without any extra text. Comply strictly with the specified format.\n\n**Task Description**: {task_description}\n\nYou should only respond in JSON format as described below without any extra text.\nResponse Format:\n{response_format}\nEnsure the response can be parsed by Python json.loads",
-                  "variables":{
-                      "context": "",
-                      "task_description": "",
-                      "response_format": ""
-                  },
-                  "response_format":{}
-
-              }
-          ]
-      }
-  ],
-  "action_selection_prompt":[
-      {
-          "name": "action_selection_prompt",
-          "description": "Description of action selection prompt",
-          "prompts":[
-              {
-                  "name": "ACTION_SELECTION_PROMPT",
-                  "version": "1.0",
-                  "description": "Description of action selection prompt",
-                  "type": "text",
-                  "content": "You have a state machine to help you with the action execution. You are currently in the {state} state.\n{state_description}\n\n## Possible Actions:\n{possible_actions}\n\nYou should only select the actions specified in **Possible Actions**\nFirst, reason about what to do next based on the information, then select the best action.",
-                  "variables":{
-                      "state": "",
-                      "state_description": "",
-                      "possible_actions": ""
-                  },
-                  "response_format":{}
-
-              }
-          ]
-      }
-  ],
-  "state_description_prompt":[
-      {
-          "name": "state_description_prompt",
-          "description": "Description of state description prompt",
-          "prompts":[
-              {
-                  "name": "STATE_DESCRIPTION_PROMPT",
-                  "version": "1.0",
-                  "description": "Description of state description prompt",
-                  "type": "text",
-                  "content": "The {state} state has the following instruction:\n {state_description}",
-                  "variables":{
-                      "state": "",
-                      "state_description": ""
-                  },
-                  "response_format":{}
-              }
-          ]
-      }
-  ],
-  "agent_feedback_description_prompt":[
-      {
-          "name": "agent_feedback_description_prompt",
-          "description": "Description of agent feedback description prompt",
-          "prompts":[
-              {
-                  "name": "AGENT_FEEDBACK_DESCRIPTION_PROMPT",
-                  "version": "1.0",
-                  "description": "Description of agent feedback description prompt",
-                  "type": "text",
-                  "content": "You are an intelligent assistant helping the user to complete their task.\n\nYou have the following task to complete:\n{task}\n\nContext of your work is as follows:\n{context}\n\nYou have the following options to continue completing this task:\n\n{options}\n\nUse polite and engaging language, and ask the user what they want you to help them with next. No need to greet and keep it short and concise.\n\nIf you think the context is not enough to choose an action, ask the user for more information.",
-                  "variables":{
-                      "task":"",
-                      "context": "",
-                      "options":""
-                  },
-                  "response_format":{}
-              }
-          ]
-      }
-  ],
-  "react_policy_prompt":[
-      {
-          "name": "react_policy_prompt",
-          "description": "Description of react policy prompt",
-          "prompts":[
-              {
-                  "name": "SELECTION_DESCRIPTION",
-                  "version": "1.0",
-                  "description": "Description of react policy prompt",
-                  "type": "text",
-                  "content": "{role_description}\\n\\n{output_instruction}\\n\\n**Task Description**: {task_description}\\n\\n**IMPORTANT - Available Actions**:\\n{possible_actions}\\n\\nYou MUST ONLY select from the actions listed above. DO NOT try to use any actions that are not explicitly listed.\\n\\n**Task Context**:\\n{task_context}\\n\\n**History of Previous Actions**:\\n{history_of_previous_actions}\\n\\nSTRICT REQUIREMENTS:\\n1. You must ONLY select actions that are listed under 'Available Actions' above\\n2. If you need an action that is not listed, you must work with the actions that ARE available\\n3. Respond ONLY in the JSON format specified below\\n4. No additional text or explanations - ONLY the JSON response\\n\\nResponse Format:\\n{response_format}\\n\\nEnsure the response can be parsed by Python json.loads.",
-                  "variables":{
-                      "role_description":"",
-                      "output_instruction": "",
-                      "task_description":"",
-                      "possible_actions":"",
-                      "task_context":"",
-                      "history_of_previous_actions":"",
-                      "response_format":""
-                  },
-                  "response_format":{}
-              }
-          ]
-      }
-  ],
-  "react_sm_policy_prompt":[
-      {
-          "name": "react_sm_policy_prompt",
-          "description": "Description of react sm policy prompt",
-          "prompts":[
-              {
-                  "name": "SELECTION_DESCRIPTION",
-                  "version": "1.0",
-                  "description": "Description of react sm policy prompt",
-                  "type": "text",
-                  "content": "{role_description}\\n\\n## History of Previous Actions\\n{history_of_previous_actions}\\n\\nYou have a state machine to help you with the action execution. You are currently in the {state} state.\\n{state_description}\\n\\n## Possible Actions:\\n{possible_actions}\\n\\n**Task Description**: {task_description}\\n\\nYou should only select the actions specified in **Possible Actions**.\\nYou should only respond in JSON format as described below without any extra text.\\n\\nResponse Format:\\n{response_format}\\n\\nEnsure the response can be parsed by Python json.loads.\\n\\n{output_instruction}",
-                  "variables":{
-                    "role_description":"",
-                    "context":"",
-                    "history_of_previous_actions":"",
-                    "state":"",
-                    "state_description":"",
-                    "possible_actions":"",
-                    "task_description":"",
-                    "response_format":"",
-                    "output_instruction":""
-                  },
-                  "response_format":{}
+                "role": "system",
+                "content": "{role_description}"
               },
               {
-                "name": "STATE_DESCRIPTION_PROMPT",
-                "version": "1.0",
-                "description": "Description of state description prompt",
-                "type": "text",
-                "content": "The {state} state has the following instruction:\n{state_description}",
-                "variables":{
-                  "state":"",
-                  "state_description":""
-                },
-                "response_format":{}
+                "role": "user",
+                "content": "Context: {context}\n\nAction - Result History:\n{history}\n\nGiven the context and the action-result history, please complete the task mentioned. Task: {task} Result:"
               }
-          ]
+            ],
+            "variables": {
+              "role_description": "",
+              "context": "",
+              "history": "",
+              "task": ""
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "SYNTHESIZE_DESCRIPTION_CITATION",
+        "description": "Generate a response with citations based on context and task with history.",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for synthesis with citations.",
+            "type": "chat",
+            "content": [
+              {
+                "role": "system",
+                "content": "{role_description}"
+              },
+              {
+                "role": "user",
+                "content": "Context: {context}\n\nAction - Result History:\n{history}\n\nGiven the context and the action-result history, please complete the task mentioned and cite context as much as possible. Task: {task} Result:"
+              }
+            ],
+            "variables": {
+              "role_description": "",
+              "context": "",
+              "history": "",
+              "task": ""
+            },
+            "response_format": {}
+          }
+        ]
       }
-  ]
-}
+    ]
+  },
+  {
+    "prompt_parent_id": "qa_agent_prompts",
+    "description": "The QA agent handles a single question-answering task.",
+    "prompts": [
+      {
+        "prompt_id": "ACTION_PLAN_DESCRIPTION",
+        "description": "Describe the action plan to solve the problem",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for QA agent action plan.",
+            "type": "text",
+            "content": "{action_plan_description}",
+            "variables": {
+              "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "TASK_AGENT_DESCRIPTION",
+        "description": "Describe the role of a task agent",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for QA agent task description.",
+            "type": "text",
+            "content": "{task_agent_description}",
+            "variables": {
+              "task_agent_description": "You are a **question answering assistant** who solves user questions and offers a detailed solution."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "ml_engineer_prompts",
+    "description": "The machine learning agent answers questions or research about ML-related topics",
+    "prompts": [
+      {
+        "prompt_id": "ACTION_PLAN_DESCRIPTION",
+        "description": "Describe the action plan to solve the problem",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for ML engineer action plan.",
+            "type": "text",
+            "content": "{action_plan_description}",
+            "variables": {
+              "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate Machine-Learning-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task"
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "ML_ENGINEER_DESCRIPTION",
+        "description": "Describe the role of a machine learning engineer",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for ML engineer role description.",
+            "type": "text",
+            "content": "{ml_engineer_description}",
+            "variables": {
+              "ml_engineer_description": "You are a skilled machine learning engineer with a deep-rooted expertise in understanding and analyzing various Machine Learnng algorithm and use it to solve practical problems. \n Your primary role is to assist individuals, organizations, and researchers in using machine learning models to solve Machine-Learning-Related chalenges, \n using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes.\n If you encounter a question or challenge outside your current knowledge base, you acknowledge your limitations and seek assistance or additional resources to fill the gaps."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "physicist_prompts",
+    "description": "The physicist agent answers questions or research about physics-related topics",
+    "prompts": [
+      {
+        "prompt_id": "ACTION_PLAN_DESCRIPTION",
+        "description": "Describe the action plan to solve the problem",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for physicist action plan.",
+            "type": "text",
+            "content": "{action_plan_description}",
+            "variables": {
+              "action_plan_description": "Given your specialized expertise, historical context, and your mission to facilitate physics-based solutions, determine which action and its corresponding arguments would be the most scientifically sound and efficient approach to achieve the described task."
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "PHYSICIST_DESCRIPTION",
+        "description": "Describe the role of a physicist",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for physicist role description.",
+            "type": "text",
+            "content": "{physicist_description}",
+            "variables": {
+              "physicist_description": "You are a physicist with a deep-rooted expertise in understanding and analyzing the fundamental principles of the universe, spanning from the tiniest subatomic particles to vast cosmic phenomena. Your primary role is to assist individuals, organizations, and researchers in navigating and resolving complex physics-related challenges, using your knowledge to guide decisions and ensure the accuracy and reliability of outcomes."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "planner_prompts",
+    "description": "Provide a sequential steps by breaking down complex steps",
+    "prompts": [
+      {
+        "prompt_id": "PLANNER_DESCRIPTION",
+        "description": "Describe the role of a planner",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for planner role description.",
+            "type": "text",
+            "content": "{planner_description}",
+            "variables": {
+              "planner_description": "You are a **task decomposition assistant** who simplifies complex tasks into sequential steps, assigning roles or agents to each. \n By analyzing user-defined tasks and agent capabilities, you provide structured plans, enhancing project clarity and efficiency.\n Your adaptability ensures customized solutions for diverse needs."
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "critic_prompts",
+    "description": "The critic agent receives a plan from the planner and evaluate the plan based on some pre-defined metrics. At the same time, it gives the feedback to the planner.",
+    "prompts": [
+      {
+        "prompt_id": "DESCRIPTION_PROMPT",
+        "description": "Describe the role of a critic",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for critic role description.",
+            "type": "text",
+            "content": "{description_prompt}",
+            "variables": {
+              "description_prompt": "You are a Critic agent that receive a plan from the planner to execuate a task from user.\n Your goal is to output the {} most necessary feedback given the corrent plan to solve the task."
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "IMPORTANCE_PROMPT",
+        "description": "describe the role of importance prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for importance prompt.",
+            "type": "text",
+            "content": "Task: {task} \n Plan: {plan} {importance_prompt}",
+            "variables": {
+              "importance_prompt": "The plan you should be necessary and important to complete the task.\n Evaluate if the content of plan and selected actions/ tools are important and necessary. \n Output format:\n Score: <Integer score from 1 - 10>\n Evaluation: <evaluation in text>\n Do not include other text in your resonse.\n Output:",
+              "task": "",
+              "plan": ""
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "DETAIL_PROMPT",
+        "description": "describe the role of detail prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for detail prompt.",
+            "type": "text",
+            "content": "Task: {task} \n Plan: {plan} {detail_prompt}",
+            "variables": {
+              "detail_prompt": "The plan you should be detailed enough to complete the task.\n Evaluate if the content of plan and selected actions/ tools contains all the details the task needed.\n Output format:\n Score: <Integer score from 1 - 10>\n Evaluation: <evaluation in text>\n Do not include other text in your resonse.\n Output:",
+              "task": "",
+              "plan": ""
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "INSIGHT_PROMPT",
+        "description": "describe the role of insight prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for insight prompt.",
+            "type": "text",
+            "content": "Observation: {observation} \n {insight_prompt}",
+            "variables": {
+              "insight_prompt": "What are the top 5 high-level insights you can infer from the all the memory you have?\n Only output insights with high confidence.\n Insight:",
+              "observation": ""
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "EVALUATION_PROMPT",
+        "description": "describe the role of evaluation prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for evaluation prompt.",
+            "type": "text",
+            "content": "Task: {task} \n Evaluation in the importance matrices: {i_evaluation}\n Evaluation in the detail matrices: {d_evaluation} ",
+            "variables": {
+              "task": "",
+              "i_evaluation": "",
+              "d_evaluation": ""
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "FEEDBACK_PROMPT",
+        "description": "describe the role of feedback prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for feedback prompt.",
+            "type": "text",
+            "content": "What are the {num_feedback} most important feedback for the plan received from the planner, using the\n insight you have from current observation, evaluation using the importance matrices and detail matrices.\n Feedback:",
+            "variables": {
+              "num_feedback": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "system_prompt",
+    "description": "Description of system prompt",
+    "prompts": [
+      {
+        "prompt_id": "SYSTEM_PROMPT",
+        "description": "Description of system prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for system prompt.",
+            "type": "text",
+            "content": "You are an assistant that must parse the user's instructions and select the most appropriate action from the provided possibilities. Only respond with valid JSON as described, without any extra text. Comply strictly with the specified format.\n\n**Task Description**: {task_description}\n\nYou should only respond in JSON format as described below without any extra text.\nResponse Format:\n{response_format}\nEnsure the response can be parsed by Python json.loads",
+            "variables": {
+              "context": "",
+              "task_description": "",
+              "response_format": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "action_selection_prompt",
+    "description": "Description of action selection prompt",
+    "prompts": [
+      {
+        "prompt_id": "ACTION_SELECTION_PROMPT",
+        "description": "Description of action selection prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for action selection prompt.",
+            "type": "text",
+            "content": "You have a state machine to help you with the action execution. You are currently in the {state} state.\n{state_description}\n\n## Possible Actions:\n{possible_actions}\n\nYou should only select the actions specified in **Possible Actions**\nFirst, reason about what to do next based on the information, then select the best action.",
+            "variables": {
+              "state": "",
+              "state_description": "",
+              "possible_actions": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "state_description_prompt",
+    "description": "Description of state description prompt",
+    "prompts": [
+      {
+        "prompt_id": "STATE_DESCRIPTION_PROMPT",
+        "description": "Description of state description prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for state description prompt.",
+            "type": "text",
+            "content": "The {state} state has the following instruction:\n {state_description}",
+            "variables": {
+              "state": "",
+              "state_description": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "agent_feedback_description_prompt",
+    "description": "Description of agent feedback description prompt",
+    "prompts": [
+      {
+        "prompt_id": "AGENT_FEEDBACK_DESCRIPTION_PROMPT",
+        "description": "Description of agent feedback description prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for agent feedback description prompt.",
+            "type": "text",
+            "content": "You are an intelligent assistant helping the user to complete their task.\n\nYou have the following task to complete:\n{task}\n\nContext of your work is as follows:\n{context}\n\nYou have the following options to continue completing this task:\n\n{options}\n\nUse polite and engaging language, and ask the user what they want you to help them with next. No need to greet and keep it short and concise.\n\nIf you think the context is not enough to choose an action, ask the user for more information.",
+            "variables": {
+              "task": "",
+              "context": "",
+              "options": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "react_policy_prompt",
+    "description": "Description of react policy prompt",
+    "prompts": [
+      {
+        "prompt_id": "SELECTION_DESCRIPTION",
+        "description": "Description of react policy prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for react policy selection description.",
+            "type": "text",
+            "content": "{role_description}\\n\\n{output_instruction}\\n\\n**Task Description**: {task_description}\\n\\n**IMPORTANT - Available Actions**:\\n{possible_actions}\\n\\nYou MUST ONLY select from the actions listed above. DO NOT try to use any actions that are not explicitly listed.\\n\\n**Task Context**:\\n{task_context}\\n\\n**History of Previous Actions**:\\n{history_of_previous_actions}\\n\\nSTRICT REQUIREMENTS:\\n1. You must ONLY select actions that are listed under 'Available Actions' above\\n2. If you need an action that is not listed, you must work with the actions that ARE available\\n3. Respond ONLY in the JSON format specified below\\n4. No additional text or explanations - ONLY the JSON response\\n\\nResponse Format:\\n{response_format}\\n\\nEnsure the response can be parsed by Python json.loads.",
+            "variables": {
+              "role_description": "",
+              "output_instruction": "",
+              "task_description": "",
+              "possible_actions": "",
+              "task_context": "",
+              "history_of_previous_actions": "",
+              "response_format": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "prompt_parent_id": "react_sm_policy_prompt",
+    "description": "Description of react sm policy prompt",
+    "prompts": [
+      {
+        "prompt_id": "SELECTION_DESCRIPTION",
+        "description": "Description of react sm policy prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for react state machine policy selection description.",
+            "type": "text",
+            "content": "{role_description}\\n\\n## History of Previous Actions\\n{history_of_previous_actions}\\n\\nYou have a state machine to help you with the action execution. You are currently in the {state} state.\\n{state_description}\\n\\n## Possible Actions:\\n{possible_actions}\\n\\n**Task Description**: {task_description}\\n\\nYou should only select the actions specified in **Possible Actions**.\\nYou should only respond in JSON format as described below without any extra text.\\n\\nResponse Format:\\n{response_format}\\n\\nEnsure the response can be parsed by Python json.loads.\\n\\n{output_instruction}",
+            "variables": {
+              "role_description": "",
+              "context": "",
+              "history_of_previous_actions": "",
+              "state": "",
+              "state_description": "",
+              "possible_actions": "",
+              "task_description": "",
+              "response_format": "",
+              "output_instruction": ""
+            },
+            "response_format": {}
+          }
+        ]
+      },
+      {
+        "prompt_id": "STATE_DESCRIPTION_PROMPT",
+        "description": "Description of state description prompt",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version for state description prompt in react state machine policy.",
+            "type": "text",
+            "content": "The {state} state has the following instruction:\n{state_description}",
+            "variables": {
+              "state": "",
+              "state_description": ""
+            },
+            "response_format": {}
+          }
+        ]
+      }
+    ]
+  }
+]

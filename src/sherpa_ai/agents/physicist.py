@@ -49,13 +49,13 @@ class Physicist(BaseAgent):
         super().__init__(*args, **kwargs)
         template = self.prompt_template
         action_planner = template.format_prompt(
-            wrapper="physicist_prompts",
-            name="ACTION_PLAN_DESCRIPTION",
+            prompt_parent_id="physicist_prompts",
+            prompt_id="ACTION_PLAN_DESCRIPTION",
             version="1.0",
         )
         self.description = template.format_prompt(
-            wrapper="physicist_prompts",
-            name="PHYSICIST_DESCRIPTION",
+            prompt_parent_id="physicist_prompts",
+            prompt_id="PHYSICIST_DESCRIPTION",
             version="1.0",
     )
 
