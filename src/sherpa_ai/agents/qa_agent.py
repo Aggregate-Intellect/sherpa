@@ -39,7 +39,7 @@ class QAAgent(BaseAgent):
         ... )
         >>> print(agent.name)
         Research Assistant
-    """
+    """  # noqa: E501
 
     name: str = "QA Agent"
     description: str = None
