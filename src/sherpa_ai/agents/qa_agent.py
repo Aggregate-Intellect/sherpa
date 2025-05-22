@@ -67,16 +67,16 @@ class QAAgent(BaseAgent):
         super().__init__(*args, **kwargs)
         template = self.prompt_template
         self.description = template.format_prompt(
-            wrapper="qa_agent_prompts",
-            name="TASK_AGENT_DESCRIPTION",
+            prompt_parent_id="qa_agent_prompts",
+            prompt_id="TASK_AGENT_DESCRIPTION",
             version="1.0",
         )
 
         self.description = self.description + "\n\n" + f"Your name is {self.name}."
 
         action_planner = template.format_prompt(
-            wrapper="qa_agent_prompts",
-            name="ACTION_PLAN_DESCRIPTION",
+            prompt_parent_id="qa_agent_prompts",
+            prompt_id="ACTION_PLAN_DESCRIPTION",
             version="1.0",
         )
 

@@ -1,74 +1,82 @@
+
 import pytest
 from unittest.mock import patch
 from sherpa_ai.prompts.prompt_loader import PromptLoader, JsonToObject
+from sherpa_ai.prompts.Base import PromptGroup
 
 
-# Mock JSON data to simulate prompts.json
-mock_json_data = {
-    "addition_prompts": [
-        {
-            "name": "addition_prompts",
-            "description": "prompt to add numbers and return structured output",
-            "prompts": [
-                {
-                    "name": "add_numbers_text",
-                    "description": "prompt to add numbers and return structured output as text",
-                    "version": "1.0",
-                    "type": "text",
-                    "content": "Add {first_num} and {second_num}",
-                    "variables": {"first_num": 5, "second_num": 10},
-                    "response_format": {
-                        "type": "json_schema",
-                        "json_schema": {
-                            "name": "addition_result",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "result": {"type": "number"},
-                                    "explanation": {"type": "string"}
-                                },
-                                "required": ["result", "explanation"]
+# Mock JSON data to simulate prompts.json with the 'versions' list
+mock_json_data = [
+    {
+        "prompt_parent_id": "addition_prompts",
+        "description": "prompt to add numbers and return structured output",
+        "prompts": [
+            {
+                "prompt_id": "add_numbers_text",
+                "description": "prompt to add numbers and return structured output as text",
+                "versions": [ 
+                    {
+                        "version": "1.0",
+                        "change_log": "Initial version",
+                        "type": "text",
+                        "content": "Add {first_num} and {second_num}",
+                        "variables": {"first_num": 5, "second_num": 10},
+                        "response_format": {
+                            "type": "json_schema",
+                            "json_schema": {
+                                "name": "addition_result",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {"type": "number"},
+                                        "explanation": {"type": "string"}
+                                    },
+                                    "required": ["result", "explanation"]
+                                }
                             }
                         }
                     }
-                },
-                {
-                    "name": "add_numbers_json",
-                    "description": "prompt to add numbers and return structured output as JSON",
-                    "version": "1.0",
-                    "type": "json",
-                    "content": {
-                        "operation": "add",
-                        "first_number": "{first_num}",
-                        "second_number": "{second_num}"
-                    },
-                    "variables": {"first_num": 5, "second_num": 10},
-                    "response_format": {
-                        "type": "json_schema",
-                        "json_schema": {
-                            "name": "addition_result",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "result": {"type": "number"},
-                                    "explanation": {"type": "string"}
-                                },
-                                "required": ["result", "explanation"]
+                ]
+            },
+            {
+                "prompt_id": "add_numbers_json",
+                "description": "prompt to add numbers and return structured output as JSON",
+                "versions": [
+                    {
+                        "version": "1.0",
+                        "change_log": "Initial version",
+                        "type": "json",
+                        "content": {
+                            "operation": "add",
+                            "first_number": "{first_num}",
+                            "second_number": "{second_num}"
+                        },
+                        "variables": {"first_num": 5, "second_num": 10},
+                        "response_format": {
+                            "type": "json_schema",
+                            "json_schema": {
+                                "name": "addition_result",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {"type": "number"},
+                                        "explanation": {"type": "string"}
+                                    },
+                                    "required": ["result", "explanation"]
+                                }
                             }
                         }
                     }
-                }
-            ]
-        }
-    ]
-}
+                ]
+            }
+        ]
+    }
+]
 
 
 @pytest.fixture
-def mock_json():
-    mock_object = JsonToObject({})
-    mock_object.addition_prompts = mock_json_data["addition_prompts"]
-    return mock_object
+def mock_json_object():
+    return JsonToObject(mock_json_data)
 
 
 @patch('sherpa_ai.prompts.prompt_loader.load_json')
@@ -76,34 +84,39 @@ def test_prompt_loader_process_prompts(mock_load_json):
     mock_load_json.return_value = mock_json_data
     loader = PromptLoader("./tests/data/prompts.json")
 
-    prompts = loader.prompts[0].prompts
+    assert len(loader.prompts) == 1
+    prompt_group = loader.prompts[0]
+    assert isinstance(prompt_group, PromptGroup)
+    assert prompt_group.prompt_parent_id == "addition_prompts"
+
+    prompts = prompt_group.prompts
     assert len(prompts) == 2
-    assert prompts[0].name == "add_numbers_text"
-    assert prompts[0].version == "1.0"
-    assert isinstance(prompts[0].content, str)
-    assert prompts[1].name == "add_numbers_json"
-    assert prompts[1].version == "1.0"
-    assert isinstance(prompts[1].content, dict)
+    assert prompts[0].prompt_id == "add_numbers_text"
+    assert prompts[0].versions[0].version == "1.0"
+    assert isinstance(prompts[0].versions[0].content, str)
+    assert prompts[1].prompt_id == "add_numbers_json"
+    assert prompts[1].versions[0].version == "1.0"
+    assert isinstance(prompts[1].versions[0].content, dict)
+
 
 @patch('sherpa_ai.prompts.prompt_loader.load_json')
-def test_get_prompt_text(mock_load_json):
+def test_get_prompt_version_text(mock_load_json):
     mock_load_json.return_value = mock_json_data
     loader = PromptLoader("./tests/data/prompts.json")
 
-    prompt = loader.get_prompt("addition_prompts", "add_numbers_text", "1.0")
-    assert prompt.name == "add_numbers_text"
-    assert prompt.version == "1.0"
-    assert isinstance(prompt.content, str)
+    prompt_version = loader.get_prompt_version("addition_prompts", "add_numbers_text", "1.0")
+    assert prompt_version.version == "1.0"
+    assert isinstance(prompt_version.content, str)
+
 
 @patch('sherpa_ai.prompts.prompt_loader.load_json')
-def test_get_prompt_json(mock_load_json):
+def test_get_prompt_version_json(mock_load_json):
     mock_load_json.return_value = mock_json_data
     loader = PromptLoader("./tests/data/prompts.json")
 
-    prompt = loader.get_prompt("addition_prompts", "add_numbers_json", "1.0")
-    assert prompt.name == "add_numbers_json"
-    assert prompt.version == "1.0"
-    assert isinstance(prompt.content, dict)
+    prompt_version = loader.get_prompt_version("addition_prompts", "add_numbers_json", "1.0")
+    assert prompt_version.version == "1.0"
+    assert isinstance(prompt_version.content, dict)
 
 @patch('sherpa_ai.prompts.prompt_loader.load_json')
 def test_get_prompt_content_text(mock_load_json):

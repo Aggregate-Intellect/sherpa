@@ -9,40 +9,40 @@ from pydantic import BaseModel
 from typing import List, Dict, Union
 
 
-class Prompt(BaseModel):
-    """Base class for all prompt types.
+class PromptVersion(BaseModel):
+    """Base class for all prompt versions.
 
     This class defines the common structure for all prompts in the system,
     including metadata and content.
 
     Attributes:
-        name (str): Unique identifier for the prompt.
-        description (str): Human-readable description of the prompt's purpose.
         version (str): Version identifier for the prompt.
+        change_log (str): Description of changes in this version.
+        type (str): The type of prompt (e.g., "text", "chat", "json").
         content (Union[str, List[Dict[str, str]], Dict]): The actual prompt content.
         variables (Dict): Variables that can be substituted in the prompt.
         response_format (Dict): Expected format of responses to this prompt.
 
-    Example:
-        >>> prompt = Prompt(
-        ...     name="search_prompt",
-        ...     description="Prompt for search queries",
+        Example:
+        >>> prompt = PromptVersion(
         ...     version="1.0",
+        ...     change_log="Prompt for search queries",
+        ...     type="text",
         ...     content="Search for {query}",
         ...     variables={"query": ""},
         ...     response_format={"type": "string"}
         ... )
     """
-    name: str
-    description: str
     version: str
-    content: Union[str, List[Dict[str, str]], Dict] 
+    change_log: str
+    type: str
+    content: Union[str, List[Dict[str, str]], Dict]
     variables: Dict
     response_format: Dict
 
 
-class ChatPrompt(Prompt):
-    """Prompt class for chat-based interactions.
+class ChatPromptVersion(PromptVersion):
+    """Prompt version class for chat-based interactions.
 
     This class represents prompts that consist of a sequence of chat messages,
     typically with alternating roles (e.g., system, user, assistant).
@@ -52,7 +52,7 @@ class ChatPrompt(Prompt):
             and content.
 
     Example:
-        >>> chat = ChatPrompt(
+        >>> chat = ChatPromptVersion(
         ...     name="greeting",
         ...     description="Chat greeting",
         ...     version="1.0",
@@ -66,17 +66,18 @@ class ChatPrompt(Prompt):
     """
     content: List[Dict[str, str]]
 
-class TextPrompt(Prompt):
-    """Prompt class for simple text-based prompts.
 
-    This class represents prompts that consist of a single text string,
-    which may include variable placeholders.
+class TextPromptVersion(PromptVersion):
+    """Prompt version class for simple text-based prompts.
+
+    This class represents a specific version of a prompt that consists of a
+    single text string.
 
     Attributes:
         content (str): The text content of the prompt.
 
     Example:
-        >>> text = TextPrompt(
+        >>> text = TextPromptVersion(
         ...     name="query",
         ...     description="Search query prompt",
         ...     version="1.0",
@@ -87,8 +88,9 @@ class TextPrompt(Prompt):
     """
     content: str
 
-class JsonPrompt(Prompt):
-    """Prompt class for JSON-structured prompts.
+
+class JsonPromptVersion(PromptVersion):
+    """Prompt version class for JSON-structured prompts.
 
     This class represents prompts that have a structured JSON format,
     useful for complex templates or structured data.
@@ -97,7 +99,7 @@ class JsonPrompt(Prompt):
         content (Dict): The JSON content of the prompt.
 
     Example:
-        >>> json = JsonPrompt(
+        >>> json = JsonPromptVersion(
         ...     name="api_request",
         ...     description="API request template",
         ...     version="1.0",
@@ -109,6 +111,22 @@ class JsonPrompt(Prompt):
     content: Dict
 
 
+class Prompt(BaseModel):
+    """Base class for all prompt types.
+
+    This class defines the common structure for all prompts in the system,
+    including metadata and a list of its versions.
+
+    Attributes:
+        prompt_id (str): Unique identifier for the prompt.
+        description (str): Human-readable description of the prompt's purpose.
+        versions (List[PromptVersion]): A list of different versions of this prompt.
+    """
+    prompt_id: str
+    description: str
+    versions: List[PromptVersion]
+
+
 class PromptGroup(BaseModel):
     """Group of related prompts.
 
@@ -116,17 +134,17 @@ class PromptGroup(BaseModel):
     easier to manage and retrieve sets of related prompts.
 
     Attributes:
-        name (str): Name of the prompt group.
+        prompt_parent_id (str): Name of the prompt group.
         description (str): Description of the group's purpose.
         prompts (List[Prompt]): List of prompts in this group.
 
     Example:
         >>> group = PromptGroup(
-        ...     name="search_prompts",
+        ...     prompt_parent_id="search_prompts",
         ...     description="Prompts for search operations",
         ...     prompts=[text_prompt, chat_prompt]
         ... )
     """
-    name: str
+    prompt_parent_id: str
     description: str
     prompts: List[Prompt]

@@ -5,9 +5,8 @@ them with variables. It extends the base PromptLoader to add variable
 substitution capabilities for different prompt types.
 """
 
-import json
 from typing import Dict, List, Optional, Union
-from sherpa_ai.prompts.Base import ChatPrompt, TextPrompt, JsonPrompt
+from sherpa_ai.prompts.Base import ChatPromptVersion, TextPromptVersion, JsonPromptVersion
 from sherpa_ai.prompts.prompt_loader import PromptLoader
 
 class PromptTemplate(PromptLoader):
@@ -20,8 +19,8 @@ class PromptTemplate(PromptLoader):
     Example:
         >>> template = PromptTemplate("prompts.json")
         >>> formatted = template.format_prompt(
-        ...     wrapper="chat",
-        ...     name="greeting",
+        ...     prompt_parent_id="chat",
+        ...     prompt_id="greeting",
         ...     version="1.0",
         ...     variables={"name": "Alice"}
         ... )
@@ -39,8 +38,8 @@ class PromptTemplate(PromptLoader):
 
     def format_prompt(
         self,
-        wrapper: str,
-        name: str,
+        prompt_parent_id: str,
+        prompt_id: str, # Changed from name to prompt_id
         version: str,
         variables: Optional[Dict[str, Union[str, int, float]]] = None
     ) -> Optional[Union[str, List[Dict[str, str]], Dict]]:
@@ -51,8 +50,8 @@ class PromptTemplate(PromptLoader):
         (text, chat, JSON) appropriately.
 
         Args:
-            wrapper (str): Name of the wrapper containing the prompt.
-            name (str): Name of the prompt to format.
+            prompt_parent_id (str): Name of the wrapper containing the prompt.
+            prompt_id (str): ID of the prompt to format.
             version (str): Version of the prompt to format.
             variables (Optional[Dict[str, Union[str, int, float]]]): Values to
                 substitute in the prompt. If None, uses defaults from JSON.
@@ -64,62 +63,29 @@ class PromptTemplate(PromptLoader):
         Example:
             >>> template = PromptTemplate("prompts.json")
             >>> formatted = template.format_prompt(
-            ...     wrapper="text",
-            ...     name="search",
+            ...     prompt_parent_id="text",
+            ...     prompt_id="search",
             ...     version="1.0",
             ...     variables={"query": "python programming"}
             ... )
             >>> print(formatted)
             'Search for: python programming'
         """
-        prompt = None
-        for pg in self.prompts:
-            if pg.name == wrapper:
-                for p in pg.prompts:
-                    if p.name == name and p.version == version:
-                        # Convert the prompt to appropriate type based on content
-                        if isinstance(p.content, list):
-                            prompt = ChatPrompt(
-                                name=p.name,
-                                description=p.description,
-                                version=p.version,
-                                content=p.content,
-                                variables=p.variables,
-                                response_format=p.response_format
-                            )
-                        elif isinstance(p.content, str):
-                            prompt = TextPrompt(
-                                name=p.name,
-                                description=p.description,
-                                version=p.version,
-                                content=p.content,
-                                variables=p.variables,
-                                response_format=p.response_format
-                            )
-                        elif isinstance(p.content, dict):
-                            prompt = JsonPrompt(
-                                name=p.name,
-                                description=p.description,
-                                version=p.version,
-                                content=p.content,
-                                variables=p.variables,
-                                response_format=p.response_format
-                            )
-                        break
-                break
-        
-        if not prompt:
+        # We need to get the specific prompt version object
+        prompt_version_obj = self.get_prompt_version(prompt_parent_id, prompt_id, version)
+
+        if not prompt_version_obj:
             return None
 
-        prompt_variables = prompt.variables or {}
+        prompt_variables = prompt_version_obj.variables or {}
         final_variables = prompt_variables.copy()
 
         if variables:
             final_variables.update(variables)
 
-        if isinstance(prompt, ChatPrompt):
+        if isinstance(prompt_version_obj, ChatPromptVersion):
             formatted_prompt = []
-            for message in prompt.content:
+            for message in prompt_version_obj.content:
                 role = message.get("role")
                 text = message.get("content", "")
 
@@ -132,17 +98,17 @@ class PromptTemplate(PromptLoader):
                 formatted_prompt.append({"role": role, "content": text})
             return formatted_prompt
 
-        elif isinstance(prompt, TextPrompt):
-            text = prompt.content
+        elif isinstance(prompt_version_obj, TextPromptVersion):
+            text = prompt_version_obj.content
             for var_name, var_value in final_variables.items():
                 placeholder = f"{{{var_name}}}"
                 if placeholder in text:
                     text = text.replace(placeholder, str(var_value))
             return text
 
-        elif isinstance(prompt, JsonPrompt):
+        elif isinstance(prompt_version_obj, JsonPromptVersion):
             import copy
-            formatted_prompt = copy.deepcopy(prompt.content) 
+            formatted_prompt = copy.deepcopy(prompt_version_obj.content)
             def replace_in_dict(data: Dict) -> Dict:
                 """Recursively replace variables in dictionary values.
 
@@ -164,12 +130,12 @@ class PromptTemplate(PromptLoader):
             return replace_in_dict(formatted_prompt)
 
         else:
-            raise ValueError(f"Unknown prompt type: {type(prompt)}")
+            raise ValueError(f"Unknown prompt version type: {type(prompt_version_obj)}")
 
     def get_full_formatted_prompt(
         self,
-        wrapper: str,
-        name: str,
+        prompt_parent_id: str,
+        prompt_id: str, # Changed from name to prompt_id
         version: str,
         variables: Optional[Dict[str, Union[str, int, float]]] = None
     ) -> Optional[Dict[str, Union[str, List[Dict[str, str]], Dict]]]:
@@ -180,8 +146,8 @@ class PromptTemplate(PromptLoader):
         context, not just the formatted content.
 
         Args:
-            wrapper (str): Name of the wrapper containing the prompt.
-            name (str): Name of the prompt to format.
+            prompt_parent_id (str): Name of the wrapper containing the prompt.
+            prompt_id (str): ID of the prompt to format.
             version (str): Version of the prompt to format.
             variables (Optional[Dict[str, Union[str, int, float]]]): Values to
                 substitute in the prompt. If None, uses defaults from JSON.
@@ -194,59 +160,38 @@ class PromptTemplate(PromptLoader):
         Example:
             >>> template = PromptTemplate("prompts.json")
             >>> result = template.get_full_formatted_prompt(
-            ...     wrapper="text",
-            ...     name="search",
+            ...     prompt_parent_id="text",
+            ...     prompt_id="search",
             ...     version="1.0",
             ...     variables={"query": "python"}
             ... )
             >>> print(result["description"])
             'Search query template'
         """
-        prompt = None
+        target_prompt = None
         for pg in self.prompts:
-            if pg.name == wrapper:
+            if pg.prompt_parent_id == prompt_parent_id:
                 for p in pg.prompts:
-                    if p.name == name and p.version == version:
-                        # Convert the prompt to appropriate type
-                        if isinstance(p.content, list):
-                            prompt = ChatPrompt(
-                                name=p.name,
-                                description=p.description,
-                                version=p.version,
-                                content=p.content,
-                                variables=p.variables,
-                                response_format=p.response_format
-                            )
-                        elif isinstance(p.content, str):
-                            prompt = TextPrompt(
-                                name=p.name,
-                                description=p.description,
-                                version=p.version,
-                                content=p.content,
-                                variables=p.variables,
-                                response_format=p.response_format
-                            )
-                        elif isinstance(p.content, dict):
-                            prompt = JsonPrompt( 
-                                name=p.name,
-                                description=p.description,
-                                version=p.version,
-                                content=p.content,
-                                variables=p.variables,
-                                response_format=p.response_format
-                            )
+                    if p.prompt_id == prompt_id:
+                        target_prompt = p
                         break
-                break
-        
-        if not prompt:
+                if target_prompt:
+                    break
+
+        if not target_prompt:
             return None
 
-        formatted_content = self.format_prompt(wrapper, name, version, variables)
+        prompt_version_obj = self.get_prompt_version(prompt_parent_id, prompt_id, version)
+
+        if not prompt_version_obj:
+            return None
+
+        formatted_content = self.format_prompt(prompt_parent_id, prompt_id, version, variables)
         if not formatted_content:
             return None
 
         return {
-            "description": prompt.description,
+            "description": target_prompt.description,
             "content": formatted_content,
-            "output_schema": prompt.response_format
+            "output_schema": prompt_version_obj.response_format
         }
