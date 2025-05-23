@@ -119,7 +119,9 @@ class QAAgent(BaseAgent):
         return [
             GoogleSearch(
                 role_description=self.description,
-                task=self.belief.current_task.content,
+                task=self.belief.current_task.content
+                if self.belief.current_task
+                else "",
                 llm=self.llm,
                 config=self.config,
                 belief=self.belief,

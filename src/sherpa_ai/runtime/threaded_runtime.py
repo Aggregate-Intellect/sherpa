@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pykka import ThreadingActor
 
-from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.events import Event
+
+if TYPE_CHECKING:
+    from sherpa_ai.agents.base import BaseAgent
 
 
 class ThreadedRuntime(ThreadingActor):
