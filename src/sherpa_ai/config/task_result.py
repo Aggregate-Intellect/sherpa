@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -22,5 +22,5 @@ class TaskResult(BaseModel):
         >>> print(result.status)
         success
     """
-    content: str
+    content: Optional[str]
     status: Literal["success", "failed", "waiting"] = "success"
