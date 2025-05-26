@@ -392,6 +392,7 @@ class BaseAgent(ABC, BaseModel):
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
+        action_output = None
         for _ in range(self.num_runs):
             actions = await self.belief.async_get_actions()
             if len(actions) == 0:
