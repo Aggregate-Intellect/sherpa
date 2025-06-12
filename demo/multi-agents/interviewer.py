@@ -1,32 +1,66 @@
-from typing import List
+from actions import QuestionAction, SummarizeAction
+from langchain.chat_models import BaseChatModel
+from transitions.extensions import HierarchicalAsyncGraphMachine
 
-from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.agents.base import BaseAgent
+from sherpa_ai.agents import QAAgent
+from sherpa_ai.memory import Belief
+from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
-class Interviewer(BaseAgent):
-    """An agent that conducts interviews with other agents."""
+def get_actions(llm: BaseChatModel, belief: Belief):
+    """Get the actions for the interviewer agent."""
+    question_action = QuestionAction(llm=llm, belief=belief)
+    summarize_action = SummarizeAction(llm=llm, belief=belief)
+    return {
+        "question": question_action,
+        "summarize": summarize_action,
+        "should_continue": question_action.should_continue,
+    }
 
-    def __init__(self, name: str = "Interviewer", **kwargs):
-        """Initialize the Interviewer agent. Also initialize the state machine of the interviewer agent.
 
-        Args:
-            name (str): The name of the agent.
-            **kwargs: Additional keyword arguments.
-        """  # noqa: E501
-        super().__init__(name=name, **kwargs)
+def create_state_machine(llm: BaseChatModel, belief: Belief):
+    states = ["Start", "Gathering", "Finish"]
 
-    def create_actions(self) -> List[BaseAction]:
-        """Create actions for the Interviewer agent.
+    transitions = [
+        {
+            "trigger": "ask_question",
+            "source": "Start",
+            "dest": "Gathering",
+        },
+        {
+            "trigger": "ask_question",
+            "source": "Gathering",
+            "dest": "Gathering",
+            "before": "question",
+            "conditions": "should_continue",
+        },
+        {
+            "trigger": "summarize",
+            "source": "Gathering",
+            "dest": "Finish",
+            "before": "summarize",
+            "unless": "should_continue",
+        },
+    ]
+    initial = "Start"
 
-        This method is called to define the actions that the agent can perform.
-        For the Interviewer, it might include asking questions, recording answers,
-        and summarizing responses.
+    action_map = get_actions(llm, belief)
+    sm = SherpaStateMachine(
+        states=states,
+        transitions=transitions,
+        initial=initial,
+        action_map=action_map,
+        sm_cls=HierarchicalAsyncGraphMachine,
+    )
 
-        Returns:
-            list: A list of actions that the agent can perform.
-        """
-        pass
+    belief.state_machine = sm
 
-    def synthesize_output(self) -> str:
-        pass
+    return belief
+
+
+def get_interviewer_agent(llm: BaseChatModel, name: str = "Interviewer") -> QAAgent:
+    """Create an interviewer agent."""
+    belief = Belief()
+    create_state_machine(llm, belief)
+    agent = QAAgent(name=name, belief=belief)
+    return agent
