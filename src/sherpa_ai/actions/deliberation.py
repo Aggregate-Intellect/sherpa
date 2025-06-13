@@ -1,5 +1,5 @@
-from typing import Any
-
+from typing import Any, Optional
+from langchain_core.language_models.base import BaseLanguageModel
 from sherpa_ai.actions.base import BaseAction
 
 
@@ -50,7 +50,7 @@ class Deliberation(BaseAction):
     """
     # TODO: Make a version of Deliberation action that considers the context
     role_description: str
-    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Optional[BaseLanguageModel] = None
     description: str = DELIBERATION_DESCRIPTION
 
     # Override the name and args from BaseAction
