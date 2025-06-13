@@ -8,6 +8,7 @@ from typing import Any, Callable, List, Optional, Union
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
+from langchain_core.language_models.base import BaseLanguageModel
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.exceptions import (
@@ -73,7 +74,7 @@ class BaseAgent(ABC, BaseModel):
     validations: List[BaseOutputProcessor] = []
     feedback_agent_name: str = "critic"
     global_regen_max: int = 12
-    llm: Any = None
+    llm: Optional[BaseLanguageModel] = None
     prompt_template: PromptTemplate = None
 
     # Checks whether the execution of the agent should be stopped

@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Any, Optional
 
-from langchain_core.language_models import BaseLanguageModel 
+from langchain_core.language_models.base import BaseLanguageModel 
 from loguru import logger 
 
 from sherpa_ai.actions.base import BaseAction
@@ -42,7 +42,7 @@ class SynthesizeOutput(BaseAction):
     """
     
     role_description: str
-    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Optional[BaseLanguageModel] = None
     description: str = None
     add_citation: bool = False
 

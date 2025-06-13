@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
+from langchain_core.language_models.base import BaseLanguageModel
 
 from sherpa_ai.policies.base import BasePolicy, PolicyOutput
 from sherpa_ai.policies.exceptions import SherpaPolicyException
@@ -55,8 +56,7 @@ class ReactPolicy(BasePolicy):
 
     role_description: str
     output_instruction: str
-    # Cannot use langchain's BaseLanguageModel due to they are using Pydantic v1
-    llm: Any = None
+    llm: Optional[BaseLanguageModel] = None
     prompt_template: PromptTemplate = PromptTemplate("./sherpa_ai/prompts/prompts.json")
     response_format: dict = {
         "command": {

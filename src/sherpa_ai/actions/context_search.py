@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, Optional
 
 from loguru import logger
+from langchain_core.language_models.base import BaseLanguageModel
 
 from sherpa_ai.actions.base import BaseRetrievalAction
 from sherpa_ai.connectors.vectorstores import get_vectordb
@@ -55,7 +56,7 @@ class ContextSearch(BaseRetrievalAction):
     
     role_description: str
     task: str
-    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Optional[BaseLanguageModel] = None
     description: str = SEARCH_SUMMARY_DESCRIPTION
     _context: Any = None
 
