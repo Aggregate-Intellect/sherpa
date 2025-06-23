@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from loguru import logger
-
+from langchain_core.language_models.base import BaseLanguageModel
 from sherpa_ai.actions.base import BaseAction
 
 
@@ -216,7 +216,7 @@ class TaskPlanning(BaseAction):
         Task: Summarize the findings about quantum computing
     """
     
-    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Optional[BaseLanguageModel] = None
     num_steps: int = 5
     prompt: str = PLANNING_PROMPT
     revision_prompt: str = REVISION_PROMPT

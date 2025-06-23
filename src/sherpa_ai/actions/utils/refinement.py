@@ -3,12 +3,13 @@ Different methods for reranking the results of a search query.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import numpy as np
 from nltk import tokenize
 from numpy.typing import ArrayLike
 from pydantic import BaseModel
+from langchain_core.language_models.base import BaseLanguageModel
 
 
 SEARCH_SUMMARY_DESCRIPTION = """Question：{question} 
@@ -65,7 +66,7 @@ class RefinementByQuery(BaseRefinement):
         >>> refinement = RefinementByQuery(llm=my_llm)
         >>> results = refinement.refinement(documents, query)
     """
-    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Optional[BaseLanguageModel] = None 
     description: str = SEARCH_SUMMARY_DESCRIPTION
     k: int = 3
 
@@ -108,7 +109,7 @@ class RefinementBySentence(BaseRefinement):
         >>> refinement = RefinementBySentence(llm=my_llm)
         >>> results = refinement.refinement(documents, query)
     """
-    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Optional[BaseLanguageModel] = None 
     description: str = SEARCH_SUMMARY_DESCRIPTION_SENT
 
     def refinement(self, documents: list[str], query: str) -> list[str]:
