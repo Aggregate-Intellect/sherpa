@@ -14,6 +14,13 @@ class ObjectAggregator(BaseModel):
     Schema of the object, used to validate the object.
     """
 
+    value_weight_map: dict[str, Union[dict, float]] = {}
+    """
+    Dictionary mapping each field to a dictionary of values and their weights.
+    If the field is a primitive type, it will be mapped to a dictionary with values as keys and their weights as values.
+    If the field is a nested model, it will be mapped to a dictionary for storing object values. The default weight is 1.0.
+    """  # noqa: E501
+
     obj_dict: dict[str, Union[list, dict]] = {}
     """
     Dictionary representing the object aggregator, where each field is mapped to a list or a dictionary.
