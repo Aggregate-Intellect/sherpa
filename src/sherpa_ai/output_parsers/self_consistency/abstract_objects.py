@@ -42,7 +42,9 @@ class AbstractObject(BaseModel):
         abstractor_map = defaultdict(lambda: counting_abstractor)
 
         # Recursively abstract the object dictionary using the abstractor map
-        abstracted_dict = abstract_recursive(obj_aggregator.obj_dict, abstractor_map)
+        abstracted_dict = abstract_recursive(
+            obj_aggregator.obj_dict, abstractor_map, obj_aggregator.value_weight_map
+        )
 
         return cls(
             obj_schema=obj_aggregator.obj_schema,
@@ -53,6 +55,7 @@ class AbstractObject(BaseModel):
 def abstract_recursive(
     obj_dict: dict[str, Union[list, dict]],
     abstractor_map: dict[str, AttributeAbstractor],
+    value_weight_map: dict[str, Union[dict, float]] = {},
 ) -> dict[str, Union[list, Distribution]]:
     """
     Recursively abstract the object dictionary using the provided abstractor.
@@ -68,10 +71,13 @@ def abstract_recursive(
         if isinstance(value, list):
             # If the value is a list, abstract it using the corresponding abstractor
             abstractor = abstractor_map[key]
-            abstracted_dict[key] = abstractor.abstract(value)
+            weight_map = value_weight_map.get(key, {})
+            abstracted_dict[key] = abstractor.abstract(value, weight_map)
         elif isinstance(value, dict):
             # If the value is a dictionary, recursively abstract it
-            abstracted_dict[key] = abstract_recursive(value, abstractor_map)
+            abstracted_dict[key] = abstract_recursive(
+                value, abstractor_map, value_weight_map.get(key, {})
+            )
         else:
             raise TypeError(f"Unsupported type for key '{key}': {type(value)}")
     return abstracted_dict

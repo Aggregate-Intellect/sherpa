@@ -24,13 +24,14 @@ class AttributeAbstractor(ABC):
 
 
 class CountingAttributeAbstractor:
-    def abstract(self, values: list) -> DiscreteDistribution:
+    def abstract(self, values: list, weights: dict = {}) -> DiscreteDistribution:
         """
         Abstract the values into a discrete distribution based on the counts of each unique value.
         TODO: Support custom equality functions or equality matrix
 
         Args:
             values: A list of values to abstract.
+            weights: A dictionary mapping each value to its weight. The default weight is 1.0.
 
         Returns:
             A DiscreteDistribution object representing the counts of each unique value.
@@ -40,5 +41,8 @@ class CountingAttributeAbstractor:
 
         counter = Counter(values)
         unique_values = list(counter.keys())
-        probabilities = [counter[value] / len(values) for value in unique_values]
+        values = [weights.get(value, 1.0) * counter[value] for value in unique_values]
+        total_count = sum(values)
+        probabilities = [count / total_count for count in values]
+
         return DiscreteDistribution(unique_values, probabilities)
