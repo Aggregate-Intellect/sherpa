@@ -1,32 +1,65 @@
-from typing import List
+from actions import SearchAction
+from langchain_core.language_models import BaseChatModel
+from transitions.extensions import HierarchicalAsyncGraphMachine
 
 from sherpa_ai.actions.base import BaseAction
-from sherpa_ai.agents.base import BaseAgent
+from sherpa_ai.agents.qa_agent import QAAgent
+from sherpa_ai.memory.belief import Belief
+from sherpa_ai.memory.shared_memory import SharedMemory
+from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
-class Researcher(BaseAgent):
-    """An agent that conducts interviews with other agents."""
+def get_actions(
+    llm: BaseChatModel, belief: Belief, shared_memory: SharedMemory
+) -> dict[str, BaseAction]:
+    """Get the actions for the researcher agent."""
+    search_action = SearchAction(
+        belief=belief,
+        shared_memory=shared_memory,
+        llm=llm,
+        name="search",
+        args={"conversation_context": "Conversation context for search"},
+        usage="An action that performs a search operation.",
+    )
+    return {
+        "search": search_action,
+    }
 
-    def __init__(self, name: str = "Researcher", **kwargs):
-        """Initialize the Researcher agent. Also initialize the state machine of the Researcher agent.
 
-        Args:
-            name (str): The name of the agent.
-            **kwargs: Additional keyword arguments.
-        """  # noqa: E501
-        super().__init__(name=name, **kwargs)
+def create_state_machine(
+    llm: BaseChatModel, belief: Belief, shared_memory: SharedMemory
+):
+    """Create a state machine for the researcher agent."""
+    states = [{"name": "Searching", "tags": ["waiting"]}]
 
-    def create_actions(self) -> List[BaseAction]:
-        """Create actions for the Researcher agent.
+    transitions = [
+        {
+            "trigger": "perform_search",
+            "source": "Searching",
+            "dest": "Searching",
+            "before": "search",
+        },
+    ]
+    initial = "Searching"
 
-        This method is called to define the actions that the agent can perform.
-        For the Researcher, it might include asking questions, recording answers,
-        and summarizing responses.
+    action_map = get_actions(llm, belief, shared_memory)
+    sm = SherpaStateMachine(
+        states=states,
+        transitions=transitions,
+        initial=initial,
+        action_map=action_map,
+        sm_cls=HierarchicalAsyncGraphMachine,
+    )
 
-        Returns:
-            list: A list of actions that the agent can perform.
-        """
-        pass
+    belief.state_machine = sm
 
-    def synthesize_output(self) -> str:
-        pass
+    return belief
+
+
+def get_researcher_agent(
+    llm: BaseChatModel, shared_memory: SharedMemory, name: str = "Researcher"
+) -> QAAgent:
+    belief = Belief()
+    """Get the researcher agent with its state machine and actions."""
+    belief = create_state_machine(llm, belief, shared_memory)
+    return QAAgent(name=name, belief=belief, llm=llm, num_runs=1)

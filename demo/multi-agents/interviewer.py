@@ -1,15 +1,17 @@
 from actions import QuestionAction, SummarizeAction
-from langchain.chat_models import BaseChatModel
+from langchain_core.language_models import BaseChatModel
 from transitions.extensions import HierarchicalAsyncGraphMachine
 
 from sherpa_ai.agents import QAAgent
-from sherpa_ai.memory import Belief
+from sherpa_ai.memory import Belief, SharedMemory
 from sherpa_ai.memory.state_machine import SherpaStateMachine
 
 
-def get_actions(llm: BaseChatModel, belief: Belief):
+def get_actions(llm: BaseChatModel, belief: Belief, shared_memory: SharedMemory):
     """Get the actions for the interviewer agent."""
-    question_action = QuestionAction(llm=llm, belief=belief)
+    question_action = QuestionAction(
+        llm=llm, belief=belief, shared_memory=shared_memory
+    )
     summarize_action = SummarizeAction(llm=llm, belief=belief)
     return {
         "question": question_action,
@@ -18,14 +20,17 @@ def get_actions(llm: BaseChatModel, belief: Belief):
     }
 
 
-def create_state_machine(llm: BaseChatModel, belief: Belief):
-    states = ["Start", "Gathering", "Finish"]
+def create_state_machine(
+    llm: BaseChatModel, belief: Belief, shared_memory: SharedMemory
+):
+    states = ["Start", {"name": "Gathering", "tags": ["waiting"]}, "Finish"]
 
     transitions = [
         {
             "trigger": "ask_question",
             "source": "Start",
             "dest": "Gathering",
+            "before": "question",
         },
         {
             "trigger": "ask_question",
@@ -44,7 +49,7 @@ def create_state_machine(llm: BaseChatModel, belief: Belief):
     ]
     initial = "Start"
 
-    action_map = get_actions(llm, belief)
+    action_map = get_actions(llm, belief, shared_memory)
     sm = SherpaStateMachine(
         states=states,
         transitions=transitions,
@@ -58,9 +63,11 @@ def create_state_machine(llm: BaseChatModel, belief: Belief):
     return belief
 
 
-def get_interviewer_agent(llm: BaseChatModel, name: str = "Interviewer") -> QAAgent:
+def get_interviewer_agent(
+    llm: BaseChatModel, shared_memory: SharedMemory, name: str = "Interviewer"
+) -> QAAgent:
     """Create an interviewer agent."""
     belief = Belief()
-    create_state_machine(llm, belief)
-    agent = QAAgent(name=name, belief=belief)
+    create_state_machine(llm, belief, shared_memory)
+    agent = QAAgent(name=name, belief=belief, llm=llm)
     return agent

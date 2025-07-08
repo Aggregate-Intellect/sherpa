@@ -201,7 +201,6 @@ class BaseAgent(ABC, BaseModel):
         Args:
             event (Event): The event to handle.
         """
-
         if event.event_type == "trigger":
             # explicit trigger event, send it to the state machine
             await self.async_send_event(event.name, event.args)
@@ -227,7 +226,7 @@ class BaseAgent(ABC, BaseModel):
         """
         logger.debug(f"```⏳{self.name} is thinking...```")
 
-        if len(self.belief.get_actions()) == 0:
+        if len(self.belief.get_actions()) == 0 and self.belief.state_machine is None:
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
@@ -388,7 +387,7 @@ class BaseAgent(ABC, BaseModel):
 
         actions = await self.belief.async_get_actions()
 
-        if len(actions) == 0:
+        if len(actions) == 0 and self.belief.state_machine is None:
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
