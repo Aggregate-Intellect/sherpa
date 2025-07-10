@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
 from sherpa_ai.actions.base import BaseAction
@@ -29,6 +29,10 @@ class QAAgent(BaseAgent):
         global_regen_max (int): Maximum number of output regeneration attempts, defaults to 5.
         citation_enabled (bool): Whether to include citations in responses, defaults to False.
 
+    Args:
+        custom_task_description_prompt (Optional[str]): Custom prompt for task description. If None, uses default from prompt template.
+        custom_action_plan_prompt (Optional[str]): Custom prompt for action plan description. If None, uses default from prompt template.
+
     Example:
         >>> from sherpa_ai.agents.qa_agent import QAAgent
         >>> from sherpa_ai.config import AgentConfig
@@ -39,6 +43,14 @@ class QAAgent(BaseAgent):
         ... )
         >>> print(agent.name)
         Research Assistant
+        >>> # Using custom prompts
+        >>> agent = QAAgent(
+        ...     name="Custom QA",
+        ...     custom_task_description_prompt="You are an expert QA assistant.",
+        ...     custom_action_plan_prompt="Plan to solve: {task}"
+        ... )
+        >>> print(agent.description)
+        You are an expert QA assistant.\n\nYour name is Custom QA.
     """  # noqa: E501
 
     name: str = "QA Agent"
@@ -48,14 +60,22 @@ class QAAgent(BaseAgent):
     global_regen_max: int = 5
     citation_enabled: bool = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        custom_task_description_prompt: Optional[str] = None,
+        custom_action_plan_prompt: Optional[str] = None,
+        **kwargs
+    ):
         """Initialize a QA agent with appropriate configuration and policy.
 
-        This method sets up the agent's description, policy, and belief system
-        based on the provided arguments and template prompts.
+        Sets up the agent's description, policy, and belief system using provided
+        custom prompts or default template prompts from prompts.json.
 
         Args:
             *args: Variable length argument list.
+            custom_task_description_prompt (Optional[str]): Custom prompt for task description.
+            custom_action_plan_prompt (Optional[str]): Custom prompt for action plan description.
             **kwargs: Arbitrary keyword arguments.
 
         Example:
@@ -63,22 +83,37 @@ class QAAgent(BaseAgent):
             >>> agent = QAAgent(name="Research Assistant")
             >>> print(agent.name)
             Research Assistant
+            >>> # With custom prompt
+            >>> agent = QAAgent(
+            ...     name="Custom QA",
+            ...     custom_task_description_prompt="Expert QA for all queries."
+            ... )
+            >>> print(agent.description)
+            Expert QA for all queries.\n\nYour name is Custom QA.
         """
         super().__init__(*args, **kwargs)
-        template = self.prompt_template
-        self.description = template.format_prompt(
-            prompt_parent_id="qa_agent_prompts",
-            prompt_id="TASK_AGENT_DESCRIPTION",
-            version="1.0",
-        )
+
+        if custom_task_description_prompt is not None:
+            self.description = custom_task_description_prompt
+        else:
+            template = self.prompt_template
+            self.description = template.format_prompt(
+                prompt_parent_id="qa_agent_prompts",
+                prompt_id="TASK_AGENT_DESCRIPTION",
+                version="1.0",
+            )
+
+        if custom_action_plan_prompt is not None:
+            action_planner = custom_action_plan_prompt
+        else:
+            template = self.prompt_template
+            action_planner = template.format_prompt(
+                prompt_parent_id="qa_agent_prompts",
+                prompt_id="ACTION_PLAN_DESCRIPTION",
+                version="1.0",
+            )
 
         self.description = self.description + "\n\n" + f"Your name is {self.name}."
-
-        action_planner = template.format_prompt(
-            prompt_parent_id="qa_agent_prompts",
-            prompt_id="ACTION_PLAN_DESCRIPTION",
-            version="1.0",
-        )
 
         if self.policy is None:
             self.policy = ReactPolicy(
