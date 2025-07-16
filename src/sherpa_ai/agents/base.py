@@ -8,6 +8,7 @@ from typing import Any, Callable, List, Optional, Union
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
+from langchain_core.language_models.base import BaseLanguageModel
 
 from sherpa_ai.actions.base import BaseAction
 from sherpa_ai.actions.exceptions import (
@@ -73,7 +74,7 @@ class BaseAgent(ABC, BaseModel):
     validations: List[BaseOutputProcessor] = []
     feedback_agent_name: str = "critic"
     global_regen_max: int = 12
-    llm: Any = None
+    llm: Optional[BaseLanguageModel] = None
     prompt_template: PromptTemplate = None
 
     # Checks whether the execution of the agent should be stopped
@@ -201,7 +202,6 @@ class BaseAgent(ABC, BaseModel):
         Args:
             event (Event): The event to handle.
         """
-
         if event.event_type == "trigger":
             # explicit trigger event, send it to the state machine
             await self.async_send_event(event.name, event.args)
@@ -227,7 +227,7 @@ class BaseAgent(ABC, BaseModel):
         """
         logger.debug(f"```⏳{self.name} is thinking...```")
 
-        if len(self.belief.get_actions()) == 0:
+        if len(self.belief.get_actions()) == 0 and self.belief.state_machine is None:
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 
@@ -388,7 +388,7 @@ class BaseAgent(ABC, BaseModel):
 
         actions = await self.belief.async_get_actions()
 
-        if len(actions) == 0:
+        if len(actions) == 0 and self.belief.state_machine is None:
             actions = self.actions if len(self.actions) > 0 else self.create_actions()
             self.belief.set_actions(actions)
 

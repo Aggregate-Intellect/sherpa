@@ -32,3 +32,11 @@ class ThreadedRuntime(ThreadingActor):
         """
         asyncio.run(self.agent.async_handle_event(event))
         return self.agent.run()
+
+    def wait(self) -> bool:
+        """Wait for the agent to finish anything it is currently doing
+
+        Returns:
+            bool: True, the agent processes events in order
+        """
+        return True
