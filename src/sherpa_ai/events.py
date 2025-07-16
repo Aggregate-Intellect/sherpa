@@ -206,5 +206,10 @@ def build_event(event_type: str, name: str, **kwargs) -> Event:
         return ActionStartEvent(**kwargs, name=name)
     elif event_type == "action_finish":
         return ActionFinishEvent(**kwargs, name=name)
+    elif event_type == "trigger":
+        if not kwargs.get("args"):
+            # Default to no args if not provided
+            kwargs["args"] = {}
+        return TriggerEvent(name=name, **kwargs)
     else:
         return GenericEvent(**kwargs, event_type=event_type, name=name)

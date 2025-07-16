@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class Distribution(ABC):
     @abstractmethod
-    def get_probability(self, value):
+    def get_probability(self, value) -> float:
         """
         Get the probability of a value in the distribution.
 
@@ -17,7 +18,7 @@ class Distribution(ABC):
         pass
 
     @abstractmethod
-    def get_mode(self):
+    def get_mode(self) -> Any:
         """
         Get the mode of the distribution, which is the value with the highest probability.
         Returns:
@@ -40,11 +41,11 @@ class DiscreteDistribution(Distribution):
             self.values[i]: probabilities[i] for i in range(len(probabilities))
         }
 
-    def get_probability(self, value):
+    def get_probability(self, value) -> float:
         if value not in self.probabilities:
             raise ValueError(f"Value {value} not in distribution.")
         return self.probabilities.get(value)
 
-    def get_mode(self):
+    def get_mode(self) -> Any:
         max_item = max(self.probabilities.items(), key=lambda x: x[1])
         return max_item[0]

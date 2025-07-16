@@ -1,5 +1,5 @@
-from typing import Any
-
+from typing import Any, Optional
+from langchain_core.language_models.base import BaseLanguageModel
 from sherpa_ai.actions.base import BaseRetrievalAction
 from sherpa_ai.tools import SearchArxivTool
 
@@ -46,7 +46,7 @@ class ArxivSearch(BaseRetrievalAction):
     """
     role_description: str
     task: str
-    llm: Any = None  # The BaseLanguageModel from LangChain is not compatible with Pydantic 2 yet
+    llm: Optional[BaseLanguageModel] = None
     description: str = SEARCH_SUMMARY_DESCRIPTION
     _search_tool: Any = None
 
