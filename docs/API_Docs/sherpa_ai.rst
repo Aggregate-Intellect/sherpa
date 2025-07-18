@@ -53,6 +53,8 @@ Subpackages
      - Error management tools for recovery and stability.
    * - :mod:`sherpa_ai.memory`
      - Knowledge persistence and sharing across sessions and components.
+   * - :mod:`sherpa_ai.runtime`
+     - Runtime environment for executing agents asynchronously.
    * - :mod:`sherpa_ai.models`
      - Interfaces with language model providers and enhanced model functionality.
    * - :mod:`sherpa_ai.output_parsers`
@@ -79,6 +81,7 @@ Subpackages
    sherpa_ai.database
    sherpa_ai.error_handling
    sherpa_ai.memory
+   sherpa_ai.runtime
    sherpa_ai.models
    sherpa_ai.output_parsers
    sherpa_ai.policies
@@ -98,7 +101,7 @@ Submodules
      - Description
    * - :mod:`sherpa_ai.events`
      - Event system for coordinating component interactions and message passing.
-   * - :mod:`sherpa_ai.output_parser`
+   * - :mod:`sherpa_ai.output_parsers`
      - Tools for parsing and processing model outputs into usable formats.
    * - :mod:`sherpa_ai.post_processors`
      - Processes model outputs for additional formatting and enhancement.
@@ -117,7 +120,7 @@ Submodules
    :hidden:
 
    sherpa_ai.events
-   sherpa_ai.output_parser
+   sherpa_ai.output_parsers
    sherpa_ai.post_processors
    sherpa_ai.prompt
    sherpa_ai.prompt_generator
@@ -134,10 +137,10 @@ sherpa\_ai.events module
    :show-inheritance:
 
 
-sherpa\_ai.output\_parser module
+sherpa\_ai.output\_parsers module
 --------------------------------
 
-.. automodule:: sherpa_ai.output_parser
+.. automodule:: sherpa_ai.output_parsers
    :members:
    :undoc-members:
    :show-inheritance:
