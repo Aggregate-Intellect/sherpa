@@ -45,7 +45,7 @@ The demo will automatically connect to the Linear MCP server via remote SSE. **T
 
 - **Linear Issue ID Pattern:**
   - The demo expects your Linear issue IDs to follow the pattern `MCP-123` (e.g., `MCP-5`).
-  - If your Linear workspace uses a different prefix (e.g., `ABC-123`), **edit the pattern in `main.py` in `extract_linear_id` function to match your workspace's issue ID format**.
+  - If your Linear workspace uses a different prefix (e.g., `ABC-123`), **edit the pattern in `pr_analyzer_agent.py` in `extract_linear_id` function to match your workspace's issue ID format**.
 - **Pull Request Requirements:**
   - Make sure you have at least one pull request in your repository with a Linear issue ID in the title or description (e.g., `MCP-5: Add new feature`).
 
