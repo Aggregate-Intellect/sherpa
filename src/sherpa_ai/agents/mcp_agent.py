@@ -1,18 +1,37 @@
 import json
-
 from transitions.extensions.asyncio import AsyncMachine
-
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.memory import Belief
 from sherpa_ai.memory.state_machine import SherpaStateMachine
 from sherpa_ai.models.sherpa_base_chat_model import SherpaBaseChatModel
-
+from sherpa_ai.actions.synthesize import SynthesizeOutput
 
 class McpAgent(BaseAgent):
+    """
+    A general-purpose agent for executing MCP server actions within the Sherpa framework.
+
+    This agent is designed to integrate with tools exposed by external MCP servers (such as GitHub, Linear, Notion, etc.) and provides a unified interface for executing these tools as actions. It manages the available actions, maintains internal belief state, and supports state machine-based execution.
+
+    Attributes:
+        name (str): The name of the agent.
+        description (str): Description of the agent's purpose and capabilities.
+        llm (BaseLanguageModel): The language model used by the agent and actions.
+        actions (List[AsyncBaseAction]): List of available MCP actions.
+        action_map (dict): Mapping from action name to action instance for fast lookup.
+        belief (Belief): The agent's internal state and knowledge.
+        state_machine (SherpaStateMachine): State machine for managing execution state.
+
+    Example:
+        >>> agent = McpAgent(llm, actions)
+        >>> result = await agent.run("list_pull_requests", owner="repo_owner", repo="repo_name")
+        >>> print(result)
+
+    Methods:
+        run(action_name: str, **kwargs): Execute a single action by name with the provided arguments.
+        synthesize_output(): Generate a synthesized output based on the agent's belief state.
+    """
     name: str = "MCP Agent"
-    description: str = (
-        "An agent that uses a state machine to interact with GitHub and Linear."
-    )
+    description: str = "A general agent for executing MCP server actions."
 
     def __init__(self, llm: SherpaBaseChatModel, actions: list = [], **kwargs):
         super().__init__(llm=llm, actions=actions, **kwargs)
@@ -27,6 +46,7 @@ class McpAgent(BaseAgent):
         self.llm = llm
         for action in actions:
             self.add_action(action)
+        self.action_map = {a.name: a for a in actions}
 
     def add_action(self, action):
         self.state_machine.update_transition(
@@ -36,57 +56,29 @@ class McpAgent(BaseAgent):
     def create_actions(self):
         return self.actions
 
-    def synthesize_output(self) -> str:
-        if self.belief and self.belief.get_last_event():
-            return self.belief.get_last_event().content
-        return "No action was executed."
-
-    async def run(self, prompt: str) -> str:
-        actions = self.actions
-
-        default_args = {
-            "owner": "Eyobyb",
-            "repo": "scrape_Jsonify",
-        }
-
-        actions_description = "\n".join([str(a) for a in actions])
-
-        prompt_template = f"""
-        Given the user's prompt, choose the best action to execute.
-        Respond with a JSON object containing the "action" name and the "args" for that action.
-
-        Available actions:
-        {actions_description}
-
-        Prompt: {prompt}
-
-        JSON Response:
+    async def run(self, action_name: str, **kwargs):
         """
-        response = await self.llm.ainvoke(prompt_template)
-
+        Execute a single action by name with the provided arguments.
+        """
+        action = self.action_map.get(action_name)
+        if not action:
+            return f"Unknown action: {action_name}"
         try:
-            response_json = json.loads(response.content.strip())
-            action_name = response_json.get("action")
-            action_args = response_json.get("args", {})
-            action_args.pop("owner", None)
-            action_args.pop("repo", None)
-            for k, v in default_args.items():
-                action_args[k] = v
-        except json.JSONDecodeError:
-            return f"Error: Invalid JSON response from LLM: {response.content}"
+            result = await action.execute(**kwargs)
+            self.belief.update_internal("action_result", self.name, content=result)
+            return result
+        except Exception as e:
+            return f"Error executing action {action_name}: {e}"
 
-        action_to_execute = None
-        for action in actions:
-            if action.name == action_name:
-                action_to_execute = action
-                break
-
-        if action_to_execute:
-            try:
-                result = await action_to_execute.execute(**action_args)
-                self.belief.update_internal("action_result", self.name, content=result)
-                return str(result)
-            except Exception as e:
-                return f"Error executing action {action_name}: {e}"
-        else:
-            return f"Unknown action: {action_name}" 
+    def synthesize_output(self) -> str:
+        """Generate the final answer based on the agent's actions and belief state."""
+        synthesize_action = SynthesizeOutput(
+            role_description=self.description,
+            llm=self.llm
+        )
+        result = synthesize_action.execute(
+            self.belief.current_task.content if self.belief.current_task else "",
+            self.belief.get_context(self.llm.get_num_tokens) if self.llm else "",
+            self.belief.get_internal_history(self.llm.get_num_tokens) if self.llm else "",
+        )
+        return result 
