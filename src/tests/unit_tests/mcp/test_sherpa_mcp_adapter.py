@@ -1,8 +1,8 @@
 import pytest
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
-from sherpa_ai.mcp.sherpa_mcp_adapter import MCPServerToolsToSherpaActions
-from sherpa_ai.actions.base import AsyncBaseAction
+from sherpa_ai.actions.sherpa_mcp_adapter import MCPServerToolsToSherpaActions
+from sherpa_ai.actions.base import BaseAction, AsyncBaseAction
 from langchain_core.language_models.base import BaseLanguageModel
 
 class DummySession:
@@ -64,7 +64,11 @@ def mock_session():
 
 @pytest.fixture
 def adapter(mock_llm):
-    return MCPServerToolsToSherpaActions(llm=mock_llm, server_command="echo", server_args=["foo"])
+    return MCPServerToolsToSherpaActions(
+        llm=mock_llm,
+        server_command="echo",
+        server_args=["foo"]
+    )
 
 class TestMCPServerToolsToSherpaActions:
     def test_parse_args_from_tool_with_input_schema(self, adapter, mock_tool):
@@ -112,39 +116,60 @@ class TestMCPServerToolsToSherpaActions:
         assert "Error: Not connected to MCP server." in result
 
     def test_create_actions_from_tools(self, adapter, mock_tool, mock_llm):
-        adapter.tools = [mock_tool]
+        # Use object.__setattr__ to avoid Pydantic validation
+        object.__setattr__(adapter, "tools", [mock_tool])
         adapter._create_actions_from_tools()
         assert len(adapter.actions) == 1
         action = adapter.actions[0]
         assert isinstance(action, AsyncBaseAction)
         assert action.name == "test_tool"
 
-    def test_connect_success(self, adapter):
-
-        with patch('sherpa_ai.mcp.sherpa_mcp_adapter.stdio_client') as mock_stdio_client, \
-             patch('sherpa_ai.mcp.sherpa_mcp_adapter.ClientSession') as mock_client_session:
+    def test_execute_success(self, adapter):
+        with patch('sherpa_ai.actions.sherpa_mcp_adapter.stdio_client') as mock_stdio_client, \
+             patch('sherpa_ai.actions.sherpa_mcp_adapter.ClientSession') as mock_client_session:
+            
             class DummyAsyncContext:
                 async def __aenter__(self):
                     return ("dummy_stdio", "dummy_stdin")
                 async def __aexit__(self, exc_type, exc, tb):
                     pass
+            
             class DummySessionContext:
                 async def __aenter__(self):
                     return dummy_session
                 async def __aexit__(self, exc_type, exc, tb):
                     pass
+            
             dummy_session = MagicMock()
             dummy_session.initialize = AsyncMock()
             dummy_session.list_tools = AsyncMock()
             dummy_session.list_tools.return_value.tools = [MagicMock(name="test_tool")]
+            
             mock_stdio_client.return_value = DummyAsyncContext()
             mock_client_session.return_value = DummySessionContext()
+            
             def fake_create_actions(*args, **kwargs):
                 mock_action = MagicMock()
                 mock_action.name = "test_tool"
-                adapter.actions = [mock_action]
+                object.__setattr__(adapter, "actions", [mock_action])
                 return adapter.actions
+            
             with patch.object(adapter, "_create_actions_from_tools", side_effect=fake_create_actions):
-                import asyncio
-                actions = asyncio.run(adapter.connect())
-                assert actions[0].name == "test_tool" 
+                result = adapter.execute()
+                assert result["status"] == "success"
+                assert len(result["actions"]) == 1
+                assert result["actions"][0].name == "test_tool"
+
+    def test_execute_missing_server_command(self, adapter):
+        object.__setattr__(adapter, "server_command", "")
+        result = adapter.execute()
+        assert result["status"] == "error"
+        assert "server_command is required" in result["error"]
+
+    def test_execute_connection_error(self, adapter):
+        with patch('sherpa_ai.actions.sherpa_mcp_adapter.stdio_client') as mock_stdio_client:
+            mock_stdio_client.side_effect = Exception("Connection failed")
+            result = adapter.execute()
+            assert result["status"] == "error"
+            assert "Connection failed" in result["error"] 
+            

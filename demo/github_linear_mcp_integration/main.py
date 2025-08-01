@@ -5,8 +5,8 @@ from argparse import ArgumentParser
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
-from sherpa_ai.mcp.sherpa_mcp_adapter import MCPServerToolsToSherpaActions
-from sherpa_ai.agents.pr_analyzer_agent import PRAnalyzerAgent
+from sherpa_ai.actions.sherpa_mcp_adapter import MCPServerToolsToSherpaActions
+from pr_analyzer_agent import PRAnalyzerAgent
 
 async def main():
     load_dotenv()
@@ -22,22 +22,24 @@ async def main():
         model_name="gpt-4", temperature=0, api_key=openai_api_key
     )
 
-    # Connect to GitHub MCP server
-    github_wrapper = MCPServerToolsToSherpaActions(
+    # Create GitHub MCP adapter action
+    github_adapter = MCPServerToolsToSherpaActions(
         llm=llm,
         server_command="bash",
         server_args=["/Users/job/Desktop/mcp-servers/github-mcp-server.sh"],
     )
-    github_actions = await github_wrapper.connect()
+    github_result = await github_adapter.execute_async()
+    github_actions = github_result.get("actions", [])
 
-    # Connect to Linear MCP server
-    linear_wrapper = MCPServerToolsToSherpaActions(
+    # Create Linear MCP adapter action
+    linear_adapter = MCPServerToolsToSherpaActions(
         llm=llm,
         server_command="npx",
         server_args=["-y", "mcp-remote", "https://mcp.linear.app/sse"],
         env=os.environ,
     )
-    linear_actions = await linear_wrapper.connect()
+    linear_result = await linear_adapter.execute_async()
+    linear_actions = linear_result.get("actions", [])
 
     # Combine all actions
     all_actions = github_actions + linear_actions
@@ -49,8 +51,9 @@ async def main():
     result = await agent.analyze_repository_prs(owner="Eyobyb", repo="scrape_Jsonify")
     print(result)
 
-    await github_wrapper.close()
-    await linear_wrapper.close()
+    await github_adapter.close_async()
+    await linear_adapter.close_async()
 
 if __name__ == "__main__":
     asyncio.run(main()) 
+    
