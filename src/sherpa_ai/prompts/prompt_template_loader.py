@@ -100,6 +100,11 @@ class PromptTemplate(PromptLoader):
 
         elif isinstance(prompt_version_obj, TextPromptVersion):
             text = prompt_version_obj.content
+            
+            # Handle array content
+            if isinstance(text, list):
+                text = " ".join(text)
+            
             for var_name, var_value in final_variables.items():
                 placeholder = f"{{{var_name}}}"
                 if placeholder in text:
