@@ -99,17 +99,17 @@ class PromptTemplate(PromptLoader):
             return formatted_prompt
 
         elif isinstance(prompt_version_obj, TextPromptVersion):
-            text = prompt_version_obj.content
+            content = prompt_version_obj.content
             
             # Handle array content
-            if isinstance(text, list):
-                text = " ".join(text)
+            if isinstance(content, list):
+                content = " ".join(content)
             
             for var_name, var_value in final_variables.items():
                 placeholder = f"{{{var_name}}}"
-                if placeholder in text:
-                    text = text.replace(placeholder, str(var_value))
-            return text
+                if placeholder in content:
+                    content = content.replace(placeholder, str(var_value))
+            return content
 
         elif isinstance(prompt_version_obj, JsonPromptVersion):
             import copy

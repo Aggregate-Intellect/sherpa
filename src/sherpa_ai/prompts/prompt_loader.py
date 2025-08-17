@@ -238,8 +238,8 @@ class PromptLoader:
         content_type = version_data.get(TYPE_ATTR)
         content = version_data.get(CONTENT_ATTR)
 
-        if content_type == "text" and not isinstance(content, str):
-            raise InvalidPromptContentError("'content' must be a string when 'type' is 'text'.")
+        if content_type == "text" and not (isinstance(content, str) or isinstance(content, list)):
+            raise InvalidPromptContentError("'content' must be a string or list of strings when 'type' is 'text'.")
         elif content_type == "chat" and not isinstance(content, list):
             raise InvalidPromptContentError("'content' must be a list when 'type' is 'chat'.")
         elif content_type == "json" and not isinstance(content, dict):
