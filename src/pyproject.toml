@@ -20,7 +20,7 @@ optional = true
 optional = true
 
 [tool.poetry.dependencies]
-python = "<3.14,>=3.9"
+python = "<3.14,>=3.10"
 langchain-core = ">=0.3.28,<0.4"
 langchain-community = ">=0.3.13,<0.4"
 python-dotenv = "^1.0.0"
@@ -35,6 +35,7 @@ pydash = "^8.0.3"
 importlib = "^1.0.4"
 pykka = "^4.2.0"
 spacy = "3.8.7"
+mcp = "^1.12.4"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.4"

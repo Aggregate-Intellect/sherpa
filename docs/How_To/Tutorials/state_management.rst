@@ -17,7 +17,7 @@ about the importance of states and how to use state management with
 agents.
 
 Context
-=======
+-------
 
 Recall that in the `question answering
 demo <https://github.com/Aggregate-Intellect/sherpa/tree/main/demo/question_answering>`__,
@@ -147,7 +147,7 @@ enforced this order explicitly by adding a new state:
     :width: 600
 
 Implementation
-==============
+--------------
 
 Now, let’s implement an agent on this state machine using Sherpa. Full
 code for this example is available
