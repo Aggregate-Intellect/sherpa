@@ -112,13 +112,13 @@ def load_json(file_path: str) -> Union[Dict, List]:
         resource_path = resources.files("sherpa_ai").joinpath(clean_path)
         
         if resource_path.exists():  # Check if resource exists
-            with resource_path.open('r') as f:
+            with resource_path.open('r', encoding='utf-8') as f:
                 return json.load(f)
         
         # If not found as resource, try as filesystem path
         abs_path = Path(file_path).resolve()
         if abs_path.exists():
-            with abs_path.open('r') as f:
+            with abs_path.open('r', encoding='utf-8') as f:
                 return json.load(f)
                 
         raise FileNotFoundError(f"File not found at either resource path: {clean_path} or absolute path: {abs_path}")
