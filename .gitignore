@@ -9,3 +9,11 @@ apps/slackbot/.env
 **/.venv
 **/venv
 **/log.txt
+
+# macOS system files
+.DS_Store
+**/.DS_Store
+
+# Database directories
+db/
+**/db/
