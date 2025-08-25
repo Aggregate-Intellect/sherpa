@@ -112,13 +112,13 @@ def load_json(file_path: str) -> Union[Dict, List]:
         resource_path = resources.files("sherpa_ai").joinpath(clean_path)
         
         if resource_path.exists():  # Check if resource exists
-            with resource_path.open('r') as f:
+            with resource_path.open('r', encoding='utf-8') as f:
                 return json.load(f)
         
         # If not found as resource, try as filesystem path
         abs_path = Path(file_path).resolve()
         if abs_path.exists():
-            with abs_path.open('r') as f:
+            with abs_path.open('r', encoding='utf-8') as f:
                 return json.load(f)
                 
         raise FileNotFoundError(f"File not found at either resource path: {clean_path} or absolute path: {abs_path}")
@@ -238,8 +238,8 @@ class PromptLoader:
         content_type = version_data.get(TYPE_ATTR)
         content = version_data.get(CONTENT_ATTR)
 
-        if content_type == "text" and not isinstance(content, str):
-            raise InvalidPromptContentError("'content' must be a string when 'type' is 'text'.")
+        if content_type == "text" and not (isinstance(content, str) or isinstance(content, list)):
+            raise InvalidPromptContentError("'content' must be a string or list of strings when 'type' is 'text'.")
         elif content_type == "chat" and not isinstance(content, list):
             raise InvalidPromptContentError("'content' must be a list when 'type' is 'chat'.")
         elif content_type == "json" and not isinstance(content, dict):
