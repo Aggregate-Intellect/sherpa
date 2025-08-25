@@ -34,7 +34,7 @@ class Belief(BaseModel):
         current_task (Event): The current task being processed.
         state_machine (SherpaStateMachine): State machine for managing agent state.
         actions (List[BaseAction]): List of available actions.
-        dict (dict): Dictionary for storing arbitrary belief data.
+        belief_data (dict): Dictionary for storing arbitrary belief data.
         max_tokens (int): Maximum number of tokens for context/history.
 
     Example:
@@ -52,7 +52,7 @@ class Belief(BaseModel):
     current_task: Event = None
     state_machine: SherpaStateMachine = None
     actions: List = Field(default_factory=list)
-    dict: Dict = Field(default_factory=dict)
+    belief_data: Dict = Field(default_factory=dict)
     max_tokens: int = 4000
 
     def update(self, observation: Event):
@@ -284,10 +284,10 @@ class Belief(BaseModel):
             >>> belief.clear_short_term_memory()
             >>> print(len(belief.internal_events))
             0
-            >>> print(belief.dict)
+            >>> print(belief.belief_data)
             {}
         """
-        self.dict.clear()
+        self.belief_data.clear()
         self.internal_events.clear()
 
     def set_actions(self, actions: List[BaseAction]):
@@ -467,7 +467,7 @@ class Belief(BaseModel):
             >>> print(belief.get_dict())
             {'key': 'value'}
         """
-        return self.dict
+        return self.belief_data
 
     def get(self, key, default=None):
         """Get value from belief dictionary using dot notation.
@@ -487,7 +487,7 @@ class Belief(BaseModel):
             >>> print(belief.get("missing.key", "default"))
             'default'
         """
-        return pydash.get(self.dict, key, default)
+        return pydash.get(self.belief_data, key, default)
 
     def get_all_keys(self):
         """Get all keys in belief dictionary, including nested keys.
@@ -511,7 +511,7 @@ class Belief(BaseModel):
                     keys.extend(get_all_keys(v, full_key))
             return keys
 
-        return get_all_keys(self.dict)
+        return get_all_keys(self.belief_data)
 
     def has(self, key):
         """Check if key exists in belief dictionary.
@@ -530,7 +530,7 @@ class Belief(BaseModel):
             >>> print(belief.has("missing.key"))
             False
         """
-        return pydash.has(self.dict, key)
+        return pydash.has(self.belief_data, key)
 
     def set(self, key, value):
         """Set value in belief dictionary using dot notation.
@@ -545,4 +545,4 @@ class Belief(BaseModel):
             >>> print(belief.get("nested.key"))
             'value'
         """
-        pydash.set_(self.dict, key, value)
+        pydash.set_(self.belief_data, key, value)
