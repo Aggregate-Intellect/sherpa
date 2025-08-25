@@ -103,7 +103,7 @@ class PromptTemplate(PromptLoader):
             
             # Handle array content
             if isinstance(content, list):
-                content = " ".join(content)
+                content = "\n".join(str(item) for item in content) if content else ""
             
             for var_name, var_value in final_variables.items():
                 placeholder = f"{{{var_name}}}"

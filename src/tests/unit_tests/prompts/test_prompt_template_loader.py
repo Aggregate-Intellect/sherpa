@@ -141,7 +141,7 @@ def test_format_prompt_text_list_of_strings(mock_load_json):
     variables = {"first_num": 15, "second_num": 25}
     formatted_prompt = template.format_prompt("addition_prompts", "add_numbers_text", "2.0", variables)
     
-    assert formatted_prompt == "Add 15 and 25"
+    assert formatted_prompt == "Add\n15\nand\n25"
 
 
 @patch('sherpa_ai.prompts.prompt_loader.load_json')
@@ -161,7 +161,7 @@ def test_format_prompt_text_list_default_variables(mock_load_json):
     
     formatted_prompt = template.format_prompt("addition_prompts", "add_numbers_text", "2.0")
     
-    assert formatted_prompt == "Add 5 and 10"
+    assert formatted_prompt == "Add\n5\nand\n10"
 
 
 @patch('sherpa_ai.prompts.prompt_loader.load_json')
@@ -199,7 +199,7 @@ def test_get_full_formatted_prompt_text_list_of_strings(mock_load_json):
     full_prompt = template.get_full_formatted_prompt("addition_prompts", "add_numbers_text", "2.0", variables)
     
     assert full_prompt["description"] == "prompt to add numbers as text"
-    assert full_prompt["content"] == "Add 15 and 25"
+    assert full_prompt["content"] == "Add\n15\nand\n25"
     assert full_prompt["output_schema"] == {
         "type": "json_schema",
         "json_schema": {
