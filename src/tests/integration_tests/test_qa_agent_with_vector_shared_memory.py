@@ -54,20 +54,24 @@ meta_data2 = {
 EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
 
 
-def fake_embedding(input, default_dimension=1536):
-    results = []
-    for text in input:
-        # The word comet is used to distinguish two different texts in the tests
-        if "comets" in text.lower():
-            results.append([1] * default_dimension)
-        else:
-            values = [0] * default_dimension
-            values[0] = 1
-            results.append(values)
-    return results
+class FakeEmbeddingFunction:
+    def __init__(self, model_name="text-embedding-ada-002"):
+        self.model_name = model_name
+    
+    def __call__(self, input, default_dimension=1536):
+        results = []
+        for text in input:
+            # The word comet is used to distinguish two different texts in the tests
+            if "comets" in text.lower():
+                results.append([1] * default_dimension)
+            else:
+                values = [0] * default_dimension
+                values[0] = 1
+                results.append(values)
+        return results
 
-# Add required attributes for compatibility with langchain-chroma
-fake_embedding.name = EMBEDDING_MODEL_NAME
+
+fake_embedding = FakeEmbeddingFunction(EMBEDDING_MODEL_NAME)
 
 
 @pytest.fixture
