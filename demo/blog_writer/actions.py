@@ -1,5 +1,4 @@
 from langchain_community.document_loaders import PDFMinerLoader 
-from langchain_chroma import Chroma 
 from langchain_text_splitters import SentenceTransformersTokenTextSplitter 
 from loguru import logger 
 
@@ -16,6 +15,14 @@ class DocumentSearch(BaseAction):
         self.k = k
 
         # load the pdf and create the vector store
+        try:
+            from langchain_chroma import Chroma
+        except ImportError:
+            raise ImportError(
+                "Could not import langchain_chroma python package. "
+                "This is needed in order to use DocumentSearch. "
+                "Please install it with `pip install langchain-chroma`"
+            )
         self.chroma = Chroma(embedding_function=embedding_function)
         documents = PDFMinerLoader(self.filename).load()
         documents = SentenceTransformersTokenTextSplitter(
