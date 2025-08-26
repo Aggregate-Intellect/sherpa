@@ -63,6 +63,9 @@ def fake_embedding(input, default_dimension=1536):
             results.append(values)
     return results
 
+# Add required attributes for compatibility with langchain-chroma
+fake_embedding.name = "text-embedding-ada-002"
+
 
 @pytest.fixture
 def mock_chroma_vector_store(external_api):
