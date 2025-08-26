@@ -26,7 +26,6 @@ langchain-community = ">=0.3.13,<0.4"
 python-dotenv = "^1.0.0"
 unstructured = "^0.10.11"
 langchain-openai = ">=0.2.14,<0.3"
-langchain-chroma = "^0.2.5"
 tiktoken = ">=0.6.0,<1.0"
 loguru = ">=0.7.0,<0.8.0"
 pydantic = "^2.5.3"
@@ -46,6 +45,7 @@ en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/down
 
 [tool.poetry.group.optional.dependencies]
 chromadb = "^1.0.9"
+langchain-chroma = "^0.2.5"
 spacy = "^3.7.4"
 word2number = "^1.1"
 transformers = "^4.35.2"
