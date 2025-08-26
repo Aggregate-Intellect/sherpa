@@ -56,7 +56,7 @@ EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
 
 class FakeEmbeddingFunction:
     def __init__(self, model_name="text-embedding-ada-002"):
-        self.model_name = model_name
+        self.name = model_name
     
     def __call__(self, input, default_dimension=1536):
         results = []
