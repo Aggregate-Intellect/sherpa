@@ -62,14 +62,14 @@ class FakeEmbeddingFunction:
         """Return the name of the embedding function."""
         return self._name
     
-    def __call__(self, input, default_dimension=1536):
+    def __call__(self, input):
         results = []
         for text in input:
             # The word comet is used to distinguish two different texts in the tests
             if "comets" in text.lower():
-                results.append([1] * default_dimension)
+                results.append([1] * 1536)
             else:
-                values = [0] * default_dimension
+                values = [0] * 1536
                 values[0] = 1
                 results.append(values)
         return results
@@ -85,8 +85,6 @@ def mock_chroma_vector_store(external_api):
         return
 
     with patch(
-        "chromadb.api.models.CollectionCommon.validate_embedding_function"
-    ), patch(
         "chromadb.utils.embedding_functions.OpenAIEmbeddingFunction",
     ) as mock_embedding:
         mock_embedding.return_value = fake_embedding
