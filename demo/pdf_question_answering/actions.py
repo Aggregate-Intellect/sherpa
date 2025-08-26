@@ -1,7 +1,7 @@
 from langchain.document_loaders import PDFMinerLoader
 from langchain.embeddings.base import Embeddings
 from langchain.text_splitter import SentenceTransformersTokenTextSplitter
-from langchain.vectorstores.chroma import Chroma
+from langchain_chroma import Chroma
 from loguru import logger
 from pydantic import ConfigDict
 

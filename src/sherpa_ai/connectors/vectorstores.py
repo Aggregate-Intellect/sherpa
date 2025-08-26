@@ -2,7 +2,7 @@ import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
 
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
