@@ -7,10 +7,38 @@ Architecture Overview
 
 Sherpa AI is designed with a modular architecture that enables flexibility and extensibility. The framework consists of several key components that work together to create powerful AI agents and workflows.
 
-.. graphviz:: _static/architecture.dot
-   :caption: **Figure 1**: Sherpa AI Architecture Overview
-   :align: center
-   :alt: Diagram showing Sherpa AI's component architecture and interactions
+.. code-block:: text
+
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │                    Sherpa AI Architecture                            │
+   └──────────────────────────────────────────────────────────────────────┘
+
+   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+   │   Agents    │    │  Policies   │    │   Memory    │    │   Models    │
+   │             │    │             │    │             │    │             │
+   │ QA Agent    │    │ React       │    │ Belief &    │    │ LLM         │
+   │ User Agent  │    │ Policy      │    │ Shared      │    │ interfaces  │
+   └─────┬───────┘    └─────┬───────┘    └─────┬───────┘    └─────┬───────┘
+         │                  │                  │                  │
+         └──────────────────┼──────────────────┼──────────────────┘
+                            │                  │
+                            ▼                  ▼
+   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+   │   Actions   │    │    Tools    │    │ Connectors  │    │   Prompts   │
+   │             │    │             │    │             │    │             │
+   │ Google      │    │ Search      │    │ Vector      │    │ Template    │
+   │ Search      │    │ Tools       │    │ Stores      │    │ system      │
+   └─────┬───────┘    └─────┬───────┘    └─────┬───────┘    └─────┬───────┘
+         │                  │                  │                  │
+         └──────────────────┼──────────────────┼──────────────────┘
+                            │
+                            ▼
+          ┌──────────────┐    ┌─────────────┐
+          │Output Parsers│    │    Config   │
+          │              │    │             │
+          │ Citation     │    │ Agent       │
+          │ Validation   │    │ Config      │
+          └──────────────┘    └─────────────┘
 
 Components
 ----------
@@ -55,44 +83,89 @@ The power of Sherpa AI comes from the seamless integration of these components. 
 
 .. code-block:: text
 
-                    ┌────────────┐
-                    │   Input    │
-                    └─────┬──────┘
-                          │
-                          ▼
-   ┌───────────────────────────────────────┐
-   │              Agent                    │
-   └───┬───────────────┬──────────────┬────┘
-       │               │              │
-       ▼               ▼              ▼
-   ┌───────┐      ┌────────┐     ┌────────┐
-   │ Model │      │ Memory │     │ Policy │
-   └───┬───┘      └────────┘     └────┬───┘
-       │                              │
-       ▼                              │
-   ┌───────┐                          │
-   │ Prompt│                          │
-   └───┬───┘                          │
-       │                              │
-       ▼                              │
-   ┌───────┐                          │
-   │Actions│◄─────────────────────────┘
-   └───┬───┘
-       │
-       ▼
-   ┌───────┐
-   │ Tools │
-   └───────┘
+                 ┌────────────┐
+                 │   Input    │
+                 │            │
+                 │    User    │
+                 │   Query    │
+                 └─────┬──────┘
+                       │
+                       ▼
+   ┌────────────────────────────────────────────┐
+   │                 Agent                      │
+   │                                            │
+   │       Orchestrates all components          │
+   └───┬───────────────┬──────────────────┬─────┘
+       │               │                  │
+       ▼               ▼                  ▼
+   ┌───────┐      ┌───────────┐     ┌──────────┐
+   │ Model │      │ Memory    │     │ Policy   │
+   │       │      │           │     │          │
+   │ LLM   │      │ Knowledge │     │ Decision │
+   └───┬───┘      └───────────┘     └────┬─────┘
+       │                                 │
+       ▼                                 │
+   ┌──────────┐                          │
+   │ Prompt   │                          │
+   │          │                          │
+   │ Generate │                          │
+   └────┬─────┘                          │
+        │                                │
+        ▼                                │
+   ┌─────────┐                           │
+   │ Actions │◄──────────────────────────┘
+   │         │
+   │ Execute │
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐
+   │ Tools   │
+   │         │
+   │ Utilize │
+   └─────────┘
 
 Sequence Flow
 -------------
 
 The sequence diagram below illustrates how a user query flows through the Sherpa AI system:
 
-.. graphviz:: _static/sequence.dot
-   :caption: **Figure 2**: Sherpa AI Query Sequence Flow
-   :align: center
-   :alt: Diagram showing the sequence of interactions between Sherpa AI components
+.. code-block:: text
+
+   ┌─────────────────────────────────────────────────────────────────┐
+   │                    Sherpa AI Query Flow                         │
+   └─────────────────────────────────────────────────────────────────┘
+
+   ┌─────────┐    1. Query     ┌─────────┐    2. Check     ┌─────────┐
+   │  User   │ ──────────────► │  Agent  │ ──────────────► │ Memory  │
+   │         │                 │         │                 │         │
+   │ User    │                 │ QA      │                 │ Mem     │
+   │         │                 │ Agent   │                 │ ory     │
+   └─────────┘                 └────┬────┘                 └────┬────┘
+                                    │                           │
+                                    │ 3. Return                 │
+                                    │ Context                   │
+                                    │ ◄─────────────────────────┘
+                                    │
+                                    ▼
+   ┌─────────┐    4. Apply     ┌─────────┐    5. Select    ┌─────────┐
+   │ Policy  │ ◄────────────── │  Agent  │ ──────────────► │ Action  │
+   │         │                 │         │                 │         │
+   │ React   │                 │ QA      │                 │ Search  │
+   │ Policy  │                 │ Agent   │                 │ Action  │
+   └─────────┘                 └────┬────┘                 └────┬────┘
+                                    │                           │
+                                    │ 7. Generate               │
+                                    │ Response                  │
+                                    │ ◄─────────────────────────┘
+                                    │
+                                    ▼
+   ┌─────────┐    6. Get       ┌─────────┐    8. Final     ┌─────────┐
+   │  LLM    │ ◄────────────── │ Action  │ ──────────────► │  User   │
+   │         │                 │         │                 │         │
+   │ LLM     │                 │ Search  │                 │ User    │
+   │         │                 │ Action  │                 │         │
+   └─────────┘                 └─────────┘                 └─────────┘
 
 This sequence shows:
 
