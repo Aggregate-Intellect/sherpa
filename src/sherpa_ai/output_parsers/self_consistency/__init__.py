@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 
 from pydantic import BaseModel
 
@@ -16,6 +16,7 @@ def run_self_consistency(
     aggregator_cls: type[ObjectAggregator] = ObjectAggregator,
     concretizer: Optional[Concretizer] = None,
     value_weight_map: dict[str, Union[dict, float]] = {},
+    list_config: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> BaseModel:
     """
     Run self-consistency on a list of objects using the provided schema and configuration.
@@ -26,6 +27,14 @@ def run_self_consistency(
         aggregator_cls (type[ObjectAggregator], optional): Class to use for aggregation. Defaults to ObjectAggregator.
         concretizer (Optional[Concretizer], optional): Concretizer to use for final output. Defaults to MaximumLikelihoodConcretizer.
         value_weight_map (dict[str, Union[dict, float]], optional): Weight map for each attribute of the object. Defaults to {}.
+        list_config (Optional[Dict[str, Dict[str, Any]]], optional): Configuration for list attributes. Format:
+            {
+                "field_name": {
+                    "top_k": 3,  # Get top-k items
+                    "threshold": 2.0,  # Or get items above threshold
+                    "strategy": "top_k"  # or "threshold"
+                }
+            }
 
     Returns:
         BaseModel: The final concrete object after self-consistency processing (instance of `schema`).
@@ -36,7 +45,7 @@ def run_self_consistency(
             raise ValueError(f"Object {obj} does not match schema {schema}")
 
     if not concretizer:
-        concretizer = MaximumLikelihoodConcretizer()
+        concretizer = MaximumLikelihoodConcretizer(list_config=list_config)
     aggregator = aggregator_cls(obj_schema=schema, value_weight_map=value_weight_map)
 
     for obj in objects:
