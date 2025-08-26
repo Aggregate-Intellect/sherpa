@@ -50,6 +50,9 @@ meta_data2 = {
     "file_name": "kk",
 }
 
+# Add required attributes for compatibility with langchain-chroma
+EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
+
 
 def fake_embedding(input, default_dimension=1536):
     results = []
@@ -64,7 +67,7 @@ def fake_embedding(input, default_dimension=1536):
     return results
 
 # Add required attributes for compatibility with langchain-chroma
-fake_embedding.name = "text-embedding-ada-002"
+fake_embedding.name = EMBEDDING_MODEL_NAME
 
 
 @pytest.fixture
