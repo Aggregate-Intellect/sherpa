@@ -6,8 +6,7 @@ import chromadb
 from chromadb.config import Settings 
 from dotenv import load_dotenv 
 from langchain_openai import OpenAIEmbeddings 
-from langchain_community.vectorstores import Chroma 
-from loguru import logger 
+from loguru import logger
 
 
 def main(args):
@@ -18,6 +17,14 @@ def main(args):
     )
 
     embedding_func = OpenAIEmbeddings()
+    try:
+        from langchain_chroma import Chroma
+    except ImportError:
+        raise ImportError(
+            "Could not import langchain_chroma python package. "
+            "This is needed in order to use Chroma. "
+            "Please install it with `pip install langchain-chroma`"
+        )
     chroma = Chroma(
         client=client,
         collection_name=args.chroma_index,

@@ -1,7 +1,7 @@
+from typing import Any
 from langchain.document_loaders import PDFMinerLoader
 from langchain.embeddings.base import Embeddings
 from langchain.text_splitter import SentenceTransformersTokenTextSplitter
-from langchain.vectorstores.chroma import Chroma
 from loguru import logger
 from pydantic import ConfigDict
 
@@ -17,7 +17,7 @@ class DocumentSearch(BaseAction):
     # number of results to return in search
     k: int
     # the variables start with _ will not included in the __init__
-    _chroma: Chroma
+    _chroma: Any
     # Override name and args properties from BaseAction
     # The name of the action, used to describe the action to the agent.
     name: str = "DocumentSearch"
@@ -31,6 +31,14 @@ class DocumentSearch(BaseAction):
         super().__init__(**kwargs)
 
         # load the pdf and create the vector store
+        try:
+            from langchain_chroma import Chroma
+        except ImportError:
+            raise ImportError(
+                "Could not import langchain_chroma python package. "
+                "This is needed in order to use DocumentSearch. "
+                "Please install it with `pip install langchain-chroma`"
+            )
         self._chroma = Chroma(embedding_function=self.embedding_function)
         documents = PDFMinerLoader(self.filename).load()
         documents = SentenceTransformersTokenTextSplitter(
