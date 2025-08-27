@@ -2,7 +2,6 @@ import os
 import uuid
 from typing import Any, Iterable, List, Optional, Tuple, Type
 
-from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
@@ -318,7 +317,7 @@ class ConversationStore(VectorStore):
         raise NotImplementedError("ConversationStore does not support from_texts")
 
 
-class LocalChromaStore(Chroma):
+class LocalChromaStore:
     """A local Chroma-based vector store.
 
     This class extends the Chroma vector store to provide additional functionality
@@ -329,6 +328,21 @@ class LocalChromaStore(Chroma):
         >>> store = LocalChromaStore.from_folder("path/to/files", "api_key")
         >>> results = store.similarity_search("query", k=5)
     """
+    
+    def __init__(self, *args, **kwargs):
+        try:
+            from langchain_chroma import Chroma
+        except ImportError:
+            raise ImportError(
+                "Could not import langchain_chroma python package. "
+                "This is needed in order to use LocalChromaStore. "
+                "Please install it with `pip install langchain-chroma`"
+            )
+        self._chroma = Chroma(*args, **kwargs)
+    
+    def __getattr__(self, name):
+        """Delegate attribute access to the underlying Chroma instance."""
+        return getattr(self._chroma, name)
     @classmethod
     def from_folder(cls, file_path, openai_api_key, index_name="chroma"):
         """Create a Chroma DB from a folder of files.
@@ -393,12 +407,29 @@ def configure_chroma(host: str, port: int, index_name: str, openai_api_key: str)
             "Please install it with `pip install chromadb"
         )
     
+    try:
+        from langchain_chroma import Chroma
+    except ImportError:
+        raise ImportError(
+            "Could not import langchain_chroma python package. "
+            "This is needed in order to use Chroma. "
+            "Please install it with `pip install langchain-chroma`"
+        )
     client = chromadb.HttpClient(host=cfg.CHROMA_HOST, port=cfg.CHROMA_PORT)
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
     chroma = Chroma(
         client=client, collection_name=cfg.CHROMA_INDEX, embedding_function=embeddings
     )
     return chroma
+
+
+def _is_chroma_available():
+    """Check if langchain_chroma is available."""
+    try:
+        import langchain_chroma
+        return True
+    except ImportError:
+        return False
 
 
 def get_vectordb():
@@ -428,6 +459,15 @@ def get_vectordb():
             cfg.CHROMA_HOST, cfg.CHROMA_PORT, cfg.CHROMA_INDEX, cfg.OPENAI_API_KEY
         ).as_retriever()
     else:
+        # Check if langchain_chroma is available before trying to use it
+        if not _is_chroma_available():
+            raise ImportError(
+                "Could not import langchain_chroma python package. "
+                "This is needed in order to use the default vector store. "
+                "Please install it with `pip install langchain-chroma` or "
+                "configure a different vector database (pinecone/chroma) in your environment."
+            )
+        
         if os.path.exists("files"):
             return LocalChromaStore.from_folder(
                 "files", cfg.OPENAI_API_KEY
