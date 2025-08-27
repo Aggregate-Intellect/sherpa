@@ -135,15 +135,7 @@ def check_vectordb_setting():
 
 
 # Ensure all mandatory environment variables are set, otherwise exit
-if None in [
-    this.SLACK_VERIFICATION_TOKEN,
-    this.SLACK_SIGNING_SECRET,
-    this.SLACK_OAUTH_TOKEN,
-    this.SLACK_PORT,
-]:
-    logger.warning("Config: Slack environment variables not set")
-else:
-    logger.info("Config: Slack environment variables are set")
+# Note: Slack environment variables are optional and only needed for Slack bot integration
 
 if this.OPENAI_API_KEY is None:
     logger.warning("Config: OpenAI environment variables not set")
