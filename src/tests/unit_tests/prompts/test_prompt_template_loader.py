@@ -1,5 +1,6 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from sherpa_ai.prompts.prompt_template_loader import PromptTemplate
+import json
 
 
 # Mock JSON data to simulate prompts.json with the 'versions' list
@@ -329,3 +330,49 @@ def test_format_prompt_with_default_variables_json(mock_load_json):
         "first_number": "5",
         "second_number": "10"
     }
+
+
+def test_dynamic_enum_in_response_schema():
+    template = PromptTemplate("tests/data/prompts.json")
+
+    # Test the math addition prompt with dynamic enum values for output_format
+    result = template.format_response_format(
+        prompt_parent_id="math_prompts",
+        prompt_id="addition_with_allowed_output_format",
+        version="1.0",
+        variables={
+            "a": 7,
+            "b": 8,
+            "allowed_output_formats": ["plain_text", "markdown", "json"]
+        }
+    )
+
+    assert result is not None
+    assert "json_schema" in result
+
+    # Check that the enum values were substituted
+    schema = result["json_schema"]["schema"]
+    enum_values = schema["properties"]["output_format"]["enum"]
+    assert enum_values == ["plain_text", "markdown", "json"]
+
+    full_result = template.get_full_formatted_prompt(
+        prompt_parent_id="math_prompts",
+        prompt_id="addition_with_allowed_output_format",
+        version="1.0",
+        variables={
+            "a": 10,
+            "b": 20,
+            "allowed_output_formats": ["csv", "yaml"]
+        }
+    )
+
+    assert full_result is not None
+    assert "output_schema" in full_result
+
+    output_schema = full_result["output_schema"]["json_schema"]["schema"]
+    output_enum_values = output_schema["properties"]["output_format"]["enum"]
+    assert output_enum_values == ["csv", "yaml"]
+    # Content includes variable substitutions; list prints as Python list string
+    assert "A: 10" in full_result["content"]
+    assert "B: 20" in full_result["content"]
+    assert "['csv', 'yaml']" in full_result["content"]
