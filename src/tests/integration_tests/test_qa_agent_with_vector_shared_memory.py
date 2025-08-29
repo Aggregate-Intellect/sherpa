@@ -50,18 +50,32 @@ meta_data2 = {
     "file_name": "kk",
 }
 
+# Add required attributes for compatibility with langchain-chroma
+EMBEDDING_MODEL_NAME = "text-embedding-ada-002"
 
-def fake_embedding(input, default_dimension=1536):
-    results = []
-    for text in input:
-        # The word comet is used to distinguish two different texts in the tests
-        if "comets" in text.lower():
-            results.append([1] * default_dimension)
-        else:
-            values = [0] * default_dimension
-            values[0] = 1
-            results.append(values)
-    return results
+
+class FakeEmbeddingFunction:
+    def __init__(self, model_name="text-embedding-ada-002"):
+        self._name = model_name
+    
+    def name(self):
+        """Return the name of the embedding function."""
+        return self._name
+    
+    def __call__(self, input):
+        results = []
+        for text in input:
+            # The word comet is used to distinguish two different texts in the tests
+            if "comets" in text.lower():
+                results.append([1] * 1536)
+            else:
+                values = [0] * 1536
+                values[0] = 1
+                results.append(values)
+        return results
+
+
+fake_embedding = FakeEmbeddingFunction(EMBEDDING_MODEL_NAME)
 
 
 @pytest.fixture
@@ -71,8 +85,6 @@ def mock_chroma_vector_store(external_api):
         return
 
     with patch(
-        "chromadb.api.models.CollectionCommon.validate_embedding_function"
-    ), patch(
         "chromadb.utils.embedding_functions.OpenAIEmbeddingFunction",
     ) as mock_embedding:
         mock_embedding.return_value = fake_embedding

@@ -2,8 +2,21 @@ from unittest import mock
 
 import pytest
 
-from sherpa_ai.actions.context_search import ContextSearch
 from sherpa_ai.test_utils.llms import get_llm
+
+
+def _is_chroma_available():
+    """Check if langchain_chroma is available."""
+    try:
+        import langchain_chroma
+        return True
+    except ImportError:
+        return False
+
+
+# Only import ContextSearch if langchain_chroma is available
+if _is_chroma_available():
+    from sherpa_ai.actions.context_search import ContextSearch
 
 
 @pytest.fixture
@@ -20,6 +33,7 @@ def mock_context_search(external_api):
         yield
 
 
+@pytest.mark.skipif(not _is_chroma_available(), reason="langchain_chroma not available")
 def test_context_search_succeeds(get_llm, mock_context_search):  # noqa: F811
     role_description = (
         "The programmer receives requirements about a program and write it"

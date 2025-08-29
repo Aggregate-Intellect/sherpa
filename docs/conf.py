@@ -107,3 +107,13 @@ inheritance_graph_attrs = {
 
 # Configure graphviz
 graphviz_output_format = 'svg'  # Use SVG for better quality
+
+# Fallback configuration for when Graphviz is not available
+try:
+    import graphviz
+    GRAPHVIZ_AVAILABLE = True
+except ImportError:
+    GRAPHVIZ_AVAILABLE = False
+    # Disable inheritance diagrams if Graphviz is not available
+    extensions.remove('sphinx.ext.inheritance_diagram')
+    extensions.remove('sphinx.ext.graphviz')

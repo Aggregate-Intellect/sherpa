@@ -12,7 +12,14 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+# Setup target to ensure Graphviz is available
+setup:
+	@echo "Installing required packages..."
+	pip install -r requirements.txt
+	@echo "Checking Graphviz availability..."
+	@python -c "import graphviz; print('Graphviz is available')" || echo "Warning: Graphviz not available. Inheritance diagrams may not render properly."
+
+.PHONY: help Makefile setup
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

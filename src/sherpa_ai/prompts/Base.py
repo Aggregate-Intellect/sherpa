@@ -71,10 +71,11 @@ class TextPromptVersion(PromptVersion):
     """Prompt version class for simple text-based prompts.
 
     This class represents a specific version of a prompt that consists of a
-    single text string.
+    single text string or a list of strings that will be joined.
 
     Attributes:
-        content (str): The text content of the prompt.
+        content (Union[str, List[str]]): The text content of the prompt, either as a string
+            or as a list of strings that will be joined with spaces.
 
     Example:
         >>> text = TextPromptVersion(
@@ -86,7 +87,7 @@ class TextPromptVersion(PromptVersion):
         ...     response_format={"type": "string"}
         ... )
     """
-    content: str
+    content: Union[str, List[str]]
 
 
 class JsonPromptVersion(PromptVersion):

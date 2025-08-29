@@ -5,9 +5,10 @@ them with variables. It extends the base PromptLoader to add variable
 substitution capabilities for different prompt types.
 """
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 from sherpa_ai.prompts.Base import ChatPromptVersion, TextPromptVersion, JsonPromptVersion
 from sherpa_ai.prompts.prompt_loader import PromptLoader
+import copy
 
 class PromptTemplate(PromptLoader):
     """Template loader and formatter for prompts.
@@ -83,6 +84,7 @@ class PromptTemplate(PromptLoader):
         if variables:
             final_variables.update(variables)
 
+        # Format the prompt content
         if isinstance(prompt_version_obj, ChatPromptVersion):
             formatted_prompt = []
             for message in prompt_version_obj.content:
@@ -99,12 +101,17 @@ class PromptTemplate(PromptLoader):
             return formatted_prompt
 
         elif isinstance(prompt_version_obj, TextPromptVersion):
-            text = prompt_version_obj.content
+            content = prompt_version_obj.content
+            
+            # Handle array content
+            if isinstance(content, list):
+                content = "\n".join(str(item) for item in content) if content else ""
+            
             for var_name, var_value in final_variables.items():
                 placeholder = f"{{{var_name}}}"
-                if placeholder in text:
-                    text = text.replace(placeholder, str(var_value))
-            return text
+                if placeholder in content:
+                    content = content.replace(placeholder, str(var_value))
+            return content
 
         elif isinstance(prompt_version_obj, JsonPromptVersion):
             import copy
@@ -132,12 +139,96 @@ class PromptTemplate(PromptLoader):
         else:
             raise ValueError(f"Unknown prompt version type: {type(prompt_version_obj)}")
 
+    def format_response_format(
+        self,
+        prompt_parent_id: str,
+        prompt_id: str,
+        version: str,
+        variables: Optional[Dict[str, Union[str, int, float, List]]] = None
+    ) -> Optional[Dict]:
+        """Format the response format schema by replacing variables with values.
+
+        This method specifically handles variable substitution in response format schemas,
+        including enum values in JSON schemas.
+
+        Args:
+            prompt_parent_id (str): Name of the wrapper containing the prompt.
+            prompt_id (str): ID of the prompt to format.
+            version (str): Version of the prompt to format.
+            variables (Optional[Dict[str, Union[str, int, float, List]]]): Values to
+                substitute in the schema. If None, uses defaults from JSON.
+
+        Returns:
+            Optional[Dict]: Formatted response format schema if found and successfully
+                formatted, None otherwise.
+
+        Example:
+            >>> template = PromptTemplate("prompts.json")
+            >>> formatted_schema = template.format_response_format(
+            ...     prompt_parent_id="supplement",
+            ...     prompt_id="recommendation",
+            ...     version="1.0",
+            ...     variables={"available_skus": ["SKU-001", "SKU-002", "SKU-003"]}
+            ... )
+        """
+        prompt_version_obj = self.get_prompt_version(prompt_parent_id, prompt_id, version)
+
+        if not prompt_version_obj:
+            return None
+
+        prompt_variables = prompt_version_obj.variables or {}
+        final_variables = prompt_variables.copy()
+
+        if variables:
+            final_variables.update(variables)
+
+        if not prompt_version_obj.response_format:
+            return None
+
+        formatted_response_format = copy.deepcopy(prompt_version_obj.response_format)
+
+        def replace_in_schema(data: Any) -> Any:
+            """Recursively replace variables in schema data.
+
+            Args:
+                data (Any): Data to process (dict, list, or primitive).
+
+            Returns:
+                Any: Data with variables replaced.
+            """
+            if isinstance(data, dict):
+                for key, value in data.items():
+                    if isinstance(value, str):
+                        for var_name, var_value in final_variables.items():
+                            placeholder = f"{{{var_name}}}"
+                            if placeholder in value:
+                                data[key] = value.replace(placeholder, str(var_value))
+                    elif isinstance(value, list):
+                        data[key] = replace_in_schema(value)
+                    elif isinstance(value, dict):
+                        data[key] = replace_in_schema(value)
+            elif isinstance(data, list):
+                for i, item in enumerate(data):
+                    if isinstance(item, str):
+                        for var_name, var_value in final_variables.items():
+                            if item == f"{{{var_name}}}":
+                                if isinstance(var_value, list):
+                                    data[i:i+1] = var_value
+                                    return data
+                                else:
+                                    data[i] = var_value
+                    else:
+                        data[i] = replace_in_schema(item)
+            return data
+
+        return replace_in_schema(formatted_response_format)
+
     def get_full_formatted_prompt(
         self,
         prompt_parent_id: str,
-        prompt_id: str, # Changed from name to prompt_id
+        prompt_id: str,
         version: str,
-        variables: Optional[Dict[str, Union[str, int, float]]] = None
+        variables: Optional[Dict[str, Union[str, int, float, List]]] = None
     ) -> Optional[Dict[str, Union[str, List[Dict[str, str]], Dict]]]:
         """Get a formatted prompt with metadata.
 
@@ -149,7 +240,7 @@ class PromptTemplate(PromptLoader):
             prompt_parent_id (str): Name of the wrapper containing the prompt.
             prompt_id (str): ID of the prompt to format.
             version (str): Version of the prompt to format.
-            variables (Optional[Dict[str, Union[str, int, float]]]): Values to
+            variables (Optional[Dict[str, Union[str, int, float, List]]]): Values to
                 substitute in the prompt. If None, uses defaults from JSON.
 
         Returns:
@@ -190,8 +281,13 @@ class PromptTemplate(PromptLoader):
         if not formatted_content:
             return None
 
+        # Format the response format schema as well
+        formatted_response_format = self.format_response_format(
+            prompt_parent_id, prompt_id, version, variables
+        )
+
         return {
             "description": target_prompt.description,
             "content": formatted_content,
-            "output_schema": prompt_version_obj.response_format
+            "output_schema": formatted_response_format
         }
