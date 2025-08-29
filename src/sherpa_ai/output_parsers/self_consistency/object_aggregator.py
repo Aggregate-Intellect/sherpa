@@ -1,5 +1,4 @@
-from typing import Union
-
+from typing import Union, get_origin, get_args
 from pydantic import BaseModel
 
 
@@ -93,7 +92,11 @@ def flatten_model_schema(cls: type[BaseModel]) -> dict[str, Union[list, dict]]:
     for field_name, field in fields.items():
         field_type = field.annotation
 
-        if isinstance(field_type, type) and issubclass(field_type, BaseModel):
+        # Check if it's a list type
+        if get_origin(field_type) is list or field_type == list:
+            # For list fields, we'll store lists of lists (each object's list becomes one item)
+            result[field_name] = []
+        elif isinstance(field_type, type) and issubclass(field_type, BaseModel):
             # If the field is a nested model, map it to a dictionary recursively
             result[field_name] = flatten_model_schema(field_type)
         else:
