@@ -107,5 +107,62 @@
         ]
       }
     ]
+  },
+  {
+    "prompt_parent_id": "math_prompts",
+    "description": "Prompts for arithmetic with dynamic enum values",
+    "prompts": [
+      {
+        "prompt_id": "addition_with_allowed_output_format",
+        "description": "Add two numbers and choose an output format from a dynamic enum",
+        "versions": [
+          {
+            "version": "1.0",
+            "change_log": "Initial version with dynamic enum substitution for output_format",
+            "type": "text",
+            "content": [
+              "You will add two numbers.",
+              "",
+              "A: {a}",
+              "B: {b}",
+              "Allowed output formats: {allowed_output_formats}",
+              "",
+              "Return the sum using one of the allowed output formats."
+            ],
+            "variables": {
+              "a": 2,
+              "b": 3,
+              "allowed_output_formats": ""
+            },
+            "response_format": {
+              "type": "json_schema",
+              "json_schema": {
+                "name": "addition_with_format",
+                "strict": true,
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sum": {
+                      "type": "number",
+                      "description": "The sum of a and b"
+                    },
+                    "output_format": {
+                      "type": "string",
+                      "enum": ["{allowed_output_formats}"]
+                    },
+                    "explanation": {
+                      "type": "string",
+                      "description": "Brief explanation of how the result is formatted"
+                    }
+                  },
+                  "required": ["sum", "output_format"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
   }
 ]
