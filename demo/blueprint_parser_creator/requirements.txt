@@ -1,0 +1,27 @@
+# Blueprint Parser Creator Demo - Dependencies
+# Install with: pip install -r requirements.txt
+
+sherpa-ai>=0.1.0
+streamlit>=1.28.0
+langchain-community>=0.0.10
+langchain-core>=0.1.0
+openai>=1.0.0
+ezdxf>=1.1.0
+shapely>=2.0.0
+cloudconvert>=2.3.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+loguru>=0.7.0
+httpx>=0.25.0
+jsonschema>=4.19.0
+regex>=2023.0.0
+pathlib2>=2.3.7
+numpy>=1.24.0
+# numba>=0.58.0
+
+# Optional: For additional file format support
+# pillow>=10.0.0
+
+# Testing dependencies
+pytest>=7.0.0
+pytest-mock>=3.10.0
