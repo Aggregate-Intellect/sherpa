@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from sherpa_ai.output_parsers.self_consistency.abstract_objects import AbstractObject
 from sherpa_ai.output_parsers.self_consistency.distributions import Distribution, CountDistribution
+from sherpa_ai.output_parsers.self_consistency.config import SelfConsistencyConfig
 
 
 class Concretizer(ABC):
@@ -29,21 +30,15 @@ class Concretizer(ABC):
 
 
 class MaximumLikelihoodConcretizer(Concretizer):
-    def __init__(self, list_config: Optional[Dict[str, Dict[str, Any]]] = None):
+    def __init__(self, config: Optional[SelfConsistencyConfig] = None):
         """
         Initialize the MaximumLikelihoodConcretizer.
         
         Args:
-            list_config: Configuration for list attributes. Format:
-                {
-                    "field_name": {
-                        "top_k": 3,  # Get top-k items
-                        "threshold": 2.0,  # Or get items above threshold
-                        "strategy": "top_k"  # or "threshold"
-                    }
-                }
+            config: Configuration for self-consistency processing.
+                   If None, default configuration will be used.
         """
-        self.list_config = list_config or {}
+        self.config = config or SelfConsistencyConfig()
     
     def concretize(
         self, abstract_object: AbstractObject, return_dict: bool = False
@@ -62,14 +57,18 @@ class MaximumLikelihoodConcretizer(Concretizer):
         def get_most_likely_value(value, field_path=""):
             if isinstance(value, CountDistribution):
                 # Handle list attributes
-                field_config = self.list_config.get(field_path, {})
-                strategy = field_config.get("strategy", "top_k")
+                field_config = self.config.get_list_config(field_path)
+                strategy = field_config.strategy
                 
                 if strategy == "top_k":
-                    top_k = field_config.get("top_k", 1)
-                    return value.get_top_k(top_k)
+                    top_k = field_config.top_k
+                    if top_k > 0:
+                        return value.get_top_k(top_k)
+                    else:
+                        # Default to top-1 for backward compatibility
+                        return [value.get_mode()]
                 elif strategy == "threshold":
-                    threshold = field_config.get("threshold", 1.0)
+                    threshold = field_config.threshold
                     return value.get_above_threshold(threshold)
                 else:
                     # Default to top-1 for backward compatibility
