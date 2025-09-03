@@ -6,6 +6,7 @@ from sherpa_ai.output_parsers.self_consistency.concretizer import (
     MaximumLikelihoodConcretizer,
 )
 from sherpa_ai.output_parsers.self_consistency.object_aggregator import ObjectAggregator
+from sherpa_ai.output_parsers.self_consistency.config import SelfConsistencyConfig, ListConfig
 
 
 class SimpleModel(BaseModel):
@@ -194,3 +195,34 @@ def test_self_consistency_with_list_attributes_default():
     # Should return top-1 item for each list
     assert concrete_obj.tags == ["python"]  # "python" appears most frequently
     assert concrete_obj.scores == [85]  # "85" appears most frequently
+
+
+def test_list_config_defaults():
+    """Test that ListConfig uses appropriate defaults when not specified."""
+    # Create objects with list attributes
+    obj1 = ModelWithList(name="Alice", tags=["python", "ml", "ai"], scores=[85, 90, 88])
+    obj2 = ModelWithList(name="Alice", tags=["python", "data", "ml"], scores=[85, 92, 88])
+    obj3 = ModelWithList(name="Alice", tags=["python", "ml", "nlp"], scores=[85, 90, 89])
+    obj4 = ModelWithList(name="Alice", tags=["python", "ai", "data"], scores=[85, 91, 88])
+
+    objects = [obj1, obj2, obj3, obj4]
+
+    # Test with minimal configuration - should use defaults
+    config = SelfConsistencyConfig(
+        list_config={
+            "tags": ListConfig(),  # Uses defaults: strategy="top_k", top_k=0
+            "scores": ListConfig(strategy="threshold"),  # Uses default threshold=2.0
+        }
+    )
+
+    concrete_obj = run_self_consistency(
+        objects, schema=ModelWithList, config=config
+    )
+
+    assert isinstance(concrete_obj, ModelWithList)
+    assert concrete_obj.name == "Alice"
+    # tags: top_k=0 means use default behavior (top-1)
+    assert concrete_obj.tags == ["python"]
+    # scores: threshold=2.0 means items appearing 2+ times
+    # 85 appears 4 times, 88 appears 3 times, 90 appears 2 times
+    assert set(concrete_obj.scores) == {85, 88, 90}
