@@ -40,8 +40,7 @@ def run_self_consistency(
     aggregator_cls: type[ObjectAggregator] = ObjectAggregator,
     concretizer: Optional[Concretizer] = None,
     value_weight_map: dict[str, Union[dict, float]] = {},
-    config: Optional[SelfConsistencyConfig] = None,
-    list_config: Optional[Dict[str, Dict[str, Any]]] = None,  # Dict-based configuration for compatibility
+    config: Optional[Union[SelfConsistencyConfig, Dict[str, Dict[str, Any]]]] = None,
 ) -> BaseModel:
     """
     Run self-consistency on a list of objects using the provided schema and configuration.
@@ -52,17 +51,16 @@ def run_self_consistency(
         aggregator_cls (type[ObjectAggregator], optional): Class to use for aggregation. Defaults to ObjectAggregator.
         concretizer (Optional[Concretizer], optional): Concretizer to use for final output. Defaults to MaximumLikelihoodConcretizer.
         value_weight_map (dict[str, Union[dict, float]], optional): Weight map for each attribute of the object. Defaults to {}.
-        config (Optional[SelfConsistencyConfig], optional): Configuration for self-consistency processing.
+        config (Optional[Union[SelfConsistencyConfig, Dict[str, Dict[str, Any]]]], optional): Configuration for self-consistency processing.
+            Can be either a SelfConsistencyConfig object or a dictionary that will be automatically converted.
             If None, default configuration will be used.
-        list_config (Optional[Dict[str, Dict[str, Any]]], optional): Dict-based configuration for compatibility.
-            If provided, will be converted to SelfConsistencyConfig. Use 'config' parameter for new code.
 
     Returns:
         BaseModel: The final concrete object after self-consistency processing (instance of `schema`).
     """  # noqa: E501
-    # Handle compatibility with dict-based configuration
-    if list_config is not None and config is None:
-        config = convert_list_config_from_dict(list_config)
+    # Handle unified config parameter - convert dict to SelfConsistencyConfig if needed
+    if config is not None and isinstance(config, dict):
+        config = convert_list_config_from_dict(config)
     
     # Validate input objects against the schema
     for obj in objects:

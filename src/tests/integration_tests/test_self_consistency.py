@@ -138,7 +138,7 @@ def test_self_consistency_with_list_attributes():
     }
 
     concrete_obj = run_self_consistency(
-        objects, schema=ModelWithList, list_config=list_config
+        objects, schema=ModelWithList, config=list_config
     )
 
     assert isinstance(concrete_obj, ModelWithList)
@@ -166,7 +166,7 @@ def test_self_consistency_with_list_attributes_threshold():
     }
 
     concrete_obj = run_self_consistency(
-        objects, schema=ModelWithList, list_config=list_config
+        objects, schema=ModelWithList, config=list_config
     )
 
     assert isinstance(concrete_obj, ModelWithList)
