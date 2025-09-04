@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from sherpa_ai.output_parsers.self_consistency import run_self_consistency
+from sherpa_ai.output_parsers.self_consistency import run_self_consistency, convert_list_config_from_dict
 from sherpa_ai.output_parsers.self_consistency.abstract_objects import AbstractObject
 from sherpa_ai.output_parsers.self_consistency.concretizer import (
     MaximumLikelihoodConcretizer,
@@ -136,9 +136,10 @@ def test_self_consistency_with_list_attributes():
         "tags": {"strategy": "top_k", "top_k": 2},
         "scores": {"strategy": "top_k", "top_k": 2},
     }
+    config = convert_list_config_from_dict(list_config)
 
     concrete_obj = run_self_consistency(
-        objects, schema=ModelWithList, config=list_config
+        objects, schema=ModelWithList, config=config
     )
 
     assert isinstance(concrete_obj, ModelWithList)
@@ -164,9 +165,10 @@ def test_self_consistency_with_list_attributes_threshold():
         "tags": {"strategy": "threshold", "threshold": 3.0},  # Items appearing 3+ times
         "scores": {"strategy": "threshold", "threshold": 4.0},  # Items appearing 4+ times
     }
+    config = convert_list_config_from_dict(list_config)
 
     concrete_obj = run_self_consistency(
-        objects, schema=ModelWithList, config=list_config
+        objects, schema=ModelWithList, config=config
     )
 
     assert isinstance(concrete_obj, ModelWithList)
