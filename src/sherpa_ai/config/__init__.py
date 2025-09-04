@@ -149,12 +149,8 @@ else:
     logger.info("Config: OpenAI environment variables are set")
 
 # Slack integration status (optional)
-if this.SLACK_ENABLED:
-    logger.info("Config: Slack integration is fully configured and enabled")
-elif any([this.SLACK_SIGNING_SECRET, this.SLACK_OAUTH_TOKEN, this.SLACK_VERIFICATION_TOKEN]):
+if any([this.SLACK_SIGNING_SECRET, this.SLACK_OAUTH_TOKEN, this.SLACK_VERIFICATION_TOKEN]) and not this.SLACK_ENABLED:
     logger.warning("Config: Slack integration partially configured - some variables are missing")
-else:
-    logger.info("Config: Slack integration not configured (optional feature)")
 
 check_vectordb_setting()
 
