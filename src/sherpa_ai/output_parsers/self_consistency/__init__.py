@@ -11,11 +11,11 @@ from sherpa_ai.output_parsers.self_consistency.object_aggregator import ObjectAg
 from sherpa_ai.output_parsers.self_consistency.config import SelfConsistencyConfig, ListConfig
 
 
-def _convert_legacy_list_config(list_config: Optional[Dict[str, Dict[str, Any]]]) -> Optional[SelfConsistencyConfig]:
-    """Convert legacy list_config dict to SelfConsistencyConfig for backward compatibility.
+def convert_list_config_from_dict(list_config: Optional[Dict[str, Dict[str, Any]]]) -> Optional[SelfConsistencyConfig]:
+    """Convert dict-based list_config to SelfConsistencyConfig for compatibility.
     
     Args:
-        list_config: Legacy list_config parameter
+        list_config: Dict-based configuration parameter
         
     Returns:
         SelfConsistencyConfig or None if list_config is None
@@ -41,7 +41,7 @@ def run_self_consistency(
     concretizer: Optional[Concretizer] = None,
     value_weight_map: dict[str, Union[dict, float]] = {},
     config: Optional[SelfConsistencyConfig] = None,
-    list_config: Optional[Dict[str, Dict[str, Any]]] = None,  # Legacy parameter for backward compatibility
+    list_config: Optional[Dict[str, Dict[str, Any]]] = None,  # Dict-based configuration for compatibility
 ) -> BaseModel:
     """
     Run self-consistency on a list of objects using the provided schema and configuration.
@@ -54,15 +54,15 @@ def run_self_consistency(
         value_weight_map (dict[str, Union[dict, float]], optional): Weight map for each attribute of the object. Defaults to {}.
         config (Optional[SelfConsistencyConfig], optional): Configuration for self-consistency processing.
             If None, default configuration will be used.
-        list_config (Optional[Dict[str, Dict[str, Any]]], optional): Legacy parameter for backward compatibility.
+        list_config (Optional[Dict[str, Dict[str, Any]]], optional): Dict-based configuration for compatibility.
             If provided, will be converted to SelfConsistencyConfig. Use 'config' parameter for new code.
 
     Returns:
         BaseModel: The final concrete object after self-consistency processing (instance of `schema`).
     """  # noqa: E501
-    # Handle backward compatibility
+    # Handle compatibility with dict-based configuration
     if list_config is not None and config is None:
-        config = _convert_legacy_list_config(list_config)
+        config = convert_list_config_from_dict(list_config)
     
     # Validate input objects against the schema
     for obj in objects:
