@@ -40,6 +40,24 @@ The current version will **identify the most common value for each field** of th
     print(result)
     # Output: Person(name='Alice', age=30, city='New York')
 
+Advanced Configuration
+**********************
+
+You can also provide configuration for list attributes using the ``config`` parameter:
+
+.. code-block:: python
+
+    from sherpa_ai.output_parsers.self_consistency.config import SelfConsistencyConfig, ListConfig
+    
+    config = SelfConsistencyConfig(
+        list_config={
+            "tags": ListConfig(strategy="top_k", top_k=2),
+            "scores": ListConfig(strategy="threshold", threshold=3.0)
+        }
+    )
+    
+    result = run_self_consistency(objects, schema=Person, config=config)
+
 For more details on the self-consistency process, you can refer to the :ref:`self-consistency module documentation <self-consistency-module>`.
 
 .. note:: 
