@@ -47,15 +47,6 @@ You can also provide configuration for list attributes using the ``config`` para
 
 .. code-block:: python
 
-    # Using dictionary configuration
-    config = {
-        "tags": {"strategy": "top_k", "top_k": 2},
-        "scores": {"strategy": "threshold", "threshold": 3.0}
-    }
-    
-    result = run_self_consistency(objects, schema=Person, config=config)
-
-    # Or using SelfConsistencyConfig object
     from sherpa_ai.output_parsers.self_consistency.config import SelfConsistencyConfig, ListConfig
     
     config = SelfConsistencyConfig(
