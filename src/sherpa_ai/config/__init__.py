@@ -62,6 +62,13 @@ SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
 SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
 SLACK_PORT = environ.get("SLACK_PORT", 3000)
 
+# Check if Slack integration is fully configured
+SLACK_ENABLED = all([
+    SLACK_SIGNING_SECRET,
+    SLACK_OAUTH_TOKEN,
+    SLACK_VERIFICATION_TOKEN,
+])
+
 # Vector database settings, for embeddings. Choose from Pinecone or Chroma.
 # If none is configured, Sherpa uses an in-memory version of Chroma. If you're running
 # Sherpa via docker-compose, Docker settings are used instead of these values.
@@ -135,23 +142,19 @@ def check_vectordb_setting():
 
 
 # Ensure all mandatory environment variables are set, otherwise exit
-if None in [
-    this.SLACK_VERIFICATION_TOKEN,
-    this.SLACK_SIGNING_SECRET,
-    this.SLACK_OAUTH_TOKEN,
-    this.SLACK_PORT,
-]:
-    logger.warning("Config: Slack environment variables not set")
-else:
-    logger.info("Config: Slack environment variables are set")
 
 if this.OPENAI_API_KEY is None:
     logger.warning("Config: OpenAI environment variables not set")
 else:
     logger.info("Config: OpenAI environment variables are set")
 
+# Slack integration status (optional)
+if any([this.SLACK_SIGNING_SECRET, this.SLACK_OAUTH_TOKEN, this.SLACK_VERIFICATION_TOKEN]) and not this.SLACK_ENABLED:
+    logger.warning("Config: Slack integration partially configured - some variables are missing")
+
 check_vectordb_setting()
 
 __all__ = [
     "AgentConfig",
+    "SLACK_ENABLED",
 ]
