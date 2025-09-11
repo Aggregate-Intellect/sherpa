@@ -32,7 +32,11 @@ def main(args):
     )
 
     query = input("Enter query: ")
-    results = chroma.similarity_search(query)
+    results = chroma.similarity_search(
+        query=query, 
+        number_of_results=5, 
+        k=1
+    )
 
     logger.info(results[0].page_content)
 
