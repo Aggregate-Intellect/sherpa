@@ -39,6 +39,8 @@ class SherpaBaseChatModel(BaseChatModel):
     """
 
     user_id: typing.Optional[str] = None
+    session_id: typing.Optional[str] = None
+    agent_name: typing.Optional[str] = None
     verbose_logger: BaseVerboseLogger = None
 
     def _agenerate(
@@ -110,7 +112,18 @@ class SherpaBaseChatModel(BaseChatModel):
         total_token = token_before + token_after
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            user_db.add_data(user_id=self.user_id, token=total_token)
+            # Enhanced cost tracking with model name and additional metadata
+            model_name = getattr(self, 'model_name', 'unknown')
+            session_id = getattr(self, 'session_id', None)
+            agent_name = getattr(self, 'agent_name', None)
+            
+            user_db.add_data(
+                user_id=self.user_id, 
+                token=total_token,
+                model_name=model_name,
+                session_id=session_id,
+                agent_name=agent_name
+            )
             user_db.close_connection()
 
         return response
@@ -134,6 +147,8 @@ class SherpaChatOpenAI(ChatOpenAI):
     """
 
     user_id: typing.Optional[str] = None
+    session_id: typing.Optional[str] = None
+    agent_name: typing.Optional[str] = None
     verbose_logger: BaseVerboseLogger = None
 
     def _agenerate(
@@ -205,7 +220,18 @@ class SherpaChatOpenAI(ChatOpenAI):
         total_token = token_before + token_after
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            user_db.add_data(user_id=self.user_id, token=total_token)
+            # Enhanced cost tracking with model name and additional metadata
+            model_name = getattr(self, 'model_name', 'unknown')
+            session_id = getattr(self, 'session_id', None)
+            agent_name = getattr(self, 'agent_name', None)
+            
+            user_db.add_data(
+                user_id=self.user_id, 
+                token=total_token,
+                model_name=model_name,
+                session_id=session_id,
+                agent_name=agent_name
+            )
             user_db.close_connection()
 
         return response

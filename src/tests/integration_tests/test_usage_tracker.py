@@ -58,6 +58,8 @@ def tracker(session):
     db = UserUsageTracker(
         db_name=TEST_DB_NAME, db_url=TEST_DB_URL, engine=engine, session=session
     )
+    # Create tables with new schema
+    db.create_table()
     delete_table_data(db)
     yield db
 
