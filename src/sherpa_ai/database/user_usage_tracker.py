@@ -26,37 +26,8 @@ from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
 Base = declarative_base()
 
 
-# Simple cost calculation utility
-def calculate_cost(model_name: str, tokens: int) -> float:
-    """Calculate cost for a given model and token count.
-    
-    Args:
-        model_name: Name of the model
-        tokens: Number of tokens
-        
-    Returns:
-        Cost in USD
-    """
-    # Simple pricing table (cost per 1K tokens)
-    pricing = {
-        "gpt-4o": 0.01,  # Average of input/output
-        "gpt-4o-mini": 0.000375,  # Average of input/output
-        "gpt-4-turbo": 0.02,  # Average of input/output
-        "gpt-4": 0.045,  # Average of input/output
-        "gpt-3.5-turbo": 0.00175,  # Average of input/output
-        "gpt-3.5-turbo-16k": 0.0035,  # Average of input/output
-        "claude-3-5-sonnet-20241022": 0.009,  # Average of input/output
-        "claude-3-5-haiku-20241022": 0.0024,  # Average of input/output
-        "claude-3-opus-20240229": 0.045,  # Average of input/output
-        "gemini-1.5-pro": 0.003125,  # Average of input/output
-        "gemini-1.5-flash": 0.0001875,  # Average of input/output
-    }
-    
-    # Get cost per 1K tokens, default to a reasonable estimate
-    cost_per_1k = pricing.get(model_name.lower(), 0.002)
-    
-    # Calculate total cost
-    return (tokens / 1000.0) * cost_per_1k
+# Import the configurable pricing system
+from sherpa_ai.cost_tracking.pricing import PricingManager
 
 
 class UsageTracker(Base):
@@ -158,6 +129,7 @@ class UserUsageTracker:
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
         engine=None,
         session=None,
+        pricing_manager: Optional[PricingManager] = None,
     ):
         """Initialize the UserUsageTracker.
 
@@ -169,6 +141,7 @@ class UserUsageTracker:
             verbose_logger (BaseVerboseLogger, optional): Logger for verbose output. Defaults to DummyVerboseLogger().
             engine (optional): SQLAlchemy engine instance. Defaults to None.
             session (optional): SQLAlchemy session instance. Defaults to None.
+            pricing_manager (PricingManager, optional): Pricing manager instance. Defaults to None (creates new one).
 
         Raises:
             ImportError: If boto3 package is not installed.
@@ -207,6 +180,9 @@ class UserUsageTracker:
         self.bucket_name = bucket_name
         self.s3_file_key = s3_file_key
         self.local_file_path = f"./{self.db_name}"
+        
+        # Initialize pricing manager
+        self.pricing_manager = pricing_manager or PricingManager()
 
     @classmethod
     def download_from_s3(
@@ -415,7 +391,7 @@ class UserUsageTracker:
         """
         # Calculate cost if not provided
         if cost is None and model_name:
-            cost = calculate_cost(model_name, token)
+            cost = self.pricing_manager.calculate_cost(model_name, token)
         elif cost is None:
             cost = 0.0
         
@@ -506,6 +482,10 @@ class UserUsageTracker:
                     "id": item.id,
                     "user_id": item.user_id,
                     "token": item.token,
+                    "cost": item.cost,
+                    "model_name": item.model_name,
+                    "session_id": item.session_id,
+                    "agent_name": item.agent_name,
                     "timestamp": item.timestamp,
                     "reset_timestamp": item.reset_timestamp,
                     "reminded_timestamp": item.reminded_timestamp,
@@ -528,6 +508,10 @@ class UserUsageTracker:
                 "id": item.id,
                 "user_id": item.user_id,
                 "token": item.token,
+                "cost": item.cost,
+                "model_name": item.model_name,
+                "session_id": item.session_id,
+                "agent_name": item.agent_name,
                 "timestamp": item.timestamp,
                 "reset_timestamp": item.reset_timestamp,
                 "reminded_timestamp": item.reminded_timestamp,
@@ -866,7 +850,7 @@ class UserUsageTracker:
             >>> print(f"Estimated cost: ${cost:.4f}")
             Estimated cost: $0.3750
         """
-        return calculate_cost(model_name, estimated_tokens)
+        return self.pricing_manager.calculate_cost(model_name, estimated_tokens)
 
     def check_cost_limit(self, user_id: str, estimated_cost: float = 0.0) -> Dict[str, Any]:
         """Check if user is approaching or has exceeded cost limits.

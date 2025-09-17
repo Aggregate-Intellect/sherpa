@@ -61,6 +61,10 @@ ENABLE_COST_TRACKING = environ.get("ENABLE_COST_TRACKING", "true").lower() == "t
 DAILY_COST_LIMIT = float(environ.get("DAILY_COST_LIMIT") or 10.0)  # $10 default
 COST_ALERT_THRESHOLD = float(environ.get("COST_ALERT_THRESHOLD") or 0.8)  # 80% of limit
 
+# Pricing configuration
+MODEL_PRICING_CONFIG_PATH = environ.get("MODEL_PRICING_CONFIG_PATH")  # Path to JSON pricing config file
+MODEL_PRICING_JSON = environ.get("MODEL_PRICING_JSON")  # JSON string with pricing data
+
 # Slack integration
 SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
 SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
