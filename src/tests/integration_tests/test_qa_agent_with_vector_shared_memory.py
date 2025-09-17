@@ -118,6 +118,8 @@ def test_chroma_vector_store_from_texts(mock_chroma_vector_store):
     )
     result = chroma.similarity_search(
         query="avocado",
+        number_of_results=1,
+        k=1
     )
     result_content = result[0].page_content
     logger.debug(result_content)
@@ -142,6 +144,8 @@ def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store):
     chroma = ChromaVectorStore.chroma_from_existing()
     result = chroma.similarity_search(
         query="comets",
+        number_of_results=1,
+        k=1
     )
 
     result_content = result[0].page_content
