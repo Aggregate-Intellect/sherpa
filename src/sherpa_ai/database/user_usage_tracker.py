@@ -11,37 +11,46 @@ Example:
 """
 
 import time
+from typing import Optional, Dict, Any
 
 from loguru import logger
-from sqlalchemy import Boolean, Column, Integer, String, create_engine
+from sqlalchemy import Boolean, Column, Integer, String, Float, create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
-from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger, FileVerboseLogger
 
 
 Base = declarative_base()
+
+
+# Import the configurable pricing system
+from sherpa_ai.cost_tracking.pricing import PricingManager
 
 
 class UsageTracker(Base):
     """SQLAlchemy model for tracking LLM token usage on a per-user basis.
 
     This class represents the database table that stores token usage information
-    for each user, including timestamps and reset flags.
+    for each user, including timestamps, reset flags, and cost information.
 
     Attributes:
         id (int): Primary key, auto-incrementing.
         user_id (str): ID of the user.
         token (int): Number of tokens used.
+        cost (float): Cost in USD for this usage.
+        model_name (str): Name of the model used.
+        session_id (str): ID of the session.
+        agent_name (str): Name of the agent.
         timestamp (int): Unix timestamp of the usage.
         reset_timestamp (bool): Whether this entry represents a usage reset.
         reminded_timestamp (bool): Whether the user has been reminded about usage limits.
 
     Example:
         >>> from sherpa_ai.database.user_usage_tracker import UsageTracker
-        >>> usage = UsageTracker(user_id="user123", token=100, timestamp=1234567890)
+        >>> usage = UsageTracker(user_id="user123", token=100, cost=0.002, timestamp=1234567890)
         >>> print(usage.user_id)
         user123
     """
@@ -50,6 +59,10 @@ class UsageTracker(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(String)
     token = Column(Integer)
+    cost = Column(Float, default=0.0)
+    model_name = Column(String, default="unknown")
+    session_id = Column(String, default=None)
+    agent_name = Column(String, default=None)
     timestamp = Column(Integer)
     reset_timestamp = Column(Boolean)
     reminded_timestamp = Column(Boolean)
@@ -116,6 +129,10 @@ class UserUsageTracker:
         verbose_logger: BaseVerboseLogger = DummyVerboseLogger(),
         engine=None,
         session=None,
+        pricing_manager: Optional[PricingManager] = None,
+        log_to_s3: Optional[bool] = None,
+        log_to_file: Optional[bool] = None,
+        log_file_path: Optional[str] = None,
     ):
         """Initialize the UserUsageTracker.
 
@@ -127,6 +144,10 @@ class UserUsageTracker:
             verbose_logger (BaseVerboseLogger, optional): Logger for verbose output. Defaults to DummyVerboseLogger().
             engine (optional): SQLAlchemy engine instance. Defaults to None.
             session (optional): SQLAlchemy session instance. Defaults to None.
+            pricing_manager (PricingManager, optional): Pricing manager instance. Defaults to None (creates new one).
+            log_to_s3 (bool, optional): Whether to log to S3. Defaults to cfg.USAGE_LOG_TO_S3.
+            log_to_file (bool, optional): Whether to log to local file. Defaults to cfg.USAGE_LOG_TO_FILE.
+            log_file_path (str, optional): Path for local log file. Defaults to cfg.USAGE_LOG_FILE_PATH.
 
         Raises:
             ImportError: If boto3 package is not installed.
@@ -165,6 +186,19 @@ class UserUsageTracker:
         self.bucket_name = bucket_name
         self.s3_file_key = s3_file_key
         self.local_file_path = f"./{self.db_name}"
+        
+        # Initialize logging configuration
+        self.log_to_s3 = log_to_s3 if log_to_s3 is not None else cfg.USAGE_LOG_TO_S3
+        self.log_to_file = log_to_file if log_to_file is not None else cfg.USAGE_LOG_TO_FILE
+        self.log_file_path = log_file_path or cfg.USAGE_LOG_FILE_PATH
+        
+        # Initialize file logger if enabled
+        self.file_logger = None
+        if self.log_to_file:
+            self.file_logger = FileVerboseLogger(self.log_file_path)
+        
+        # Initialize pricing manager
+        self.pricing_manager = pricing_manager or PricingManager()
 
     @classmethod
     def download_from_s3(
@@ -214,17 +248,48 @@ class UserUsageTracker:
         """Upload usage tracking database file to Amazon S3.
 
         This method uploads the local database file to the specified S3 bucket.
+        Only uploads if S3 logging is enabled in configuration.
 
         Example:
             >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
             >>> tracker = UserUsageTracker()
-            >>> tracker.upload_to_s3()  # Uploads the database to S3
+            >>> tracker.upload_to_s3()  # Uploads the database to S3 if enabled
         """
+        if not self.log_to_s3:
+            return
+            
         s3 = UserUsageTracker.boto3.client("s3")
         try:
             s3.upload_file(self.local_file_path, self.bucket_name, self.s3_file_key)
         except Exception as e:
             logger.error(f"Error uploading file to S3: {str(e)}")
+
+    def log_usage_to_file(self, user_id: str, token: int, cost: float, model_name: str, session_id: str = None, agent_name: str = None):
+        """Log usage data to local file if file logging is enabled.
+
+        Args:
+            user_id (str): ID of the user.
+            token (int): Number of tokens used.
+            cost (float): Cost in USD.
+            model_name (str): Name of the model used.
+            session_id (str, optional): ID of the session.
+            agent_name (str, optional): Name of the agent.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker(log_to_file=True)
+            >>> tracker.log_usage_to_file("user123", 100, 0.002, "gpt-4o-mini")
+        """
+        if not self.log_to_file or not self.file_logger:
+            return
+            
+        log_message = f"Usage: user_id={user_id}, tokens={token}, cost=${cost:.4f}, model={model_name}"
+        if session_id:
+            log_message += f", session_id={session_id}"
+        if agent_name:
+            log_message += f", agent_name={agent_name}"
+            
+        self.file_logger.log(log_message)
 
     def create_table(self):
         """Create the necessary tables in the database.
@@ -343,7 +408,17 @@ class UserUsageTracker:
         )
         self.remind_user_of_daily_token_limit(user_id=user_id)
 
-    def add_data(self, user_id, token, reset_timestamp=False, reminded_timestamp=False):
+    def add_data(
+        self, 
+        user_id, 
+        token, 
+        reset_timestamp=False, 
+        reminded_timestamp=False,
+        cost: Optional[float] = None,
+        model_name: Optional[str] = None,
+        session_id: Optional[str] = None,
+        agent_name: Optional[str] = None
+    ):
         """Add usage data for a user.
 
         Args:
@@ -351,21 +426,47 @@ class UserUsageTracker:
             token (int): Number of tokens used.
             reset_timestamp (bool, optional): Whether to reset the timestamp. Defaults to False.
             reminded_timestamp (bool, optional): Whether to mark as reminded. Defaults to False.
+            cost (float, optional): Cost in USD. If None, will be calculated from model_name and tokens.
+            model_name (str, optional): Name of the model used.
+            session_id (str, optional): ID of the session.
+            agent_name (str, optional): Name of the agent.
 
         Example:
             >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
             >>> tracker = UserUsageTracker()
-            >>> tracker.add_data("user123", 100)
+            >>> tracker.add_data("user123", 100, model_name="gpt-4o-mini")
         """
+        # Calculate cost if not provided
+        if cost is None and model_name:
+            cost = self.pricing_manager.calculate_cost(model_name, token)
+        elif cost is None:
+            cost = 0.0
+        
         data = UsageTracker(
             user_id=user_id,
             token=token,
+            cost=cost,
+            model_name=model_name or "unknown",
+            session_id=session_id,
+            agent_name=agent_name,
             timestamp=int(time.time()),
             reset_timestamp=reset_timestamp,
             reminded_timestamp=reminded_timestamp,
         )
         self.session.add(data)
         self.session.commit()
+        
+        # Log to file if enabled
+        self.log_usage_to_file(
+            user_id=user_id,
+            token=token,
+            cost=cost,
+            model_name=model_name or "unknown",
+            session_id=session_id,
+            agent_name=agent_name
+        )
+        
+        # Upload to S3 if enabled
         self.upload_to_s3()
 
     def percentage_used(self, user_id):
@@ -440,6 +541,10 @@ class UserUsageTracker:
                     "id": item.id,
                     "user_id": item.user_id,
                     "token": item.token,
+                    "cost": item.cost,
+                    "model_name": item.model_name,
+                    "session_id": item.session_id,
+                    "agent_name": item.agent_name,
                     "timestamp": item.timestamp,
                     "reset_timestamp": item.reset_timestamp,
                     "reminded_timestamp": item.reminded_timestamp,
@@ -462,6 +567,10 @@ class UserUsageTracker:
                 "id": item.id,
                 "user_id": item.user_id,
                 "token": item.token,
+                "cost": item.cost,
+                "model_name": item.model_name,
+                "session_id": item.session_id,
+                "agent_name": item.agent_name,
                 "timestamp": item.timestamp,
                 "reset_timestamp": item.reset_timestamp,
                 "reminded_timestamp": item.reminded_timestamp,
@@ -682,6 +791,156 @@ class UserUsageTracker:
         """
         data = self.session.query(UsageTracker).all()
         return [item for item in data]
+
+    def get_user_cost(self, user_id: str) -> float:
+        """Get total cost for a user since last reset.
+
+        Args:
+            user_id (str): ID of the user.
+
+        Returns:
+            float: Total cost in USD.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> cost = tracker.get_user_cost("user123")
+            >>> print(f"Total cost: ${cost:.4f}")
+            Total cost: $2.3456
+        """
+        # For simplicity, get all data for the user (can be enhanced later with reset logic)
+        data = self.session.query(UsageTracker).filter_by(user_id=user_id).all()
+        return sum(item.cost for item in data)
+
+    def get_session_cost(self, session_id: str) -> float:
+        """Get total cost for a session.
+
+        Args:
+            session_id (str): ID of the session.
+
+        Returns:
+            float: Total cost in USD.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> cost = tracker.get_session_cost("session456")
+            >>> print(f"Session cost: ${cost:.4f}")
+            Session cost: $1.2345
+        """
+        data = self.session.query(UsageTracker).filter_by(session_id=session_id).all()
+        return sum(item.cost for item in data)
+
+    def get_agent_cost(self, agent_name: str) -> float:
+        """Get total cost for an agent.
+
+        Args:
+            agent_name (str): Name of the agent.
+
+        Returns:
+            float: Total cost in USD.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> cost = tracker.get_agent_cost("QA Agent")
+            >>> print(f"Agent cost: ${cost:.4f}")
+            Agent cost: $3.4567
+        """
+        data = self.session.query(UsageTracker).filter_by(agent_name=agent_name).all()
+        return sum(item.cost for item in data)
+
+    def get_cost_summary(self, user_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get cost summary for a user or all users.
+
+        Args:
+            user_id (str, optional): ID of the user. If None, returns summary for all users.
+
+        Returns:
+            Dict containing cost summary information.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> summary = tracker.get_cost_summary("user123")
+            >>> print(f"Total cost: ${summary['total_cost']:.4f}")
+            Total cost: $5.6789
+        """
+        if user_id:
+            data = self.session.query(UsageTracker).filter_by(user_id=user_id).all()
+            total_cost = sum(item.cost for item in data)
+            total_tokens = sum(item.token for item in data)
+            total_calls = len(data)
+        else:
+            data = self.session.query(UsageTracker).all()
+            total_cost = sum(item.cost for item in data)
+            total_tokens = sum(item.token for item in data)
+            total_calls = len(data)
+
+        # Get breakdown by model
+        model_breakdown = {}
+        for item in data:
+            model = item.get("model_name", "unknown") if isinstance(item, dict) else item.model_name
+            cost = item.get("cost", 0) if isinstance(item, dict) else item.cost
+            model_breakdown[model] = model_breakdown.get(model, 0) + cost
+
+        return {
+            "total_cost": total_cost,
+            "total_tokens": total_tokens,
+            "total_calls": total_calls,
+            "model_breakdown": model_breakdown,
+            "average_cost_per_call": total_cost / total_calls if total_calls > 0 else 0
+        }
+
+    def estimate_cost(self, model_name: str, estimated_tokens: int) -> float:
+        """Estimate cost for a potential LLM call.
+
+        Args:
+            model_name (str): Name of the model.
+            estimated_tokens (int): Estimated number of tokens.
+
+        Returns:
+            float: Estimated cost in USD.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker()
+            >>> cost = tracker.estimate_cost("gpt-4o-mini", 1000)
+            >>> print(f"Estimated cost: ${cost:.4f}")
+            Estimated cost: $0.3750
+        """
+        return self.pricing_manager.calculate_cost(model_name, estimated_tokens)
+
+    def check_cost_limit(self, user_id: str, estimated_cost: float = 0.0) -> Dict[str, Any]:
+        """Check if user is approaching or has exceeded cost limits.
+        
+        Args:
+            user_id: ID of the user.
+            estimated_cost: Estimated cost for the upcoming call.
+            
+        Returns:
+            Dictionary with cost limit information.
+        """
+        import sherpa_ai.config as cfg
+        
+        current_cost = self.get_user_cost(user_id)
+        total_cost = current_cost + estimated_cost
+        daily_limit = cfg.DAILY_COST_LIMIT
+        alert_threshold = cfg.COST_ALERT_THRESHOLD
+        
+        can_execute = total_cost <= daily_limit
+        alert_threshold_cost = daily_limit * alert_threshold
+        
+        return {
+            "current_cost": current_cost,
+            "estimated_cost": estimated_cost,
+            "total_cost": total_cost,
+            "daily_limit": daily_limit,
+            "can_execute": can_execute,
+            "alert_threshold": alert_threshold_cost,
+            "approaching_limit": total_cost >= alert_threshold_cost,
+            "message": "" if can_execute else f"Daily cost limit of ${daily_limit:.2f} exceeded"
+        }
 
     def close_connection(self):
         """Close the database connection.

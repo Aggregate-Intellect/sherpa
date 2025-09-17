@@ -1,9 +1,11 @@
 """Verbose logger implementations for Sherpa AI.
 
 This module provides concrete implementations of verbose loggers for different
-purposes, including Slack messaging, testing, and no-op logging.
+purposes, including Slack messaging, testing, file logging, and no-op logging.
 """
 
+import os
+from datetime import datetime
 from typing import Callable, List
 
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
@@ -100,3 +102,52 @@ class StorageVerboseLogger(BaseVerboseLogger):
             message (str): Message to store.
         """
         self.storage.append(message)
+
+
+class FileVerboseLogger(BaseVerboseLogger):
+    """File-based verbose logger.
+
+    This logger writes messages to a local file with timestamps. It's useful
+    for persistent logging that can be reviewed later or used for debugging.
+
+    Attributes:
+        file_path (str): Path to the log file.
+        append_mode (bool): Whether to append to existing file or overwrite.
+
+    Example:
+        >>> logger = FileVerboseLogger("usage.log")
+        >>> logger.log("User used 100 tokens")
+        >>> # Message is written to usage.log with timestamp
+    """
+
+    def __init__(self, file_path: str, append_mode: bool = True):
+        """Initialize the file logger.
+
+        Args:
+            file_path (str): Path to the log file.
+            append_mode (bool): Whether to append to existing file or overwrite.
+        """
+        self.file_path = file_path
+        self.append_mode = append_mode
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    def log(self, message: str):
+        """Write a message to the log file with timestamp.
+
+        Args:
+            message (str): Message to log.
+        """
+        timestamp = datetime.now().isoformat()
+        log_entry = f"[{timestamp}] {message}\n"
+        
+        mode = "a" if self.append_mode else "w"
+        try:
+            with open(self.file_path, mode, encoding="utf-8") as f:
+                f.write(log_entry)
+        except Exception as e:
+            # Fallback to stderr if file writing fails
+            import sys
+            print(f"Failed to write to log file {self.file_path}: {e}", file=sys.stderr)
+            print(log_entry, file=sys.stderr)

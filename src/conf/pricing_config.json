@@ -1,0 +1,13 @@
+{
+  "gpt-4o": 0.01,
+  "gpt-4o-mini": 0.000375,
+  "gpt-4-turbo": 0.02,
+  "gpt-4": 0.045,
+  "gpt-3.5-turbo": 0.00175,
+  "gpt-3.5-turbo-16k": 0.0035,
+  "claude-3-5-sonnet-20241022": 0.009,
+  "claude-3-5-haiku-20241022": 0.0024,
+  "claude-3-opus-20240229": 0.045,
+  "gemini-1.5-pro": 0.003125,
+  "gemini-1.5-flash": 0.0001875
+}
