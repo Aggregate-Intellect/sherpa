@@ -20,7 +20,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 import sherpa_ai.config as cfg
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
-from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger
+from sherpa_ai.verbose_loggers.verbose_loggers import DummyVerboseLogger, FileVerboseLogger
 
 
 Base = declarative_base()
@@ -130,6 +130,9 @@ class UserUsageTracker:
         engine=None,
         session=None,
         pricing_manager: Optional[PricingManager] = None,
+        log_to_s3: Optional[bool] = None,
+        log_to_file: Optional[bool] = None,
+        log_file_path: Optional[str] = None,
     ):
         """Initialize the UserUsageTracker.
 
@@ -142,6 +145,9 @@ class UserUsageTracker:
             engine (optional): SQLAlchemy engine instance. Defaults to None.
             session (optional): SQLAlchemy session instance. Defaults to None.
             pricing_manager (PricingManager, optional): Pricing manager instance. Defaults to None (creates new one).
+            log_to_s3 (bool, optional): Whether to log to S3. Defaults to cfg.USAGE_LOG_TO_S3.
+            log_to_file (bool, optional): Whether to log to local file. Defaults to cfg.USAGE_LOG_TO_FILE.
+            log_file_path (str, optional): Path for local log file. Defaults to cfg.USAGE_LOG_FILE_PATH.
 
         Raises:
             ImportError: If boto3 package is not installed.
@@ -180,6 +186,16 @@ class UserUsageTracker:
         self.bucket_name = bucket_name
         self.s3_file_key = s3_file_key
         self.local_file_path = f"./{self.db_name}"
+        
+        # Initialize logging configuration
+        self.log_to_s3 = log_to_s3 if log_to_s3 is not None else cfg.USAGE_LOG_TO_S3
+        self.log_to_file = log_to_file if log_to_file is not None else cfg.USAGE_LOG_TO_FILE
+        self.log_file_path = log_file_path or cfg.USAGE_LOG_FILE_PATH
+        
+        # Initialize file logger if enabled
+        self.file_logger = None
+        if self.log_to_file:
+            self.file_logger = FileVerboseLogger(self.log_file_path)
         
         # Initialize pricing manager
         self.pricing_manager = pricing_manager or PricingManager()
@@ -232,17 +248,48 @@ class UserUsageTracker:
         """Upload usage tracking database file to Amazon S3.
 
         This method uploads the local database file to the specified S3 bucket.
+        Only uploads if S3 logging is enabled in configuration.
 
         Example:
             >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
             >>> tracker = UserUsageTracker()
-            >>> tracker.upload_to_s3()  # Uploads the database to S3
+            >>> tracker.upload_to_s3()  # Uploads the database to S3 if enabled
         """
+        if not self.log_to_s3:
+            return
+            
         s3 = UserUsageTracker.boto3.client("s3")
         try:
             s3.upload_file(self.local_file_path, self.bucket_name, self.s3_file_key)
         except Exception as e:
             logger.error(f"Error uploading file to S3: {str(e)}")
+
+    def log_usage_to_file(self, user_id: str, token: int, cost: float, model_name: str, session_id: str = None, agent_name: str = None):
+        """Log usage data to local file if file logging is enabled.
+
+        Args:
+            user_id (str): ID of the user.
+            token (int): Number of tokens used.
+            cost (float): Cost in USD.
+            model_name (str): Name of the model used.
+            session_id (str, optional): ID of the session.
+            agent_name (str, optional): Name of the agent.
+
+        Example:
+            >>> from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+            >>> tracker = UserUsageTracker(log_to_file=True)
+            >>> tracker.log_usage_to_file("user123", 100, 0.002, "gpt-4o-mini")
+        """
+        if not self.log_to_file or not self.file_logger:
+            return
+            
+        log_message = f"Usage: user_id={user_id}, tokens={token}, cost=${cost:.4f}, model={model_name}"
+        if session_id:
+            log_message += f", session_id={session_id}"
+        if agent_name:
+            log_message += f", agent_name={agent_name}"
+            
+        self.file_logger.log(log_message)
 
     def create_table(self):
         """Create the necessary tables in the database.
@@ -408,6 +455,18 @@ class UserUsageTracker:
         )
         self.session.add(data)
         self.session.commit()
+        
+        # Log to file if enabled
+        self.log_usage_to_file(
+            user_id=user_id,
+            token=token,
+            cost=cost,
+            model_name=model_name or "unknown",
+            session_id=session_id,
+            agent_name=agent_name
+        )
+        
+        # Upload to S3 if enabled
         self.upload_to_s3()
 
     def percentage_used(self, user_id):
