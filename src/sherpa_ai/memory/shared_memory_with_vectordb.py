@@ -84,7 +84,10 @@ class SharedMemoryWithVectorDB(SharedMemory):
         # based on the current task search similarity on the context and add it as an
         # event type user_input which is going to be used as a context on the prompt
         contexts = self.vectorStorage.similarity_search(
-            task.content, session_id=self.session_id
+            query=task.content, 
+            number_of_results=5, 
+            k=1, 
+            session_id=self.session_id
         )
         # Loop through the similarity search results, add the chunks as user_input events which will be added as a context in the belief class.
         for context in contexts:

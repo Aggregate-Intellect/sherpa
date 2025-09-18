@@ -1,8 +1,10 @@
 import uuid
+from typing import Any, List, Optional
 
 import chromadb
 from chromadb.utils import embedding_functions
 from langchain_core.documents import Document
+from pydantic import Field
 
 import sherpa_ai.config as cfg
 from sherpa_ai.connectors.base import BaseVectorDB
@@ -27,22 +29,7 @@ class ChromaVectorStore(BaseVectorDB):
         This is a sample document
     """
 
-    def __init__(self, db, path="./db") -> None:
-        """Initialize a ChromaVectorStore instance.
-
-        Args:
-            db: A ChromaDB collection or client.
-            path (str, optional): Path to the database storage. Defaults to "./db".
-
-        Example:
-            >>> from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
-            >>> import chromadb
-            >>> client = chromadb.PersistentClient(path="./db")
-            >>> collection = client.get_or_create_collection("test_collection")
-            >>> vector_store = ChromaVectorStore(collection)
-        """
-        self.db = db
-        self.path = path
+    path: str = Field(default="./db", description="Path to the database storage")
 
     @classmethod
     def chroma_from_texts(
@@ -94,7 +81,7 @@ class ChromaVectorStore(BaseVectorDB):
             ids=[str(uuid.uuid1()) for _ in texts],
         )
 
-        return cls(db, path)
+        return cls(db=db, path=path)
 
     @classmethod
     def chroma_from_existing(
@@ -131,20 +118,24 @@ class ChromaVectorStore(BaseVectorDB):
             name=cfg.INDEX_NAME_FILE_STORAGE, embedding_function=embedding
         )
 
-        return cls(db)
+        return cls(db=db)
 
     def similarity_search(
-        self, query: str = "", session_id: str = None, number_of_results=2, k: int = 1
-    ):
+        self, 
+        query: str, 
+        number_of_results: int, 
+        k: int, 
+        session_id: Optional[str] = None
+    ) -> List[Document]:
         """Perform a similarity search in the ChromaDB collection.
 
         This method searches for documents that are semantically similar to the query.
 
         Args:
-            query (str, optional): The search query. Defaults to "".
-            session_id (str, optional): Session ID to filter results. Defaults to None.
-            number_of_results (int, optional): Number of results to return. Defaults to 2.
-            k (int, optional): Number of nearest neighbors to consider. Defaults to 1.
+            query (str): The search query.
+            number_of_results (int): Number of results to return.
+            k (int): Number of nearest neighbors to consider.
+            session_id (Optional[str]): Session ID to filter results. Defaults to None.
 
         Returns:
             List[Document]: A list of documents that match the query.
@@ -152,7 +143,7 @@ class ChromaVectorStore(BaseVectorDB):
         Example:
             >>> from sherpa_ai.connectors.chroma_vector_store import ChromaVectorStore
             >>> vector_store = ChromaVectorStore.chroma_from_existing()
-            >>> results = vector_store.similarity_search("What is machine learning?", number_of_results=5)
+            >>> results = vector_store.similarity_search("What is machine learning?", number_of_results=5, k=1)
             >>> for doc in results:
             ...     print(doc.page_content[:100])
         """
