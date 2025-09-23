@@ -1,269 +1,239 @@
-"""Configurable pricing module for LLM cost calculation.
+"""Pricing module for LLM cost calculation."""
 
-This module provides a flexible pricing system that can be configured through
-environment variables, configuration files, or programmatically. It supports
-different pricing models and can be easily updated without code changes.
-
-Example:
-    >>> from sherpa_ai.cost_tracking.pricing import PricingManager
-    >>> pricing = PricingManager()
-    >>> cost = pricing.calculate_cost("gpt-4o", 1000)
-    >>> print(f"Cost: ${cost:.4f}")
-    Cost: $0.0100
-"""
-
-import os
 import json
-from typing import Dict, Optional, Union, Any
+import os
+from typing import Dict, Optional, Any
 from pathlib import Path
 
 from loguru import logger
 import sherpa_ai.config as cfg
+from pydantic import BaseModel, Field, field_validator
+
+
+class ModelPricing(BaseModel):
+    """Individual model pricing configuration."""
+    
+    input_price_per_1k: float = Field(..., ge=0, description="Input token price per 1k tokens")
+    output_price_per_1k: float = Field(..., ge=0, description="Output token price per 1k tokens")
+    
+    @field_validator('input_price_per_1k', 'output_price_per_1k')
+    @classmethod
+    def validate_reasonable_prices(cls, v):
+        """Validate that prices are within reasonable bounds."""
+        if v > 1.0:  # $1 per 1k tokens is very high
+            logger.warning(f"Price {v} seems unusually high (>$1 per 1k tokens)")
+        return v
+
+
+class PricingConfig(BaseModel):
+    """Model for the complete pricing configuration."""
+    
+    models: Dict[str, ModelPricing] = Field(..., description="Model pricing configurations")
+    
+    @field_validator('models')
+    @classmethod
+    def validate_non_empty_models(cls, v):
+        """Validate that at least one model is configured."""
+        if not v:
+            raise ValueError("At least one model must be configured")
+        return v
+    
+    @field_validator('models')
+    @classmethod
+    def validate_model_names(cls, v):
+        """Validate that model names are reasonable."""
+        for model_name in v.keys():
+            if not model_name or len(model_name.strip()) == 0:
+                raise ValueError("Model names cannot be empty")
+            if len(model_name) > 100:
+                raise ValueError(f"Model name '{model_name}' is too long (max 100 characters)")
+        return v
+    
+    def get_model_pricing(self, model_name: str) -> ModelPricing:
+        """Get pricing for a specific model."""
+        if model_name not in self.models:
+            raise ValueError(f"Model '{model_name}' not found in pricing configuration")
+        return self.models[model_name]
+    
+    def list_models(self) -> list:
+        """Get list of configured model names."""
+        return list(self.models.keys())
+    
+    def validate_model_exists(self, model_name: str) -> bool:
+        """Check if a model exists in the configuration."""
+        return model_name in self.models
+
+
+def validate_pricing_config(config_data: Dict[str, Any]) -> PricingConfig:
+    """
+    Validate pricing configuration data using Pydantic schema.
+    
+    Args:
+        config_data: Raw configuration data (dict)
+        
+    Returns:
+        PricingConfig: Validated pricing configuration
+        
+    Raises:
+        ValueError: If configuration is invalid
+    """
+    try:
+        return PricingConfig(models=config_data)
+    except Exception as e:
+        logger.error(f"Pricing configuration validation failed: {e}")
+        raise ValueError(f"Invalid pricing configuration: {e}")
+
+
+def validate_pricing_file(file_path: str) -> PricingConfig:
+    """
+    Validate pricing configuration from a JSON file.
+    
+    Args:
+        file_path: Path to the JSON configuration file
+        
+    Returns:
+        PricingConfig: Validated pricing configuration
+        
+    Raises:
+        ValueError: If file is invalid or configuration is malformed
+    """
+    if not Path(file_path).exists():
+        raise ValueError(f"Pricing configuration file not found: {file_path}")
+    
+    try:
+        with open(file_path, 'r') as f:
+            config_data = json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in pricing configuration file: {e}")
+    except Exception as e:
+        raise ValueError(f"Failed to read pricing configuration file: {e}")
+    
+    return validate_pricing_config(config_data)
 
 
 class PricingManager:
-    """Manages LLM pricing configuration and cost calculations.
-    
-    This class provides a flexible way to manage pricing for different LLM models.
-    It supports multiple configuration sources with fallback mechanisms.
-    
-    Attributes:
-        pricing_data (Dict[str, float]): Current pricing configuration.
-        config_source (str): Source of the current pricing configuration.
-    """
+    """Pricing manager for LLM cost calculations."""
     
     def __init__(self, config_path: Optional[str] = None):
-        """Initialize the pricing manager.
-        
-        Args:
-            config_path: Optional path to a JSON pricing configuration file.
-                        If not provided, will use environment variables or defaults.
-        """
+        """Initialize the pricing manager."""
         self.pricing_data = {}
-        self.config_source = "default"
         self._load_pricing_config(config_path)
     
     def _load_pricing_config(self, config_path: Optional[str] = None):
-        """Load pricing configuration from various sources.
+        """Load pricing configuration from JSON file."""
+        # Check environment variables first
+        if 'MODEL_PRICING_JSON' in os.environ:
+            try:
+                env_pricing = json.loads(os.environ['MODEL_PRICING_JSON'])
+                # Validate configuration using Pydantic schema
+                validated_config = validate_pricing_config(env_pricing)
+                self.pricing_data = {model: {
+                    "input_price_per_1k": pricing.input_price_per_1k,
+                    "output_price_per_1k": pricing.output_price_per_1k
+                } for model, pricing in validated_config.models.items()}
+                logger.info("Loaded and validated pricing config from MODEL_PRICING_JSON environment variable")
+                return
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.error(f"Invalid JSON or configuration in MODEL_PRICING_JSON: {e}")
         
-        Priority order:
-        1. Custom config file (if provided)
-        2. Config file from MODEL_PRICING_CONFIG_PATH environment variable
-        3. Environment variable (MODEL_PRICING_JSON)
-        4. Default pricing table
-        
-        Args:
-            config_path: Optional path to a JSON pricing configuration file.
-        """
-        # Try custom config file first
         if config_path and Path(config_path).exists():
-            try:
-                with open(config_path, 'r') as f:
-                    self.pricing_data = json.load(f)
-                self.config_source = f"file: {config_path}"
-                logger.info(f"Loaded pricing config from file: {config_path}")
-                return
-            except Exception as e:
-                logger.warning(f"Failed to load pricing config from {config_path}: {e}")
-        
-        # Try config file from environment variable
-        env_config_path = os.getenv('MODEL_PRICING_CONFIG_PATH')
-        if env_config_path and Path(env_config_path).exists():
-            try:
-                with open(env_config_path, 'r') as f:
-                    self.pricing_data = json.load(f)
-                self.config_source = f"env file: {env_config_path}"
-                logger.info(f"Loaded pricing config from environment file: {env_config_path}")
-                return
-            except Exception as e:
-                logger.warning(f"Failed to load pricing config from {env_config_path}: {e}")
-        
-        # Try environment variable
-        env_pricing = os.getenv('MODEL_PRICING_JSON')
-        if env_pricing:
-            try:
-                self.pricing_data = json.loads(env_pricing)
-                self.config_source = "environment variable"
-                logger.info("Loaded pricing config from environment variable")
-                return
-            except Exception as e:
-                logger.warning(f"Failed to parse MODEL_PRICING_JSON: {e}")
-        
-        # Fall back to default pricing
-        self._load_default_pricing()
+            self._load_from_file(config_path)
+        else:
+            # Use default config file
+            default_path = Path(__file__).parent / "../../conf/pricing_config.json"
+            if default_path.exists():
+                self._load_from_file(str(default_path))
+            else:
+                logger.warning("No pricing config found, using empty pricing data")
+                self.pricing_data = {}
     
-    def _load_default_pricing(self):
-        """Load default pricing configuration.
-        
-        This provides a reasonable default pricing table that can be overridden
-        through configuration files or environment variables.
-        """
-        self.pricing_data = {
-            # OpenAI Models (cost per 1K tokens)
-            "gpt-4o": 0.01,  # Average of input/output
-            "gpt-4o-mini": 0.000375,  # Average of input/output
-            "gpt-4-turbo": 0.02,  # Average of input/output
-            "gpt-4": 0.045,  # Average of input/output
-            "gpt-3.5-turbo": 0.00175,  # Average of input/output
-            "gpt-3.5-turbo-16k": 0.0035,  # Average of input/output
-            
-            # Anthropic Models
-            "claude-3-5-sonnet-20241022": 0.009,  # Average of input/output
-            "claude-3-5-haiku-20241022": 0.0024,  # Average of input/output
-            "claude-3-opus-20240229": 0.045,  # Average of input/output
-            
-            # Google Models
-            "gemini-1.5-pro": 0.003125,  # Average of input/output
-            "gemini-1.5-flash": 0.0001875,  # Average of input/output
-        }
-        self.config_source = "default"
-        logger.info("Using default pricing configuration")
-    
-    def calculate_cost(self, model_name: str, tokens: int) -> float:
-        """Calculate cost for a given model and token count.
-        
-        Args:
-            model_name: Name of the model (case-insensitive).
-            tokens: Number of tokens.
-            
-        Returns:
-            Cost in USD.
-            
-        Example:
-            >>> pricing = PricingManager()
-            >>> cost = pricing.calculate_cost("gpt-4o", 1000)
-            >>> print(f"Cost: ${cost:.4f}")
-            Cost: $0.0100
-        """
-        # Normalize model name (lowercase for consistent lookup)
-        model_key = model_name.lower()
-        
-        # Get cost per 1K tokens, default to a reasonable estimate
-        cost_per_1k = self.pricing_data.get(model_key, 0.002)
-        
-        # Calculate total cost
-        total_cost = (tokens / 1000.0) * cost_per_1k
-        
-        logger.debug(f"Cost calculation: {model_name} -> {tokens} tokens -> ${total_cost:.6f}")
-        
-        return total_cost
-    
-    def get_pricing(self, model_name: Optional[str] = None) -> Union[Dict[str, float], float]:
-        """Get pricing information for a model or all models.
-        
-        Args:
-            model_name: Name of the model. If None, returns all pricing data.
-            
-        Returns:
-            Pricing data for the specified model or all models.
-            
-        Example:
-            >>> pricing = PricingManager()
-            >>> gpt4_price = pricing.get_pricing("gpt-4o")
-            >>> all_prices = pricing.get_pricing()
-        """
-        if model_name is None:
-            return self.pricing_data.copy()
-        
-        model_key = model_name.lower()
-        return self.pricing_data.get(model_key, 0.002)
-    
-    def update_pricing(self, model_name: str, cost_per_1k: float):
-        """Update pricing for a specific model.
-        
-        Args:
-            model_name: Name of the model.
-            cost_per_1k: Cost per 1K tokens in USD.
-            
-        Example:
-            >>> pricing = PricingManager()
-            >>> pricing.update_pricing("gpt-4o", 0.012)
-        """
-        model_key = model_name.lower()
-        self.pricing_data[model_key] = cost_per_1k
-        logger.info(f"Updated pricing for {model_name}: ${cost_per_1k:.6f} per 1K tokens")
-    
-    def add_model(self, model_name: str, cost_per_1k: float):
-        """Add pricing for a new model.
-        
-        Args:
-            model_name: Name of the model.
-            cost_per_1k: Cost per 1K tokens in USD.
-            
-        Example:
-            >>> pricing = PricingManager()
-            >>> pricing.add_model("new-model", 0.005)
-        """
-        self.update_pricing(model_name, cost_per_1k)
-    
-    def remove_model(self, model_name: str) -> bool:
-        """Remove pricing for a model.
-        
-        Args:
-            model_name: Name of the model to remove.
-            
-        Returns:
-            True if the model was removed, False if it wasn't found.
-            
-        Example:
-            >>> pricing = PricingManager()
-            >>> removed = pricing.remove_model("old-model")
-        """
-        model_key = model_name.lower()
-        if model_key in self.pricing_data:
-            del self.pricing_data[model_key]
-            logger.info(f"Removed pricing for {model_name}")
-            return True
-        return False
-    
-    def get_config_source(self) -> str:
-        """Get the source of the current pricing configuration.
-        
-        Returns:
-            String describing the configuration source.
-        """
-        return self.config_source
-    
-    def export_config(self, file_path: str):
-        """Export current pricing configuration to a JSON file.
-        
-        Args:
-            file_path: Path where to save the configuration file.
-            
-        Example:
-            >>> pricing = PricingManager()
-            >>> pricing.export_config("pricing_config.json")
-        """
+    def _load_from_file(self, file_path: str):
+        """Load pricing data from JSON file."""
         try:
-            with open(file_path, 'w') as f:
-                json.dump(self.pricing_data, f, indent=2)
-            logger.info(f"Exported pricing config to {file_path}")
+            with open(file_path, 'r') as f:
+                config_data = json.load(f)
+            
+            # Validate configuration using Pydantic schema
+            validated_config = validate_pricing_config(config_data)
+            self.pricing_data = {model: {
+                "input_price_per_1k": pricing.input_price_per_1k,
+                "output_price_per_1k": pricing.output_price_per_1k
+            } for model, pricing in validated_config.models.items()}
+            
+            logger.info(f"Loaded and validated pricing config from: {file_path}")
         except Exception as e:
-            logger.error(f"Failed to export pricing config to {file_path}: {e}")
-            raise
+            logger.error(f"Failed to load or validate pricing config from {file_path}: {e}")
+            self.pricing_data = {}
     
-    def reload_config(self, config_path: Optional[str] = None):
-        """Reload pricing configuration from the specified source.
+    def _convert_legacy_pricing(self, pricing_data: dict) -> dict:
+        """Convert legacy pricing format to new format."""
+        converted = {}
+        for model, price in pricing_data.items():
+            if isinstance(price, (int, float)):
+                # Legacy format: single price per model
+                # For backward compatibility, use the same price for both input and output
+                converted[model] = {
+                    "input_price_per_1k": price,
+                    "output_price_per_1k": price
+                }
+            elif isinstance(price, dict) and "input_price_per_1k" in price:
+                # New format: already has separate input/output prices
+                converted[model] = price
+            else:
+                logger.warning(f"Unknown pricing format for model {model}: {price}")
+        return converted
+    
+    def calculate_cost(self, model_name: str, input_tokens: int, output_tokens: int) -> float:
+        """Calculate cost for a model call with separate input/output tokens.
         
         Args:
-            config_path: Optional path to a JSON pricing configuration file.
-                        If not provided, will reload from the same source used initially.
+            model_name: Name of the model.
+            input_tokens: Number of input tokens.
+            output_tokens: Number of output tokens.
+            
+        Returns:
+            float: Total cost in USD.
         """
-        self._load_pricing_config(config_path)
-        logger.info(f"Reloaded pricing configuration from {self.config_source}")
-
-
-# Global pricing manager instance for convenience
-_default_pricing_manager = None
-
-
-def get_pricing_manager() -> PricingManager:
-    """Get the global pricing manager instance.
+        if model_name not in self.pricing_data:
+            logger.warning(f"Unknown model: {model_name}")
+            return 0.0
+        
+        model_config = self.pricing_data[model_name]
+        input_price_per_1k = model_config.get("input_price_per_1k", 0.0)
+        output_price_per_1k = model_config.get("output_price_per_1k", 0.0)
+        
+        input_cost = (input_tokens / 1000.0) * input_price_per_1k
+        output_cost = (output_tokens / 1000.0) * output_price_per_1k
+        
+        return input_cost + output_cost
     
-    Returns:
-        Global PricingManager instance.
-    """
-    global _default_pricing_manager
-    if _default_pricing_manager is None:
-        _default_pricing_manager = PricingManager()
-    return _default_pricing_manager
+    def calculate_cost_from_usage_metadata(self, model_name: str, usage_metadata: Dict[str, Any]) -> float:
+        """Calculate cost from usage metadata (thin wrapper).
+        
+        Args:
+            model_name: Name of the model.
+            usage_metadata: Usage metadata from callback.
+            
+        Returns:
+            float: Total cost in USD.
+        """
+        input_tokens = usage_metadata.get("input_tokens", 0)
+        output_tokens = usage_metadata.get("output_tokens", 0)
+        return self.calculate_cost(model_name, input_tokens, output_tokens)
+    
+    def get_pricing(self) -> Dict[str, Any]:
+        """Get current pricing configuration."""
+        return self.pricing_data.copy()
+    
+    def update_pricing(self, new_pricing: Dict[str, Any]):
+        """Update pricing configuration."""
+        self.pricing_data.update(new_pricing)
+        logger.info("Pricing configuration updated")
+    
+    def add_model(self, model_name: str, input_price_per_1k: float, output_price_per_1k: float):
+        """Add a new model to pricing configuration."""
+        self.pricing_data[model_name] = {
+            "input_price_per_1k": input_price_per_1k,
+            "output_price_per_1k": output_price_per_1k
+        }
+        logger.info(f"Added model {model_name} to pricing configuration")

@@ -5,13 +5,13 @@ It defines base and OpenAI-specific chat model classes with Sherpa enhancements
 like usage tracking and verbose logging.
 """
 
-import typing
 from typing import Any, List, Optional
 
 from langchain_openai import ChatOpenAI 
 from langchain_core.callbacks import ( 
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
+    UsageMetadataCallbackHandler,
 )
 from langchain_core.language_models import BaseChatModel 
 from langchain_core.messages import BaseMessage 
@@ -38,9 +38,9 @@ class SherpaBaseChatModel(BaseChatModel):
         'Hi there!'
     """
 
-    user_id: typing.Optional[str] = None
-    session_id: typing.Optional[str] = None
-    agent_name: typing.Optional[str] = None
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+    agent_name: Optional[str] = None
     verbose_logger: BaseVerboseLogger = None
 
     def _agenerate(
@@ -84,10 +84,11 @@ class SherpaBaseChatModel(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
-        """Generate chat completions and track token usage.
+        """Generate chat completions and track token usage using UsageMetadataCallbackHandler.
 
         This method extends the base generation functionality to track token
-        usage per user in the database and provide verbose logging.
+        usage per user in the database using LangChain's UsageMetadataCallbackHandler
+        for accurate token counting and cost calculation.
 
         Args:
             messages (List[BaseMessage]): List of messages to generate from.
@@ -104,26 +105,49 @@ class SherpaBaseChatModel(BaseChatModel):
             >>> print(result.generations[0].text)
             'Hi there!'
         """
+        # Create UsageMetadataCallbackHandler to track token usage
+        usage_callback = UsageMetadataCallbackHandler()
+        
+        # Add the callback to the run manager if provided
+        if run_manager:
+            run_manager.add_handler(usage_callback)
+        
+        # Generate response with usage tracking
         response = super()._generate(messages, stop, run_manager, **kwargs)
-        token_before = super().get_num_tokens_from_messages(messages)
-        token_after = 0
-        for result_message in response.generations:
-            token_after += super().get_num_tokens(result_message.text)
-        total_token = token_before + token_after
+        
+        # Track usage if user_id is provided
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            # Enhanced cost tracking with model name and additional metadata
+            
+            # Get model name and metadata
             model_name = getattr(self, 'model_name', 'unknown')
             session_id = getattr(self, 'session_id', None)
             agent_name = getattr(self, 'agent_name', None)
             
-            user_db.add_data(
-                user_id=self.user_id, 
-                token=total_token,
-                model_name=model_name,
-                session_id=session_id,
-                agent_name=agent_name
-            )
+            # Extract usage metadata from callback
+            usage_metadata = usage_callback.usage_metadata
+            
+            if usage_metadata:
+                # Use the new usage metadata-based tracking
+                user_db.add_usage(
+                    user_id=self.user_id,
+                    usage_metadata=usage_metadata,
+                    model_name=model_name,
+                    session_id=session_id,
+                    agent_name=agent_name
+                )
+            else:
+                # Fallback to legacy tracking if no usage metadata
+                # This should rarely happen with proper callback integration
+                user_db.add_usage(
+                    user_id=self.user_id,
+                    input_tokens=0,
+                    output_tokens=0,
+                    model_name=model_name,
+                    session_id=session_id,
+                    agent_name=agent_name
+                )
+            
             user_db.close_connection()
 
         return response
@@ -146,9 +170,9 @@ class SherpaChatOpenAI(ChatOpenAI):
         'Hi there!'
     """
 
-    user_id: typing.Optional[str] = None
-    session_id: typing.Optional[str] = None
-    agent_name: typing.Optional[str] = None
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+    agent_name: Optional[str] = None
     verbose_logger: BaseVerboseLogger = None
 
     def _agenerate(
@@ -212,26 +236,49 @@ class SherpaChatOpenAI(ChatOpenAI):
             >>> print(result.generations[0].text)
             'Hi there!'
         """
+        # Create UsageMetadataCallbackHandler to track token usage
+        usage_callback = UsageMetadataCallbackHandler()
+        
+        # Add the callback to the run manager if provided
+        if run_manager:
+            run_manager.add_handler(usage_callback)
+        
+        # Generate response with usage tracking
         response = super()._generate(messages, stop, run_manager, **kwargs)
-        token_before = super().get_num_tokens_from_messages(messages)
-        token_after = 0
-        for result_message in response.generations:
-            token_after += super().get_num_tokens(result_message.text)
-        total_token = token_before + token_after
+        
+        # Track usage if user_id is provided
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            # Enhanced cost tracking with model name and additional metadata
+            
+            # Get model name and metadata
             model_name = getattr(self, 'model_name', 'unknown')
             session_id = getattr(self, 'session_id', None)
             agent_name = getattr(self, 'agent_name', None)
             
-            user_db.add_data(
-                user_id=self.user_id, 
-                token=total_token,
-                model_name=model_name,
-                session_id=session_id,
-                agent_name=agent_name
-            )
+            # Extract usage metadata from callback
+            usage_metadata = usage_callback.usage_metadata
+            
+            if usage_metadata:
+                # Use the new usage metadata-based tracking
+                user_db.add_usage(
+                    user_id=self.user_id,
+                    usage_metadata=usage_metadata,
+                    model_name=model_name,
+                    session_id=session_id,
+                    agent_name=agent_name
+                )
+            else:
+                # Fallback to legacy tracking if no usage metadata
+                # This should rarely happen with proper callback integration
+                user_db.add_usage(
+                    user_id=self.user_id,
+                    input_tokens=0,
+                    output_tokens=0,
+                    model_name=model_name,
+                    session_id=session_id,
+                    agent_name=agent_name
+                )
+            
             user_db.close_connection()
 
         return response

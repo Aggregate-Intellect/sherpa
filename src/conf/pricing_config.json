@@ -1,13 +1,46 @@
 {
-  "gpt-4o": 0.01,
-  "gpt-4o-mini": 0.000375,
-  "gpt-4-turbo": 0.02,
-  "gpt-4": 0.045,
-  "gpt-3.5-turbo": 0.00175,
-  "gpt-3.5-turbo-16k": 0.0035,
-  "claude-3-5-sonnet-20241022": 0.009,
-  "claude-3-5-haiku-20241022": 0.0024,
-  "claude-3-opus-20240229": 0.045,
-  "gemini-1.5-pro": 0.003125,
-  "gemini-1.5-flash": 0.0001875
+  "gpt-4o": {
+    "input_price_per_1k": 0.005,
+    "output_price_per_1k": 0.015
+  },
+  "gpt-4o-mini": {
+    "input_price_per_1k": 0.00015,
+    "output_price_per_1k": 0.0006
+  },
+  "gpt-4-turbo": {
+    "input_price_per_1k": 0.01,
+    "output_price_per_1k": 0.03
+  },
+  "gpt-4": {
+    "input_price_per_1k": 0.03,
+    "output_price_per_1k": 0.06
+  },
+  "gpt-3.5-turbo": {
+    "input_price_per_1k": 0.0005,
+    "output_price_per_1k": 0.0015
+  },
+  "gpt-3.5-turbo-16k": {
+    "input_price_per_1k": 0.003,
+    "output_price_per_1k": 0.004
+  },
+  "claude-3-5-sonnet-20241022": {
+    "input_price_per_1k": 0.003,
+    "output_price_per_1k": 0.015
+  },
+  "claude-3-5-haiku-20241022": {
+    "input_price_per_1k": 0.0008,
+    "output_price_per_1k": 0.004
+  },
+  "claude-3-opus-20240229": {
+    "input_price_per_1k": 0.015,
+    "output_price_per_1k": 0.075
+  },
+  "gemini-1.5-pro": {
+    "input_price_per_1k": 0.00125,
+    "output_price_per_1k": 0.005
+  },
+  "gemini-1.5-flash": {
+    "input_price_per_1k": 0.000075,
+    "output_price_per_1k": 0.0003
+  }
 }
