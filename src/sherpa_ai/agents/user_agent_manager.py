@@ -13,7 +13,6 @@ from pydantic import BaseModel, Field
 
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.agents.persistent_agent_pool import PersistentAgentPool, AgentMetadata
-from sherpa_ai.agents.agent_serializer import AgentSerializationManager, SerializationContext
 
 
 class UserPreferences(BaseModel):
@@ -71,7 +70,6 @@ class UserAgentManager:
     
     Attributes:
         agent_pool (PersistentAgentPool): The persistent agent pool.
-        serialization_manager (AgentSerializationManager): Agent serialization manager.
         user_preferences (Dict[str, UserPreferences]): User preferences cache.
         active_sessions (Dict[str, UserAgentSession]): Active user sessions.
     """
@@ -84,11 +82,10 @@ class UserAgentManager:
             
         Example:
             >>> manager = UserAgentManager("my_user_agents.db")
-            >>> print(manager.agent_pool.db_path)
+            >>> print(manager.agent_pool.storage_path)
             my_user_agents.db
         """
-        self.agent_pool = PersistentAgentPool(db_path)
-        self.serialization_manager = AgentSerializationManager()
+        self.agent_pool = PersistentAgentPool(db_path, "sqlite")
         self.user_preferences: Dict[str, UserPreferences] = {}
         self.active_sessions: Dict[str, UserAgentSession] = {}
         
@@ -99,7 +96,7 @@ class UserAgentManager:
         """Initialize the user preferences table in the database."""
         try:
             import sqlite3
-            with sqlite3.connect(self.agent_pool.db_path) as conn:
+            with sqlite3.connect(self.agent_pool.storage_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS user_preferences (
@@ -170,7 +167,7 @@ class UserAgentManager:
         # Load from database
         try:
             import sqlite3
-            with sqlite3.connect(self.agent_pool.db_path) as conn:
+            with sqlite3.connect(self.agent_pool.storage_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT default_agent_type, max_agents, auto_save, preferred_llm,
@@ -251,7 +248,7 @@ class UserAgentManager:
         """
         try:
             import sqlite3
-            with sqlite3.connect(self.agent_pool.db_path) as conn:
+            with sqlite3.connect(self.agent_pool.storage_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     INSERT OR REPLACE INTO user_preferences (
