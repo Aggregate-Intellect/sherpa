@@ -183,11 +183,10 @@ class PersistentAgentPool(AgentPool):
                 
                 for agent_data in data.get("agents", []):
                     try:
-                        # Agent deserialization is not implemented yet
-                        # For now, we'll skip loading agents from the JSON file
-                        # This means agents will need to be recreated each session
+                        # Skip loading agents from JSON file
+                        # Agents are stored but cannot be restored to working state
                         agent_id = agent_data.get("metadata", {}).get("agent_id", "unknown")
-                        logger.info(f"Skipping agent {agent_id} - deserialization not implemented")
+                        logger.info(f"Skipping agent {agent_id} - cannot restore from storage")
                                 
                     except (json.JSONDecodeError, ValidationError) as e:
                         logger.warning(f"Failed to load agent from JSON: {e}")
@@ -212,10 +211,9 @@ class PersistentAgentPool(AgentPool):
                         agent_id, config_json, belief_json, memory_json, exec_json = row
                         
                         try:
-                            # Agent deserialization is not implemented yet
-                            # For now, we'll skip loading agents from the database
-                            # This means agents will need to be recreated each session
-                            logger.info(f"Skipping agent {agent_id} - deserialization not implemented")
+                            # Skip loading agents from database
+                            # Agents are stored but cannot be restored to working state
+                            logger.info(f"Skipping agent {agent_id} - cannot restore from storage")
                                 
                         except (json.JSONDecodeError, ValidationError) as e:
                             logger.warning(f"Failed to load agent {agent_id}: {e}")
@@ -342,9 +340,8 @@ class PersistentAgentPool(AgentPool):
                 
                 row = cursor.fetchone()
                 if row:
-                    # Agent deserialization is not implemented yet
-                    # Return None since we can't reconstruct the agent
-                    logger.info(f"Agent {agent_id} exists in database but deserialization not implemented")
+                    # Agent exists in database but cannot be restored to working state
+                    logger.info(f"Agent {agent_id} exists in database but cannot restore from storage")
                     return None
                         
         except (sqlite3.Error, json.JSONDecodeError) as e:
@@ -363,9 +360,8 @@ class PersistentAgentPool(AgentPool):
             
             for agent_data in data.get("agents", []):
                 if agent_data.get("metadata", {}).get("agent_id") == agent_id:
-                    # Agent deserialization is not implemented yet
-                    # Return None since we can't reconstruct the agent
-                    logger.info(f"Agent {agent_id} exists in JSON but deserialization not implemented")
+                    # Agent exists in JSON but cannot be restored to working state
+                    logger.info(f"Agent {agent_id} exists in JSON but cannot restore from storage")
                     return None
                         
         except (json.JSONDecodeError, ValidationError) as e:
