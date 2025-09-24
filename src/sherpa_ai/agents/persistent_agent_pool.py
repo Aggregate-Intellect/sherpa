@@ -1,7 +1,7 @@
 """Persistent Agent Pool module for Sherpa AI.
 
 This module provides a comprehensive agent persistence and retrieval system that supports
-user-specific agent management, state serialization, and database-backed storage.
+user-specific agent management, state serialization, and both SQLite database and JSON file storage.
 """
 
 import json
@@ -15,7 +15,7 @@ from loguru import logger
 from pydantic import BaseModel, Field, ValidationError
 
 from sherpa_ai.agents.base import BaseAgent
-from sherpa_ai.agents.agent_serializer import AgentSerializationManager, SerializationContext
+from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.memory.belief import Belief
 
 
@@ -73,50 +73,64 @@ class StoredAgent(BaseModel):
     state: AgentState
 
 
-class PersistentAgentPool:
+class PersistentAgentPool(AgentPool):
     """Enhanced agent pool with persistence and user-specific management.
     
-    This class provides a comprehensive agent management system that supports:
+    This class extends the base AgentPool with persistent storage capabilities.
+    It provides a comprehensive agent management system that supports:
     - User-specific agent storage and retrieval
     - Agent state persistence across sessions
     - Pydantic validation for data integrity
-    - Database-backed storage with SQLite
+    - Multiple storage backends (SQLite database and JSON file)
     - Thread-safe operations
     - Agent metadata and tagging
     
+    The agents are persisted to either an SQLite database or JSON file based on the storage_type parameter.
+    
     Attributes:
-        db_path (str): Path to the SQLite database file.
+        storage_path (str): Path to the storage file (database or JSON).
+        storage_type (str): Type of storage backend ('sqlite' or 'json').
         _lock (threading.RLock): Thread safety lock.
-        _cache (Dict[str, BaseAgent]): In-memory agent cache.
     """
     
-    def __init__(self, db_path: str = "agent_pool.db"):
+    def __init__(self, storage_path: str = "agent_pool.db", storage_type: str = "sqlite"):
         """Initialize the persistent agent pool.
         
         Args:
-            db_path (str): Path to the SQLite database file.
+            storage_path (str): Path to the storage file (database or JSON).
+            storage_type (str): Type of storage backend ('sqlite' or 'json').
             
         Example:
-            >>> pool = PersistentAgentPool("my_agents.db")
-            >>> print(pool.db_path)
+            >>> # SQLite database storage
+            >>> pool = PersistentAgentPool("my_agents.db", "sqlite")
+            >>> print(pool.storage_path)
             my_agents.db
+            
+            >>> # JSON file storage
+            >>> pool = PersistentAgentPool("my_agents.json", "json")
+            >>> print(pool.storage_path)
+            my_agents.json
         """
-        self.db_path = db_path
+        # Initialize base AgentPool
+        super().__init__()
+        
+        self.storage_path = storage_path
+        self.storage_type = storage_type
         self._lock = threading.RLock()
-        self._cache: Dict[str, BaseAgent] = {}
         
-        # Initialize serializer
-        self.serializer = AgentSerializationManager()
-        
-        # Initialize database
-        self._init_database()
-        
-        # Load agents from database into cache
-        self._load_agents_from_db()
+        # Initialize storage backend
+        if storage_type == "sqlite":
+            self._init_database()
+            self._load_agents_from_db()
+        elif storage_type == "json":
+            self._init_json_storage()
+            self._load_agents_from_json()
+        else:
+            raise ValueError(f"Unsupported storage type: {storage_type}. Use 'sqlite' or 'json'.")
     
     def _init_database(self):
         """Initialize the SQLite database with required tables."""
-        with sqlite3.connect(self.db_path) as conn:
+        with sqlite3.connect(self.storage_path) as conn:
             cursor = conn.cursor()
             
             # Create agents table
@@ -147,11 +161,45 @@ class PersistentAgentPool:
             
             conn.commit()
     
+    def _init_json_storage(self):
+        """Initialize JSON file storage."""
+        # Create directory if it doesn't exist
+        Path(self.storage_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        # Create empty JSON file if it doesn't exist
+        if not Path(self.storage_path).exists():
+            with open(self.storage_path, 'w') as f:
+                json.dump({"agents": []}, f, indent=2)
+    
+    def _load_agents_from_json(self):
+        """Load all active agents from JSON file into cache."""
+        with self._lock:
+            try:
+                if not Path(self.storage_path).exists():
+                    return
+                
+                with open(self.storage_path, 'r') as f:
+                    data = json.load(f)
+                
+                for agent_data in data.get("agents", []):
+                    try:
+                        # Agent deserialization is not implemented yet
+                        # For now, we'll skip loading agents from the JSON file
+                        # This means agents will need to be recreated each session
+                        agent_id = agent_data.get("metadata", {}).get("agent_id", "unknown")
+                        logger.info(f"Skipping agent {agent_id} - deserialization not implemented")
+                                
+                    except (json.JSONDecodeError, ValidationError) as e:
+                        logger.warning(f"Failed to load agent from JSON: {e}")
+                            
+            except Exception as e:
+                logger.error(f"JSON file error while loading agents: {e}")
+    
     def _load_agents_from_db(self):
         """Load all active agents from database into cache."""
         with self._lock:
             try:
-                with sqlite3.connect(self.db_path) as conn:
+                with sqlite3.connect(self.storage_path) as conn:
                     cursor = conn.cursor()
                     cursor.execute("""
                         SELECT agent_id, agent_config, belief_state, 
@@ -164,16 +212,10 @@ class PersistentAgentPool:
                         agent_id, config_json, belief_json, memory_json, exec_json = row
                         
                         try:
-                            # Deserialize agent state
-                            agent_config = json.loads(config_json) if config_json else {}
-                            belief_state = json.loads(belief_json) if belief_json else {}
-                            memory_state = json.loads(memory_json) if memory_json else {}
-                            exec_state = json.loads(exec_json) if exec_json else {}
-                            
-                            # Reconstruct agent (this would need to be implemented based on agent type)
-                            agent = self._deserialize_agent(agent_config, belief_state, memory_state, exec_state)
-                            if agent:
-                                self._cache[agent_id] = agent
+                            # Agent deserialization is not implemented yet
+                            # For now, we'll skip loading agents from the database
+                            # This means agents will need to be recreated each session
+                            logger.info(f"Skipping agent {agent_id} - deserialization not implemented")
                                 
                         except (json.JSONDecodeError, ValidationError) as e:
                             logger.warning(f"Failed to load agent {agent_id}: {e}")
@@ -200,67 +242,457 @@ class PersistentAgentPool:
             tags=getattr(agent, 'tags', [])
         )
         
-        # Serialize agent configuration using the proper serializer
-        agent_config = self.serializer.serialize_agent(agent)
+        # Use Pydantic's built-in serialization for the entire agent
+        # This is much simpler and leverages BaseAgent's BaseModel inheritance
+        # Exclude non-serializable fields and use mode='json' for the rest
+        agent_config = agent.model_dump(mode='json', exclude={'prompt_template', 'llm', 'policy', 'actions', 'validations', 'stop_checker'})
         
-        # Serialize belief state
-        belief_state = {}
-        if hasattr(agent, 'belief') and agent.belief:
-            belief_state = agent.belief.model_dump()
+        # Extract specific state components for easier access
+        belief_state = agent_config.get('belief', {}) or {}
+        shared_memory_state = agent_config.get('shared_memory', {}) or {}
         
-        # Serialize shared memory state
-        memory_state = {}
-        if hasattr(agent, 'shared_memory') and agent.shared_memory:
-            memory_state = {
-                'objective': agent.shared_memory.objective,
-                'events': [event.model_dump() for event in agent.shared_memory.events]
-            }
-        
-        # Serialize execution state
+        # Create execution state from agent attributes
         execution_state = {
-            'num_runs': getattr(agent, 'num_runs', 1),
-            'validation_steps': getattr(agent, 'validation_steps', 1),
-            'global_regen_max': getattr(agent, 'global_regen_max', 12)
+            'num_runs': agent_config.get('num_runs', 1),
+            'validation_steps': agent_config.get('validation_steps', 1),
+            'global_regen_max': agent_config.get('global_regen_max', 12)
         }
         
         state = AgentState(
             agent_config=agent_config,
             belief_state=belief_state,
-            shared_memory_state=memory_state,
+            shared_memory_state=shared_memory_state,
             execution_state=execution_state
         )
         
         return StoredAgent(metadata=metadata, state=state)
     
-    def _deserialize_agent(self, config: Dict[str, Any], belief_state: Dict[str, Any], 
-                          memory_state: Dict[str, Any], exec_state: Dict[str, Any]) -> Optional[BaseAgent]:
-        """Deserialize an agent from stored data.
-        
-        Args:
-            config (Dict[str, Any]): Agent configuration.
-            belief_state (Dict[str, Any]): Belief state.
-            memory_state (Dict[str, Any]): Shared memory state.
-            exec_state (Dict[str, Any]): Execution state.
+    def _save_agent_to_db(self, stored_agent: StoredAgent, user_id: str, agent: BaseAgent, overwrite: bool):
+        """Save agent to SQLite database."""
+        with sqlite3.connect(self.storage_path) as conn:
+            cursor = conn.cursor()
             
-        Returns:
-            Optional[BaseAgent]: Deserialized agent or None if failed.
-        """
+            # Delete existing agent if overwriting
+            if overwrite:
+                cursor.execute("DELETE FROM agents WHERE user_id = ? AND agent_name = ?", 
+                             (user_id, agent.name))
+            
+            # Insert new agent
+            cursor.execute("""
+                INSERT INTO agents (
+                    agent_id, user_id, agent_name, agent_type, created_at, updated_at,
+                    is_active, tags, description, agent_config, belief_state,
+                    shared_memory_state, execution_state
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                stored_agent.metadata.agent_id,
+                user_id,
+                agent.name,
+                agent.__class__.__name__,
+                stored_agent.metadata.created_at.isoformat(),
+                stored_agent.metadata.updated_at.isoformat(),
+                stored_agent.metadata.is_active,
+                json.dumps(stored_agent.metadata.tags),
+                stored_agent.metadata.description,
+                json.dumps(stored_agent.state.agent_config),
+                json.dumps(stored_agent.state.belief_state),
+                json.dumps(stored_agent.state.shared_memory_state),
+                json.dumps(stored_agent.state.execution_state)
+            ))
+            
+            conn.commit()
+    
+    def _save_agent_to_json(self, stored_agent: StoredAgent, user_id: str, agent: BaseAgent, overwrite: bool):
+        """Save agent to JSON file."""
+        with self._lock:
+            # Load existing data
+            if Path(self.storage_path).exists():
+                with open(self.storage_path, 'r') as f:
+                    data = json.load(f)
+            else:
+                data = {"agents": []}
+            
+            # Remove existing agent if overwriting
+            if overwrite:
+                data["agents"] = [a for a in data["agents"] 
+                                if not (a.get("metadata", {}).get("user_id") == user_id and 
+                                       a.get("metadata", {}).get("agent_name") == agent.name)]
+            
+            # Add new agent
+            agent_data = {
+                "metadata": stored_agent.metadata.model_dump(),
+                "state": stored_agent.state.model_dump()
+            }
+            data["agents"].append(agent_data)
+            
+            # Save to file
+            with open(self.storage_path, 'w') as f:
+                json.dump(data, f, indent=2)
+    
+    def _get_agent_from_db(self, agent_id: str) -> Optional[BaseAgent]:
+        """Get agent from SQLite database."""
         try:
-            # This is a simplified deserialization - in practice, you'd need
-            # to handle different agent types and their specific requirements
-            agent_type = config.get('agent_type', 'BaseAgent')
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT agent_config, belief_state, shared_memory_state, execution_state
+                    FROM agents 
+                    WHERE agent_id = ? AND is_active = 1
+                """, (agent_id,))
+                
+                row = cursor.fetchone()
+                if row:
+                    # Agent deserialization is not implemented yet
+                    # Return None since we can't reconstruct the agent
+                    logger.info(f"Agent {agent_id} exists in database but deserialization not implemented")
+                    return None
+                        
+        except (sqlite3.Error, json.JSONDecodeError) as e:
+            logger.error(f"Failed to load agent {agent_id}: {e}")
+        
+        return None
+    
+    def _get_agent_from_json(self, agent_id: str) -> Optional[BaseAgent]:
+        """Get agent from JSON file."""
+        try:
+            if not Path(self.storage_path).exists():
+                return None
             
-            # For now, we'll create a basic agent structure
-            # In a real implementation, you'd need to import the specific agent class
-            # and handle complex object reconstruction (LLM, policies, actions, etc.)
+            with open(self.storage_path, 'r') as f:
+                data = json.load(f)
             
-            # This is a placeholder - actual implementation would be more complex
-            logger.warning(f"Agent deserialization not fully implemented for type: {agent_type}")
-            return None
+            for agent_data in data.get("agents", []):
+                if agent_data.get("metadata", {}).get("agent_id") == agent_id:
+                    # Agent deserialization is not implemented yet
+                    # Return None since we can't reconstruct the agent
+                    logger.info(f"Agent {agent_id} exists in JSON but deserialization not implemented")
+                    return None
+                        
+        except (json.JSONDecodeError, ValidationError) as e:
+            logger.error(f"Failed to load agent {agent_id} from JSON: {e}")
+        
+        return None
+    
+    def _get_agent_by_name_from_db(self, agent_name: str, user_id: str) -> Optional[BaseAgent]:
+        """Get agent by name from SQLite database."""
+        try:
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT agent_id FROM agents 
+                    WHERE agent_name = ? AND user_id = ? AND is_active = 1
+                """, (agent_name, user_id))
+                
+                row = cursor.fetchone()
+                if row:
+                    agent_id = row[0]
+                    return self.get_agent(agent_id)
+                    
+        except sqlite3.Error as e:
+            logger.error(f"Failed to find agent '{agent_name}' for user '{user_id}': {e}")
+        
+        return None
+    
+    def _get_agent_by_name_from_json(self, agent_name: str, user_id: str) -> Optional[BaseAgent]:
+        """Get agent by name from JSON file."""
+        try:
+            if not Path(self.storage_path).exists():
+                return None
+            
+            with open(self.storage_path, 'r') as f:
+                data = json.load(f)
+            
+            for agent_data in data.get("agents", []):
+                metadata = agent_data.get("metadata", {})
+                if (metadata.get("agent_name") == agent_name and 
+                    metadata.get("user_id") == user_id and 
+                    metadata.get("is_active", True)):
+                    agent_id = metadata.get("agent_id")
+                    return self.get_agent(agent_id)
+                    
+        except (json.JSONDecodeError, ValidationError) as e:
+            logger.error(f"Failed to find agent '{agent_name}' for user '{user_id}' in JSON: {e}")
+        
+        return None
+    
+    def _list_agents_from_db(self, user_id: str, agent_type: str, tags: List[str], active_only: bool) -> List[AgentMetadata]:
+        """List agents from SQLite database."""
+        try:
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                
+                # Build query
+                query = "SELECT * FROM agents WHERE 1=1"
+                params = []
+                
+                if user_id:
+                    query += " AND user_id = ?"
+                    params.append(user_id)
+                
+                if agent_type:
+                    query += " AND agent_type = ?"
+                    params.append(agent_type)
+                
+                if active_only:
+                    query += " AND is_active = 1"
+                
+                cursor.execute(query, params)
+                
+                agents = []
+                for row in cursor.fetchall():
+                    # Parse tags
+                    tags_json = row[7]  # tags column
+                    agent_tags = json.loads(tags_json) if tags_json else []
+                    
+                    # Check tag filter
+                    if tags and not any(tag in agent_tags for tag in tags):
+                        continue
+                    
+                    metadata = AgentMetadata(
+                        agent_id=row[0],
+                        user_id=row[1],
+                        agent_name=row[2],
+                        agent_type=row[3],
+                        created_at=datetime.fromisoformat(row[4]),
+                        updated_at=datetime.fromisoformat(row[5]),
+                        is_active=bool(row[6]),
+                        tags=agent_tags,
+                        description=row[8] or ""
+                    )
+                    agents.append(metadata)
+                
+                return agents
+                
+        except (sqlite3.Error, json.JSONDecodeError) as e:
+            logger.error(f"Failed to list agents from database: {e}")
+            return []
+    
+    def _list_agents_from_json(self, user_id: str, agent_type: str, tags: List[str], active_only: bool) -> List[AgentMetadata]:
+        """List agents from JSON file."""
+        try:
+            if not Path(self.storage_path).exists():
+                return []
+            
+            with open(self.storage_path, 'r') as f:
+                data = json.load(f)
+            
+            agents = []
+            for agent_data in data.get("agents", []):
+                metadata_dict = agent_data.get("metadata", {})
+                
+                # Apply filters
+                if user_id and metadata_dict.get("user_id") != user_id:
+                    continue
+                if agent_type and metadata_dict.get("agent_type") != agent_type:
+                    continue
+                if active_only and not metadata_dict.get("is_active", True):
+                    continue
+                
+                # Check tag filter
+                agent_tags = metadata_dict.get("tags", [])
+                if tags and not any(tag in agent_tags for tag in tags):
+                    continue
+                
+                metadata = AgentMetadata(
+                    agent_id=metadata_dict.get("agent_id", ""),
+                    user_id=metadata_dict.get("user_id", ""),
+                    agent_name=metadata_dict.get("agent_name", ""),
+                    agent_type=metadata_dict.get("agent_type", ""),
+                    created_at=datetime.fromisoformat(metadata_dict.get("created_at", datetime.utcnow().isoformat())),
+                    updated_at=datetime.fromisoformat(metadata_dict.get("updated_at", datetime.utcnow().isoformat())),
+                    is_active=metadata_dict.get("is_active", True),
+                    tags=agent_tags,
+                    description=metadata_dict.get("description", "")
+                )
+                agents.append(metadata)
+            
+            return agents
+            
+        except (json.JSONDecodeError, ValidationError) as e:
+            logger.error(f"Failed to list agents from JSON: {e}")
+            return []
+    
+    def _delete_agent_from_db(self, agent_id: str, soft_delete: bool) -> bool:
+        """Delete agent from SQLite database."""
+        try:
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                
+                if soft_delete:
+                    cursor.execute("""
+                        UPDATE agents SET is_active = 0, updated_at = ?
+                        WHERE agent_id = ?
+                    """, (datetime.utcnow().isoformat(), agent_id))
+                else:
+                    cursor.execute("DELETE FROM agents WHERE agent_id = ?", (agent_id,))
+                
+                conn.commit()
+                
+                # Remove from cache
+                if agent_id in self.agents:
+                    del self.agents[agent_id]
+                
+                logger.info(f"Deleted agent {agent_id} from database (soft_delete={soft_delete})")
+                return True
+                
+        except sqlite3.Error as e:
+            logger.error(f"Failed to delete agent {agent_id} from database: {e}")
+            return False
+    
+    def _delete_agent_from_json(self, agent_id: str, soft_delete: bool) -> bool:
+        """Delete agent from JSON file."""
+        try:
+            if not Path(self.storage_path).exists():
+                return False
+            
+            with open(self.storage_path, 'r') as f:
+                data = json.load(f)
+            
+            # Find and update/remove agent
+            for i, agent_data in enumerate(data.get("agents", [])):
+                if agent_data.get("metadata", {}).get("agent_id") == agent_id:
+                    if soft_delete:
+                        # Mark as inactive
+                        data["agents"][i]["metadata"]["is_active"] = False
+                        data["agents"][i]["metadata"]["updated_at"] = datetime.utcnow().isoformat()
+                    else:
+                        # Remove completely
+                        data["agents"].pop(i)
+                    break
+            else:
+                return False  # Agent not found
+            
+            # Save updated data
+            with open(self.storage_path, 'w') as f:
+                json.dump(data, f, indent=2)
+            
+            # Remove from cache
+            if agent_id in self.agents:
+                del self.agents[agent_id]
+            
+            logger.info(f"Deleted agent {agent_id} from JSON (soft_delete={soft_delete})")
+            return True
+            
+        except (json.JSONDecodeError, ValidationError) as e:
+            logger.error(f"Failed to delete agent {agent_id} from JSON: {e}")
+            return False
+    
+    def _update_agent_in_db(self, agent_id: str, agent: BaseAgent) -> bool:
+        """Update agent in SQLite database."""
+        try:
+            # Serialize updated agent
+            stored_agent = self._serialize_agent(agent)
+            
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                
+                cursor.execute("""
+                    UPDATE agents SET
+                        agent_name = ?, agent_type = ?, updated_at = ?,
+                        tags = ?, description = ?, agent_config = ?,
+                        belief_state = ?, shared_memory_state = ?, execution_state = ?
+                    WHERE agent_id = ?
+                """, (
+                    agent.name,
+                    agent.__class__.__name__,
+                    datetime.utcnow().isoformat(),
+                    json.dumps(stored_agent.metadata.tags),
+                    stored_agent.metadata.description,
+                    json.dumps(stored_agent.state.agent_config),
+                    json.dumps(stored_agent.state.belief_state),
+                    json.dumps(stored_agent.state.shared_memory_state),
+                    json.dumps(stored_agent.state.execution_state),
+                    agent_id
+                ))
+                
+                conn.commit()
+            
+            # Update cache
+            self.agents[agent_id] = agent
+            
+            logger.info(f"Updated agent {agent_id} in database")
+            return True
             
         except Exception as e:
-            logger.error(f"Failed to deserialize agent: {e}")
-            return None
+            logger.error(f"Failed to update agent {agent_id} in database: {e}")
+            return False
+    
+    def _update_agent_in_json(self, agent_id: str, agent: BaseAgent) -> bool:
+        """Update agent in JSON file."""
+        try:
+            if not Path(self.storage_path).exists():
+                return False
+            
+            with open(self.storage_path, 'r') as f:
+                data = json.load(f)
+            
+            # Find and update agent
+            for i, agent_data in enumerate(data.get("agents", [])):
+                if agent_data.get("metadata", {}).get("agent_id") == agent_id:
+                    # Serialize updated agent
+                    stored_agent = self._serialize_agent(agent)
+                    
+                    # Update agent data
+                    data["agents"][i] = {
+                        "metadata": stored_agent.metadata.model_dump(),
+                        "state": stored_agent.state.model_dump()
+                    }
+                    break
+            else:
+                return False  # Agent not found
+            
+            # Save updated data
+            with open(self.storage_path, 'w') as f:
+                json.dump(data, f, indent=2)
+            
+            # Update cache
+            self.agents[agent_id] = agent
+            
+            logger.info(f"Updated agent {agent_id} in JSON")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to update agent {agent_id} in JSON: {e}")
+            return False
+    
+    def _get_agent_count_from_db(self, user_id: str) -> int:
+        """Get agent count from SQLite database."""
+        try:
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                
+                if user_id:
+                    cursor.execute("SELECT COUNT(*) FROM agents WHERE user_id = ? AND is_active = 1", (user_id,))
+                else:
+                    cursor.execute("SELECT COUNT(*) FROM agents WHERE is_active = 1")
+                
+                return cursor.fetchone()[0]
+                
+        except sqlite3.Error as e:
+            logger.error(f"Failed to get agent count from database: {e}")
+            return 0
+    
+    def _get_agent_count_from_json(self, user_id: str) -> int:
+        """Get agent count from JSON file."""
+        try:
+            if not Path(self.storage_path).exists():
+                return 0
+            
+            with open(self.storage_path, 'r') as f:
+                data = json.load(f)
+            
+            count = 0
+            for agent_data in data.get("agents", []):
+                metadata = agent_data.get("metadata", {})
+                if metadata.get("is_active", True):
+                    if user_id is None or metadata.get("user_id") == user_id:
+                        count += 1
+            
+            return count
+            
+        except (json.JSONDecodeError, ValidationError) as e:
+            logger.error(f"Failed to get agent count from JSON: {e}")
+            return 0
     
     def save_agent(self, agent: BaseAgent, user_id: str = "default", 
                    tags: List[str] = None, overwrite: bool = False) -> str:
@@ -301,42 +733,14 @@ class PersistentAgentPool:
                 stored_agent = self._serialize_agent(agent)
                 agent_id = stored_agent.metadata.agent_id
                 
-                # Save to database
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    
-                    # Delete existing agent if overwriting
-                    if overwrite:
-                        cursor.execute("DELETE FROM agents WHERE user_id = ? AND agent_name = ?", 
-                                     (user_id, agent.name))
-                    
-                    # Insert new agent
-                    cursor.execute("""
-                        INSERT INTO agents (
-                            agent_id, user_id, agent_name, agent_type, created_at, updated_at,
-                            is_active, tags, description, agent_config, belief_state,
-                            shared_memory_state, execution_state
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        agent_id,
-                        user_id,
-                        agent.name,
-                        agent.__class__.__name__,
-                        stored_agent.metadata.created_at.isoformat(),
-                        stored_agent.metadata.updated_at.isoformat(),
-                        stored_agent.metadata.is_active,
-                        json.dumps(stored_agent.metadata.tags),
-                        stored_agent.metadata.description,
-                        json.dumps(stored_agent.state.agent_config),
-                        json.dumps(stored_agent.state.belief_state),
-                        json.dumps(stored_agent.state.shared_memory_state),
-                        json.dumps(stored_agent.state.execution_state)
-                    ))
-                    
-                    conn.commit()
+                # Save to storage backend
+                if self.storage_type == "sqlite":
+                    self._save_agent_to_db(stored_agent, user_id, agent, overwrite)
+                elif self.storage_type == "json":
+                    self._save_agent_to_json(stored_agent, user_id, agent, overwrite)
                 
                 # Add to cache
-                self._cache[agent_id] = agent
+                self.agents[agent_id] = agent
                 
                 logger.info(f"Saved agent '{agent.name}' with ID '{agent_id}' for user '{user_id}'")
                 return agent_id
@@ -362,35 +766,14 @@ class PersistentAgentPool:
         """
         with self._lock:
             # Check cache first
-            if agent_id in self._cache:
-                return self._cache[agent_id]
+            if agent_id in self.agents:
+                return self.agents[agent_id]
             
-            # Load from database
-            try:
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                        SELECT agent_config, belief_state, shared_memory_state, execution_state
-                        FROM agents 
-                        WHERE agent_id = ? AND is_active = 1
-                    """, (agent_id,))
-                    
-                    row = cursor.fetchone()
-                    if row:
-                        config_json, belief_json, memory_json, exec_json = row
-                        
-                        agent_config = json.loads(config_json) if config_json else {}
-                        belief_state = json.loads(belief_json) if belief_json else {}
-                        memory_state = json.loads(memory_json) if memory_json else {}
-                        exec_state = json.loads(exec_json) if exec_json else {}
-                        
-                        agent = self._deserialize_agent(agent_config, belief_state, memory_state, exec_state)
-                        if agent:
-                            self._cache[agent_id] = agent
-                            return agent
-                            
-            except (sqlite3.Error, json.JSONDecodeError) as e:
-                logger.error(f"Failed to load agent {agent_id}: {e}")
+            # Load from storage backend
+            if self.storage_type == "sqlite":
+                return self._get_agent_from_db(agent_id)
+            elif self.storage_type == "json":
+                return self._get_agent_from_json(agent_id)
             
             return None
     
@@ -411,21 +794,10 @@ class PersistentAgentPool:
             My Agent
         """
         with self._lock:
-            try:
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                        SELECT agent_id FROM agents 
-                        WHERE agent_name = ? AND user_id = ? AND is_active = 1
-                    """, (agent_name, user_id))
-                    
-                    row = cursor.fetchone()
-                    if row:
-                        agent_id = row[0]
-                        return self.get_agent(agent_id)
-                        
-            except sqlite3.Error as e:
-                logger.error(f"Failed to find agent '{agent_name}' for user '{user_id}': {e}")
+            if self.storage_type == "sqlite":
+                return self._get_agent_by_name_from_db(agent_name, user_id)
+            elif self.storage_type == "json":
+                return self._get_agent_by_name_from_json(agent_name, user_id)
             
             return None
     
@@ -450,55 +822,12 @@ class PersistentAgentPool:
             My QA Agent (QAAgent)
         """
         with self._lock:
-            try:
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    
-                    # Build query
-                    query = "SELECT * FROM agents WHERE 1=1"
-                    params = []
-                    
-                    if user_id:
-                        query += " AND user_id = ?"
-                        params.append(user_id)
-                    
-                    if agent_type:
-                        query += " AND agent_type = ?"
-                        params.append(agent_type)
-                    
-                    if active_only:
-                        query += " AND is_active = 1"
-                    
-                    cursor.execute(query, params)
-                    
-                    agents = []
-                    for row in cursor.fetchall():
-                        # Parse tags
-                        tags_json = row[7]  # tags column
-                        agent_tags = json.loads(tags_json) if tags_json else []
-                        
-                        # Check tag filter
-                        if tags and not any(tag in agent_tags for tag in tags):
-                            continue
-                        
-                        metadata = AgentMetadata(
-                            agent_id=row[0],
-                            user_id=row[1],
-                            agent_name=row[2],
-                            agent_type=row[3],
-                            created_at=datetime.fromisoformat(row[4]),
-                            updated_at=datetime.fromisoformat(row[5]),
-                            is_active=bool(row[6]),
-                            tags=agent_tags,
-                            description=row[8] or ""
-                        )
-                        agents.append(metadata)
-                    
-                    return agents
-                    
-            except (sqlite3.Error, json.JSONDecodeError) as e:
-                logger.error(f"Failed to list agents: {e}")
-                return []
+            if self.storage_type == "sqlite":
+                return self._list_agents_from_db(user_id, agent_type, tags, active_only)
+            elif self.storage_type == "json":
+                return self._list_agents_from_json(user_id, agent_type, tags, active_only)
+            
+            return []
     
     def delete_agent(self, agent_id: str, soft_delete: bool = True) -> bool:
         """Delete an agent.
@@ -517,30 +846,12 @@ class PersistentAgentPool:
             Deleted
         """
         with self._lock:
-            try:
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    
-                    if soft_delete:
-                        cursor.execute("""
-                            UPDATE agents SET is_active = 0, updated_at = ?
-                            WHERE agent_id = ?
-                        """, (datetime.utcnow().isoformat(), agent_id))
-                    else:
-                        cursor.execute("DELETE FROM agents WHERE agent_id = ?", (agent_id,))
-                    
-                    conn.commit()
-                    
-                    # Remove from cache
-                    if agent_id in self._cache:
-                        del self._cache[agent_id]
-                    
-                    logger.info(f"Deleted agent {agent_id} (soft_delete={soft_delete})")
-                    return True
-                    
-            except sqlite3.Error as e:
-                logger.error(f"Failed to delete agent {agent_id}: {e}")
-                return False
+            if self.storage_type == "sqlite":
+                return self._delete_agent_from_db(agent_id, soft_delete)
+            elif self.storage_type == "json":
+                return self._delete_agent_from_json(agent_id, soft_delete)
+            
+            return False
     
     def update_agent(self, agent_id: str, agent: BaseAgent) -> bool:
         """Update an existing agent.
@@ -560,43 +871,12 @@ class PersistentAgentPool:
             Updated
         """
         with self._lock:
-            try:
-                # Serialize updated agent
-                stored_agent = self._serialize_agent(agent)
-                
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    
-                    cursor.execute("""
-                        UPDATE agents SET
-                            agent_name = ?, agent_type = ?, updated_at = ?,
-                            tags = ?, description = ?, agent_config = ?,
-                            belief_state = ?, shared_memory_state = ?, execution_state = ?
-                        WHERE agent_id = ?
-                    """, (
-                        agent.name,
-                        agent.__class__.__name__,
-                        datetime.utcnow().isoformat(),
-                        json.dumps(stored_agent.metadata.tags),
-                        stored_agent.metadata.description,
-                        json.dumps(stored_agent.state.agent_config),
-                        json.dumps(stored_agent.state.belief_state),
-                        json.dumps(stored_agent.state.shared_memory_state),
-                        json.dumps(stored_agent.state.execution_state),
-                        agent_id
-                    ))
-                    
-                    conn.commit()
-                
-                # Update cache
-                self._cache[agent_id] = agent
-                
-                logger.info(f"Updated agent {agent_id}")
-                return True
-                
-            except Exception as e:
-                logger.error(f"Failed to update agent {agent_id}: {e}")
-                return False
+            if self.storage_type == "sqlite":
+                return self._update_agent_in_db(agent_id, agent)
+            elif self.storage_type == "json":
+                return self._update_agent_in_json(agent_id, agent)
+            
+            return False
     
     def get_agent_count(self, user_id: str = None) -> int:
         """Get the count of agents.
@@ -614,31 +894,23 @@ class PersistentAgentPool:
             User has 5 agents
         """
         with self._lock:
-            try:
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    
-                    if user_id:
-                        cursor.execute("SELECT COUNT(*) FROM agents WHERE user_id = ? AND is_active = 1", (user_id,))
-                    else:
-                        cursor.execute("SELECT COUNT(*) FROM agents WHERE is_active = 1")
-                    
-                    return cursor.fetchone()[0]
-                    
-            except sqlite3.Error as e:
-                logger.error(f"Failed to get agent count: {e}")
-                return 0
+            if self.storage_type == "sqlite":
+                return self._get_agent_count_from_db(user_id)
+            elif self.storage_type == "json":
+                return self._get_agent_count_from_json(user_id)
+            
+            return 0
     
     def clear_cache(self):
         """Clear the in-memory agent cache."""
         with self._lock:
-            self._cache.clear()
+            self.agents.clear()
             logger.info("Agent cache cleared")
     
     def __len__(self) -> int:
         """Return the number of cached agents."""
-        return len(self._cache)
+        return len(self.agents)
     
     def __contains__(self, agent_id: str) -> bool:
         """Check if an agent ID exists in the pool."""
-        return agent_id in self._cache or self.get_agent(agent_id) is not None
+        return agent_id in self.agents or self.get_agent(agent_id) is not None
