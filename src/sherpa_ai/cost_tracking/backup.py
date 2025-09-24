@@ -56,7 +56,3 @@ class DatabaseBackup:
         except Exception as e:
             logger.error(f"Error downloading database from S3: {str(e)}")
     
-    def close(self):
-        """Close the backup manager."""
-        # No explicit close needed for boto3 client
-        pass

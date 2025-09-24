@@ -49,8 +49,8 @@ class UserUsageTracker:
         db_url: str = cfg.DB_URL,
         bucket_name: Optional[str] = None,
         s3_file_key: Optional[str] = None,
-        log_to_s3: bool = False,
-        log_to_file: bool = False,
+        log_to_s3: bool = None,
+        log_to_file: bool = None,
         log_file_path: Optional[str] = None,
         pricing_manager: Optional[PricingManager] = None,
         engine: Optional[Any] = None,
@@ -97,11 +97,19 @@ class UserUsageTracker:
         
         # Initialize helpers
         self.pricing_manager = pricing_manager or PricingManager()
-        self.usage_logger = UsageLogger(log_to_file, log_file_path)
+        self.usage_logger = UsageLogger(
+            log_to_file if log_to_file is not None else cfg.USAGE_LOG_TO_FILE, 
+            log_file_path or cfg.USAGE_LOG_FILE_PATH
+        )
+        # Use config defaults if not explicitly set
+        use_s3 = log_to_s3 if log_to_s3 is not None else cfg.USAGE_LOG_TO_S3
+        # Use default bucket and key if S3 is enabled but not explicitly provided
+        default_bucket = bucket_name or "sherpa-sqlight"
+        default_key = s3_file_key or "token_counter.db"
         self.database_backup = DatabaseBackup(
             local_file_path=f"./{self.db_name}",
-            bucket_name=bucket_name if log_to_s3 else None,
-            s3_file_key=s3_file_key if log_to_s3 else None
+            bucket_name=default_bucket if use_s3 else None,
+            s3_file_key=default_key if use_s3 else None
         )
     
     def add_usage(
@@ -396,7 +404,6 @@ class UserUsageTracker:
     def close_connection(self):
         """Close the database connection and cleanup helpers."""
         self.session.close()
-        self.usage_logger.close()
     
     # Backward compatibility methods (delegate to reporting module)
     def get_tokens_from_usage_metadata(self, usage_metadata: Dict[str, Any]) -> Dict[str, int]:

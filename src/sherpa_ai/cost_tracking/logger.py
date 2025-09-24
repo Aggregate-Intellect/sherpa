@@ -130,7 +130,3 @@ class UsageLogger:
         self.user_costs.clear()
         self.alerted_users.clear()
     
-    def close(self):
-        """Close the logger."""
-        # Loguru manages its handlers, no explicit close needed
-        pass

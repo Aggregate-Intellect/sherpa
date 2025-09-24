@@ -62,8 +62,8 @@ DAILY_COST_LIMIT = float(environ.get("DAILY_COST_LIMIT") or 10.0)  # $10 default
 COST_ALERT_THRESHOLD = float(environ.get("COST_ALERT_THRESHOLD") or 0.8)  # 80% of limit
 
 # Usage tracking logging settings
-USAGE_LOG_TO_S3 = environ.get("USAGE_LOG_TO_S3", "true").lower() == "true"
-USAGE_LOG_TO_FILE = environ.get("USAGE_LOG_TO_FILE", "false").lower() == "true"
+USAGE_LOG_TO_S3 = environ.get("USAGE_LOG_TO_S3", "false").lower() == "true"
+USAGE_LOG_TO_FILE = environ.get("USAGE_LOG_TO_FILE", "true").lower() == "true"
 USAGE_LOG_FILE_PATH = environ.get("USAGE_LOG_FILE_PATH", "./usage_logs.txt")
 
 # Pricing configuration

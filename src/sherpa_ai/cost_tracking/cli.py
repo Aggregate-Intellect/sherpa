@@ -2,7 +2,6 @@
 
 import argparse
 import json
-from datetime import datetime
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.cost_tracking.reporting import CostReporter
