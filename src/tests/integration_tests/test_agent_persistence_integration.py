@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import Mock
 
 from sherpa_ai.agents.agent_pool import AgentPool
+from sherpa_ai.agents.persistent_agent_pool import PersistentAgentPool
 from sherpa_ai.agents.user_agent_manager import UserAgentManager
 from sherpa_ai.agents.base import BaseAgent
 
@@ -24,24 +25,22 @@ class TestAgentPersistenceIntegration(unittest.TestCase):
         if os.path.exists(self.db_path):
             os.unlink(self.db_path)
 
-    def test_agent_pool_backward_compatibility(self):
-        """Test that AgentPool maintains backward compatibility."""
-        # Test default behavior (no persistence)
+    def test_agent_pool_basic_functionality(self):
+        """Test basic AgentPool functionality."""
         pool = AgentPool()
-        self.assertIsNone(pool.persistent_pool)
-        self.assertIsNone(pool.user_manager)
+        self.assertIsNotNone(pool)
+        self.assertEqual(len(pool.agents), 0)
 
-    def test_agent_pool_with_persistence_enabled(self):
-        """Test AgentPool with persistence enabled."""
-        pool = AgentPool(persistent=True, db_path=self.db_path)
-        self.assertIsNotNone(pool.persistent_pool)
-        self.assertIsNone(pool.user_manager)
+    def test_persistent_agent_pool_functionality(self):
+        """Test PersistentAgentPool functionality."""
+        pool = PersistentAgentPool(self.db_path, "sqlite")
+        self.assertIsNotNone(pool)
+        self.assertEqual(pool.storage_path, self.db_path)
 
-    def test_agent_pool_with_user_management_enabled(self):
-        """Test AgentPool with user management enabled."""
-        pool = AgentPool(user_management=True, db_path=self.db_path)
-        self.assertIsNotNone(pool.user_manager)
-        self.assertIsNone(pool.persistent_pool)
+    def test_user_agent_manager_functionality(self):
+        """Test UserAgentManager functionality."""
+        manager = UserAgentManager(self.db_path)
+        self.assertIsNotNone(manager)
 
     def test_user_management_workflow(self):
         """Test basic user management workflow."""
@@ -104,7 +103,7 @@ class TestAgentPersistenceIntegration(unittest.TestCase):
 
     def test_agent_persistence_basic_workflow(self):
         """Test basic agent persistence workflow."""
-        pool = AgentPool(persistent=True, db_path=self.db_path)
+        pool = PersistentAgentPool(self.db_path, "sqlite")
         
         # Create a mock agent with all required attributes
         mock_agent = Mock(spec=BaseAgent)

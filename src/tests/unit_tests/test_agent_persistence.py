@@ -27,26 +27,26 @@ class TestAgentPersistence(unittest.TestCase):
 
     def test_persistent_agent_pool_initialization(self):
         """Test that PersistentAgentPool initializes correctly."""
-        pool = PersistentAgentPool(self.db_path)
+        pool = PersistentAgentPool(self.db_path, "sqlite")
         self.assertIsNotNone(pool)
-        self.assertEqual(pool.db_path, self.db_path)
+        self.assertEqual(pool.storage_path, self.db_path)
 
     def test_user_agent_manager_initialization(self):
         """Test that UserAgentManager initializes correctly."""
         manager = UserAgentManager(self.db_path)
         self.assertIsNotNone(manager)
 
-    def test_agent_pool_with_persistence(self):
-        """Test AgentPool with persistence enabled."""
-        pool = AgentPool(persistent=True, db_path=self.db_path)
-        self.assertIsNotNone(pool.persistent_pool)
-        self.assertIsNone(pool.user_manager)
+    def test_agent_pool_basic(self):
+        """Test basic AgentPool functionality."""
+        pool = AgentPool()
+        self.assertIsNotNone(pool)
+        self.assertEqual(len(pool.agents), 0)
 
-    def test_agent_pool_with_user_management(self):
-        """Test AgentPool with user management enabled."""
-        pool = AgentPool(user_management=True, db_path=self.db_path)
-        self.assertIsNotNone(pool.user_manager)
-        self.assertIsNone(pool.persistent_pool)
+    def test_persistent_agent_pool_direct(self):
+        """Test PersistentAgentPool directly."""
+        pool = PersistentAgentPool(self.db_path, "sqlite")
+        self.assertIsNotNone(pool)
+        self.assertEqual(pool.storage_path, self.db_path)
 
     def test_create_user_basic(self):
         """Test basic user creation."""
@@ -85,7 +85,7 @@ class TestAgentPersistence(unittest.TestCase):
 
     def test_agent_pool_save_agent_basic(self):
         """Test basic agent saving functionality."""
-        pool = AgentPool(persistent=True, db_path=self.db_path)
+        pool = PersistentAgentPool(self.db_path, "sqlite")
         
         # Create a mock agent with all required attributes
         mock_agent = Mock(spec=BaseAgent)
@@ -102,7 +102,7 @@ class TestAgentPersistence(unittest.TestCase):
 
     def test_agent_pool_list_agents(self):
         """Test listing agents."""
-        pool = AgentPool(persistent=True, db_path=self.db_path)
+        pool = PersistentAgentPool(self.db_path, "sqlite")
         
         # List agents (should be empty initially)
         agents = pool.list_agents()
@@ -110,7 +110,7 @@ class TestAgentPersistence(unittest.TestCase):
 
     def test_agent_pool_get_agent_count(self):
         """Test getting agent count."""
-        pool = AgentPool(persistent=True, db_path=self.db_path)
+        pool = PersistentAgentPool(self.db_path, "sqlite")
         
         # Get count (should be 0 initially)
         count = len(pool.list_agents())
