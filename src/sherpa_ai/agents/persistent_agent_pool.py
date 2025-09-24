@@ -178,15 +178,29 @@ class PersistentAgentPool(AgentPool):
                 if not Path(self.storage_path).exists():
                     return
                 
+                # Check if file is empty
+                if Path(self.storage_path).stat().st_size == 0:
+                    return
+                
                 with open(self.storage_path, 'r') as f:
                     data = json.load(f)
                 
                 for agent_data in data.get("agents", []):
                     try:
-                        # Skip loading agents from JSON file
-                        # Agents are stored but cannot be restored to working state
-                        agent_id = agent_data.get("metadata", {}).get("agent_id", "unknown")
-                        logger.info(f"Skipping agent {agent_id} - cannot restore from storage")
+                        # Deserialize agent from JSON data
+                        stored_agent = StoredAgent(
+                            metadata=AgentMetadata(**agent_data.get("metadata", {})),
+                            state=AgentState(**agent_data.get("state", {}))
+                        )
+                        
+                        # Restore agent to working state
+                        agent = self._deserialize_agent(stored_agent)
+                        if agent:
+                            agent_id = stored_agent.metadata.agent_id
+                            self.agents[agent_id] = agent
+                            logger.info(f"Restored agent {agent_id} from JSON storage")
+                        else:
+                            logger.warning(f"Failed to restore agent {stored_agent.metadata.agent_name} from JSON")
                                 
                     except (json.JSONDecodeError, ValidationError) as e:
                         logger.warning(f"Failed to load agent from JSON: {e}")
@@ -211,9 +225,52 @@ class PersistentAgentPool(AgentPool):
                         agent_id, config_json, belief_json, memory_json, exec_json = row
                         
                         try:
-                            # Skip loading agents from database
-                            # Agents are stored but cannot be restored to working state
-                            logger.info(f"Skipping agent {agent_id} - cannot restore from storage")
+                            # Parse JSON data
+                            agent_config = json.loads(config_json) if config_json else {}
+                            belief_state = json.loads(belief_json) if belief_json else {}
+                            shared_memory_state = json.loads(memory_json) if memory_json else {}
+                            execution_state = json.loads(exec_json) if exec_json else {}
+                            
+                            # Create StoredAgent from database data
+                            # We need to get metadata from the database
+                            cursor.execute("""
+                                SELECT user_id, agent_name, agent_type, created_at, updated_at, 
+                                       is_active, tags, description
+                                FROM agents WHERE agent_id = ?
+                            """, (agent_id,))
+                            
+                            meta_row = cursor.fetchone()
+                            if meta_row:
+                                user_id, agent_name, agent_type, created_at, updated_at, is_active, tags, description = meta_row
+                                
+                                metadata = AgentMetadata(
+                                    agent_id=agent_id,
+                                    user_id=user_id,
+                                    agent_name=agent_name,
+                                    agent_type=agent_type,
+                                    created_at=datetime.fromisoformat(created_at),
+                                    updated_at=datetime.fromisoformat(updated_at),
+                                    is_active=bool(is_active),
+                                    tags=json.loads(tags) if tags else [],
+                                    description=description or ""
+                                )
+                                
+                                state = AgentState(
+                                    agent_config=agent_config,
+                                    belief_state=belief_state,
+                                    shared_memory_state=shared_memory_state,
+                                    execution_state=execution_state
+                                )
+                                
+                                stored_agent = StoredAgent(metadata=metadata, state=state)
+                                
+                                # Restore agent to working state
+                                agent = self._deserialize_agent(stored_agent)
+                                if agent:
+                                    self.agents[agent_id] = agent
+                                    logger.info(f"Restored agent {agent_id} from database")
+                                else:
+                                    logger.warning(f"Failed to restore agent {agent_name} from database")
                                 
                         except (json.JSONDecodeError, ValidationError) as e:
                             logger.warning(f"Failed to load agent {agent_id}: {e}")
@@ -265,6 +322,169 @@ class PersistentAgentPool(AgentPool):
         
         return StoredAgent(metadata=metadata, state=state)
     
+    def _deserialize_agent(self, stored_agent: StoredAgent) -> Optional[BaseAgent]:
+        """Deserialize a StoredAgent back to a working BaseAgent.
+        
+        Args:
+            stored_agent (StoredAgent): The stored agent data.
+            
+        Returns:
+            Optional[BaseAgent]: The deserialized agent or None if failed.
+        """
+        try:
+            # Get agent class from type
+            agent_type = stored_agent.metadata.agent_type
+            agent_class = self._get_agent_class(agent_type)
+            
+            if not agent_class:
+                logger.error(f"Unknown agent type: {agent_type}")
+                return None
+            
+            # Create agent instance with basic parameters
+            agent = agent_class(
+                name=stored_agent.metadata.agent_name,
+                description=stored_agent.metadata.description
+            )
+            
+            # Restore agent attributes from stored state
+            agent_config = stored_agent.state.agent_config
+            
+            # Restore basic attributes
+            if 'num_runs' in agent_config:
+                agent.num_runs = agent_config['num_runs']
+            if 'validation_steps' in agent_config:
+                agent.validation_steps = agent_config['validation_steps']
+            if 'global_regen_max' in agent_config:
+                agent.global_regen_max = agent_config['global_regen_max']
+            if 'feedback_agent_name' in agent_config:
+                agent.feedback_agent_name = agent_config['feedback_agent_name']
+            
+            # Restore user_id and tags
+            agent.user_id = stored_agent.metadata.user_id
+            agent.tags = stored_agent.metadata.tags
+            
+            # Restore belief state
+            if stored_agent.state.belief_state:
+                agent.belief = self._deserialize_belief(stored_agent.state.belief_state)
+            
+            # Restore shared memory
+            if stored_agent.state.shared_memory_state:
+                agent.shared_memory = self._deserialize_shared_memory(stored_agent.state.shared_memory_state)
+            
+            # Note: LLM, Policy, Actions, and other complex objects are not restored
+            # as they require specific initialization that may not be available
+            # The agent will need to be reconfigured with these components
+            
+            logger.info(f"Deserialized agent {stored_agent.metadata.agent_name} of type {agent_type}")
+            return agent
+            
+        except Exception as e:
+            logger.error(f"Failed to deserialize agent {stored_agent.metadata.agent_name}: {e}")
+            return None
+    
+    def _get_agent_class(self, agent_type: str) -> Optional[type]:
+        """Get agent class by type name.
+        
+        Args:
+            agent_type (str): The agent type name.
+            
+        Returns:
+            Optional[type]: The agent class or None if not found.
+        """
+        # Import agent classes dynamically
+        try:
+            if agent_type == "QAAgent":
+                from sherpa_ai.agents.qa_agent import QAAgent
+                return QAAgent
+            elif agent_type == "ResearchAgent":
+                from sherpa_ai.agents.research_agent import ResearchAgent
+                return ResearchAgent
+            elif agent_type == "CriticAgent":
+                from sherpa_ai.agents.critic_agent import CriticAgent
+                return CriticAgent
+            elif agent_type == "BaseAgent":
+                return BaseAgent
+            else:
+                # Try to find the class in the current module's globals
+                # This handles custom agent classes defined in the same session
+                import sys
+                current_module = sys.modules[__name__]
+                if hasattr(current_module, agent_type):
+                    return getattr(current_module, agent_type)
+                
+                # Try to find in the calling module's globals
+                import inspect
+                frame = inspect.currentframe()
+                try:
+                    # Go up the call stack to find the module that defined the agent
+                    for i in range(5):  # Check up to 5 frames up
+                        frame = frame.f_back
+                        if frame is None:
+                            break
+                        caller_globals = frame.f_globals
+                        if agent_type in caller_globals:
+                            return caller_globals[agent_type]
+                finally:
+                    del frame
+                
+                logger.warning(f"Unknown agent type: {agent_type}")
+                return None
+        except ImportError as e:
+            logger.error(f"Failed to import agent type {agent_type}: {e}")
+            return None
+    
+    def _deserialize_belief(self, belief_data: Dict[str, Any]) -> Optional[Belief]:
+        """Deserialize belief state.
+        
+        Args:
+            belief_data (Dict[str, Any]): Serialized belief data.
+            
+        Returns:
+            Optional[Belief]: Deserialized belief or None if failed.
+        """
+        try:
+            if not belief_data:
+                return None
+            
+            # Create a new Belief instance
+            belief = Belief()
+            
+            # Restore belief content if available
+            if 'content' in belief_data:
+                belief.content = belief_data['content']
+            
+            return belief
+            
+        except Exception as e:
+            logger.warning(f"Failed to deserialize belief: {e}")
+            return None
+    
+    def _deserialize_shared_memory(self, memory_data: Dict[str, Any]):
+        """Deserialize shared memory state.
+        
+        Args:
+            memory_data (Dict[str, Any]): Serialized memory data.
+            
+        Returns:
+            Optional[SharedMemory]: Deserialized memory or None if failed.
+        """
+        try:
+            if not memory_data:
+                return None
+            
+            from sherpa_ai.memory.shared_memory import SharedMemory
+            memory = SharedMemory()
+            
+            # Restore memory content if available
+            if 'content' in memory_data:
+                memory.content = memory_data['content']
+            
+            return memory
+            
+        except Exception as e:
+            logger.warning(f"Failed to deserialize shared memory: {e}")
+            return None
+    
     def _save_agent_to_db(self, stored_agent: StoredAgent, user_id: str, agent: BaseAgent, overwrite: bool):
         """Save agent to SQLite database."""
         with sqlite3.connect(self.storage_path) as conn:
@@ -304,7 +524,7 @@ class PersistentAgentPool(AgentPool):
         """Save agent to JSON file."""
         with self._lock:
             # Load existing data
-            if Path(self.storage_path).exists():
+            if Path(self.storage_path).exists() and Path(self.storage_path).stat().st_size > 0:
                 with open(self.storage_path, 'r') as f:
                     data = json.load(f)
             else:
@@ -318,8 +538,8 @@ class PersistentAgentPool(AgentPool):
             
             # Add new agent
             agent_data = {
-                "metadata": stored_agent.metadata.model_dump(),
-                "state": stored_agent.state.model_dump()
+                "metadata": stored_agent.metadata.model_dump(mode='json'),
+                "state": stored_agent.state.model_dump(mode='json')
             }
             data["agents"].append(agent_data)
             
@@ -340,9 +560,56 @@ class PersistentAgentPool(AgentPool):
                 
                 row = cursor.fetchone()
                 if row:
-                    # Agent exists in database but cannot be restored to working state
-                    logger.info(f"Agent {agent_id} exists in database but cannot restore from storage")
-                    return None
+                    config_json, belief_json, memory_json, exec_json = row
+                    
+                    # Parse JSON data
+                    agent_config = json.loads(config_json) if config_json else {}
+                    belief_state = json.loads(belief_json) if belief_json else {}
+                    shared_memory_state = json.loads(memory_json) if memory_json else {}
+                    execution_state = json.loads(exec_json) if exec_json else {}
+                    
+                    # Get metadata
+                    cursor.execute("""
+                        SELECT user_id, agent_name, agent_type, created_at, updated_at, 
+                               is_active, tags, description
+                        FROM agents WHERE agent_id = ?
+                    """, (agent_id,))
+                    
+                    meta_row = cursor.fetchone()
+                    if meta_row:
+                        user_id, agent_name, agent_type, created_at, updated_at, is_active, tags, description = meta_row
+                        
+                        metadata = AgentMetadata(
+                            agent_id=agent_id,
+                            user_id=user_id,
+                            agent_name=agent_name,
+                            agent_type=agent_type,
+                            created_at=datetime.fromisoformat(created_at),
+                            updated_at=datetime.fromisoformat(updated_at),
+                            is_active=bool(is_active),
+                            tags=json.loads(tags) if tags else [],
+                            description=description or ""
+                        )
+                        
+                        state = AgentState(
+                            agent_config=agent_config,
+                            belief_state=belief_state,
+                            shared_memory_state=shared_memory_state,
+                            execution_state=execution_state
+                        )
+                        
+                        stored_agent = StoredAgent(metadata=metadata, state=state)
+                        
+                        # Restore agent to working state
+                        agent = self._deserialize_agent(stored_agent)
+                        if agent:
+                            # Cache the restored agent
+                            self.agents[agent_id] = agent
+                            logger.info(f"Restored agent {agent_id} from database")
+                            return agent
+                        else:
+                            logger.warning(f"Failed to restore agent {agent_name} from database")
+                            return None
                         
         except (sqlite3.Error, json.JSONDecodeError) as e:
             logger.error(f"Failed to load agent {agent_id}: {e}")
@@ -360,9 +627,22 @@ class PersistentAgentPool(AgentPool):
             
             for agent_data in data.get("agents", []):
                 if agent_data.get("metadata", {}).get("agent_id") == agent_id:
-                    # Agent exists in JSON but cannot be restored to working state
-                    logger.info(f"Agent {agent_id} exists in JSON but cannot restore from storage")
-                    return None
+                    # Deserialize agent from JSON data
+                    stored_agent = StoredAgent(
+                        metadata=AgentMetadata(**agent_data.get("metadata", {})),
+                        state=AgentState(**agent_data.get("state", {}))
+                    )
+                    
+                    # Restore agent to working state
+                    agent = self._deserialize_agent(stored_agent)
+                    if agent:
+                        # Cache the restored agent
+                        self.agents[agent_id] = agent
+                        logger.info(f"Restored agent {agent_id} from JSON storage")
+                        return agent
+                    else:
+                        logger.warning(f"Failed to restore agent {stored_agent.metadata.agent_name} from JSON")
+                        return None
                         
         except (json.JSONDecodeError, ValidationError) as e:
             logger.error(f"Failed to load agent {agent_id} from JSON: {e}")
@@ -409,7 +689,7 @@ class PersistentAgentPool(AgentPool):
         except (json.JSONDecodeError, ValidationError) as e:
             logger.error(f"Failed to find agent '{agent_name}' for user '{user_id}' in JSON: {e}")
         
-        return None
+            return None
     
     def _list_agents_from_db(self, user_id: str, agent_type: str, tags: List[str], active_only: bool) -> List[AgentMetadata]:
         """List agents from SQLite database."""
@@ -630,8 +910,8 @@ class PersistentAgentPool(AgentPool):
                     
                     # Update agent data
                     data["agents"][i] = {
-                        "metadata": stored_agent.metadata.model_dump(),
-                        "state": stored_agent.state.model_dump()
+                        "metadata": stored_agent.metadata.model_dump(mode='json'),
+                        "state": stored_agent.state.model_dump(mode='json')
                     }
                     break
             else:
@@ -823,7 +1103,7 @@ class PersistentAgentPool(AgentPool):
             elif self.storage_type == "json":
                 return self._list_agents_from_json(user_id, agent_type, tags, active_only)
             
-            return []
+                return []
     
     def delete_agent(self, agent_id: str, soft_delete: bool = True) -> bool:
         """Delete an agent.
@@ -847,7 +1127,7 @@ class PersistentAgentPool(AgentPool):
             elif self.storage_type == "json":
                 return self._delete_agent_from_json(agent_id, soft_delete)
             
-            return False
+                return False
     
     def update_agent(self, agent_id: str, agent: BaseAgent) -> bool:
         """Update an existing agent.
@@ -872,7 +1152,7 @@ class PersistentAgentPool(AgentPool):
             elif self.storage_type == "json":
                 return self._update_agent_in_json(agent_id, agent)
             
-            return False
+                return False
     
     def get_agent_count(self, user_id: str = None) -> int:
         """Get the count of agents.
@@ -895,7 +1175,7 @@ class PersistentAgentPool(AgentPool):
             elif self.storage_type == "json":
                 return self._get_agent_count_from_json(user_id)
             
-            return 0
+                return 0
     
     def clear_cache(self):
         """Clear the in-memory agent cache."""
