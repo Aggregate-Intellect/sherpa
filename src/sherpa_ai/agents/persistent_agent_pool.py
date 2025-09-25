@@ -10,6 +10,7 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+from functools import wraps
 
 from loguru import logger
 from pydantic import BaseModel, Field, ValidationError
@@ -17,6 +18,27 @@ from pydantic import BaseModel, Field, ValidationError
 from sherpa_ai.agents.base import BaseAgent
 from sherpa_ai.agents.agent_pool import AgentPool
 from sherpa_ai.memory.belief import Belief
+
+
+def handle_storage_errors(default_return=None):
+    """Decorator to handle common storage operation errors.
+    
+    Args:
+        default_return: Value to return on error (None, False, [], etc.)
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except (sqlite3.Error, json.JSONDecodeError, ValidationError) as e:
+                logger.error(f"Storage operation failed in {func.__name__}: {e}")
+                return default_return
+            except Exception as e:
+                logger.error(f"Unexpected error in {func.__name__}: {e}")
+                return default_return
+        return wrapper
+    return decorator
 
 
 class AgentMetadata(BaseModel):
@@ -208,75 +230,65 @@ class PersistentAgentPool(AgentPool):
             except Exception as e:
                 logger.error(f"JSON file error while loading agents: {e}")
     
+    @handle_storage_errors()
     def _load_agents_from_db(self):
         """Load all active agents from database into cache."""
         with self._lock:
-            try:
-                with sqlite3.connect(self.storage_path) as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                        SELECT agent_id, agent_config, belief_state, 
-                               shared_memory_state, execution_state
-                        FROM agents 
-                        WHERE is_active = 1
-                    """)
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                # Single query to get all data
+                cursor.execute("""
+                    SELECT agent_id, user_id, agent_name, agent_type, created_at, updated_at,
+                           is_active, tags, description, agent_config, belief_state, 
+                           shared_memory_state, execution_state
+                    FROM agents 
+                    WHERE is_active = 1
+                """)
+                
+                for row in cursor.fetchall():
+                    (agent_id, user_id, agent_name, agent_type, created_at, updated_at,
+                     is_active, tags, description, config_json, belief_json, memory_json, exec_json) = row
                     
-                    for row in cursor.fetchall():
-                        agent_id, config_json, belief_json, memory_json, exec_json = row
+                    try:
+                        # Parse JSON data
+                        agent_config = json.loads(config_json) if config_json else {}
+                        belief_state = json.loads(belief_json) if belief_json else {}
+                        shared_memory_state = json.loads(memory_json) if memory_json else {}
+                        execution_state = json.loads(exec_json) if exec_json else {}
                         
-                        try:
-                            # Parse JSON data
-                            agent_config = json.loads(config_json) if config_json else {}
-                            belief_state = json.loads(belief_json) if belief_json else {}
-                            shared_memory_state = json.loads(memory_json) if memory_json else {}
-                            execution_state = json.loads(exec_json) if exec_json else {}
+                        # Create metadata
+                        metadata = AgentMetadata(
+                            agent_id=agent_id,
+                            user_id=user_id,
+                            agent_name=agent_name,
+                            agent_type=agent_type,
+                            created_at=datetime.fromisoformat(created_at),
+                            updated_at=datetime.fromisoformat(updated_at),
+                            is_active=bool(is_active),
+                            tags=json.loads(tags) if tags else [],
+                            description=description or ""
+                        )
+                        
+                        # Create state
+                        state = AgentState(
+                            agent_config=agent_config,
+                            belief_state=belief_state,
+                            shared_memory_state=shared_memory_state,
+                            execution_state=execution_state
+                        )
+                        
+                        stored_agent = StoredAgent(metadata=metadata, state=state)
+                        
+                        # Restore agent to working state
+                        agent = self._deserialize_agent(stored_agent)
+                        if agent:
+                            self.agents[agent_id] = agent
+                            logger.info(f"Restored agent {agent_id} from database")
+                        else:
+                            logger.warning(f"Failed to restore agent {agent_name} from database")
                             
-                            # Create StoredAgent from database data
-                            # We need to get metadata from the database
-                            cursor.execute("""
-                                SELECT user_id, agent_name, agent_type, created_at, updated_at, 
-                                       is_active, tags, description
-                                FROM agents WHERE agent_id = ?
-                            """, (agent_id,))
-                            
-                            meta_row = cursor.fetchone()
-                            if meta_row:
-                                user_id, agent_name, agent_type, created_at, updated_at, is_active, tags, description = meta_row
-                                
-                                metadata = AgentMetadata(
-                                    agent_id=agent_id,
-                                    user_id=user_id,
-                                    agent_name=agent_name,
-                                    agent_type=agent_type,
-                                    created_at=datetime.fromisoformat(created_at),
-                                    updated_at=datetime.fromisoformat(updated_at),
-                                    is_active=bool(is_active),
-                                    tags=json.loads(tags) if tags else [],
-                                    description=description or ""
-                                )
-                                
-                                state = AgentState(
-                                    agent_config=agent_config,
-                                    belief_state=belief_state,
-                                    shared_memory_state=shared_memory_state,
-                                    execution_state=execution_state
-                                )
-                                
-                                stored_agent = StoredAgent(metadata=metadata, state=state)
-                                
-                                # Restore agent to working state
-                                agent = self._deserialize_agent(stored_agent)
-                                if agent:
-                                    self.agents[agent_id] = agent
-                                    logger.info(f"Restored agent {agent_id} from database")
-                                else:
-                                    logger.warning(f"Failed to restore agent {agent_name} from database")
-                                
-                        except (json.JSONDecodeError, ValidationError) as e:
-                            logger.warning(f"Failed to load agent {agent_id}: {e}")
-                            
-            except sqlite3.Error as e:
-                logger.error(f"Database error while loading agents: {e}")
+                    except (json.JSONDecodeError, ValidationError) as e:
+                        logger.warning(f"Failed to load agent {agent_id}: {e}")
     
     def _serialize_agent(self, agent: BaseAgent) -> StoredAgent:
         """Serialize an agent to a StoredAgent object.
@@ -298,9 +310,14 @@ class PersistentAgentPool(AgentPool):
         )
         
         # Use Pydantic's built-in serialization for the entire agent
-        # This is much simpler and leverages BaseAgent's BaseModel inheritance
         # Exclude non-serializable fields and use mode='json' for the rest
-        agent_config = agent.model_dump(mode='json', exclude={'prompt_template', 'llm', 'policy', 'actions', 'validations', 'stop_checker'})
+        agent_config = agent.model_dump(
+            mode='json', 
+            exclude={'prompt_template', 'llm', 'policy', 'actions', 'validations', 'stop_checker'}
+        )
+        
+        # Preserve timestamp fields to avoid regeneration during deserialization
+        self._preserve_timestamps(agent, agent_config)
         
         # Extract specific state components for easier access
         belief_state = agent_config.get('belief', {}) or {}
@@ -322,6 +339,30 @@ class PersistentAgentPool(AgentPool):
         
         return StoredAgent(metadata=metadata, state=state)
     
+    def _preserve_timestamps(self, agent: BaseAgent, agent_config: Dict[str, Any]):
+        """Preserve timestamp fields in agent configuration.
+        
+        Args:
+            agent (BaseAgent): The agent being serialized.
+            agent_config (Dict[str, Any]): The agent configuration dictionary.
+        """
+        # Preserve last_execution_time
+        if hasattr(agent, 'last_execution_time') and agent.last_execution_time:
+            agent_config['last_execution_time'] = agent.last_execution_time.isoformat()
+        
+        # Preserve state history with timestamps
+        if hasattr(agent, 'state_history') and agent.state_history:
+            agent_config['state_history'] = []
+            for entry in agent.state_history:
+                if isinstance(entry, dict) and 'timestamp' in entry:
+                    # Ensure timestamp is in ISO format
+                    entry_copy = entry.copy()
+                    if hasattr(entry['timestamp'], 'isoformat'):
+                        entry_copy['timestamp'] = entry['timestamp'].isoformat()
+                    agent_config['state_history'].append(entry_copy)
+                else:
+                    agent_config['state_history'].append(entry)
+    
     def _deserialize_agent(self, stored_agent: StoredAgent) -> Optional[BaseAgent]:
         """Deserialize a StoredAgent back to a working BaseAgent.
         
@@ -338,7 +379,7 @@ class PersistentAgentPool(AgentPool):
             
             if not agent_class:
                 logger.error(f"Unknown agent type: {agent_type}")
-                return None
+            return None
             
             # Create agent instance with basic parameters
             agent = agent_class(
@@ -362,6 +403,47 @@ class PersistentAgentPool(AgentPool):
             # Restore user_id and tags
             agent.user_id = stored_agent.metadata.user_id
             agent.tags = stored_agent.metadata.tags
+            
+            # Restore timestamp fields to preserve exact timing
+            if 'last_execution_time' in agent_config and agent_config['last_execution_time']:
+                from datetime import datetime
+                try:
+                    # Parse ISO format timestamp back to datetime object
+                    agent.last_execution_time = datetime.fromisoformat(agent_config['last_execution_time'])
+                except (ValueError, TypeError):
+                    # If parsing fails, keep the string value
+                    agent.last_execution_time = agent_config['last_execution_time']
+            
+            # Restore execution count to preserve state
+            if 'execution_count' in agent_config:
+                agent.execution_count = agent_config['execution_count']
+            
+            # Restore complex data structures
+            if 'complex_data' in agent_config:
+                agent.complex_data = agent_config['complex_data']
+            
+            if 'custom_actions' in agent_config:
+                agent.custom_actions = agent_config['custom_actions']
+            
+            if 'configuration' in agent_config:
+                agent.configuration = agent_config['configuration']
+            
+            # Restore state history with preserved timestamps
+            if 'state_history' in agent_config and agent_config['state_history']:
+                agent.state_history = []
+                for entry in agent_config['state_history']:
+                    if isinstance(entry, dict) and 'timestamp' in entry:
+                        # Parse timestamp back to datetime if it's a string
+                        entry_copy = entry.copy()
+                        if isinstance(entry['timestamp'], str):
+                            try:
+                                entry_copy['timestamp'] = datetime.fromisoformat(entry['timestamp'])
+                            except (ValueError, TypeError):
+                                # Keep as string if parsing fails
+                                pass
+                        agent.state_history.append(entry_copy)
+                    else:
+                        agent.state_history.append(entry)
             
             # Restore belief state
             if stored_agent.state.belief_state:
@@ -391,44 +473,52 @@ class PersistentAgentPool(AgentPool):
         Returns:
             Optional[type]: The agent class or None if not found.
         """
-        # Import agent classes dynamically
+        # Registry of known agent types
+        agent_registry = {
+            "QAAgent": "sherpa_ai.agents.qa_agent",
+            "ResearchAgent": "sherpa_ai.agents.research_agent", 
+            "CriticAgent": "sherpa_ai.agents.critic_agent",
+            "BaseAgent": None  # Direct import
+        }
+        
         try:
-            if agent_type == "QAAgent":
-                from sherpa_ai.agents.qa_agent import QAAgent
-                return QAAgent
-            elif agent_type == "ResearchAgent":
-                from sherpa_ai.agents.research_agent import ResearchAgent
-                return ResearchAgent
-            elif agent_type == "CriticAgent":
-                from sherpa_ai.agents.critic_agent import CriticAgent
-                return CriticAgent
-            elif agent_type == "BaseAgent":
+            # Check registry first
+            if agent_type in agent_registry:
+                if agent_type == "BaseAgent":
+                    return BaseAgent
+                else:
+                    module_path = agent_registry[agent_type]
+                    module = __import__(module_path, fromlist=[agent_type])
+                    return getattr(module, agent_type)
+            
+            # Try to find in current module's globals
+            import sys
+            current_module = sys.modules[__name__]
+            if hasattr(current_module, agent_type):
+                return getattr(current_module, agent_type)
+            
+            # Try to find in calling module's globals
+            import inspect
+            frame = inspect.currentframe()
+            try:
+                for _ in range(3):  # Check up to 3 frames up
+                    frame = frame.f_back
+                    if frame is None:
+                        break
+                    caller_globals = frame.f_globals
+                    if agent_type in caller_globals:
+                        return caller_globals[agent_type]
+            finally:
+                del frame
+            
+            # Fallback to BaseAgent for unknown types ending with "Agent"
+            if agent_type.endswith("Agent"):
+                logger.warning(f"Unknown agent type: {agent_type}, falling back to BaseAgent")
                 return BaseAgent
-            else:
-                # Try to find the class in the current module's globals
-                # This handles custom agent classes defined in the same session
-                import sys
-                current_module = sys.modules[__name__]
-                if hasattr(current_module, agent_type):
-                    return getattr(current_module, agent_type)
-                
-                # Try to find in the calling module's globals
-                import inspect
-                frame = inspect.currentframe()
-                try:
-                    # Go up the call stack to find the module that defined the agent
-                    for i in range(5):  # Check up to 5 frames up
-                        frame = frame.f_back
-                        if frame is None:
-                            break
-                        caller_globals = frame.f_globals
-                        if agent_type in caller_globals:
-                            return caller_globals[agent_type]
-                finally:
-                    del frame
-                
-                logger.warning(f"Unknown agent type: {agent_type}")
-                return None
+            
+            logger.warning(f"Unknown agent type: {agent_type}")
+            return None
+            
         except ImportError as e:
             logger.error(f"Failed to import agent type {agent_type}: {e}")
             return None
@@ -459,6 +549,43 @@ class PersistentAgentPool(AgentPool):
             logger.warning(f"Failed to deserialize belief: {e}")
             return None
     
+    def _get_agent_metadata_from_db(self, agent_id: str) -> Optional[AgentMetadata]:
+        """Get agent metadata from database in a single query.
+        
+        Args:
+            agent_id (str): The agent ID to get metadata for.
+            
+        Returns:
+            Optional[AgentMetadata]: Agent metadata or None if not found.
+        """
+        try:
+            with sqlite3.connect(self.storage_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT user_id, agent_name, agent_type, created_at, updated_at, 
+                           is_active, tags, description
+                    FROM agents WHERE agent_id = ?
+                """, (agent_id,))
+                
+                row = cursor.fetchone()
+                if row:
+                    user_id, agent_name, agent_type, created_at, updated_at, is_active, tags, description = row
+                    return AgentMetadata(
+                        agent_id=agent_id,
+                        user_id=user_id,
+                        agent_name=agent_name,
+                        agent_type=agent_type,
+                        created_at=datetime.fromisoformat(created_at),
+                        updated_at=datetime.fromisoformat(updated_at),
+                        is_active=bool(is_active),
+                        tags=json.loads(tags) if tags else [],
+                        description=description or ""
+                    )
+                return None
+        except (sqlite3.Error, json.JSONDecodeError) as e:
+            logger.error(f"Failed to get metadata for agent {agent_id}: {e}")
+            return None
+
     def _deserialize_shared_memory(self, memory_data: Dict[str, Any]):
         """Deserialize shared memory state.
         
@@ -485,41 +612,81 @@ class PersistentAgentPool(AgentPool):
             logger.warning(f"Failed to deserialize shared memory: {e}")
             return None
     
+    def _execute_storage_operation(self, operation: str, *args, **kwargs):
+        """Execute storage operation based on storage type.
+        
+        Args:
+            operation (str): The operation to perform ('save', 'get', 'list', 'delete', 'update', 'get_agent_by_name', 'get_agent_count').
+            *args: Positional arguments for the operation.
+            **kwargs: Keyword arguments for the operation.
+            
+        Returns:
+            Any: Result of the operation.
+        """
+        # Map operations to method names
+        operation_mapping = {
+            'save': 'save_agent_to',
+            'get': 'get_agent_from',
+            'list': 'list_agents_from',
+            'delete': 'delete_agent_from',
+            'update': 'update_agent_in',
+            'get_agent_by_name': 'get_agent_by_name_from',
+            'get_agent_count': 'get_agent_count_from'
+        }
+        
+        if operation not in operation_mapping:
+            raise ValueError(f"Unknown operation: {operation}")
+        
+        base_method = operation_mapping[operation]
+        
+        if self.storage_type == "sqlite":
+            method_name = f"_{base_method}_db"
+        elif self.storage_type == "json":
+            method_name = f"_{base_method}_json"
+        else:
+            raise ValueError(f"Unsupported storage type: {self.storage_type}")
+        
+        method = getattr(self, method_name, None)
+        if method:
+            return method(*args, **kwargs)
+        else:
+            raise AttributeError(f"Operation '{operation}' not supported for storage type '{self.storage_type}'")
+    
     def _save_agent_to_db(self, stored_agent: StoredAgent, user_id: str, agent: BaseAgent, overwrite: bool):
         """Save agent to SQLite database."""
         with sqlite3.connect(self.storage_path) as conn:
-            cursor = conn.cursor()
-            
-            # Delete existing agent if overwriting
-            if overwrite:
-                cursor.execute("DELETE FROM agents WHERE user_id = ? AND agent_name = ?", 
-                             (user_id, agent.name))
-            
-            # Insert new agent
-            cursor.execute("""
-                INSERT INTO agents (
-                    agent_id, user_id, agent_name, agent_type, created_at, updated_at,
-                    is_active, tags, description, agent_config, belief_state,
-                    shared_memory_state, execution_state
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
+                    cursor = conn.cursor()
+                    
+                    # Delete existing agent if overwriting
+                    if overwrite:
+                        cursor.execute("DELETE FROM agents WHERE user_id = ? AND agent_name = ?", 
+                                     (user_id, agent.name))
+                    
+                    # Insert new agent
+                    cursor.execute("""
+                        INSERT INTO agents (
+                            agent_id, user_id, agent_name, agent_type, created_at, updated_at,
+                            is_active, tags, description, agent_config, belief_state,
+                            shared_memory_state, execution_state
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
                 stored_agent.metadata.agent_id,
-                user_id,
-                agent.name,
-                agent.__class__.__name__,
-                stored_agent.metadata.created_at.isoformat(),
-                stored_agent.metadata.updated_at.isoformat(),
-                stored_agent.metadata.is_active,
-                json.dumps(stored_agent.metadata.tags),
-                stored_agent.metadata.description,
-                json.dumps(stored_agent.state.agent_config),
-                json.dumps(stored_agent.state.belief_state),
-                json.dumps(stored_agent.state.shared_memory_state),
-                json.dumps(stored_agent.state.execution_state)
-            ))
-            
-            conn.commit()
-    
+                        user_id,
+                        agent.name,
+                        agent.__class__.__name__,
+                        stored_agent.metadata.created_at.isoformat(),
+                        stored_agent.metadata.updated_at.isoformat(),
+                        stored_agent.metadata.is_active,
+                        json.dumps(stored_agent.metadata.tags),
+                        stored_agent.metadata.description,
+                        json.dumps(stored_agent.state.agent_config),
+                        json.dumps(stored_agent.state.belief_state),
+                        json.dumps(stored_agent.state.shared_memory_state),
+                        json.dumps(stored_agent.state.execution_state)
+                    ))
+                    
+                    conn.commit()
+                
     def _save_agent_to_json(self, stored_agent: StoredAgent, user_id: str, agent: BaseAgent, overwrite: bool):
         """Save agent to JSON file."""
         with self._lock:
@@ -547,75 +714,55 @@ class PersistentAgentPool(AgentPool):
             with open(self.storage_path, 'w') as f:
                 json.dump(data, f, indent=2)
     
+    @handle_storage_errors(default_return=None)
     def _get_agent_from_db(self, agent_id: str) -> Optional[BaseAgent]:
         """Get agent from SQLite database."""
-        try:
-            with sqlite3.connect(self.storage_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    SELECT agent_config, belief_state, shared_memory_state, execution_state
-                    FROM agents 
-                    WHERE agent_id = ? AND is_active = 1
-                """, (agent_id,))
+        with sqlite3.connect(self.storage_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT agent_config, belief_state, shared_memory_state, execution_state
+                FROM agents 
+                WHERE agent_id = ? AND is_active = 1
+            """, (agent_id,))
+            
+            row = cursor.fetchone()
+            if not row:
+                return None
                 
-                row = cursor.fetchone()
-                if row:
-                    config_json, belief_json, memory_json, exec_json = row
-                    
-                    # Parse JSON data
-                    agent_config = json.loads(config_json) if config_json else {}
-                    belief_state = json.loads(belief_json) if belief_json else {}
-                    shared_memory_state = json.loads(memory_json) if memory_json else {}
-                    execution_state = json.loads(exec_json) if exec_json else {}
-                    
-                    # Get metadata
-                    cursor.execute("""
-                        SELECT user_id, agent_name, agent_type, created_at, updated_at, 
-                               is_active, tags, description
-                        FROM agents WHERE agent_id = ?
-                    """, (agent_id,))
-                    
-                    meta_row = cursor.fetchone()
-                    if meta_row:
-                        user_id, agent_name, agent_type, created_at, updated_at, is_active, tags, description = meta_row
-                        
-                        metadata = AgentMetadata(
-                            agent_id=agent_id,
-                            user_id=user_id,
-                            agent_name=agent_name,
-                            agent_type=agent_type,
-                            created_at=datetime.fromisoformat(created_at),
-                            updated_at=datetime.fromisoformat(updated_at),
-                            is_active=bool(is_active),
-                            tags=json.loads(tags) if tags else [],
-                            description=description or ""
-                        )
-                        
-                        state = AgentState(
-                            agent_config=agent_config,
-                            belief_state=belief_state,
-                            shared_memory_state=shared_memory_state,
-                            execution_state=execution_state
-                        )
-                        
-                        stored_agent = StoredAgent(metadata=metadata, state=state)
-                        
-                        # Restore agent to working state
-                        agent = self._deserialize_agent(stored_agent)
-                        if agent:
-                            # Cache the restored agent
-                            self.agents[agent_id] = agent
-                            logger.info(f"Restored agent {agent_id} from database")
-                            return agent
-                        else:
-                            logger.warning(f"Failed to restore agent {agent_name} from database")
-                            return None
-                        
-        except (sqlite3.Error, json.JSONDecodeError) as e:
-            logger.error(f"Failed to load agent {agent_id}: {e}")
-        
-        return None
+            config_json, belief_json, memory_json, exec_json = row
+            
+            # Parse JSON data
+            agent_config = json.loads(config_json) if config_json else {}
+            belief_state = json.loads(belief_json) if belief_json else {}
+            shared_memory_state = json.loads(memory_json) if memory_json else {}
+            execution_state = json.loads(exec_json) if exec_json else {}
+            
+            # Get metadata using helper method
+            metadata = self._get_agent_metadata_from_db(agent_id)
+            if not metadata:
+                return None
+                
+            state = AgentState(
+                agent_config=agent_config,
+                belief_state=belief_state,
+                shared_memory_state=shared_memory_state,
+                execution_state=execution_state
+            )
+            
+            stored_agent = StoredAgent(metadata=metadata, state=state)
+            
+            # Restore agent to working state
+            agent = self._deserialize_agent(stored_agent)
+            if agent:
+                # Cache the restored agent
+                self.agents[agent_id] = agent
+                logger.info(f"Restored agent {agent_id} from database")
+                return agent
+            else:
+                logger.warning(f"Failed to restore agent {metadata.agent_name} from database")
+                return None
     
+    @handle_storage_errors(default_return=None)
     def _get_agent_from_json(self, agent_id: str) -> Optional[BaseAgent]:
         """Get agent from JSON file."""
         try:
@@ -1046,12 +1193,7 @@ class PersistentAgentPool(AgentPool):
                 return self.agents[agent_id]
             
             # Load from storage backend
-            if self.storage_type == "sqlite":
-                return self._get_agent_from_db(agent_id)
-            elif self.storage_type == "json":
-                return self._get_agent_from_json(agent_id)
-            
-            return None
+            return self._execute_storage_operation("get", agent_id)
     
     def get_agent_by_name(self, agent_name: str, user_id: str = "default") -> Optional[BaseAgent]:
         """Retrieve an agent by name and user ID.
@@ -1070,12 +1212,7 @@ class PersistentAgentPool(AgentPool):
             My Agent
         """
         with self._lock:
-            if self.storage_type == "sqlite":
-                return self._get_agent_by_name_from_db(agent_name, user_id)
-            elif self.storage_type == "json":
-                return self._get_agent_by_name_from_json(agent_name, user_id)
-            
-            return None
+            return self._execute_storage_operation("get_agent_by_name", agent_name, user_id)
     
     def list_agents(self, user_id: str = None, agent_type: str = None, 
                    tags: List[str] = None, active_only: bool = True) -> List[AgentMetadata]:
@@ -1098,12 +1235,7 @@ class PersistentAgentPool(AgentPool):
             My QA Agent (QAAgent)
         """
         with self._lock:
-            if self.storage_type == "sqlite":
-                return self._list_agents_from_db(user_id, agent_type, tags, active_only)
-            elif self.storage_type == "json":
-                return self._list_agents_from_json(user_id, agent_type, tags, active_only)
-            
-                return []
+            return self._execute_storage_operation("list", user_id, agent_type, tags, active_only)
     
     def delete_agent(self, agent_id: str, soft_delete: bool = True) -> bool:
         """Delete an agent.
@@ -1122,12 +1254,7 @@ class PersistentAgentPool(AgentPool):
             Deleted
         """
         with self._lock:
-            if self.storage_type == "sqlite":
-                return self._delete_agent_from_db(agent_id, soft_delete)
-            elif self.storage_type == "json":
-                return self._delete_agent_from_json(agent_id, soft_delete)
-            
-                return False
+            return self._execute_storage_operation("delete", agent_id, soft_delete)
     
     def update_agent(self, agent_id: str, agent: BaseAgent) -> bool:
         """Update an existing agent.
@@ -1147,12 +1274,7 @@ class PersistentAgentPool(AgentPool):
             Updated
         """
         with self._lock:
-            if self.storage_type == "sqlite":
-                return self._update_agent_in_db(agent_id, agent)
-            elif self.storage_type == "json":
-                return self._update_agent_in_json(agent_id, agent)
-            
-                return False
+            return self._execute_storage_operation("update", agent_id, agent)
     
     def get_agent_count(self, user_id: str = None) -> int:
         """Get the count of agents.
@@ -1170,18 +1292,46 @@ class PersistentAgentPool(AgentPool):
             User has 5 agents
         """
         with self._lock:
-            if self.storage_type == "sqlite":
-                return self._get_agent_count_from_db(user_id)
-            elif self.storage_type == "json":
-                return self._get_agent_count_from_json(user_id)
-            
-                return 0
+            return self._execute_storage_operation("get_agent_count", user_id)
     
     def clear_cache(self):
         """Clear the in-memory agent cache."""
         with self._lock:
             self.agents.clear()
             logger.info("Agent cache cleared")
+    
+    def reload_from_storage(self):
+        """Reload all agents from storage into cache.
+        
+        This method leverages the base AgentPool's agents dictionary
+        and repopulates it from the persistent storage.
+        """
+        with self._lock:
+            # Clear current cache
+            self.agents.clear()
+            
+            # Reload from storage
+            if self.storage_type == "sqlite":
+                self._load_agents_from_db()
+            elif self.storage_type == "json":
+                self._load_agents_from_json()
+            
+            logger.info(f"Reloaded {len(self.agents)} agents from {self.storage_type} storage")
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Get statistics about the current cache state.
+        
+        Returns:
+            Dict[str, Any]: Cache statistics including size, storage type, etc.
+        """
+        with self._lock:
+            return {
+                "cache_size": len(self.agents),
+                "storage_type": self.storage_type,
+                "storage_path": self.storage_path,
+                "agent_ids": list(self.agents.keys()),
+                "agent_types": list(set(agent.__class__.__name__ for agent in self.agents.values()))
+            }
     
     def __len__(self) -> int:
         """Return the number of cached agents."""
