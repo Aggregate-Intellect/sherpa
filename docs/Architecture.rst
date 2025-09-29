@@ -1,177 +1,171 @@
-======================
+=====================
 Sherpa AI Architecture
-======================
+=====================
 
-Architecture Overview
+Overview
+--------
+
+Sherpa agents are built from three core, model-driven components:
+
+- **Hierarchical State Machine (SM):** structures a task into states, transitions, guards, and actions.
+- **Policy (rule-based or LLM-guided):** selects the next transition/event based on the current state and the agent’s belief.
+- **Belief (memory):** maintains the trajectory of taken transitions, an execution log of actions and I/O, and a key-value context used by the policy and actions.
+
+Multiple agents can collaborate by exchanging **events** and by reading/writing **shared memory** (e.g., shared vector or document stores). Each agent also keeps its own private belief.
+
+Multi-Agent View
+----------------
+
+The diagram below shows several agents collaborating via events and shared memory.
+
+.. code-block:: text
+
+   ┌───────────────────────────────────────────────────────────────────┐
+   │                         Shared Memory                             │
+   │       (vector/doc stores; artifacts produced by agents)           │
+   └───────────────────────────────────────────────────────────────────┘
+                    ▲                                   ▲
+                    │                                   │(read / write)
+                    │                                   │
+      ┌─────────────┴───────────┐         ┌─────────────┴───────────┐     
+      │          Agent A        │         │          Agent B        │
+      │        (e.g., QA)       │         │      (e.g., Critic)     │
+      │                         │         │                         │
+      │     ┌─────────────┐     │         │     ┌─────────────┐     │
+      │     │ StateMachine│     │         │     │ StateMachine│     │
+      │     └─────────────┘     │         │     └─────────────┘     │
+      │           │ events      │         │           │ events      │
+      │           ▼             │         │           ▼             │
+      │     ┌─────────────┐     │         │     ┌─────────────┐     │
+      │     │   Policy    │     │         │     │   Policy    │     │
+      │     └─────────────┘     │         │     └─────────────┘     │
+      │           │ selects     │         │           │ selects     │
+      │           ▼             │         │           ▼             │
+      │     ┌─────────────┐     │         │     ┌─────────────┐     │
+      │     │   Actions   │     │         │     │   Actions   │     │
+      │     └─────────────┘     │         │     └─────────────┘     │
+      │           │ updates     │         │           │ updates     │
+      │           ▼             │         │           ▼             │
+      │     ┌─────────────┐     │         │     ┌─────────────┐     │
+      │     │   Belief    │     │         │     │   Belief    │     │
+      │     │(traj/log/KV)│     │         │     │(traj/log/KV)│     │
+      │     └─────────────┘     │         │     └─────────────┘     │
+      └─────────────────────────┘         └─────────────────────────┘
+                  ▲                                   ▲
+                  └───────── events/messages ─────────┘
+                              (agent ↔ agent)
+
+Inside a Sherpa Agent
 ---------------------
 
-Sherpa AI is designed with a modular architecture that enables flexibility and extensibility. The framework consists of several key components that work together to create powerful AI agents and workflows.
+An agent’s behavior is governed by its state machine, with decisions made by a policy and all activity recorded in belief.
 
 .. code-block:: text
 
    ┌──────────────────────────────────────────────────────────────────────┐
-   │                    Sherpa AI Architecture                            │
+   │                            Agent Internals                           │
    └──────────────────────────────────────────────────────────────────────┘
 
-   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-   │   Agents    │    │  Policies   │    │   Memory    │    │   Models    │
-   │             │    │             │    │             │    │             │
-   │ QA Agent    │    │ React       │    │ Belief &    │    │ LLM         │
-   │ User Agent  │    │ Policy      │    │ Shared      │    │ interfaces  │
-   └─────┬───────┘    └─────┬───────┘    └─────┬───────┘    └─────┬───────┘
-         │                  │                  │                  │
-         └──────────────────┼──────────────────┼──────────────────┘
-                            │                  │
-                            ▼                  ▼
-   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-   │   Actions   │    │    Tools    │    │ Connectors  │    │   Prompts   │
-   │             │    │             │    │             │    │             │
-   │ Google      │    │ Search      │    │ Vector      │    │ Template    │
-   │ Search      │    │ Tools       │    │ Stores      │    │ system      │
-   └─────┬───────┘    └─────┬───────┘    └─────┬───────┘    └─────┬───────┘
-         │                  │                  │                  │
-         └──────────────────┼──────────────────┼──────────────────┘
-                            │
-                            ▼
-          ┌──────────────┐    ┌─────────────┐
-          │Output Parsers│    │    Config   │
-          │              │    │             │
-          │ Citation     │    │ Agent       │
-          │ Validation   │    │ Config      │
-          └──────────────┘    └─────────────┘
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  Hierarchical State Machine                                          │
+   │  • Decomposes the task (states, transitions, guards, actions)        │
+   │  • Controls execution flow                                           │
+   └──────────────────────────────────────────────────────────────────────┘
+                    │ available transitions + current state
+                    ▼
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  Policy                                                              │
+   │  • Rule-based: (state, belief) → event                               │
+   │  • LLM-guided: prompt includes state + transitions + recent belief   │
+   │  • Fast-forward: if only one transition is available, skip selection │
+   └──────────────────────────────────────────────────────────────────────┘
+                    │ chosen event / parameters
+                    ▼
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  Actions                                                             │
+   │  • Typed tool/LLM calls bound to transitions or state entry/exit     │
+   │  • External inputs (from user/policy) vs internal (from belief)      │
+   └──────────────────────────────────────────────────────────────────────┘
+                    │ outputs / updates
+                    ▼
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  Belief                                                              │
+   │  • Trajectory Store (states traversed)                               │
+   │  • Execution Log (actions and I/O)                                   │
+   │  • Key-Value Context (task data)                                     │
+   │  • Read-only to the policy; updated by actions and transitions       │
+   └──────────────────────────────────────────────────────────────────────┘
 
-Components
-----------
+Execution Lifecycle
+-------------------
+
+Multi-Agent Collaboration
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. **Task arrival**: a user (or another agent) creates a task and initial event.
+2. **Agent selection**: agents subscribe to relevant tasks or are explicitly addressed.
+3. **Iteration**: agents exchange events and produce artifacts in **shared memory**.
+4. **Review/critique**: peers (e.g., a critic agent) evaluate intermediate results.
+5. **Aggregation**: a final response is produced and returned to the user.
+
+Single-Agent Tick
+~~~~~~~~~~~~~~~~~
+
+1. **Event** arrives (from a user or another agent).  
+2. **State Machine** evaluates guards, fires a transition, and invokes **Actions**.  
+3. **Belief** is updated (trajectory, execution log, KV).  
+4. **Policy** selects the next event/transition; repeat until an end state or further input is required.
+
+Component Reference
+-------------------
 
 Agents
 ~~~~~~
 
-Agents are specialized AI components designed for specific domains or tasks:
-
-.. inheritance-diagram:: sherpa_ai.agents.qa_agent sherpa_ai.agents.user
-   :parts: 1
-   :caption: Agent Class Hierarchy
-
-Agents build on a common interface while providing specialized functionality for different use cases:
-
-* **QAAgent**: Optimized for question answering
-* **Critic**: Evaluates outputs and provides feedback
-* **MLEngineer**: Specialized for machine learning tasks
+- Role/profile (goal, constraints, method), **SM**, **Policy**, **Belief**, and **Action** set.
+- Human operators can be modeled as agents that send/receive events.
 
 Policies
 ~~~~~~~~
 
-Policies determine how agents make decisions and process information:
+- **Rule-based**: deterministic mapping from (state, belief) → event.  
+- **LLM-guided**: prompt contains *state description*, *available transitions*, and *recent belief*.  
+- **Fast-forward**: when only one transition is available, selection is skipped.
 
-* **ReactPolicy**: Implements the Reasoning+Acting pattern
-* **ChatPolicy**: Optimized for conversational interactions
-* **State Machine Policies**: Use finite state machines for complex workflows
+Belief (Memory)
+~~~~~~~~~~~~~~~
 
-Memory
-~~~~~~
+- **Trajectory store** (states traversed)  
+- **Execution log** (actions and I/O)  
+- **Key-value context** (task data needed by actions and the policy)
 
-Memory systems provide persistence across sessions and interactions:
+Actions & Tools
+~~~~~~~~~~~~~~~
 
-* **SharedMemory**: Allows agents to share information
-* **ConversationMemory**: Stores conversation history
-* **VectorMemory**: Enables semantic retrieval of information
+- Typed parameters: **external** (from user or policy) vs **internal** (from belief).  
+- May call LLMs, retrieval, code evaluators, graph operations, etc.
 
-Integration
------------
+Shared Memory
+~~~~~~~~~~~~~
 
-The power of Sherpa AI comes from the seamless integration of these components. The following diagram shows how data flows through a typical Sherpa AI application:
+- A common store for artifacts/results used by multiple agents.  
+- Each agent still maintains a **private belief** for its own execution trace.
 
-.. code-block:: text
+Design Guidelines
+-----------------
 
-                 ┌────────────┐
-                 │   Input    │
-                 │            │
-                 │    User    │
-                 │   Query    │
-                 └─────┬──────┘
-                       │
-                       ▼
-   ┌────────────────────────────────────────────┐
-   │                 Agent                      │
-   │                                            │
-   │       Orchestrates all components          │
-   └───┬───────────────┬──────────────────┬─────┘
-       │               │                  │
-       ▼               ▼                  ▼
-   ┌───────┐      ┌───────────┐     ┌──────────┐
-   │ Model │      │ Memory    │     │ Policy   │
-   │       │      │           │     │          │
-   │ LLM   │      │ Knowledge │     │ Decision │
-   └───┬───┘      └───────────┘     └────┬─────┘
-       │                                 │
-       ▼                                 │
-   ┌──────────┐                          │
-   │ Prompt   │                          │
-   │          │                          │
-   │ Generate │                          │
-   └────┬─────┘                          │
-        │                                │
-        ▼                                │
-   ┌─────────┐                           │
-   │ Actions │◄──────────────────────────┘
-   │         │
-   │ Execute │
-   └────┬────┘
-        │
-        ▼
-   ┌─────────┐
-   │ Tools   │
-   │         │
-   │ Utilize │
-   └─────────┘
+- Encode best practices as **hierarchical SMs**; keep actions small and composable.  
+- Choose **rule vs LLM policy** per step; prefer rules when transitions are unambiguous.  
+- Use **fast-forward** to reduce LLM calls when a single transition is available.  
+- Add **inspection/self-critique** states when recall or quality is critical.  
+- Tailor SM depth to **model capacity** and **cost** targets.
 
-Sequence Flow
--------------
+Glossary
+--------
 
-The sequence diagram below illustrates how a user query flows through the Sherpa AI system:
-
-.. code-block:: text
-
-   ┌─────────────────────────────────────────────────────────────────┐
-   │                    Sherpa AI Query Flow                         │
-   └─────────────────────────────────────────────────────────────────┘
-
-   ┌─────────┐    1. Query     ┌─────────┐    2. Check     ┌─────────┐
-   │  User   │ ──────────────► │  Agent  │ ──────────────► │ Memory  │
-   │         │                 │         │                 │         │
-   │ User    │                 │ QA      │                 │ Mem     │
-   │         │                 │ Agent   │                 │ ory     │
-   └─────────┘                 └────┬────┘                 └────┬────┘
-                                    │                           │
-                                    │ 3. Return                 │
-                                    │ Context                   │
-                                    │ ◄─────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────┐    4. Apply     ┌─────────┐    5. Select    ┌─────────┐
-   │ Policy  │ ◄────────────── │  Agent  │ ──────────────► │ Action  │
-   │         │                 │         │                 │         │
-   │ React   │                 │ QA      │                 │ Search  │
-   │ Policy  │                 │ Agent   │                 │ Action  │
-   └─────────┘                 └────┬────┘                 └────┬────┘
-                                    │                           │
-                                    │ 7. Generate               │
-                                    │ Response                  │
-                                    │ ◄─────────────────────────┘
-                                    │
-                                    ▼
-   ┌─────────┐    6. Get       ┌─────────┐    8. Final     ┌─────────┐
-   │  LLM    │ ◄────────────── │ Action  │ ──────────────► │  User   │
-   │         │                 │         │                 │         │
-   │ LLM     │                 │ Search  │                 │ User    │
-   │         │                 │ Action  │                 │         │
-   └─────────┘                 └─────────┘                 └─────────┘
-
-This sequence shows:
-
-1. A user submits a query to the Agent
-2. The Agent checks Memory for relevant context
-3. The Agent's Policy determines the next action
-4. Actions are executed to gather information
-5. The Model generates a response based on all inputs
-6. The final response is returned to the user 
+- **State Machine (SM)**: Directed graph of states and transitions with guards/actions.  
+- **Policy**: Selector of the next event/transition based on state and belief.  
+- **Belief**: Agent memory (trajectory, execution log, KV context).  
+- **Action**: Tool or LLM call bound to transitions or state entry/exit.  
+- **Shared Memory**: Common store (e.g., vector/doc) that multiple agents can use.  
+- **Event**: A trigger that advances the state machine (can come from users or agents).
