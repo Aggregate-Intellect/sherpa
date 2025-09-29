@@ -12,6 +12,7 @@ The ``output_parsers`` package provides tools for validating, formatting, and tr
    * **Citation Validation**: Ensures proper citation formatting and accuracy
    * **Number Validation**: Verifies numerical responses for correctness
    * **Link Parsing**: Extracts and validates hyperlinks from responses
+   * **Self-Consistency**: Implements self-consistency improvement for complex Pytandic outputs
    * **Format Conversion**: Converts between different formats (e.g., Markdown to Slack)
 
 Example Usage
@@ -55,6 +56,8 @@ Submodules
      - Implements validation for numerical answers and calculations.
    * - :mod:`sherpa_ai.output_parsers.validation_result`
      - Contains the ValidationResult class for representing validation outcomes.
+   * - :mod:`sherpa_ai.output_parsers.self_consistency`
+     - Implements self-consistency improvement for complex Pydantic outputs.
 
 .. toctree::
    :hidden:
@@ -65,6 +68,7 @@ Submodules
    sherpa_ai.output_parsers.md_to_slack_parse
    sherpa_ai.output_parsers.number_validation
    sherpa_ai.output_parsers.validation_result
+   sherpa_ai.output_parsers.self_consistency
 
 sherpa\_ai.output\_parsers.base module
 --------------------------------------
@@ -110,6 +114,17 @@ sherpa\_ai.output\_parsers.validation\_result module
 ----------------------------------------------------
 
 .. automodule:: sherpa_ai.output_parsers.validation_result
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. _self-consistency-module:
+
+sherpa\_ai.output\_parsers.self\_consistency module
+---------------------------------------------------
+
+.. automodule:: sherpa_ai.output_parsers.self_consistency
    :members:
    :undoc-members:
    :show-inheritance:
