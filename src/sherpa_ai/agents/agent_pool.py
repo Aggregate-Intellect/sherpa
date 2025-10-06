@@ -10,6 +10,9 @@ class AgentPool:
     added, retrieved, and listed. It maintains a dictionary of agents indexed
     by their names for easy access.
 
+    This is the base class for in-memory agent pools. For persistent storage,
+    use PersistentAgentPool which extends this class.
+
     Attributes:
         agents (Dict[str, BaseAgent]): Dictionary mapping agent names to agent instances.
 
@@ -22,8 +25,9 @@ class AgentPool:
         >>> print("Research Assistant" in pool)
         True
     """
+    
     def __init__(self):
-        """Initialize an empty agent pool.
+        """Initialize an agent pool.
 
         Example:
             >>> from sherpa_ai.agents.agent_pool import AgentPool

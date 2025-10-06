@@ -5,13 +5,13 @@ It defines the SherpaOpenAI class which extends OpenAI's chat model with
 Sherpa-specific functionality like usage tracking.
 """
 
-import typing
 from typing import Any, List, Optional
 
 from langchain_openai import ChatOpenAI 
 from langchain_core.callbacks import ( 
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
+    UsageMetadataCallbackHandler,
 )
 from langchain_core.language_models import BaseChatModel 
 from langchain_core.messages import BaseMessage 
@@ -38,7 +38,7 @@ class SherpaOpenAI(ChatOpenAI):
         'The weather is sunny.'
     """
 
-    user_id: typing.Optional[str] = None
+    user_id: Optional[str] = None
 
     def _agenerate(
         self,
@@ -101,13 +101,39 @@ class SherpaOpenAI(ChatOpenAI):
             >>> print(result.generations[0].text)
             'Hi there!'
         """
+        # Create UsageMetadataCallbackHandler to track token usage
+        usage_callback = UsageMetadataCallbackHandler()
+        
+        # Add the callback to the run manager if provided
+        if run_manager:
+            run_manager.add_handler(usage_callback)
+        
+        # Generate response with usage tracking
         response = super()._generate(prompts, stop, run_manager, **kwargs)
-
-        total_token = response.llm_output["token_usage"]["total_tokens"]
-
+        
+        # Track usage if user_id is provided
         if self.user_id:
             user_db = UserUsageTracker()
-            user_db.add_data(user_id=self.user_id, token=total_token)
+            
+            # Extract usage metadata from callback
+            usage_metadata = usage_callback.usage_metadata
+            
+            if usage_metadata:
+                # Use the new unified add_usage method
+                user_db.add_usage(
+                    user_id=self.user_id,
+                    usage_metadata=usage_metadata
+                )
+            else:
+                # Fallback to legacy tracking if no usage metadata
+                # Extract from response.llm_output as fallback
+                total_token = response.llm_output.get("token_usage", {}).get("total_tokens", 0)
+                user_db.add_usage(
+                    user_id=self.user_id,
+                    input_tokens=total_token // 2,  # Rough split for legacy
+                    output_tokens=total_token // 2
+                )
+            
             user_db.close_connection()
 
         return response

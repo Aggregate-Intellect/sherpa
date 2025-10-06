@@ -56,6 +56,20 @@ FILE_TOKEN_LIMIT = environ.get("FILE_TOKEN_LIMIT") or 20000
 DB_NAME = environ.get("DB_NAME") or "token_counter.db"
 DB_URL = environ.get("DB_URL") or "sqlite:///token_counter.db"
 
+# Enhanced cost tracking settings
+ENABLE_COST_TRACKING = environ.get("ENABLE_COST_TRACKING", "true").lower() == "true"
+DAILY_COST_LIMIT = float(environ.get("DAILY_COST_LIMIT") or 10.0)  # $10 default
+COST_ALERT_THRESHOLD = float(environ.get("COST_ALERT_THRESHOLD") or 0.8)  # 80% of limit
+
+# Usage tracking logging settings
+USAGE_LOG_TO_S3 = environ.get("USAGE_LOG_TO_S3", "false").lower() == "true"
+USAGE_LOG_TO_FILE = environ.get("USAGE_LOG_TO_FILE", "true").lower() == "true"
+USAGE_LOG_FILE_PATH = environ.get("USAGE_LOG_FILE_PATH", "./usage_logs.txt")
+
+# Pricing configuration
+MODEL_PRICING_CONFIG_PATH = environ.get("MODEL_PRICING_CONFIG_PATH")  # Path to JSON pricing config file
+MODEL_PRICING_JSON = environ.get("MODEL_PRICING_JSON")  # JSON string with pricing data
+
 # Slack integration
 SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
 SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
