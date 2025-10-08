@@ -14,3 +14,4 @@ The tutorials are a hands-on way for software developers to learn about Sherpa's
     Tutorials/multi_agent
     Tutorials/self_consistency
     Tutorials/cost_tracking
+    Tutorials/blueprint_parser_creator
