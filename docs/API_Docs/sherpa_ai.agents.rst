@@ -15,6 +15,8 @@ The ``agents`` package provides specialized AI agents with different roles and c
    * **Planner**: Creates strategic plans for complex problems
    * **Critic**: Evaluates and provides feedback on other agents' outputs
    * **AgentPool**: Manages multiple agents and their interactions
+   * **PersistentAgentPool**: Enhanced agent pool with persistence capabilities
+   * **UserAgentManager**: Multi-user agent management with preferences
 
 Class Hierarchy
 ---------------
@@ -54,6 +56,9 @@ The diagram below shows how agents interact with other components of the Sherpa 
 Example Usage
 -------------
 
+Basic Agent Usage
+^^^^^^^^^^^^^^^^^
+
 .. code-block:: python
 
    from sherpa_ai.agents import QAAgent, Critic
@@ -73,6 +78,28 @@ Example Usage
    print(f"Response: {response}")
    print(f"Evaluation: {evaluation}")
 
+Agent Persistence
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   from sherpa_ai.agents.persistent_agent_pool import PersistentAgentPool
+   from sherpa_ai.agents.user_agent_manager import UserAgentManager
+   
+   # Create persistent agent pool
+   pool = PersistentAgentPool("agents.db", "sqlite")
+   
+   # Save an agent
+   agent_id = pool.save_agent(qa_agent, user_id="user123")
+   
+   # Load agent later
+   loaded_agent = pool.get_agent(agent_id)
+   
+   # Multi-user management
+   manager = UserAgentManager("user_agents.db")
+   manager.create_user("user123", max_agents=5)
+   agent_id = manager.create_agent_for_user("user123", "My Assistant", "QAAgent")
+
 Submodules
 ----------
 
@@ -84,6 +111,12 @@ Submodules
      - Description
    * - :mod:`sherpa_ai.agents.agent_pool`
      - Provides the AgentPool class for managing multiple agents and their interactions.
+   * - :mod:`sherpa_ai.agents.persistent_agent_pool`
+     - Enhanced agent pool with persistence capabilities for saving and loading agents.
+   * - :mod:`sherpa_ai.agents.user_agent_manager`
+     - Multi-user agent management with preferences and session tracking.
+   * - :mod:`sherpa_ai.agents.agent_storage`
+     - Database schema management and migration utilities for agent persistence.
    * - :mod:`sherpa_ai.agents.base`
      - Contains abstract base classes defining the agent interface and core functionality.
    * - :mod:`sherpa_ai.agents.qa_agent`
@@ -95,6 +128,9 @@ Submodules
    :hidden:
 
    sherpa_ai.agents.agent_pool
+   sherpa_ai.agents.persistent_agent_pool
+   sherpa_ai.agents.user_agent_manager
+   sherpa_ai.agents.agent_storage
    sherpa_ai.agents.base
    sherpa_ai.agents.qa_agent
    sherpa_ai.agents.user
@@ -103,6 +139,30 @@ sherpa\_ai.agents.agent\_pool module
 ------------------------------------
 
 .. automodule:: sherpa_ai.agents.agent_pool
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sherpa\_ai.agents.persistent\_agent\_pool module
+------------------------------------------------
+
+.. automodule:: sherpa_ai.agents.persistent_agent_pool
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sherpa\_ai.agents.user\_agent\_manager module
+---------------------------------------------
+
+.. automodule:: sherpa_ai.agents.user_agent_manager
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sherpa\_ai.agents.agent\_storage module
+---------------------------------------
+
+.. automodule:: sherpa_ai.agents.agent_storage
    :members:
    :undoc-members:
    :show-inheritance:
