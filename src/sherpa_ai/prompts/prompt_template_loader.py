@@ -167,12 +167,10 @@ class PromptTemplate(PromptLoader):
             field_type = field_schema.get("type", "string")
             python_type = type_mapping.get(field_type, str)
 
-            # Handle Optional fields - in Pydantic v2, optional fields need a default value
+            # Handle Optional fields
             if field_name not in required:
-                # Use None as default for optional fields
                 field_definitions[field_name] = (Optional[python_type], None)
             else:
-                # Required fields use Ellipsis (...)
                 field_definitions[field_name] = (python_type, ...)
 
         return create_model(model_name, **field_definitions)
