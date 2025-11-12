@@ -701,3 +701,4 @@ def test_json_schema_to_pydantic(mock_load_json):
     # Test optional field
     instance2 = Model(name="Bob")
     assert instance2.name == "Bob"
+    
