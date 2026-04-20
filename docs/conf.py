@@ -71,6 +71,7 @@ html_theme_options = {
     "show_navbar_depth": 1,
     "show_toc_level": 2,
     "toc_title": "In This Page:",
+    "analytics": {"google_analytics_id": "G-VCPKXBRVQZ"},
 }
 html_title = "Sherpa - Thinking Companion"
 html_logo = "cover_image.png"
