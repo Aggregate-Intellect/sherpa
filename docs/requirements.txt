@@ -3,4 +3,5 @@ sphinx-book-theme
 sphinx-design
 myst-parser
 sphinx_autodoc_typehints
+sphinx-sitemap
 graphviz
