@@ -12,5 +12,5 @@ own Slack workspace, as opposed to
     :hidden:
     :glob:
 
-    Slack Bot/*
+    slack_bot/*
 

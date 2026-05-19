@@ -1,0 +1,53 @@
+# Sherpa - AI-Augmented Thinking Companion
+
+> Sherpa is an open-source Python library by Aggregate Intellect for building and managing multi-agent LLM systems. It helps developers, founders, and operators automate complex, knowledge-intensive workflows using large language models.
+
+## Getting Started
+
+- [Home](https://docs.ai.science/en/latest/): Overview of Sherpa, its purpose, and community links
+- [Tutorials](https://docs.ai.science/en/latest/How_To/tutorials.html): Hands-on guides for building with Sherpa
+- [Talk to Sherpa](https://docs.ai.science/en/latest/How_To/talk_to_sherpa.html): Interact with the hosted Sherpa bot in the AISC community Slack
+
+## Tutorials
+
+- [Blog Writer](https://docs.ai.science/en/latest/How_To/Tutorials/blog_writer.html): Build a multi-agent blog writer that reads transcripts, creates outlines, and writes posts using web and document search
+- [Document Reader](https://docs.ai.science/en/latest/How_To/Tutorials/document_reader.html): Build an agent that reads and answers questions from PDF documents
+- [Add Citations](https://docs.ai.science/en/latest/How_To/Tutorials/add_citation.html): Add citation validation to Sherpa agents
+- [Multi-Agent Systems](https://docs.ai.science/en/latest/How_To/Tutorials/multi_agent.html): Build systems with multiple collaborating agents
+- [State Management](https://docs.ai.science/en/latest/How_To/Tutorials/state_management.html): Manage agent state across interactions
+- [Agent Persistence](https://docs.ai.science/en/latest/How_To/Tutorials/agent_persistence.html): Persist agent memory and context
+- [Cost Tracking](https://docs.ai.science/en/latest/How_To/Tutorials/cost_tracking.html): Track LLM API costs in Sherpa pipelines
+- [Search Refinement](https://docs.ai.science/en/latest/How_To/Tutorials/search_refinement.html): Improve search quality in agent workflows
+- [Self Consistency](https://docs.ai.science/en/latest/How_To/Tutorials/self_consistency.html): Use self-consistency techniques to improve agent output reliability
+- [Blueprint Parser](https://docs.ai.science/en/latest/How_To/Tutorials/blueprint_parser_creator.html): Create agents that parse and generate structured blueprints
+
+## SlackBot
+
+- [Run Your Own SlackBot](https://docs.ai.science/en/latest/How_To/slack_bot.html): Overview of deploying Sherpa as a Slack app in your own workspace
+- [Workspace Setup](https://docs.ai.science/en/latest/How_To/slack_bot/1_slackbot_workspace.html): Configure a Slack workspace and app for Sherpa
+- [Run the SlackBot](https://docs.ai.science/en/latest/How_To/slack_bot/2_run_slackbot.html): Deploy and run the Sherpa Slack bot
+- [Pinecone Setup](https://docs.ai.science/en/latest/How_To/slack_bot/3_pinecone_setup.html): Connect Sherpa to Pinecone for vector storage
+- [Local Vector DB](https://docs.ai.science/en/latest/How_To/slack_bot/4_local_vectordb.html): Use a local vector database instead of Pinecone
+
+## About Sherpa
+
+- [About Sherpa](https://docs.ai.science/en/latest/About_Sherpa/index.html): Project background, KnowledgeOps philosophy, and vision
+- [Concepts](https://docs.ai.science/en/latest/Concepts.html): Core concepts behind Sherpa's design
+- [Architecture](https://docs.ai.science/en/latest/Architecture.html): System architecture and component overview
+- [Multi-Agent Framework](https://docs.ai.science/en/latest/About_Sherpa/multi_agent_framework.html): How Sherpa's multi-agent loop works
+
+## Contributing
+
+- [How to Contribute](https://docs.ai.science/en/latest/How_To/contribute.html): Ways to contribute — bugs, features, enhancements, maintainership
+- [Development Guide](https://docs.ai.science/en/latest/How_To/Contribute/1_develop.html): Set up a local development environment
+- [Testing](https://docs.ai.science/en/latest/How_To/Contribute/2_test.html): How to run and write tests
+- [Release Process](https://docs.ai.science/en/latest/How_To/Contribute/3_release-process.html): How releases are cut
+
+## API Reference
+
+- [Sherpa AI API](https://docs.ai.science/en/latest/API_Docs/sherpa_ai.html): Full Python API reference for the sherpa_ai package
+- [Agents](https://docs.ai.science/en/latest/API_Docs/sherpa_ai.agents.html): Agent classes and interfaces
+- [Actions](https://docs.ai.science/en/latest/API_Docs/sherpa_ai.actions.html): Built-in actions (tools) available to agents
+- [Memory](https://docs.ai.science/en/latest/API_Docs/sherpa_ai.memory.html): Memory and context management
+- [Models](https://docs.ai.science/en/latest/API_Docs/sherpa_ai.models.html): LLM model wrappers
+- [Output Parsers](https://docs.ai.science/en/latest/API_Docs/sherpa_ai.output_parsers.html): Parsing and validating agent outputs

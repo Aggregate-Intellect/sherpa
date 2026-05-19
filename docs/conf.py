@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.graphviz',
     'sphinx_autodoc_typehints',
+    'sphinx_sitemap',
 ]
 autosummary_generate = True
 autodoc_member_order = 'bysource'
@@ -73,6 +74,7 @@ html_theme_options = {
     "toc_title": "In This Page:",
     "analytics": {"google_analytics_id": "G-VCPKXBRVQZ"},
 }
+html_baseurl = "https://docs.ai.science/en/latest/"
 html_title = "Sherpa - Thinking Companion"
 html_logo = "cover_image.png"
 html_favicon = ""
@@ -82,6 +84,7 @@ html_favicon = ""
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_extra_path = ["llms.txt"]
 
 
 # Extensions for various markdown elements support
