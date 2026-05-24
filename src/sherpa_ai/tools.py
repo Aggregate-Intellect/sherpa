@@ -126,6 +126,10 @@ class SearchArxivTool(BaseTool):
         summaries = re.findall(summary_pattern, xml_content, re.DOTALL)
         title_pattern = r"<title>(.*?)</title>"
         titles = re.findall(title_pattern, xml_content, re.DOTALL)
+
+        # Note that arXiv may return on extra title for the search feed itself
+        titles = titles[len(titles) - len(summaries):]  # align titles and summaries
+
         id_pattern = r"<id>(.*?)</id>"
         ids = re.findall(id_pattern, xml_content, re.DOTALL)
 
