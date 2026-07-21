@@ -20,11 +20,19 @@ from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
 
 
-def _usage_metadata_from_result(response: ChatResult) -> Optional[dict]:
+def usage_metadata_from_result(response: ChatResult) -> Optional[dict]:
     """Extract usage metadata from the AI message of a chat result.
 
     Reads the ``usage_metadata`` attached to the generated message directly,
     which works regardless of whether a callback run manager is present.
+
+    NOTE: This returns the usage metadata of the *first* generation that carries
+    it. For multi-generation responses (``n > 1``), token counts from the
+    remaining generations are not aggregated. Aggregation is intentionally not
+    done here because providers differ in whether per-generation ``usage_metadata``
+    holds that generation's own tokens or the request-wide total (summing the
+    latter would double-count). ``n > 1`` is not currently used by Sherpa's call
+    paths; revisit this if multi-generation sampling is introduced.
     """
     for generation in response.generations:
         message = getattr(generation, "message", None)
@@ -130,7 +138,7 @@ class SherpaBaseChatModel(BaseChatModel):
             agent_name = getattr(self, 'agent_name', None)
 
             # Extract usage metadata from the generated message
-            usage_metadata = _usage_metadata_from_result(response)
+            usage_metadata = usage_metadata_from_result(response)
 
             if usage_metadata:
                 # Use the new usage metadata-based tracking
@@ -152,7 +160,7 @@ class SherpaBaseChatModel(BaseChatModel):
                     session_id=session_id,
                     agent_name=agent_name
                 )
-            
+
             user_db.close_connection()
 
         return response
@@ -254,7 +262,7 @@ class SherpaChatOpenAI(ChatOpenAI):
             agent_name = getattr(self, 'agent_name', None)
 
             # Extract usage metadata from the generated message
-            usage_metadata = _usage_metadata_from_result(response)
+            usage_metadata = usage_metadata_from_result(response)
 
             if usage_metadata:
                 # Use the new usage metadata-based tracking

@@ -7,7 +7,7 @@ import json
 import re
 import socket
 from typing import TYPE_CHECKING, Any, List, Optional, Union
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 import tiktoken
@@ -24,9 +24,28 @@ class UnsafeURLError(ValueError):
     """Raised when a URL fails SSRF safety validation."""
 
 
+MAX_REDIRECTS = 5
+
+
 def _is_public_address(ip: str) -> bool:
-    """Return True if `ip` is a globally routable, non-internal address."""
+    """Return True if `ip` is a globally routable, non-internal address.
+
+    Uses ``ipaddress.is_global`` as the primary *allowlist* check: it is the
+    logical complement of every special-purpose range IANA has registered
+    (loopback, private, link-local, CGNAT 100.64.0.0/10, multicast, reserved,
+    unspecified, ...), so it catches ranges an ad-hoc denylist would miss. The
+    explicit denylist is kept as belt-and-suspenders defense in depth.
+    IPv4-mapped IPv6 addresses (e.g. ``::ffff:127.0.0.1``) are unwrapped first
+    so the underlying IPv4 address is evaluated rather than a generic IPv6 one.
+    """
     addr = ipaddress.ip_address(ip)
+    mapped = getattr(addr, "ipv4_mapped", None)
+    if mapped is not None:
+        addr = mapped
+
+    if not addr.is_global:
+        return False
+
     return not (
         addr.is_private
         or addr.is_loopback
@@ -37,13 +56,18 @@ def _is_public_address(ip: str) -> bool:
     )
 
 
-def assert_safe_url(url: str) -> None:
+def assert_safe_url(url: str) -> list[str]:
     """Validate that `url` is http(s) and does not resolve to an internal/
     private/link-local/metadata address, to prevent SSRF via agent- or
     user-controlled URLs (e.g. link scraping tools).
 
     Args:
         url (str): The URL to validate.
+
+    Returns:
+        list[str]: The validated, resolved IP addresses for the host. The
+            caller can pin the connection to one of these to avoid a
+            DNS-rebinding TOCTOU window.
 
     Raises:
         UnsafeURLError: If the URL's scheme is not http(s), or if its host
@@ -66,6 +90,86 @@ def assert_safe_url(url: str) -> None:
         raise UnsafeURLError(
             f"URL resolves to a non-public address, refusing to fetch: {url}"
         )
+
+    return sorted(resolved_ips)
+
+
+def safe_get(
+    url: str,
+    *,
+    headers: Optional[dict] = None,
+    timeout: float = HTTP_GET_TIMEOUT,
+    max_redirects: int = MAX_REDIRECTS,
+    forward_headers_on_redirect: bool = True,
+):
+    """Perform a GET request hardened against SSRF, redirect and rebinding bypasses.
+
+    Unlike a plain ``requests.get``, this:
+
+    * validates every URL in the redirect chain *before* fetching it, with
+      automatic redirect following disabled (``allow_redirects=False``), so an
+      attacker-controlled public host cannot 3xx-redirect the request onto an
+      internal/metadata address (e.g. ``169.254.169.254``);
+    * for plain ``http`` connects directly to the exact IP that just passed
+      validation (IP pinning), closing the DNS-rebinding TOCTOU window between
+      resolution and connection. For ``https`` the connection is made by
+      hostname so TLS SNI / certificate validation still works; the residual
+      rebinding window there is the few microseconds between validation and
+      connect and is accepted as documented.
+
+    Args:
+        url: The URL to fetch.
+        headers: Optional headers to send.
+        timeout: Per-request timeout in seconds.
+        max_redirects: Maximum number of redirect hops to follow.
+        forward_headers_on_redirect: If False, the caller-supplied headers
+            (which may carry credentials) are only sent on the initial request
+            and dropped on redirect hops, to avoid leaking credentials to a
+            redirect target.
+
+    Returns:
+        requests.Response: The final (non-redirect) response.
+
+    Raises:
+        UnsafeURLError: If any URL in the chain fails validation, or if the
+            redirect limit is exceeded.
+    """
+    current_url = url
+    base_headers = dict(headers or {})
+
+    for hop in range(max_redirects + 1):
+        validated_ips = assert_safe_url(current_url)
+        parsed = urlparse(current_url)
+
+        request_headers = dict(base_headers) if (hop == 0 or forward_headers_on_redirect) else {}
+        connect_url = current_url
+
+        if parsed.scheme == "http":
+            # Pin to the validated IP so the socket connects to exactly the
+            # address we vetted, defeating DNS rebinding.
+            ip = validated_ips[0]
+            host_part = f"[{ip}]" if ":" in ip else ip
+            netloc = f"{host_part}:{parsed.port}" if parsed.port else host_part
+            connect_url = parsed._replace(netloc=netloc).geturl()
+            request_headers.setdefault("Host", parsed.netloc)
+
+        response = requests.get(
+            connect_url,
+            headers=request_headers or None,
+            timeout=timeout,
+            allow_redirects=False,
+        )
+
+        if response.status_code in (301, 302, 303, 307, 308):
+            location = response.headers.get("Location")
+            if not location:
+                return response
+            current_url = urljoin(current_url, location)
+            continue
+
+        return response
+
+    raise UnsafeURLError(f"Too many redirects while fetching: {url}")
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -187,8 +291,7 @@ def scrape_with_url(url: str):
             "Please install it with `pip install beautifulsoup4`."
         )
 
-    assert_safe_url(url)
-    response = requests.get(url, timeout=HTTP_GET_TIMEOUT)
+    response = safe_get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)
     status = response.status_code
@@ -519,8 +622,7 @@ def check_url(url):
         raise ValueError(f"URL must conform to HTTP(S) scheme: {url}")
 
     try:
-        assert_safe_url(url)
-        _ = requests.get(url, timeout=HTTP_GET_TIMEOUT)
+        _ = safe_get(url)
         return True
     except Exception as e:
         logger.info(f"{e} - {url}")
@@ -582,51 +684,13 @@ def word_to_float(text):
         return {"success": False, "message": e}
 
 
-def extract_numeric_entities(
-    text: Optional[str],
-    entity_types: List[str] = ["DATE", "CARDINAL", "QUANTITY", "MONEY"],
-):
-    """Extract numeric entities from a text.
-
-    Args:
-        text (str): The text to extract numeric entities from.
-        entity_types (List[str]): A list of spaCy entity types to consider for extraction.
-
-    Returns:
-        list: A list of numeric entities.
-    """
-    try:
-        import spacy
-    except ImportError:
-        raise ImportError(
-            "Could not import spacy python package. "
-            "This is needed in order to to use extract_numerical_entities. "
-            "Please install it with `pip install spacy`."
-        )
-
-    if text is None:
-        return []
-
-    text = text.lower()
-    text = re.sub(r"\s+", " ", text)
-
-    # This loading requires running python -m spacy download en_core_web_sm first
-    nlp = spacy.load("en_core_web_sm")
-    doc = nlp(text)
-    numbers = []
-    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
-    for entity in filtered_entities:
-        if "'" in entity:
-            entity = entity.split("'")[1]
-        if any(char.isdigit() for char in entity):
-            result = extract_numbers_from_text(entity)
-            numbers.extend(result)
-        else:
-            result = word_to_float(entity)
-            if result["success"]:
-                numbers.append(str(result["data"]))
-
-    return numbers
+# NOTE: A previous NER-based ``extract_numeric_entities`` (spaCy) was removed in
+# favor of the lexical ``extract_word_numbers`` below. NER-based extraction was
+# context-dependent: the same spelled-out number ("one", "two hundred") could be
+# tagged differently depending on the surrounding sentence, so a number present in
+# the source could fail to match the same number in a generated answer (and vice
+# versa). The lexical matcher is deterministic and context-independent, which is
+# what number validation actually needs.
 
 
 #: Regex matching maximal runs of spelled-out number words, e.g.

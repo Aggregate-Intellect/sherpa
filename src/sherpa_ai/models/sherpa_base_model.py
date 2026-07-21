@@ -18,7 +18,7 @@ from langchain_core.outputs import ChatResult
 from pydantic import BaseModel
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
-from sherpa_ai.models.sherpa_base_chat_model import _usage_metadata_from_result
+from sherpa_ai.models.sherpa_base_chat_model import usage_metadata_from_result
 
 
 class SherpaOpenAI(ChatOpenAI):
@@ -109,7 +109,7 @@ class SherpaOpenAI(ChatOpenAI):
             user_db = UserUsageTracker()
 
             # Extract usage metadata from the generated message
-            usage_metadata = _usage_metadata_from_result(response)
+            usage_metadata = usage_metadata_from_result(response)
 
             if usage_metadata:
                 # Use the new unified add_usage method

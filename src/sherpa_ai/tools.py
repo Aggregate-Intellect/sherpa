@@ -141,6 +141,21 @@ class SearchArxivTool(BaseTool):
                 titles.append(title_match.group(1))
                 summaries.append(summary_match.group(1))
                 ids.append(id_match.group(1))
+            else:
+                missing = [
+                    field
+                    for field, match in (
+                        ("title", title_match),
+                        ("summary", summary_match),
+                        ("id", id_match),
+                    )
+                    if match is None
+                ]
+                entry_id = id_match.group(1) if id_match else "<unknown>"
+                logger.warning(
+                    f"Skipping arXiv entry (id={entry_id}) missing "
+                    f"required field(s): {', '.join(missing)}"
+                )
 
         result_list = []
         for i in range(len(titles)):

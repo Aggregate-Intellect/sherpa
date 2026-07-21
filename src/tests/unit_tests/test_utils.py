@@ -453,8 +453,10 @@ def test_check_url_raises_exception_for_unsupported_uri_scheme(bad_uri):
     ["http://something.com", "https://something.com"],
 )
 def test_check_url_returns_true_for_valid_http_url(good_uri):
+    mock_response = Mock()
+    mock_response.status_code = 200
     with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
-         patch("requests.get", return_value=True):
+         patch("requests.get", return_value=mock_response):
         result = check_url(good_uri)
     assert result is True
 
@@ -481,6 +483,8 @@ def test_check_url_returns_false_for_private_address():
         "10.0.0.5",  # private
         "169.254.169.254",  # link-local / cloud metadata endpoint
         "::1",  # loopback (IPv6)
+        "100.64.0.5",  # CGNAT space (100.64.0.0/10) - missed by naive denylist
+        "::ffff:127.0.0.1",  # IPv4-mapped IPv6 loopback
     ],
 )
 def test_assert_safe_url_rejects_internal_addresses(unsafe_ip):
@@ -508,6 +512,82 @@ def test_assert_safe_url_rejects_unresolvable_host():
     ):
         with pytest.raises(UnsafeURLError):
             assert_safe_url("http://does-not-resolve.invalid")
+
+
+def _redirect_response(location, status_code=302):
+    resp = Mock()
+    resp.status_code = status_code
+    resp.headers = {"Location": location}
+    return resp
+
+
+def test_safe_get_validates_redirect_target_before_following():
+    # A public host that 302-redirects to the cloud metadata endpoint must be
+    # rejected: the redirect target is validated *before* being followed.
+    from sherpa_ai.utils import safe_get
+
+    def fake_getaddrinfo(host, *args, **kwargs):
+        mapping = {
+            "public.example": "93.184.216.34",
+            "169.254.169.254": "169.254.169.254",
+        }
+        ip = mapping.get(host, "169.254.169.254")
+        return [(None, None, None, "", (ip, 0))]
+
+    redirect = _redirect_response("http://169.254.169.254/latest/meta-data/")
+
+    with patch("socket.getaddrinfo", side_effect=fake_getaddrinfo), \
+         patch("requests.get", return_value=redirect) as mock_get:
+        with pytest.raises(UnsafeURLError):
+            safe_get("http://public.example")
+
+    # The first hop was fetched, but the internal redirect target never was.
+    assert mock_get.call_count == 1
+    for call in mock_get.call_args_list:
+        assert "169.254.169.254" not in call.args[0]
+
+
+def test_safe_get_follows_safe_redirect():
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    final.content = b"ok"
+    responses = [_redirect_response("http://target.example/final"), final]
+
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", side_effect=responses) as mock_get:
+        result = safe_get("http://start.example")
+
+    assert result is final
+    assert mock_get.call_count == 2
+
+
+def test_safe_get_pins_validated_ip_for_http():
+    # For http the request must connect to the validated IP, not the hostname,
+    # with the original Host header preserved (defeats DNS rebinding).
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=final) as mock_get:
+        safe_get("http://example.com/path")
+
+    args, kwargs = mock_get.call_args
+    assert args[0] == "http://93.184.216.34/path"
+    assert kwargs["headers"]["Host"] == "example.com"
+    assert kwargs["allow_redirects"] is False
+
+
+def test_safe_get_rejects_redirect_loop():
+    from sherpa_ai.utils import safe_get
+
+    loop = _redirect_response("http://loop.example/again")
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=loop):
+        with pytest.raises(UnsafeURLError):
+            safe_get("http://loop.example")
 
 
 def test_chunk_and_summarize_with_completion_llm():

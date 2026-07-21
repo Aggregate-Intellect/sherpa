@@ -45,6 +45,11 @@ pytest-cov = "^4.1.0"
 en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"}
 
 [tool.poetry.group.optional.dependencies]
+# Residual CVE (the "1 of 140" still open): PYSEC-2026-311 — pre-auth code
+# injection affecting chromadb >=1.0.0. No fixed version exists yet (1.5.9 is the
+# latest release and is still vulnerable), so it cannot be bumped away. Exposure
+# requires running the Chroma server with trust_remote_code=true, which Sherpa
+# does not do. Bump once an upstream fixed release ships.
 chromadb = "^1.0.9"
 langchain-chroma = "^0.2.5"
 spacy = "^3.7.4"
