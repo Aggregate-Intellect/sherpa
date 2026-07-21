@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+import requests
 from langchain_core.language_models import FakeListLLM
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
@@ -11,8 +12,10 @@ from sherpa_ai.utils import (
     check_url,
     chunk_and_summarize,
     chunk_and_summarize_file,
+    combined_number_extractor,
     extract_entities,
     extract_numbers_from_text,
+    extract_word_numbers,
     get_base_url,
     get_links_from_string,
     json_from_text,
@@ -205,6 +208,44 @@ def test_extract_numbers_from_text(source_text, source_numbers):
     assert len(extracted_numbers) == len(
         source_numbers
     ), f"Incorrect extraction from #{ source_text }, expected #{ source_numbers } but got #{ extracted_numbers }"
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("one thousand two hundred thirty-four", ["1234"]),
+        ("twenty one apples", ["21"]),
+        ("two point five kilometers", ["2.5"]),
+        ("There are one hundred reasons", ["100"]),
+    ],
+)
+def test_extract_word_numbers_finds_real_numbers(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # "one" and "point" are common non-numeric English words and must
+        # not be treated as numbers when they appear alone.
+        "That is a fair point, but we need 42 units.",
+        "The point of the analysis is clarity.",
+        "At one point the shipment was delayed.",
+        "No one knows the exact figure.",
+        # A repeated word reads as a spoken digit sequence (e.g. a phone
+        # number), not an additive/compound number.
+        "Phone one one one for support.",
+    ],
+)
+def test_extract_word_numbers_rejects_ambiguous_words(text):
+    assert extract_word_numbers(text) == []
+
+
+def test_combined_number_extractor_matches_digits_and_words():
+    result = combined_number_extractor(
+        "There were 42 attendees, or about forty-two people."
+    )
+    assert set(result) == {"42"}
 
 
 @pytest.mark.parametrize(
@@ -588,6 +629,59 @@ def test_safe_get_rejects_redirect_loop():
          patch("requests.get", return_value=loop):
         with pytest.raises(UnsafeURLError):
             safe_get("http://loop.example")
+
+
+def test_safe_get_prefers_ipv4_and_falls_back_on_connection_error():
+    # A host with both an IPv4 and IPv6 address must be tried IPv4-first, and
+    # if that connection fails, the next validated address should be tried
+    # rather than the whole fetch failing outright.
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    addrinfo = [
+        (None, None, None, "", ("2606:2800:220:1:248:1893:25c8:1946", 0)),
+        (None, None, None, "", ("93.184.216.34", 0)),
+    ]
+    with patch("socket.getaddrinfo", return_value=addrinfo), \
+         patch(
+             "requests.get",
+             side_effect=[requests.exceptions.ConnectionError("unreachable"), final],
+         ) as mock_get:
+        result = safe_get("http://example.com/path")
+
+    assert result is final
+    assert mock_get.call_count == 2
+    first_url = mock_get.call_args_list[0].args[0]
+    second_url = mock_get.call_args_list[1].args[0]
+    assert first_url == "http://93.184.216.34/path"  # IPv4 tried first
+    assert second_url == "http://[2606:2800:220:1:248:1893:25c8:1946]/path"
+
+
+def test_safe_get_raises_when_all_validated_addresses_unreachable():
+    from sherpa_ai.utils import safe_get
+
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", side_effect=requests.exceptions.ConnectionError("down")):
+        with pytest.raises(UnsafeURLError):
+            safe_get("http://example.com")
+
+
+def test_safe_get_host_header_excludes_userinfo():
+    # The Host header must be built from hostname[:port] only — parsed.netloc
+    # can carry "user:pass@host" userinfo, which must never leak into the
+    # header sent to the (validated) remote server.
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=final) as mock_get:
+        safe_get("http://user:secret@example.com/path")
+
+    _, kwargs = mock_get.call_args
+    assert kwargs["headers"]["Host"] == "example.com"
+    assert "secret" not in kwargs["headers"]["Host"]
 
 
 def test_chunk_and_summarize_with_completion_llm():

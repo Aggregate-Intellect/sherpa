@@ -65,9 +65,13 @@ def assert_safe_url(url: str) -> list[str]:
         url (str): The URL to validate.
 
     Returns:
-        list[str]: The validated, resolved IP addresses for the host. The
-            caller can pin the connection to one of these to avoid a
-            DNS-rebinding TOCTOU window.
+        list[str]: The validated, resolved IP addresses for the host, in
+            connection-preference order (IPv4 before IPv6, otherwise as
+            returned by the resolver). The caller can pin the connection to
+            one of these to avoid a DNS-rebinding TOCTOU window; since not
+            every address family is reachable from every network, callers
+            should try them in order rather than assume the first always
+            connects.
 
     Raises:
         UnsafeURLError: If the URL's scheme is not http(s), or if its host
@@ -82,7 +86,12 @@ def assert_safe_url(url: str) -> list[str]:
         raise UnsafeURLError(f"URL has no hostname: {url}")
 
     try:
-        resolved_ips = {info[4][0] for info in socket.getaddrinfo(hostname, None)}
+        # Dedup while preserving the resolver's order (rather than sorting
+        # alphabetically, which is a meaningless order that can put an
+        # unreachable address family first).
+        resolved_ips = list(
+            dict.fromkeys(info[4][0] for info in socket.getaddrinfo(hostname, None))
+        )
     except socket.gaierror as e:
         raise UnsafeURLError(f"Could not resolve host {hostname}: {e}") from e
 
@@ -91,7 +100,10 @@ def assert_safe_url(url: str) -> list[str]:
             f"URL resolves to a non-public address, refusing to fetch: {url}"
         )
 
-    return sorted(resolved_ips)
+    # Prefer IPv4 first: it's the more universally reachable family, and this
+    # is only an ordering preference among already-validated addresses.
+    resolved_ips.sort(key=lambda ip: ":" in ip)
+    return resolved_ips
 
 
 def safe_get(
@@ -142,23 +154,46 @@ def safe_get(
         parsed = urlparse(current_url)
 
         request_headers = dict(base_headers) if (hop == 0 or forward_headers_on_redirect) else {}
-        connect_url = current_url
+        # Host header must be hostname[:port] only — parsed.netloc can carry
+        # "user:pass@host" userinfo, which would otherwise leak into the
+        # header and produce a malformed Host value.
+        host_header = parsed.hostname or ""
+        if parsed.port:
+            host_header = f"{host_header}:{parsed.port}"
 
         if parsed.scheme == "http":
-            # Pin to the validated IP so the socket connects to exactly the
-            # address we vetted, defeating DNS rebinding.
-            ip = validated_ips[0]
-            host_part = f"[{ip}]" if ":" in ip else ip
-            netloc = f"{host_part}:{parsed.port}" if parsed.port else host_part
-            connect_url = parsed._replace(netloc=netloc).geturl()
-            request_headers.setdefault("Host", parsed.netloc)
-
-        response = requests.get(
-            connect_url,
-            headers=request_headers or None,
-            timeout=timeout,
-            allow_redirects=False,
-        )
+            # Pin to a validated IP so the socket connects to exactly an
+            # address we vetted, defeating DNS rebinding. Not every address
+            # family is reachable from every network, so try each validated
+            # IP in preference order rather than assuming the first connects.
+            request_headers.setdefault("Host", host_header)
+            last_error = None
+            for ip in validated_ips:
+                host_part = f"[{ip}]" if ":" in ip else ip
+                netloc = f"{host_part}:{parsed.port}" if parsed.port else host_part
+                connect_url = parsed._replace(netloc=netloc).geturl()
+                try:
+                    response = requests.get(
+                        connect_url,
+                        headers=request_headers or None,
+                        timeout=timeout,
+                        allow_redirects=False,
+                    )
+                    break
+                except requests.exceptions.ConnectionError as e:
+                    last_error = e
+                    continue
+            else:
+                raise UnsafeURLError(
+                    f"Could not connect to any validated address for {current_url}: {last_error}"
+                )
+        else:
+            response = requests.get(
+                current_url,
+                headers=request_headers or None,
+                timeout=timeout,
+                allow_redirects=False,
+            )
 
         if response.status_code in (301, 302, 303, 307, 308):
             location = response.headers.get("Location")
@@ -387,9 +422,11 @@ def chunk_and_summarize(text_data: str, question: str, link: str, llm):
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as"""
         )
-        # Chat models return a message object; completion models return a str
+        # Chat models return a message object; completion models return a str.
+        # Use .text (not .content) since langchain-core 1.x content can be a
+        # list of content blocks rather than a plain string.
         summarized = (
-            summarized.content if hasattr(summarized, "content") else str(summarized)
+            summarized.text if hasattr(summarized, "text") else str(summarized)
         )
         chunk_summary.append(summarized)
 
@@ -451,9 +488,11 @@ def chunk_and_summarize_file(
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as"""
         )
-        # Chat models return a message object; completion models return a str
+        # Chat models return a message object; completion models return a str.
+        # Use .text (not .content) since langchain-core 1.x content can be a
+        # list of content blocks rather than a plain string.
         summarized = (
-            summarized.content if hasattr(summarized, "content") else str(summarized)
+            summarized.text if hasattr(summarized, "text") else str(summarized)
         )
         chunk_summary.append(summarized)
     return " ".join(chunk_summary)
@@ -706,6 +745,15 @@ _NUMBER_WORD_RUN_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# "one" and "point" are grammatically overloaded in ordinary English ("one" as
+# a pronoun/article in "no one", "at one point"; "point" as an ordinary noun),
+# so a single bare occurrence of either is not reliably a number and is
+# excluded unless it's part of a longer numeric phrase (e.g. "twenty one",
+# "two point five"). "point" is additionally rejected at the start/end of a
+# match, since it must be flanked by number words on both sides to represent
+# a decimal point.
+_AMBIGUOUS_STANDALONE = {"one", "point"}
+
 
 def extract_word_numbers(text: Optional[str]):
     """Extract numbers written as words from a text.
@@ -726,7 +774,19 @@ def extract_word_numbers(text: Optional[str]):
 
     numbers = []
     for match in _NUMBER_WORD_RUN_PATTERN.finditer(text.lower()):
-        phrase = re.sub(r"[-,]", " ", match.group())
+        tokens = re.sub(r"[-,]", " ", match.group()).split()
+
+        if len(tokens) == 1 and tokens[0] in _AMBIGUOUS_STANDALONE:
+            continue
+        if tokens[0] == "point" or tokens[-1] == "point":
+            continue
+        # A repeated adjacent word (e.g. "one one one") reads as a spoken
+        # digit sequence (like a phone number), not an additive/compound
+        # number — no legitimate compound number repeats a word back-to-back.
+        if any(a == b for a, b in zip(tokens, tokens[1:])):
+            continue
+
+        phrase = " ".join(tokens)
         result = word_to_float(phrase)
         if result["success"]:
             numbers.append(str(result["data"]))

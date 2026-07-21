@@ -75,6 +75,41 @@ def test_sherpa_base_chat_model_tracks_usage_for_user():
     mock_tracker.return_value.close_connection.assert_called_once()
 
 
+def test_sherpa_base_chat_model_tracks_usage_from_populated_metadata():
+    # The two tests above only exercise the fallback path (no usage_metadata
+    # on the message). This covers the actual extraction path: when the
+    # generated message carries real usage_metadata, it must be read and
+    # passed through to add_usage verbatim, not the zeroed-out fallback.
+    model = FakeSherpaChatModel(responses=["tracked answer"], user_id="user-99")
+
+    usage_metadata = {"input_tokens": 12, "output_tokens": 34, "total_tokens": 46}
+    canned = ChatResult(
+        generations=[
+            ChatGeneration(
+                message=AIMessage(
+                    content="tracked answer", usage_metadata=usage_metadata
+                )
+            )
+        ]
+    )
+
+    with mock.patch(
+        "langchain_core.language_models.fake_chat_models.FakeListChatModel._generate",
+        return_value=canned,
+    ), mock.patch(
+        "sherpa_ai.models.sherpa_base_chat_model.UserUsageTracker"
+    ) as mock_tracker:
+        model.invoke([HumanMessage(content="question")])
+
+    mock_tracker.return_value.add_usage.assert_called_once()
+    assert (
+        mock_tracker.return_value.add_usage.call_args.kwargs["usage_metadata"]
+        == usage_metadata
+    )
+    # The fallback (zeroed) path must NOT be used when real metadata exists.
+    assert "input_tokens" not in mock_tracker.return_value.add_usage.call_args.kwargs
+
+
 def test_sherpa_chat_openai_construction_and_fields():
     # Subclassing ChatOpenAI must keep working: pydantic fields from both the
     # parent (model_name, temperature) and the Sherpa extension must coexist.

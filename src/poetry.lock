@@ -7458,7 +7458,7 @@ version = "1.1"
 description = "Convert number words eg. three hundred and forty two to numbers (342)."
 optional = false
 python-versions = "*"
-groups = ["optional"]
+groups = ["main"]
 files = [
     {file = "word2number-1.1.zip", hash = "sha256:70e27a5d387f67b04c71fbb7621c05930b19bfd26efd6851e6e0f9969dcde7d0"},
 ]
@@ -8018,4 +8018,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = "<3.14,>=3.10"
-content-hash = "22af2fb8b25de5a22a56cca48581b32337b20d66d6eed69b28d30be9039241f7"
+content-hash = "f96a224750d1bf93e2dcea96d7781f87e0ab93bd70a93b5a95643ffc6793edb1"
