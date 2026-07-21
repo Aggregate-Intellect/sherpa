@@ -28,9 +28,7 @@ def test_search_query_includes_gsite_config():
     # The mocked Serper response (see conftest.GOOGLE_SEARCH_MOCK) must actually
     # flow through the result parsing: title, snippet and link should survive.
     assert "Google is a search engine" in search_result
-    # codeql[py/incomplete-url-substring-sanitization]: test assertion on
-    # mocked content, not a URL-trust/sanitization decision.
-    assert "https://www.google.com" in search_result
+    assert "https://www.google.com" in search_result  # codeql[py/incomplete-url-substring-sanitization] test assertion on mocked content, not a URL-trust decision
 
 
 def test_search_query_includes_multiple_gsite_config():
@@ -44,9 +42,7 @@ def test_search_query_includes_multiple_gsite_config():
     search_result = search_tool._run(query)
     # One mocked organic result per site-restricted query must be parsed through
     assert search_result.count("Google is a search engine") == len(site.split(", "))
-    # codeql[py/incomplete-url-substring-sanitization]: test assertion on
-    # mocked content, not a URL-trust/sanitization decision.
-    assert "https://www.google.com" in search_result
+    assert "https://www.google.com" in search_result  # codeql[py/incomplete-url-substring-sanitization] test assertion on mocked content, not a URL-trust decision
 
 
 def test_search_returns_resources_for_citation():
@@ -92,9 +88,7 @@ def test_search_query_includes_more_gsite_config_empty():
     query = "What is the weather today?"
     search_result = search_tool._run(query)
     assert "Google is a search engine" in search_result
-    # codeql[py/incomplete-url-substring-sanitization]: test assertion on
-    # mocked content, not a URL-trust/sanitization decision.
-    assert "https://www.google.com" in search_result
+    assert "https://www.google.com" in search_result  # codeql[py/incomplete-url-substring-sanitization] test assertion on mocked content, not a URL-trust decision
 
 
 def test_search_query_includes_invalid_url(mock_logger):
