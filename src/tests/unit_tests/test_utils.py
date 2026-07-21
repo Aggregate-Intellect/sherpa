@@ -5,6 +5,8 @@ from langchain_core.language_models import FakeListLLM
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
 from sherpa_ai.utils import (
+    UnsafeURLError,
+    assert_safe_url,
     check_if_number_exist,
     check_url,
     chunk_and_summarize,
@@ -44,7 +46,8 @@ def test_scrape_with_url_handles_valid_html_content():
     mock_get = Mock()
     mock_get.return_value.status_code = 200
     mock_get.return_value.content = b"<html><body>Hello, World!</body></html>"
-    with patch("requests.get", mock_get):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", mock_get):
         result = scrape_with_url("http://example.com")
     assert result["status"] == 200
     assert result["data"] == "Hello, World!"
@@ -54,10 +57,22 @@ def test_scrape_with_url_handles_url_not_found():
     mock_get = Mock()
     mock_get.return_value.status_code = 404
     mock_get.return_value.content = b"Not Found"
-    with patch("requests.get", mock_get):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", mock_get):
         result = scrape_with_url("http://example.com")
     assert result["status"] == 404
     assert result["data"] == ""
+
+
+def test_scrape_with_url_refuses_private_address():
+    # SSRF guard: scrape_with_url must reject hosts resolving to internal
+    # addresses before ever calling requests.get.
+    mock_get = Mock()
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("127.0.0.1", 0))]), \
+         patch("requests.get", mock_get):
+        with pytest.raises(UnsafeURLError):
+            scrape_with_url("http://internal.example")
+    mock_get.assert_not_called()
 
 
 def test_rewrite_link_references_succeeds():
@@ -438,15 +453,61 @@ def test_check_url_raises_exception_for_unsupported_uri_scheme(bad_uri):
     ["http://something.com", "https://something.com"],
 )
 def test_check_url_returns_true_for_valid_http_url(good_uri):
-    with patch("requests.get", return_value=True):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=True):
         result = check_url(good_uri)
     assert result is True
 
 
 def test_check_url_returns_false_on_request_error():
-    with patch("requests.get", side_effect=Exception("problem")):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", side_effect=Exception("problem")):
         result = check_url("https://anything")
     assert result is False
+
+
+def test_check_url_returns_false_for_private_address():
+    # SSRF guard: a hostname resolving to a private/internal address must
+    # not be fetched, even though scheme and DNS resolution succeed.
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("127.0.0.1", 0))]):
+        result = check_url("http://internal.example")
+    assert result is False
+
+
+@pytest.mark.parametrize(
+    "unsafe_ip",
+    [
+        "127.0.0.1",  # loopback
+        "10.0.0.5",  # private
+        "169.254.169.254",  # link-local / cloud metadata endpoint
+        "::1",  # loopback (IPv6)
+    ],
+)
+def test_assert_safe_url_rejects_internal_addresses(unsafe_ip):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", (unsafe_ip, 0))]):
+        with pytest.raises(UnsafeURLError):
+            assert_safe_url("http://attacker-controlled.example")
+
+
+def test_assert_safe_url_accepts_public_address():
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]):
+        assert_safe_url("http://something.com")  # should not raise
+
+
+def test_assert_safe_url_rejects_non_http_scheme():
+    with pytest.raises(UnsafeURLError):
+        assert_safe_url("file:///etc/passwd")
+
+
+def test_assert_safe_url_rejects_unresolvable_host():
+    import socket as socket_module
+
+    with patch(
+        "socket.getaddrinfo",
+        side_effect=socket_module.gaierror("name resolution failed"),
+    ):
+        with pytest.raises(UnsafeURLError):
+            assert_safe_url("http://does-not-resolve.invalid")
 
 
 def test_chunk_and_summarize_with_completion_llm():

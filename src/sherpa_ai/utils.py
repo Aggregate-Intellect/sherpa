@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import ipaddress
 import json
 import re
+import socket
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 from urllib.parse import urlparse
 
@@ -16,6 +18,54 @@ if TYPE_CHECKING:
     from langchain_core.language_models import BaseLanguageModel
 
 HTTP_GET_TIMEOUT = 2.5
+
+
+class UnsafeURLError(ValueError):
+    """Raised when a URL fails SSRF safety validation."""
+
+
+def _is_public_address(ip: str) -> bool:
+    """Return True if `ip` is a globally routable, non-internal address."""
+    addr = ipaddress.ip_address(ip)
+    return not (
+        addr.is_private
+        or addr.is_loopback
+        or addr.is_link_local
+        or addr.is_multicast
+        or addr.is_reserved
+        or addr.is_unspecified
+    )
+
+
+def assert_safe_url(url: str) -> None:
+    """Validate that `url` is http(s) and does not resolve to an internal/
+    private/link-local/metadata address, to prevent SSRF via agent- or
+    user-controlled URLs (e.g. link scraping tools).
+
+    Args:
+        url (str): The URL to validate.
+
+    Raises:
+        UnsafeURLError: If the URL's scheme is not http(s), or if its host
+            resolves to a non-public address.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise UnsafeURLError(f"URL must conform to HTTP(S) scheme: {url}")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise UnsafeURLError(f"URL has no hostname: {url}")
+
+    try:
+        resolved_ips = {info[4][0] for info in socket.getaddrinfo(hostname, None)}
+    except socket.gaierror as e:
+        raise UnsafeURLError(f"Could not resolve host {hostname}: {e}") from e
+
+    if not resolved_ips or not all(_is_public_address(ip) for ip in resolved_ips):
+        raise UnsafeURLError(
+            f"URL resolves to a non-public address, refusing to fetch: {url}"
+        )
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -137,6 +187,7 @@ def scrape_with_url(url: str):
             "Please install it with `pip install beautifulsoup4`."
         )
 
+    assert_safe_url(url)
     response = requests.get(url, timeout=HTTP_GET_TIMEOUT)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)
@@ -464,15 +515,16 @@ def check_url(url):
     Returns:
         bool: True if the URL is valid, False otherwise.
     """
-    if urlparse(url).scheme in ["http", "https"]:
-        try:
-            _ = requests.get(url, timeout=HTTP_GET_TIMEOUT)
-            return True
-        except Exception as e:
-            logger.info(f"{e} - {url}")
-            return False
-    else:
+    if urlparse(url).scheme not in ["http", "https"]:
         raise ValueError(f"URL must conform to HTTP(S) scheme: {url}")
+
+    try:
+        assert_safe_url(url)
+        _ = requests.get(url, timeout=HTTP_GET_TIMEOUT)
+        return True
+    except Exception as e:
+        logger.info(f"{e} - {url}")
+        return False
 
 
 def extract_numbers_from_text(text):

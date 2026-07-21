@@ -12,9 +12,9 @@ from typing_extensions import Literal
 import sherpa_ai.config as cfg
 from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.scrape.extract_github_readme import extract_github_readme
-from sherpa_ai.utils import (chunk_and_summarize, count_string_tokens,
-                             get_links_from_text, rewrite_link_references,
-                             scrape_with_url)
+from sherpa_ai.utils import (UnsafeURLError, chunk_and_summarize,
+                             count_string_tokens, get_links_from_text,
+                             rewrite_link_references, scrape_with_url)
 
 HTTP_GET_TIMEOUT = 20.0
 
@@ -638,7 +638,11 @@ class LinkScraperTool(BaseTool):
                     else:
                         scraped_data = {"data": "", "status": 404}
                 else:
-                    scraped_data = scrape_with_url(link)
+                    try:
+                        scraped_data = scrape_with_url(link)
+                    except UnsafeURLError as e:
+                        logger.warning(f"Refusing to scrape unsafe URL: {e}")
+                        scraped_data = {"data": "", "status": 403}
                 if scraped_data["status"] == 200:
                     chunk_summary = chunk_and_summarize(
                         link=link,
