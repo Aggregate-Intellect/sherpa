@@ -74,6 +74,12 @@ class FakeEmbeddingFunction:
                 results.append(values)
         return results
 
+    def embed_documents(self, input):
+        return self(input)
+
+    def embed_query(self, input):
+        return self(input)
+
 
 fake_embedding = FakeEmbeddingFunction(EMBEDDING_MODEL_NAME)
 
