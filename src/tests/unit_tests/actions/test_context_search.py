@@ -21,9 +21,12 @@ if _is_chroma_available():
 
 @pytest.fixture
 def mock_context_search(external_api):
-    # Always mock VectorStoreRetriever to simulate the vector database
+    # Always mock VectorStoreRetriever to simulate the vector database.
+    # Patch the internal _get_relevant_documents hook (stable across langchain
+    # versions) so the public retrieval entry point used by the code under test
+    # is still exercised for real.
     with mock.patch(
-        "langchain_core.vectorstores.VectorStoreRetriever.get_relevant_documents"
+        "langchain_core.vectorstores.VectorStoreRetriever._get_relevant_documents"
     ) as mock_retrival:
         mock_doc = mock.MagicMock()
         mock_doc.page_content = "mock"

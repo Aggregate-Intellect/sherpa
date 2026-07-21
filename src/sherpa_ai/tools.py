@@ -122,12 +122,25 @@ class SearchArxivTool(BaseTool):
         data = requests.get(url, timeout=HTTP_GET_TIMEOUT)
         xml_content = data.text
 
-        summary_pattern = r"<summary>(.*?)</summary>"
-        summaries = re.findall(summary_pattern, xml_content, re.DOTALL)
-        title_pattern = r"<title>(.*?)</title>"
-        titles = re.findall(title_pattern, xml_content, re.DOTALL)
-        id_pattern = r"<id>(.*?)</id>"
-        ids = re.findall(id_pattern, xml_content, re.DOTALL)
+        # Parse per <entry> block. The Atom feed also contains a feed-level
+        # <title> and <id> (the query metadata), so extracting these tags from
+        # the whole document would misalign titles/summaries/ids.
+        entry_pattern = r"<entry>(.*?)</entry>"
+        entries = re.findall(entry_pattern, xml_content, re.DOTALL)
+
+        titles = []
+        summaries = []
+        ids = []
+        for entry in entries:
+            title_match = re.search(r"<title[^>]*>(.*?)</title>", entry, re.DOTALL)
+            summary_match = re.search(
+                r"<summary[^>]*>(.*?)</summary>", entry, re.DOTALL
+            )
+            id_match = re.search(r"<id[^>]*>(.*?)</id>", entry, re.DOTALL)
+            if title_match and summary_match and id_match:
+                titles.append(title_match.group(1))
+                summaries.append(summary_match.group(1))
+                ids.append(id_match.group(1))
 
         result_list = []
         for i in range(len(titles)):
@@ -463,7 +476,7 @@ class ContextTool(BaseTool):
             >>> print(result)
             LangChain is a framework...
         """
-        docs = self.memory.get_relevant_documents(query)
+        docs = self.memory.invoke(query)
         result = ""
         resources = []
         for doc in docs:

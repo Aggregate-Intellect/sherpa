@@ -21,11 +21,12 @@ optional = true
 
 [tool.poetry.dependencies]
 python = "<3.14,>=3.10"
-langchain-core = ">=0.3.28,<0.4"
-langchain-community = ">=0.3.13,<0.4"
+langchain-core = ">=1.5.0,<2.0"
+langchain-community = ">=0.4.2,<0.5"
+langchain-text-splitters = ">=1.1.2,<2.0"
 python-dotenv = "^1.0.0"
 unstructured = "^0.18.18"
-langchain-openai = ">=0.2.14,<0.3"
+langchain-openai = ">=1.3.5,<2.0"
 tiktoken = ">=0.6.0,<1.0"
 loguru = ">=0.7.0,<0.8.0"
 pydantic = "^2.5.3"
@@ -48,13 +49,13 @@ chromadb = "^1.0.9"
 langchain-chroma = "^0.2.5"
 spacy = "^3.7.4"
 word2number = "^1.1"
-transformers = "^4.53.0"
+transformers = "^5.14.1"
 boto3 = "^1.28.77"
 pypdf = "^6.13.3"
 markdown = ">=3.8.1,<3.9.0"
 pinecone-client = "^2.2.2"
 beautifulsoup4 = "4.12.2"
-tokenizers = ">=0.21,<0.22"
+tokenizers = ">=0.22,<0.24"
 
 
 [tool.poetry.group.lint.dependencies]

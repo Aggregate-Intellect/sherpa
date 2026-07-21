@@ -25,8 +25,10 @@ def test_search_query_includes_gsite_config():
 
     query = "What is the weather today?"
     search_result = search_tool._run(query)
-    assert search_result is not None
-    assert search_result != ""
+    # The mocked Serper response (see conftest.GOOGLE_SEARCH_MOCK) must actually
+    # flow through the result parsing: title, snippet and link should survive.
+    assert "Google is a search engine" in search_result
+    assert "https://www.google.com" in search_result
 
 
 def test_search_query_includes_multiple_gsite_config():
@@ -38,8 +40,23 @@ def test_search_query_includes_multiple_gsite_config():
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
     search_result = search_tool._run(query)
-    assert search_result is not None
-    assert search_result != ""
+    # One mocked organic result per site-restricted query must be parsed through
+    assert search_result.count("Google is a search engine") == len(site.split(", "))
+    assert "https://www.google.com" in search_result
+
+
+def test_search_returns_resources_for_citation():
+    config = AgentConfig(verbose=True)
+    search_tool = SearchTool(config=config)
+    resources = search_tool._run("What is the weather today?", return_resources=True)
+
+    # The resource contract (Document/Source keys) is relied on by citation
+    # validation and retrieval actions; verify the mocked search result is
+    # mapped into it correctly.
+    assert isinstance(resources, list)
+    assert len(resources) == 1
+    assert resources[0]["Document"] == "Description: GoogleGoogle is a search engine"
+    assert resources[0]["Source"] == "https://www.google.com"
 
 
 @pytest.fixture
@@ -70,8 +87,8 @@ def test_search_query_includes_more_gsite_config_empty():
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
     search_result = search_tool._run(query)
-    assert search_result is not None
-    assert search_result != ""
+    assert "Google is a search engine" in search_result
+    assert "https://www.google.com" in search_result
 
 
 def test_search_query_includes_invalid_url(mock_logger):

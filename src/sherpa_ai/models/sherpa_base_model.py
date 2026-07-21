@@ -7,18 +7,18 @@ Sherpa-specific functionality like usage tracking.
 
 from typing import Any, List, Optional
 
-from langchain_openai import ChatOpenAI 
-from langchain_core.callbacks import ( 
+from langchain_openai import ChatOpenAI
+from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
-    UsageMetadataCallbackHandler,
 )
-from langchain_core.language_models import BaseChatModel 
-from langchain_core.messages import BaseMessage 
-from langchain_core.outputs import ChatResult 
-from pydantic import BaseModel 
+from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import ChatResult
+from pydantic import BaseModel
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
+from sherpa_ai.models.sherpa_base_chat_model import _usage_metadata_from_result
 
 
 class SherpaOpenAI(ChatOpenAI):
@@ -101,23 +101,16 @@ class SherpaOpenAI(ChatOpenAI):
             >>> print(result.generations[0].text)
             'Hi there!'
         """
-        # Create UsageMetadataCallbackHandler to track token usage
-        usage_callback = UsageMetadataCallbackHandler()
-        
-        # Add the callback to the run manager if provided
-        if run_manager:
-            run_manager.add_handler(usage_callback)
-        
-        # Generate response with usage tracking
+        # Generate response first, then read token usage from the result
         response = super()._generate(prompts, stop, run_manager, **kwargs)
-        
+
         # Track usage if user_id is provided
         if self.user_id:
             user_db = UserUsageTracker()
-            
-            # Extract usage metadata from callback
-            usage_metadata = usage_callback.usage_metadata
-            
+
+            # Extract usage metadata from the generated message
+            usage_metadata = _usage_metadata_from_result(response)
+
             if usage_metadata:
                 # Use the new unified add_usage method
                 user_db.add_usage(
@@ -127,7 +120,7 @@ class SherpaOpenAI(ChatOpenAI):
             else:
                 # Fallback to legacy tracking if no usage metadata
                 # Extract from response.llm_output as fallback
-                total_token = response.llm_output.get("token_usage", {}).get("total_tokens", 0)
+                total_token = (response.llm_output or {}).get("token_usage", {}).get("total_tokens", 0)
                 user_db.add_usage(
                     user_id=self.user_id,
                     input_tokens=total_token // 2,  # Rough split for legacy

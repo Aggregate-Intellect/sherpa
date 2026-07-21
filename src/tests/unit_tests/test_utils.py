@@ -1,10 +1,14 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from langchain_core.language_models import FakeListLLM
+from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
 from sherpa_ai.utils import (
     check_if_number_exist,
     check_url,
+    chunk_and_summarize,
+    chunk_and_summarize_file,
     extract_entities,
     extract_numbers_from_text,
     get_base_url,
@@ -443,3 +447,45 @@ def test_check_url_returns_false_on_request_error():
     with patch("requests.get", side_effect=Exception("problem")):
         result = check_url("https://anything")
     assert result is False
+
+
+def test_chunk_and_summarize_with_completion_llm():
+    # chunk_and_summarize must call the LLM once per chunk and return the
+    # summaries as plain strings (not message objects), regardless of the
+    # underlying langchain LLM API.
+    llm = FakeListLLM(responses=["summary of the page"])
+    result = chunk_and_summarize(
+        text_data="Some short text about the weather.",
+        question="What is the weather?",
+        link="https://example.com",
+        llm=llm,
+    )
+    assert result == "summary of the page"
+
+
+def test_chunk_and_summarize_with_chat_llm():
+    # Chat models return AIMessage from invoke; the summary must still be a
+    # plain string so downstream token counting/joining keeps working.
+    llm = FakeListChatModel(responses=["chat summary of the page"])
+    result = chunk_and_summarize(
+        text_data="Some short text about the weather.",
+        question="What is the weather?",
+        link="https://example.com",
+        llm=llm,
+    )
+    assert isinstance(result, str)
+    assert result == "chat summary of the page"
+
+
+def test_chunk_and_summarize_file_with_chat_llm():
+    llm = FakeListChatModel(responses=["file summary"])
+    result = chunk_and_summarize_file(
+        text_data="Contents of a small file.",
+        question="What is in the file?",
+        file_name="notes.txt",
+        file_format="txt",
+        llm=llm,
+        title="Notes",
+    )
+    assert isinstance(result, str)
+    assert result == "file summary"

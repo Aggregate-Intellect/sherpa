@@ -256,13 +256,17 @@ def chunk_and_summarize(text_data: str, question: str, link: str, llm):
     chunked_text = text_splitter.split_text(text_data)
     chunk_summary = []
     for text in chunked_text:
-        summarized = llm.predict(
+        summarized = llm.invoke(
             f"""Write a concise summary of the following text
             {instruction}:
             "\n\n\n
             f'LITERAL TEXT: {text}
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as"""
+        )
+        # Chat models return a message object; completion models return a str
+        summarized = (
+            summarized.content if hasattr(summarized, "content") else str(summarized)
         )
         chunk_summary.append(summarized)
 
@@ -301,6 +305,8 @@ def chunk_and_summarize_file(
         >>> print(result)
         "This is a test text."
     """
+    from langchain_text_splitters import TokenTextSplitter
+
     title = f",title {title} " if title is not None else ""
 
     instruction = (
@@ -314,13 +320,17 @@ def chunk_and_summarize_file(
     chunked_text = text_splitter.split_text(text_data)
     chunk_summary = []
     for text in chunked_text:
-        summarized = llm.predict(
+        summarized = llm.invoke(
             f"""Write a concise summary of the following text
             {instruction}:
             "\n\n\n
             f'LITERAL TEXT: {text}
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as"""
+        )
+        # Chat models return a message object; completion models return a str
+        summarized = (
+            summarized.content if hasattr(summarized, "content") else str(summarized)
         )
         chunk_summary.append(summarized)
     return " ".join(chunk_summary)
@@ -598,8 +608,54 @@ def extract_numeric_entities(
     return numbers
 
 
+#: Regex matching maximal runs of spelled-out number words, e.g.
+#: "one thousand two hundred thirty-four" or "two hundred and five".
+_NUMBER_WORD = (
+    r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
+    r"thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|"
+    r"thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
+    r"million|billion|trillion|point)"
+)
+_NUMBER_WORD_RUN_PATTERN = re.compile(
+    rf"\b{_NUMBER_WORD}(?:(?:[\s,-]+(?:and[\s-]+)?){_NUMBER_WORD})*\b",
+    re.IGNORECASE,
+)
+
+
+def extract_word_numbers(text: Optional[str]):
+    """Extract numbers written as words from a text.
+
+    Finds maximal runs of spelled-out number words (e.g. "one thousand two
+    hundred thirty-four") and converts each run to its numeric value. Unlike
+    NER-based extraction, this is purely lexical, so the same phrase always
+    yields the same number regardless of the surrounding text.
+
+    Args:
+        text (Optional[str]): The text to extract word-form numbers from.
+
+    Returns:
+        list: A list of numbers as strings (e.g. ["1234", "0.5"]).
+    """
+    if text is None:
+        return []
+
+    numbers = []
+    for match in _NUMBER_WORD_RUN_PATTERN.finditer(text.lower()):
+        phrase = re.sub(r"[-,]", " ", match.group())
+        result = word_to_float(phrase)
+        if result["success"]:
+            numbers.append(str(result["data"]))
+    return numbers
+
+
 def combined_number_extractor(text: str):
     """Extract unique numeric values from a text by combining results from two different extraction methods.
+
+    Combines digit extraction (e.g. "42", "56.45", "123,345") with lexical
+    word-number extraction (e.g. "one thousand two hundred thirty-four").
+    Both methods are deterministic and context-independent, so the same
+    phrase always produces the same set of numbers whether it appears in a
+    source document or in a generated answer.
 
     Args:
         text (str): The text to extract numeric values from.
@@ -609,7 +665,7 @@ def combined_number_extractor(text: str):
     """
     result = set()
     result.update(extract_numbers_from_text(text))
-    result.update(extract_numeric_entities(text))
+    result.update(extract_word_numbers(text))
 
     return list(result)
 
