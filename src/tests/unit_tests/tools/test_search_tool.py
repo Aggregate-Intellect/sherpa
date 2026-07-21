@@ -36,8 +36,10 @@ def test_search_query_includes_gsite_config():
     search_result = search_tool._run(query)
     # The mocked Serper response (see conftest.GOOGLE_SEARCH_MOCK) must actually
     # flow through the result parsing: title, snippet and link should survive.
+    # Exact equality (not substring containment) so CodeQL does not mistake this
+    # for URL sanitization logic.
     assert "Google is a search engine" in search_result
-    assert "https://www.google.com" in _extract_links(search_result)
+    assert _extract_links(search_result) == ["https://www.google.com"]
 
 
 def test_search_query_includes_multiple_gsite_config():
@@ -49,9 +51,12 @@ def test_search_query_includes_multiple_gsite_config():
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
     search_result = search_tool._run(query)
-    # One mocked organic result per site-restricted query must be parsed through
+    # One mocked organic result per site-restricted query must be parsed through:
+    # the static mock returns the same single link for each of the site queries.
     assert search_result.count("Google is a search engine") == len(site.split(", "))
-    assert "https://www.google.com" in _extract_links(search_result)
+    assert _extract_links(search_result) == ["https://www.google.com"] * len(
+        site.split(", ")
+    )
 
 
 def test_search_returns_resources_for_citation():
@@ -96,8 +101,9 @@ def test_search_query_includes_more_gsite_config_empty():
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
     search_result = search_tool._run(query)
+    # Empty gsite means a single unrestricted query, so exactly one mocked link.
     assert "Google is a search engine" in search_result
-    assert "https://www.google.com" in _extract_links(search_result)
+    assert _extract_links(search_result) == ["https://www.google.com"]
 
 
 def test_search_query_includes_invalid_url(mock_logger):
