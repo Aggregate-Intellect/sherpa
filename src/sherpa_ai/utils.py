@@ -112,37 +112,6 @@ def get_base_url(link):
     return base_url
 
 
-def get_link_from_slack_client_conversation(data):
-    """Get links from a Slack client conversation.
-
-    Args:
-        data (list): The input data containing the conversation.
-
-    Returns:
-        list: A list of dictionaries containing the extracted links and their base URLs.    
-
-    Example:
-        >>> from sherpa_ai.utils import get_link_from_slack_client_conversation
-        >>> data = [{"blocks": [{"elements": [{"elements": [{"type": "link", "url": "https://www.example.com"}]}]}]}]
-        >>> links = get_link_from_slack_client_conversation(data)
-        >>> print(links)
-        [{'url': 'https://www.example.com', 'base_url': 'https://www.example.com'}]
-    """
-    links = []
-    for item in data:
-        if "blocks" in item:
-            for block in item["blocks"]:
-                if "elements" in block:
-                    for element in block["elements"]:
-                        for newElement in element["elements"]:
-                            if newElement.get("type") == "link":
-                                newUrl = newElement["url"]
-                                links.append(
-                                    {"url": newUrl, "base_url": get_base_url(newUrl)}
-                                )
-    return links
-
-
 def scrape_with_url(url: str):
     """Scrape a URL and return the text.
 

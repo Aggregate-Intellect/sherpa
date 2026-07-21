@@ -3,8 +3,7 @@ App configuration settings.
 
 This module provides configuration settings for the Sherpa AI application,
 loading values from environment variables or a .env file. It includes settings
-for logging, language models, Slack integration, vector databases, and various
-API keys.
+for logging, language models, vector databases, and various API keys.
 
 Usage:
 
@@ -13,7 +12,7 @@ Usage:
     Then, in your code, use the values like this:
 
         import Config as cfg
-        secret = cfg.SLACK_SIGNING_SECRET
+        secret = cfg.OPENAI_API_KEY
         another_variable = cfg.ANOTHER_ENVIRONMENT_VARIABLE
 
 To add, remove, or change variables, ...
@@ -69,19 +68,6 @@ USAGE_LOG_FILE_PATH = environ.get("USAGE_LOG_FILE_PATH", "./usage_logs.txt")
 # Pricing configuration
 MODEL_PRICING_CONFIG_PATH = environ.get("MODEL_PRICING_CONFIG_PATH")  # Path to JSON pricing config file
 MODEL_PRICING_JSON = environ.get("MODEL_PRICING_JSON")  # JSON string with pricing data
-
-# Slack integration
-SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
-SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
-SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
-SLACK_PORT = environ.get("SLACK_PORT", 3000)
-
-# Check if Slack integration is fully configured
-SLACK_ENABLED = all([
-    SLACK_SIGNING_SECRET,
-    SLACK_OAUTH_TOKEN,
-    SLACK_VERIFICATION_TOKEN,
-])
 
 # Vector database settings, for embeddings. Choose from Pinecone or Chroma.
 # If none is configured, Sherpa uses an in-memory version of Chroma. If you're running
@@ -162,13 +148,8 @@ if this.OPENAI_API_KEY is None:
 else:
     logger.info("Config: OpenAI environment variables are set")
 
-# Slack integration status (optional)
-if any([this.SLACK_SIGNING_SECRET, this.SLACK_OAUTH_TOKEN, this.SLACK_VERIFICATION_TOKEN]) and not this.SLACK_ENABLED:
-    logger.warning("Config: Slack integration partially configured - some variables are missing")
-
 check_vectordb_setting()
 
 __all__ = [
     "AgentConfig",
-    "SLACK_ENABLED",
 ]

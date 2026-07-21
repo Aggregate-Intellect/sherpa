@@ -13,7 +13,6 @@ gather relevant information from structured and unstructured data sources.
    
    * **FileScaper**: Tools for extracting content from local files
    * **GitHubReadmeExtractor**: Utilities for retrieving README content from GitHub
-   * **PromptReconstructor**: Tools for rebuilding prompts from extracted content
 
 Example Usage
 -------------
@@ -50,15 +49,12 @@ Submodules
      - Utilities for retrieving and processing README files from GitHub repositories.
    * - :mod:`sherpa_ai.scrape.file_scraper`
      - Tools for extracting and parsing content from local files in various formats.
-   * - :mod:`sherpa_ai.scrape.prompt_reconstructor`
-     - Functionality for rebuilding and formatting prompts from extracted content.
 
 .. toctree::
    :hidden:
 
    sherpa_ai.scrape.extract_github_readme
    sherpa_ai.scrape.file_scraper
-   sherpa_ai.scrape.prompt_reconstructor
 
 sherpa\_ai.scrape.extract\_github\_readme module
 ----------------------------------------------
@@ -72,14 +68,6 @@ sherpa\_ai.scrape.file\_scraper module
 ------------------------------------
 
 .. automodule:: sherpa_ai.scrape.file_scraper
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.scrape.prompt\_reconstructor module
---------------------------------------------
-
-.. automodule:: sherpa_ai.scrape.prompt_reconstructor
    :members:
    :undoc-members:
    :show-inheritance:

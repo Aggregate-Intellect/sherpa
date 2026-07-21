@@ -50,8 +50,6 @@ Submodules
      - Implements validation for proper citation formatting and accuracy.
    * - :mod:`sherpa_ai.output_parsers.link_parse`
      - Contains tools for extracting and validating hyperlinks in responses.
-   * - :mod:`sherpa_ai.output_parsers.md_to_slack_parse`
-     - Provides conversion from Markdown to Slack message formatting.
    * - :mod:`sherpa_ai.output_parsers.number_validation`
      - Implements validation for numerical answers and calculations.
    * - :mod:`sherpa_ai.output_parsers.validation_result`
@@ -65,7 +63,6 @@ Submodules
    sherpa_ai.output_parsers.base
    sherpa_ai.output_parsers.citation_validation
    sherpa_ai.output_parsers.link_parse
-   sherpa_ai.output_parsers.md_to_slack_parse
    sherpa_ai.output_parsers.number_validation
    sherpa_ai.output_parsers.validation_result
    sherpa_ai.output_parsers.self_consistency
@@ -90,14 +87,6 @@ sherpa\_ai.output\_parsers.link\_parse module
 ---------------------------------------------
 
 .. automodule:: sherpa_ai.output_parsers.link_parse
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.output\_parsers.md\_to\_slack\_parse module
-------------------------------------------------------
-
-.. automodule:: sherpa_ai.output_parsers.md_to_slack_parse
    :members:
    :undoc-members:
    :show-inheritance:

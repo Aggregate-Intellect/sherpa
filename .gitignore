@@ -1,4 +1,3 @@
-apps/slackbot/.env
 **/_build
 .env
 **/.env
@@ -9,6 +8,8 @@ apps/slackbot/.env
 **/.venv
 **/venv
 **/log.txt
+**/usage_logs*.txt
+**/usage_logs*.txt.zip
 
 # macOS system files
 .DS_Store
