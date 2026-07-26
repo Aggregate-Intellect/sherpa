@@ -444,8 +444,14 @@ def count_string_tokens(string: str, model_name: str) -> int:
     Returns:
         int: The number of tokens in the text string.
     """
-    encoding = tiktoken.encoding_for_model(model_name)
-    return len(encoding.encode(string))
+
+    try: 
+        encoding = tiktoken.encoding_for_model(model_name)
+        return len(encoding.encode(string))
+    except KeyError: 
+        # Fall back to cl100k_base encoding for non-OpenAI models that tiktoken doesn't recognize
+        encoding = tiktoken.get_encoding("cl100k_base")
+        return len(encoding.encode(string))
 
 
 def chunk_and_summarize(text_data: str, question: str, link: str, llm):

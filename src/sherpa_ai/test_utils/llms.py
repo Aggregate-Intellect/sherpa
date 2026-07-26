@@ -9,9 +9,9 @@ import json
 import re
 
 import pytest
+from langchain_openai import ChatOpenAI
 from langchain_core.language_models import BaseLanguageModel, FakeListLLM
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
-from langchain_openai import ChatOpenAI
 
 from sherpa_ai.models.chat_model_with_logging import ChatModelWithLogging
 from sherpa_ai.test_utils.loggers import get_new_logger
