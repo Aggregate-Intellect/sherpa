@@ -112,7 +112,7 @@ def safe_get(
     headers: Optional[dict] = None,
     timeout: float = HTTP_GET_TIMEOUT,
     max_redirects: int = MAX_REDIRECTS,
-    forward_headers_on_redirect: bool = True,
+    forward_headers_on_redirect: bool = False,
 ):
     """Perform a GET request hardened against SSRF, redirect and rebinding bypasses.
 
@@ -740,8 +740,13 @@ _NUMBER_WORD = (
     r"thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
     r"million|billion|trillion|point)"
 )
+#: Runs never cross a comma: word-form numbers written with a comma (e.g.
+#: "one thousand, two hundred thirty-four") split into separate numbers
+#: instead of merging, which is a safer failure mode for validation than
+#: treating comma-separated enumerations ("one, two, three") as one phantom
+#: number.
 _NUMBER_WORD_RUN_PATTERN = re.compile(
-    rf"\b{_NUMBER_WORD}(?:(?:[\s,-]+(?:and[\s-]+)?){_NUMBER_WORD})*\b",
+    rf"\b{_NUMBER_WORD}(?:(?:[\s-]+(?:and[\s-]+)?){_NUMBER_WORD})*\b",
     re.IGNORECASE,
 )
 
