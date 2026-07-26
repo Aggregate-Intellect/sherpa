@@ -224,25 +224,22 @@ def load_files(files: List[str]) -> List[Document]:
         >>> print(len(documents))
         2
     """
-    from langchain_community.document_loaders import (
-        UnstructuredMarkdownLoader,
-        UnstructuredPDFLoader,
-    )
+    from langchain_core.documents import Document
 
     documents = []
-    loader = None
     for f in files:
         (f"Loading file {f}")
         if f.endswith(".pdf"):
-            loader = UnstructuredPDFLoader(f)
+            text = extract_text_from_pdf(f)
+            documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".md"):
-            loader = UnstructuredMarkdownLoader(f)
+            with open(f, encoding="utf-8") as md_file:
+                text = md_file.read()
+            documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".gitkeep"):
             pass
         else:
             raise NotImplementedError(f"File type {f} not supported")
-        if loader is not None:
-            documents.extend(loader.load())
     logger.info(documents)
     return documents
 
