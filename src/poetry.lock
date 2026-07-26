@@ -1191,7 +1191,7 @@ version = "3.8.0"
 description = "English pipeline optimized for CPU. Components: tok2vec, tagger, parser, senter, ner, attribute_ruler, lemmatizer."
 optional = false
 python-versions = "*"
-groups = ["main"]
+groups = ["test"]
 files = [
     {file = "en_core_web_sm-3.8.0-py3-none-any.whl", hash = "sha256:1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85"},
 ]
@@ -7100,4 +7100,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = "<3.14,>=3.10"
-content-hash = "836b18e131e84dc65046923d83c1646472b181794d2aae532efc749ed851bcd5"
+content-hash = "33706bfcdb7ff5c1f45a0ed3d82781f797245ab1fdd02df0ee149c40bc87670a"

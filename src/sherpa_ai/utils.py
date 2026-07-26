@@ -228,12 +228,12 @@ def load_files(files: List[str]) -> List[Document]:
 
     documents = []
     for f in files:
-        (f"Loading file {f}")
+        logger.info(f"Loading file {f}")
         if f.endswith(".pdf"):
             text = extract_text_from_pdf(f)
             documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".md"):
-            with open(f, encoding="utf-8") as md_file:
+            with open(f, encoding="utf-8", errors="replace") as md_file:
                 text = md_file.read()
             documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".gitkeep"):
@@ -776,7 +776,7 @@ def extract_word_numbers(text: Optional[str]):
 
     numbers = []
     for match in _NUMBER_WORD_RUN_PATTERN.finditer(text.lower()):
-        tokens = re.sub(r"[-,]", " ", match.group()).split()
+        tokens = re.sub(r"-", " ", match.group()).split()
 
         if len(tokens) == 1 and tokens[0] in _AMBIGUOUS_STANDALONE:
             continue
@@ -936,7 +936,14 @@ def extract_entities(text):
             "Please install it with `pip install spacy`."
         )
 
-    nlp = spacy.load("en_core_web_sm")
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        # en_core_web_sm is a direct-URL wheel, so it can't be a main-group
+        # dependency without breaking `poetry publish` (PyPI rejects direct
+        # references in published metadata). Download it on first use instead.
+        spacy.cli.download("en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     entity_types = ["NORP", "ORG", "GPE", "LOC"]
     filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]

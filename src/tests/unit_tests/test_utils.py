@@ -241,6 +241,22 @@ def test_extract_word_numbers_rejects_ambiguous_words(text):
     assert extract_word_numbers(text) == []
 
 
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        # Commas separate distinct enumerated numbers rather than joining
+        # them into one compound number.
+        ("We tried one, two, three approaches.", ["2", "3"]),
+        ("Options: five, six or seven days.", ["5", "6", "7"]),
+        # A comma inside a compound number splits it into two numbers
+        # instead of merging them (documented tradeoff).
+        ("one thousand, two hundred thirty-four", ["1000", "234"]),
+    ],
+)
+def test_extract_word_numbers_splits_on_comma(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
 def test_combined_number_extractor_matches_digits_and_words():
     result = combined_number_extractor(
         "There were 42 attendees, or about forty-two people."

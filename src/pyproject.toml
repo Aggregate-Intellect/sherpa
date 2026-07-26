@@ -38,10 +38,6 @@ mcp = "^1.12.4"
 # almost any text, so this must be a hard dependency, not optional — a normal
 # install without the optional group would otherwise raise ImportError.
 word2number = "^1.1"
-# extract_entities (used by EntityValidation) always loads en_core_web_sm, so
-# this must be a hard dependency, not test-only — a normal install without the
-# test group would otherwise raise an OSError from spacy.load.
-en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"}
 # load_files (used by the vectorstore connectors) always extracts PDF text via
 # pypdf, so this must be a hard dependency, not optional.
 pypdf = "^6.13.3"
@@ -50,6 +46,11 @@ pypdf = "^6.13.3"
 pytest = "^9.0.3"
 pytest-asyncio = "^1.0.0"
 pytest-cov = "^4.1.0"
+# Direct-URL wheel: cannot live in [tool.poetry.dependencies], PyPI rejects
+# direct references in published package metadata. extract_entities()
+# downloads this model lazily on first use if it's missing, so it isn't a
+# hard runtime dependency for a normal install — just pre-installed for CI.
+en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"}
 
 [tool.poetry.group.optional.dependencies]
 # Residual CVE (the "1 of 140" still open): PYSEC-2026-311 — pre-auth code
