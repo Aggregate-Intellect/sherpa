@@ -41,6 +41,18 @@ word2number = "^1.1"
 # load_files (used by the vectorstore connectors) always extracts PDF text via
 # pypdf, so this must be a hard dependency, not optional.
 pypdf = "^6.13.3"
+# citation_validation.py, actions/utils/refinement.py, and utils.py
+# (compare_with_context) import nltk directly. It was previously only a
+# transitive dependency of `unstructured`; dropping that package exposed
+# this as a missing direct dependency.
+nltk = "^3.9.1"
+# langchain_core.language_models.base falls back to a GPT-2 tokenizer from
+# transformers for any model without its own get_num_tokens implementation
+# (e.g. FakeListLLM in tests, and some chat models). This path is exercised
+# by the agent/policy runtime, not just by our own code, so this can't be
+# optional even though nothing in sherpa_ai/ imports it directly. It was
+# previously pulled in transitively by `unstructured`.
+transformers = "^5.14.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^9.0.3"
