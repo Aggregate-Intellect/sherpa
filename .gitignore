@@ -10,6 +10,9 @@
 **/log.txt
 **/usage_logs*.txt
 **/usage_logs*.txt.zip
+# Tests that patch the config module wholesale leave cfg.USAGE_LOG_FILE_PATH as
+# a MagicMock, which is then str()'d into a real filename by the usage logger.
+**/*MagicMock*
 
 # macOS system files
 .DS_Store
