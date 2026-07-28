@@ -32,6 +32,18 @@ cd sherpa/src
 pip install -e .
 ```
 
+### spaCy language model (entity validation only)
+
+The `spacy` library is a core dependency and is always installed. Its `en_core_web_sm` language model is not, because it is distributed as a direct-URL wheel and PyPI rejects those in published package metadata.
+
+Install it only if you enable entity validation — `EntityValidation` or `EntityValidationAction`, which are off by default (`BaseAgent.validations` is empty):
+```bash
+python -m spacy download en_core_web_sm
+```
+From a source checkout, `make install` already does this for you.
+
+Without the model, entity validation raises an error telling you to run the command above. Nothing else in Sherpa uses it.
+
 ## Usage
 Please refer to the documentation for the list of tutorials on using Sherpa: https://sherpa-ai.readthedocs.io/en/latest/How_To/tutorials.html
 
