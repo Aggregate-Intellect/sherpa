@@ -59,9 +59,12 @@ pytest = "^9.0.3"
 pytest-asyncio = "^1.0.0"
 pytest-cov = "^4.1.0"
 # Direct-URL wheel: cannot live in [tool.poetry.dependencies], PyPI rejects
-# direct references in published package metadata. extract_entities()
-# downloads this model lazily on first use if it's missing, so it isn't a
-# hard runtime dependency for a normal install — just pre-installed for CI.
+# direct references in published package metadata. Only extract_entities()
+# needs it, and that is unreachable unless entity validation is explicitly
+# enabled (BaseAgent.validations is empty by default), so it isn't a hard
+# runtime dependency for a normal install — just pre-installed for CI.
+# Without it, extract_entities() raises with a `python -m spacy download`
+# instruction rather than pip-installing a wheel at runtime.
 en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"}
 
 [tool.poetry.group.optional.dependencies]

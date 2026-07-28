@@ -751,10 +751,62 @@ _NUMBER_WORD_RUN_PATTERN = re.compile(
 # a pronoun/article in "no one", "at one point"; "point" as an ordinary noun),
 # so a single bare occurrence of either is not reliably a number and is
 # excluded unless it's part of a longer numeric phrase (e.g. "twenty one",
-# "two point five"). "point" is additionally rejected at the start/end of a
-# match, since it must be flanked by number words on both sides to represent
-# a decimal point.
+# "two point five").
 _AMBIGUOUS_STANDALONE = {"one", "point"}
+
+#: Magnitude words that scale a preceding decimal. word2number parses a
+#: decimal followed by a magnitude ("two point five million") as just its
+#: integer part, silently dropping both the fraction and the magnitude, so
+#: that shape is split apart and recombined by hand.
+_MAGNITUDE_MULTIPLIERS = {
+    "hundred": 100,
+    "thousand": 1_000,
+    "million": 1_000_000,
+    "billion": 1_000_000_000,
+    "trillion": 1_000_000_000_000,
+}
+
+
+def _word_run_to_number(tokens: List[str]):
+    """Convert a run of number words to a numeric value, or None if it isn't one.
+
+    Args:
+        tokens (List[str]): The number words making up a single run.
+
+    Returns:
+        The numeric value of the run, or None if it could not be parsed.
+    """
+    # Only decimals are mis-parsed by word2number, so leave every other shape
+    # (e.g. "one thousand two hundred thirty-four") to it untouched.
+    if "point" in tokens:
+        magnitudes = []
+        while len(tokens) > 1 and tokens[-1] in _MAGNITUDE_MULTIPLIERS:
+            magnitudes.insert(0, tokens.pop())
+        if magnitudes:
+            base = word_to_float(" ".join(tokens))
+            if not base["success"]:
+                return None
+            value = base["data"]
+            for word in magnitudes:
+                value *= _MAGNITUDE_MULTIPLIERS[word]
+            return value
+
+    result = word_to_float(" ".join(tokens))
+    return result["data"] if result["success"] else None
+
+
+def _format_number(value) -> str:
+    """Render a number without a spurious trailing ".0".
+
+    Args:
+        value: The numeric value to render.
+
+    Returns:
+        str: The number as a string (e.g. "2500000", "2.5").
+    """
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
 
 
 def extract_word_numbers(text: Optional[str]):
@@ -778,9 +830,18 @@ def extract_word_numbers(text: Optional[str]):
     for match in _NUMBER_WORD_RUN_PATTERN.finditer(text.lower()):
         tokens = re.sub(r"-", " ", match.group()).split()
 
-        if len(tokens) == 1 and tokens[0] in _AMBIGUOUS_STANDALONE:
+        # "point" only means a decimal separator when flanked by number words
+        # on both sides. At the start or end of a run it's the ordinary noun,
+        # so drop it and keep evaluating the rest — the numbers beside it are
+        # still real ("at some point one hundred people left" -> 100).
+        while tokens and tokens[0] == "point":
+            tokens.pop(0)
+        while tokens and tokens[-1] == "point":
+            tokens.pop()
+
+        if not tokens:
             continue
-        if tokens[0] == "point" or tokens[-1] == "point":
+        if len(tokens) == 1 and tokens[0] in _AMBIGUOUS_STANDALONE:
             continue
         # A repeated adjacent word (e.g. "one one one") reads as a spoken
         # digit sequence (like a phone number), not an additive/compound
@@ -788,10 +849,9 @@ def extract_word_numbers(text: Optional[str]):
         if any(a == b for a, b in zip(tokens, tokens[1:])):
             continue
 
-        phrase = " ".join(tokens)
-        result = word_to_float(phrase)
-        if result["success"]:
-            numbers.append(str(result["data"]))
+        value = _word_run_to_number(tokens)
+        if value is not None:
+            numbers.append(_format_number(value))
     return numbers
 
 
@@ -837,9 +897,11 @@ def verify_numbers_against_source(
     incorrect_candidates = candidate_numbers - source_numbers
 
     if len(incorrect_candidates) > 0:
-        joined_numbers = ", ".join(incorrect_candidates)
-        message = "Don't use the numbers"
-        f"{joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context." 
+        joined_numbers = ", ".join(sorted(incorrect_candidates))
+        message = (
+            f"Don't use the numbers {joined_numbers} to answer the question. "
+            "Instead, stick to the numbers mentioned in the context."
+        )
         return False, message
     return True, None
 
@@ -865,10 +927,11 @@ def check_if_number_exist(result: str, source: str):
             error_numbers.append(data)
     error_numbers = set(error_numbers)
     if len(error_numbers) > 0:
-        for numbers in error_numbers:
-            message += numbers + ", "
-        message = "Don't use the numbers"
-        f"{message} to answer the question instead stick to the numbers mentioned in the context."
+        joined_numbers = ", ".join(sorted(error_numbers))
+        message = (
+            f"Don't use the numbers {joined_numbers} to answer the question. "
+            "Instead, stick to the numbers mentioned in the context."
+        )
         return {"number_exists": False, "messages": message}
     return {"number_exists": True, "messages": message}
 
@@ -938,12 +1001,18 @@ def extract_entities(text):
 
     try:
         nlp = spacy.load("en_core_web_sm")
-    except OSError:
+    except OSError as e:
         # en_core_web_sm is a direct-URL wheel, so it can't be a main-group
         # dependency without breaking `poetry publish` (PyPI rejects direct
-        # references in published metadata). Download it on first use instead.
-        spacy.cli.download("en_core_web_sm")
-        nlp = spacy.load("en_core_web_sm")
+        # references in published metadata). Ask the caller to install it
+        # rather than fetching and installing a wheel at runtime — nothing
+        # reaches this path unless entity validation is explicitly enabled
+        # (BaseAgent.validations is empty by default).
+        raise OSError(
+            "The spaCy model 'en_core_web_sm' is required by extract_entities "
+            "but is not installed. Install it with:\n"
+            "    python -m spacy download en_core_web_sm"
+        ) from e
     doc = nlp(text)
     entity_types = ["NORP", "ORG", "GPE", "LOC"]
     filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]

@@ -257,6 +257,56 @@ def test_extract_word_numbers_splits_on_comma(text, expected):
     assert extract_word_numbers(text) == expected
 
 
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        # word2number parses a decimal followed by a magnitude as just its
+        # integer part, dropping both the fraction and the magnitude.
+        ("It cost two point five million dollars.", ["2500000"]),
+        ("A one point five million dollar grant.", ["1500000"]),
+        ("three point two billion years", ["3200000000"]),
+        # A decimal with no magnitude after it is left to word2number.
+        ("two point five kilometers", ["2.5"]),
+    ],
+)
+def test_extract_word_numbers_handles_decimal_with_magnitude(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        # "point" at the start or end of a run is the ordinary English noun,
+        # not a decimal separator. Dropping it must not take the real numbers
+        # beside it along with it.
+        ("At some point one hundred people left.", ["100"]),
+        ("At this point three items remain.", ["3"]),
+        ("To the point five people objected.", ["5"]),
+        # ...while a bare "point" with no number beside it still yields nothing.
+        ("That is a fair point, but it matters.", []),
+    ],
+)
+def test_extract_word_numbers_keeps_number_beside_nonnumeric_point(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
+def test_verify_numbers_against_source_message_names_the_numbers():
+    """The rejection message is fed back to the LLM, so it must name the numbers."""
+    ok, message = verify_numbers_against_source(
+        "The total was 99 units.", "The total was 42 units."
+    )
+    assert not ok
+    assert "99" in message
+    assert "stick to the numbers" in message
+
+
+def test_check_if_number_exist_message_names_the_numbers():
+    result = check_if_number_exist("The total was 99 units.", "The total was 42 units.")
+    assert not result["number_exists"]
+    assert "99" in result["messages"]
+    assert "stick to the numbers" in result["messages"]
+
+
 def test_combined_number_extractor_matches_digits_and_words():
     result = combined_number_extractor(
         "There were 42 attendees, or about forty-two people."
