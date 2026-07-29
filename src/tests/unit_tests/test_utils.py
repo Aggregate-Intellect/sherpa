@@ -53,6 +53,40 @@ def test_markdown_to_text_strips_syntax_and_keeps_links():
     assert 'print("not prose")' in text
 
 
+def test_markdown_to_text_preserves_inline_code_content():
+    text = markdown_to_text("run `ls -la` now")
+    assert text == "run ls -la now"
+
+
+def test_markdown_to_text_preserves_fenced_code_content():
+    markdown = "```bash\n# install deps\npip install *pkg*\n```\n"
+    text = markdown_to_text(markdown)
+    assert "# install deps" in text
+    assert "*pkg*" in text
+    assert "```" not in text
+
+
+def test_markdown_to_text_does_not_treat_multiplication_as_emphasis():
+    text = markdown_to_text("a * b and c * d")
+    assert text == "a * b and c * d"
+
+
+def test_markdown_to_text_preserves_urls_with_parens():
+    markdown = "See [wiki](https://en.wikipedia.org/wiki/Foo_(bar))."
+    text = markdown_to_text(markdown)
+    assert "https://en.wikipedia.org/wiki/Foo_(bar)" in text
+
+
+def test_markdown_to_text_strips_image_markup():
+    text = markdown_to_text("![alt text](https://example.com/img.png)")
+    assert text == "alt text (https://example.com/img.png)"
+
+
+def test_markdown_to_text_handles_nested_blockquotes():
+    text = markdown_to_text(">> nested quote")
+    assert text == "nested quote"
+
+
 def test_load_files_strips_markdown_syntax(tmp_path):
     md_file = tmp_path / "doc.md"
     md_file.write_text("# Title\n\nSee [docs](https://example.com).\n")

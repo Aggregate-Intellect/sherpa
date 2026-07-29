@@ -207,13 +207,20 @@ def safe_get(
     raise UnsafeURLError(f"Too many redirects while fetching: {url}")
 
 
+_FENCE_RE = re.compile(r"^```[^\n]*\n(.*?)\n^```[ \t]*$\n?", re.MULTILINE | re.DOTALL)
+_FENCE_PLACEHOLDER_RE = re.compile(r"\x00FENCE(\d+)\x00")
+
+
 def markdown_to_text(markdown: str) -> str:
     """Strip common markdown syntax while preserving link text and URLs.
 
-    Headers, emphasis markers, list bullets, blockquote markers, and code
-    fences are removed since they add embedding noise without semantic
-    value. Links are kept as "text (url)" rather than dropped, since the
-    URLs themselves carry information (e.g. for citation validation).
+    Headers, emphasis markers, list bullets, and blockquote markers are
+    removed since they add embedding noise without semantic value. Fenced
+    code blocks have their ``` markers removed but their contents are left
+    untouched (stashed out before the other passes run, so code isn't
+    mistaken for headers/emphasis/etc). Links are kept as "text (url)"
+    rather than dropped, since the URLs themselves carry information (e.g.
+    for citation validation).
 
     Args:
         markdown (str): Raw markdown text.
@@ -226,14 +233,26 @@ def markdown_to_text(markdown: str) -> str:
         >>> markdown_to_text("# Title\\n\\nSee [docs](https://example.com).")
         'Title\\n\\nSee docs (https://example.com).'
     """
-    text = re.sub(r"```[a-zA-Z0-9]*\n?", "", markdown)
-    text = re.sub(r"`([^`]*)`", r"\1", text)
-    text = re.sub(r"\[([^\]]*)\]\(([^)]*)\)", r"\1 (\2)", text)
+    fences = []
+
+    def _stash_fence(match):
+        fences.append(match.group(1))
+        return f"\x00FENCE{len(fences) - 1}\x00\n"
+
+    text = _FENCE_RE.sub(_stash_fence, markdown)
+    text = re.sub(r"`([^`\n]*)`", r"\1", text)
+    # Turn images into regular links first so "![alt](url)" doesn't leave a
+    # stray "!" behind once the link pattern below consumes the rest.
+    text = re.sub(r"!(\[[^\]]*\]\([^()]*(?:\([^()]*\)[^()]*)*\))", r"\1", text)
+    text = re.sub(
+        r"\[([^\]]*)\]\(([^()]*(?:\([^()]*\)[^()]*)*)\)", r"\1 (\2)", text
+    )
     text = re.sub(r"^\s{0,3}#{1,6}\s+", "", text, flags=re.MULTILINE)
-    text = re.sub(r"^\s{0,3}>\s?", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^\s{0,3}(?:>\s?)+", "", text, flags=re.MULTILINE)
     text = re.sub(r"^\s{0,3}[-*+]\s+", "", text, flags=re.MULTILINE)
-    text = re.sub(r"\*\*([^*]*)\*\*", r"\1", text)
-    text = re.sub(r"\*([^*]*)\*", r"\1", text)
+    text = re.sub(r"\*\*(\S(?:[^*\n]*\S)?)\*\*", r"\1", text)
+    text = re.sub(r"\*(\S(?:[^*\n]*\S)?)\*", r"\1", text)
+    text = _FENCE_PLACEHOLDER_RE.sub(lambda m: fences[int(m.group(1))], text)
     return text
 
 
