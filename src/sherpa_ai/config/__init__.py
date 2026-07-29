@@ -69,15 +69,10 @@ USAGE_LOG_FILE_PATH = environ.get("USAGE_LOG_FILE_PATH", "./usage_logs.txt")
 MODEL_PRICING_CONFIG_PATH = environ.get("MODEL_PRICING_CONFIG_PATH")  # Path to JSON pricing config file
 MODEL_PRICING_JSON = environ.get("MODEL_PRICING_JSON")  # JSON string with pricing data
 
-# Vector database settings, for embeddings. Choose from Pinecone or Chroma.
+# Vector database settings, for embeddings. Uses Chroma.
 # If none is configured, Sherpa uses an in-memory version of Chroma. If you're running
 # Sherpa via docker-compose, Docker settings are used instead of these values.
 
-# Pinecone. Optional. Enables cloud-based storage of vector embeddings.
-PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
-PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
-PINECONE_ENV = environ.get("PINECONE_ENV")
-PINECONE_INDEX = environ.get("PINECONE_INDEX")
 INDEX_NAME_FILE_STORAGE = environ.get("INDEX_NAME_FILE_STORAGE", "sherpa_db")
 
 # Chroma. Optional. Enables local, docker or cloud based storage of vector embeddings.
@@ -108,9 +103,9 @@ this = sys.modules[__name__]
 def check_vectordb_setting():
     """Determine which vector database to use based on environment variables.
 
-    This function checks the environment variables for Pinecone and Chroma
-    settings and sets the VECTORDB variable accordingly. If neither is configured,
-    it defaults to an in-memory Chroma database.
+    This function checks the environment variables for Chroma settings and
+    sets the VECTORDB variable accordingly. If not configured, it defaults
+    to an in-memory Chroma database.
 
     Example:
         >>> from sherpa_ai.config import check_vectordb_setting
@@ -118,17 +113,7 @@ def check_vectordb_setting():
         >>> print(VECTORDB)
         in-memory
     """
-    if (
-        this.PINECONE_API_KEY
-        and this.PINECONE_NAMESPACE
-        and this.PINECONE_ENV
-        and this.PINECONE_INDEX
-    ):
-        logger.info(
-            "Config: Pinecone environment variables are set. Using Pinecone database."
-        )
-        this.VECTORDB = "pinecone"
-    elif this.CHROMA_HOST and this.CHROMA_PORT and this.CHROMA_INDEX:
+    if this.CHROMA_HOST and this.CHROMA_PORT and this.CHROMA_INDEX:
         logger.info(
             "Config: Chroma environment variables are set. Using Chroma database."
         )

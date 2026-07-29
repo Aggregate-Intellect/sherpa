@@ -76,7 +76,6 @@ en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/down
 chromadb = "^1.0.9"
 langchain-chroma = "^0.2.5"
 boto3 = "^1.28.77"
-pinecone-client = "^2.2.2"
 beautifulsoup4 = "4.12.2"
 
 

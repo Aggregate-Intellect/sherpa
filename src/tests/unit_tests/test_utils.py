@@ -19,7 +19,9 @@ from sherpa_ai.utils import (
     get_base_url,
     get_links_from_string,
     json_from_text,
+    load_files,
     log_formatter,
+    markdown_to_text,
     rewrite_link_references,
     scrape_with_url,
     show_commands_only,
@@ -28,6 +30,38 @@ from sherpa_ai.utils import (
     text_similarity_by_metrics,
     verify_numbers_against_source,
 )
+
+
+def test_markdown_to_text_strips_syntax_and_keeps_links():
+    markdown = (
+        "# Quarterly Report\n\n"
+        "The **revenue** was $42 million, up from [last year](https://example.com/2025).\n\n"
+        "- Region A grew 12%\n"
+        "- Region B shrank 3%\n\n"
+        "> Margins held steady.\n\n"
+        "```python\nprint(\"not prose\")\n```\n"
+    )
+    text = markdown_to_text(markdown)
+
+    assert "#" not in text
+    assert "**" not in text
+    assert "```" not in text
+    assert text.startswith("Quarterly Report")
+    assert "last year (https://example.com/2025)" in text
+    assert "Region A grew 12%" in text
+    assert "Margins held steady." in text
+    assert 'print("not prose")' in text
+
+
+def test_load_files_strips_markdown_syntax(tmp_path):
+    md_file = tmp_path / "doc.md"
+    md_file.write_text("# Title\n\nSee [docs](https://example.com).\n")
+
+    documents = load_files([str(md_file)])
+
+    assert len(documents) == 1
+    assert documents[0].page_content == "Title\n\nSee docs (https://example.com).\n"
+    assert documents[0].metadata == {"source": str(md_file)}
 
 
 def test_get_links_from_string_succeeds():

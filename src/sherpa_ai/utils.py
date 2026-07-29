@@ -207,6 +207,36 @@ def safe_get(
     raise UnsafeURLError(f"Too many redirects while fetching: {url}")
 
 
+def markdown_to_text(markdown: str) -> str:
+    """Strip common markdown syntax while preserving link text and URLs.
+
+    Headers, emphasis markers, list bullets, blockquote markers, and code
+    fences are removed since they add embedding noise without semantic
+    value. Links are kept as "text (url)" rather than dropped, since the
+    URLs themselves carry information (e.g. for citation validation).
+
+    Args:
+        markdown (str): Raw markdown text.
+
+    Returns:
+        str: Plain text with markdown syntax removed.
+
+    Example:
+        >>> from sherpa_ai.utils import markdown_to_text
+        >>> markdown_to_text("# Title\\n\\nSee [docs](https://example.com).")
+        'Title\\n\\nSee docs (https://example.com).'
+    """
+    text = re.sub(r"```[a-zA-Z0-9]*\n?", "", markdown)
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"\[([^\]]*)\]\(([^)]*)\)", r"\1 (\2)", text)
+    text = re.sub(r"^\s{0,3}#{1,6}\s+", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^\s{0,3}>\s?", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^\s{0,3}[-*+]\s+", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\*\*([^*]*)\*\*", r"\1", text)
+    text = re.sub(r"\*([^*]*)\*", r"\1", text)
+    return text
+
+
 def load_files(files: List[str]) -> List[Document]:
     """Load files from a list of file paths.
 
@@ -234,7 +264,7 @@ def load_files(files: List[str]) -> List[Document]:
             documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".md"):
             with open(f, encoding="utf-8", errors="replace") as md_file:
-                text = md_file.read()
+                text = markdown_to_text(md_file.read())
             documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".gitkeep"):
             pass

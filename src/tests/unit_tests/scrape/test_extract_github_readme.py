@@ -25,9 +25,7 @@ def mock_requests(external_api: bool):
         yield
         return
 
-    with mock.patch("requests.get") as mock_get, mock.patch(
-        "sherpa_ai.scrape.extract_github_readme.save_to_pine_cone"
-    ):
+    with mock.patch("requests.get") as mock_get:
         mock_get.side_effect = mock_request
         yield
 
