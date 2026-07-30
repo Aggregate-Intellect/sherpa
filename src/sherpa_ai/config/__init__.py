@@ -43,7 +43,6 @@ FLASK_DEBUG = environ.get("FLASK_DEBUG", False) == "True"
 
 # Language model settings
 OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
-TEMPERATURE = environ.get("TEMPERATURE") or 0
 DAILY_TOKEN_LIMIT = float(environ.get("DAILY_TOKEN_LIMIT") or 20000)
 DAILY_LIMIT_REACHED_MESSAGE = (
     environ.get("DAILY_LIMIT_REACHED_MESSAGE")

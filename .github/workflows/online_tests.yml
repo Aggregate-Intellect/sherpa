@@ -30,7 +30,6 @@ jobs:
           SERPER_API_KEY: ${{ secrets.SERPAAPIKEY }}
           GITHUB_AUTH_TOKEN: ${{ secrets.GITHUBOATHKEY }}
           DAILY_TOKEN_LIMIT: ${{ secrets.TOKENLIMIT }}
-          TEMPRATURE: ${{ secrets.TEMPRATURE }}
         working-directory: ./src
         run:
           poetry run pytest --external_api --cov=sherpa_ai tests
