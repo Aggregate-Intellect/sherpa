@@ -1,16 +1,27 @@
 from unittest.mock import Mock, patch
 
 import pytest
+import requests
+from langchain_core.language_models import FakeListLLM
+from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
 from sherpa_ai.utils import (
+    UnsafeURLError,
+    assert_safe_url,
     check_if_number_exist,
     check_url,
+    chunk_and_summarize,
+    chunk_and_summarize_file,
+    combined_number_extractor,
     extract_entities,
     extract_numbers_from_text,
+    extract_word_numbers,
     get_base_url,
     get_links_from_string,
     json_from_text,
+    load_files,
     log_formatter,
+    markdown_to_text,
     rewrite_link_references,
     scrape_with_url,
     show_commands_only,
@@ -19,6 +30,112 @@ from sherpa_ai.utils import (
     text_similarity_by_metrics,
     verify_numbers_against_source,
 )
+
+
+def test_markdown_to_text_strips_syntax_and_keeps_links():
+    markdown = (
+        "# Quarterly Report\n\n"
+        "The **revenue** was $42 million, up from [last year](https://example.com/2025).\n\n"
+        "- Region A grew 12%\n"
+        "- Region B shrank 3%\n\n"
+        "> Margins held steady.\n\n"
+        "```python\nprint(\"not prose\")\n```\n"
+    )
+    text = markdown_to_text(markdown)
+
+    assert "#" not in text
+    assert "**" not in text
+    assert "```" not in text
+    assert text.startswith("Quarterly Report")
+    assert "last year (https://example.com/2025)" in text
+    assert "Region A grew 12%" in text
+    assert "Margins held steady." in text
+    assert 'print("not prose")' in text
+
+
+def test_markdown_to_text_preserves_inline_code_content():
+    text = markdown_to_text("run `ls -la` now")
+    assert text == "run ls -la now"
+
+
+def test_markdown_to_text_preserves_fenced_code_content():
+    markdown = "```bash\n# install deps\npip install *pkg*\n```\n"
+    text = markdown_to_text(markdown)
+    assert "# install deps" in text
+    assert "*pkg*" in text
+    assert "```" not in text
+
+
+def test_markdown_to_text_does_not_treat_multiplication_as_emphasis():
+    text = markdown_to_text("a * b and c * d")
+    assert text == "a * b and c * d"
+
+
+def test_markdown_to_text_preserves_urls_with_parens():
+    markdown = "See [wiki](https://en.wikipedia.org/wiki/Foo_(bar))."
+    text = markdown_to_text(markdown)
+    assert "https://en.wikipedia.org/wiki/Foo_(bar)" in text
+
+
+def test_markdown_to_text_strips_image_markup():
+    text = markdown_to_text("![alt text](https://example.com/img.png)")
+    assert text == "alt text (https://example.com/img.png)"
+
+
+def test_markdown_to_text_handles_nested_blockquotes():
+    text = markdown_to_text(">> nested quote")
+    assert text == "nested quote"
+
+
+@pytest.mark.parametrize(
+    "label,markdown",
+    [
+        # Every fence shape the stash pattern must recognise. Whatever it fails
+        # to match gets run through the prose passes instead, which mangles the
+        # code (a "#" comment read as a header, "*x*" read as emphasis) and
+        # leaves stray backticks behind from the inline-code pass.
+        ("unterminated", "intro\n```bash\n# comment\n*starred*\n"),
+        (
+            "indented in a list item",
+            "- item\n    ```bash\n    # comment\n    *starred*\n    ```\n",
+        ),
+        ("tilde", "~~~bash\n# comment\n*starred*\n~~~\n"),
+        ("longer marker", "````\n# comment\n*starred*\n````\n"),
+    ],
+)
+def test_markdown_to_text_protects_code_in_all_fence_shapes(label, markdown):
+    text = markdown_to_text(markdown)
+    assert "# comment" in text, f"{label}: comment was mangled as a header"
+    assert "*starred*" in text, f"{label}: emphasis markers stripped inside code"
+    assert "`" not in text, f"{label}: stray backtick left behind"
+
+
+def test_markdown_to_text_empty_fence_leaves_no_markers():
+    assert markdown_to_text("```\n```\n") == "\n"
+
+
+def test_markdown_to_text_round_trips_fenced_body_verbatim():
+    assert markdown_to_text("a\n```\nl1\nl2\n```\nb\n") == "a\nl1\nl2\nb\n"
+
+
+def test_markdown_to_text_survives_forged_fence_placeholder():
+    """A NUL in the input must not be able to forge a fence placeholder.
+
+    The restore step indexes into the stashed-fence list, so an out-of-range
+    forged index previously raised IndexError and failed the whole document.
+    """
+    assert markdown_to_text("text \x00FENCE7\x00 more") == "text FENCE7 more"
+
+
+def test_load_files_strips_markdown_syntax(tmp_path):
+    md_file = tmp_path / "doc.md"
+    md_file.write_text("# Title\n\nSee [docs](https://example.com).\n")
+
+    documents = load_files([str(md_file)])
+
+    assert len(documents) == 1
+    assert documents[0].page_content == "Title\n\nSee docs (https://example.com).\n"
+    assert documents[0].metadata == {"source": str(md_file)}
 
 
 def test_get_links_from_string_succeeds():
@@ -40,7 +157,8 @@ def test_scrape_with_url_handles_valid_html_content():
     mock_get = Mock()
     mock_get.return_value.status_code = 200
     mock_get.return_value.content = b"<html><body>Hello, World!</body></html>"
-    with patch("requests.get", mock_get):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", mock_get):
         result = scrape_with_url("http://example.com")
     assert result["status"] == 200
     assert result["data"] == "Hello, World!"
@@ -50,10 +168,22 @@ def test_scrape_with_url_handles_url_not_found():
     mock_get = Mock()
     mock_get.return_value.status_code = 404
     mock_get.return_value.content = b"Not Found"
-    with patch("requests.get", mock_get):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", mock_get):
         result = scrape_with_url("http://example.com")
     assert result["status"] == 404
     assert result["data"] == ""
+
+
+def test_scrape_with_url_refuses_private_address():
+    # SSRF guard: scrape_with_url must reject hosts resolving to internal
+    # addresses before ever calling requests.get.
+    mock_get = Mock()
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("127.0.0.1", 0))]), \
+         patch("requests.get", mock_get):
+        with pytest.raises(UnsafeURLError):
+            scrape_with_url("http://internal.example")
+    mock_get.assert_not_called()
 
 
 def test_rewrite_link_references_succeeds():
@@ -186,6 +316,110 @@ def test_extract_numbers_from_text(source_text, source_numbers):
     assert len(extracted_numbers) == len(
         source_numbers
     ), f"Incorrect extraction from #{ source_text }, expected #{ source_numbers } but got #{ extracted_numbers }"
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("one thousand two hundred thirty-four", ["1234"]),
+        ("twenty one apples", ["21"]),
+        ("two point five kilometers", ["2.5"]),
+        ("There are one hundred reasons", ["100"]),
+    ],
+)
+def test_extract_word_numbers_finds_real_numbers(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # "one" and "point" are common non-numeric English words and must
+        # not be treated as numbers when they appear alone.
+        "That is a fair point, but we need 42 units.",
+        "The point of the analysis is clarity.",
+        "At one point the shipment was delayed.",
+        "No one knows the exact figure.",
+        # A repeated word reads as a spoken digit sequence (e.g. a phone
+        # number), not an additive/compound number.
+        "Phone one one one for support.",
+    ],
+)
+def test_extract_word_numbers_rejects_ambiguous_words(text):
+    assert extract_word_numbers(text) == []
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        # Commas separate distinct enumerated numbers rather than joining
+        # them into one compound number.
+        ("We tried one, two, three approaches.", ["2", "3"]),
+        ("Options: five, six or seven days.", ["5", "6", "7"]),
+        # A comma inside a compound number splits it into two numbers
+        # instead of merging them (documented tradeoff).
+        ("one thousand, two hundred thirty-four", ["1000", "234"]),
+    ],
+)
+def test_extract_word_numbers_splits_on_comma(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        # word2number parses a decimal followed by a magnitude as just its
+        # integer part, dropping both the fraction and the magnitude.
+        ("It cost two point five million dollars.", ["2500000"]),
+        ("A one point five million dollar grant.", ["1500000"]),
+        ("three point two billion years", ["3200000000"]),
+        # A decimal with no magnitude after it is left to word2number.
+        ("two point five kilometers", ["2.5"]),
+    ],
+)
+def test_extract_word_numbers_handles_decimal_with_magnitude(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        # "point" at the start or end of a run is the ordinary English noun,
+        # not a decimal separator. Dropping it must not take the real numbers
+        # beside it along with it.
+        ("At some point one hundred people left.", ["100"]),
+        ("At this point three items remain.", ["3"]),
+        ("To the point five people objected.", ["5"]),
+        # ...while a bare "point" with no number beside it still yields nothing.
+        ("That is a fair point, but it matters.", []),
+    ],
+)
+def test_extract_word_numbers_keeps_number_beside_nonnumeric_point(text, expected):
+    assert extract_word_numbers(text) == expected
+
+
+def test_verify_numbers_against_source_message_names_the_numbers():
+    """The rejection message is fed back to the LLM, so it must name the numbers."""
+    ok, message = verify_numbers_against_source(
+        "The total was 99 units.", "The total was 42 units."
+    )
+    assert not ok
+    assert "99" in message
+    assert "stick to the numbers" in message
+
+
+def test_check_if_number_exist_message_names_the_numbers():
+    result = check_if_number_exist("The total was 99 units.", "The total was 42 units.")
+    assert not result["number_exists"]
+    assert "99" in result["messages"]
+    assert "stick to the numbers" in result["messages"]
+
+
+def test_combined_number_extractor_matches_digits_and_words():
+    result = combined_number_extractor(
+        "There were 42 attendees, or about forty-two people."
+    )
+    assert set(result) == {"42"}
 
 
 @pytest.mark.parametrize(
@@ -434,12 +668,233 @@ def test_check_url_raises_exception_for_unsupported_uri_scheme(bad_uri):
     ["http://something.com", "https://something.com"],
 )
 def test_check_url_returns_true_for_valid_http_url(good_uri):
-    with patch("requests.get", return_value=True):
+    mock_response = Mock()
+    mock_response.status_code = 200
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=mock_response):
         result = check_url(good_uri)
     assert result is True
 
 
 def test_check_url_returns_false_on_request_error():
-    with patch("requests.get", side_effect=Exception("problem")):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", side_effect=Exception("problem")):
         result = check_url("https://anything")
     assert result is False
+
+
+def test_check_url_returns_false_for_private_address():
+    # SSRF guard: a hostname resolving to a private/internal address must
+    # not be fetched, even though scheme and DNS resolution succeed.
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("127.0.0.1", 0))]):
+        result = check_url("http://internal.example")
+    assert result is False
+
+
+@pytest.mark.parametrize(
+    "unsafe_ip",
+    [
+        "127.0.0.1",  # loopback
+        "10.0.0.5",  # private
+        "169.254.169.254",  # link-local / cloud metadata endpoint
+        "::1",  # loopback (IPv6)
+        "100.64.0.5",  # CGNAT space (100.64.0.0/10) - missed by naive denylist
+        "::ffff:127.0.0.1",  # IPv4-mapped IPv6 loopback
+    ],
+)
+def test_assert_safe_url_rejects_internal_addresses(unsafe_ip):
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", (unsafe_ip, 0))]):
+        with pytest.raises(UnsafeURLError):
+            assert_safe_url("http://attacker-controlled.example")
+
+
+def test_assert_safe_url_accepts_public_address():
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]):
+        assert_safe_url("http://something.com")  # should not raise
+
+
+def test_assert_safe_url_rejects_non_http_scheme():
+    with pytest.raises(UnsafeURLError):
+        assert_safe_url("file:///etc/passwd")
+
+
+def test_assert_safe_url_rejects_unresolvable_host():
+    import socket as socket_module
+
+    with patch(
+        "socket.getaddrinfo",
+        side_effect=socket_module.gaierror("name resolution failed"),
+    ):
+        with pytest.raises(UnsafeURLError):
+            assert_safe_url("http://does-not-resolve.invalid")
+
+
+def _redirect_response(location, status_code=302):
+    resp = Mock()
+    resp.status_code = status_code
+    resp.headers = {"Location": location}
+    return resp
+
+
+def test_safe_get_validates_redirect_target_before_following():
+    # A public host that 302-redirects to the cloud metadata endpoint must be
+    # rejected: the redirect target is validated *before* being followed.
+    from sherpa_ai.utils import safe_get
+
+    def fake_getaddrinfo(host, *args, **kwargs):
+        mapping = {
+            "public.example": "93.184.216.34",
+            "169.254.169.254": "169.254.169.254",
+        }
+        ip = mapping.get(host, "169.254.169.254")
+        return [(None, None, None, "", (ip, 0))]
+
+    redirect = _redirect_response("http://169.254.169.254/latest/meta-data/")
+
+    with patch("socket.getaddrinfo", side_effect=fake_getaddrinfo), \
+         patch("requests.get", return_value=redirect) as mock_get:
+        with pytest.raises(UnsafeURLError):
+            safe_get("http://public.example")
+
+    # The first hop was fetched, but the internal redirect target never was.
+    assert mock_get.call_count == 1
+    for call in mock_get.call_args_list:
+        assert "169.254.169.254" not in call.args[0]
+
+
+def test_safe_get_follows_safe_redirect():
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    final.content = b"ok"
+    responses = [_redirect_response("http://target.example/final"), final]
+
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", side_effect=responses) as mock_get:
+        result = safe_get("http://start.example")
+
+    assert result is final
+    assert mock_get.call_count == 2
+
+
+def test_safe_get_pins_validated_ip_for_http():
+    # For http the request must connect to the validated IP, not the hostname,
+    # with the original Host header preserved (defeats DNS rebinding).
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=final) as mock_get:
+        safe_get("http://example.com/path")
+
+    args, kwargs = mock_get.call_args
+    assert args[0] == "http://93.184.216.34/path"
+    assert kwargs["headers"]["Host"] == "example.com"
+    assert kwargs["allow_redirects"] is False
+
+
+def test_safe_get_rejects_redirect_loop():
+    from sherpa_ai.utils import safe_get
+
+    loop = _redirect_response("http://loop.example/again")
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=loop):
+        with pytest.raises(UnsafeURLError):
+            safe_get("http://loop.example")
+
+
+def test_safe_get_prefers_ipv4_and_falls_back_on_connection_error():
+    # A host with both an IPv4 and IPv6 address must be tried IPv4-first, and
+    # if that connection fails, the next validated address should be tried
+    # rather than the whole fetch failing outright.
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    addrinfo = [
+        (None, None, None, "", ("2606:2800:220:1:248:1893:25c8:1946", 0)),
+        (None, None, None, "", ("93.184.216.34", 0)),
+    ]
+    with patch("socket.getaddrinfo", return_value=addrinfo), \
+         patch(
+             "requests.get",
+             side_effect=[requests.exceptions.ConnectionError("unreachable"), final],
+         ) as mock_get:
+        result = safe_get("http://example.com/path")
+
+    assert result is final
+    assert mock_get.call_count == 2
+    first_url = mock_get.call_args_list[0].args[0]
+    second_url = mock_get.call_args_list[1].args[0]
+    assert first_url == "http://93.184.216.34/path"  # IPv4 tried first
+    assert second_url == "http://[2606:2800:220:1:248:1893:25c8:1946]/path"
+
+
+def test_safe_get_raises_when_all_validated_addresses_unreachable():
+    from sherpa_ai.utils import safe_get
+
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", side_effect=requests.exceptions.ConnectionError("down")):
+        with pytest.raises(UnsafeURLError):
+            safe_get("http://example.com")
+
+
+def test_safe_get_host_header_excludes_userinfo():
+    # The Host header must be built from hostname[:port] only — parsed.netloc
+    # can carry "user:pass@host" userinfo, which must never leak into the
+    # header sent to the (validated) remote server.
+    from sherpa_ai.utils import safe_get
+
+    final = Mock()
+    final.status_code = 200
+    with patch("socket.getaddrinfo", return_value=[(None, None, None, "", ("93.184.216.34", 0))]), \
+         patch("requests.get", return_value=final) as mock_get:
+        safe_get("http://user:secret@example.com/path")
+
+    _, kwargs = mock_get.call_args
+    assert kwargs["headers"]["Host"] == "example.com"
+    assert "secret" not in kwargs["headers"]["Host"]
+
+
+def test_chunk_and_summarize_with_completion_llm():
+    # chunk_and_summarize must call the LLM once per chunk and return the
+    # summaries as plain strings (not message objects), regardless of the
+    # underlying langchain LLM API.
+    llm = FakeListLLM(responses=["summary of the page"])
+    result = chunk_and_summarize(
+        text_data="Some short text about the weather.",
+        question="What is the weather?",
+        link="https://example.com",
+        llm=llm,
+    )
+    assert result == "summary of the page"
+
+
+def test_chunk_and_summarize_with_chat_llm():
+    # Chat models return AIMessage from invoke; the summary must still be a
+    # plain string so downstream token counting/joining keeps working.
+    llm = FakeListChatModel(responses=["chat summary of the page"])
+    result = chunk_and_summarize(
+        text_data="Some short text about the weather.",
+        question="What is the weather?",
+        link="https://example.com",
+        llm=llm,
+    )
+    assert isinstance(result, str)
+    assert result == "chat summary of the page"
+
+
+def test_chunk_and_summarize_file_with_chat_llm():
+    llm = FakeListChatModel(responses=["file summary"])
+    result = chunk_and_summarize_file(
+        text_data="Contents of a small file.",
+        question="What is in the file?",
+        file_name="notes.txt",
+        file_format="txt",
+        llm=llm,
+        title="Notes",
+    )
+    assert isinstance(result, str)
+    assert result == "file summary"

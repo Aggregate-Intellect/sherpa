@@ -53,13 +53,19 @@ class MockAction(BaseAction):
             output_key (Optional[str], optional): Key for storing the result. Defaults to None.
             return_value (str, optional): Value to return when executed. Defaults to "Mock result".
         """
-        super().__init__(
-            name=name,
-            usage=usage,
-            args=args,
-            belief=belief,
-            output_key=output_key,
-        )
+        # Only forward belief when one was supplied. BaseAction.belief is typed
+        # `Belief`, and pydantic validates values passed explicitly (unlike the
+        # field default), so forwarding belief=None unconditionally made every
+        # MockAction(...) call fail validation -- including the example above.
+        fields = {
+            "name": name,
+            "usage": usage,
+            "args": args,
+            "output_key": output_key,
+        }
+        if belief is not None:
+            fields["belief"] = belief
+        super().__init__(**fields)
         self._return_value = return_value
 
     def execute(self, **kwargs) -> str:

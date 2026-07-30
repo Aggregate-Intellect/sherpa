@@ -7,14 +7,14 @@ text, markdown, HTML, and XML files.
 
 import os
 
-import requests
-
 import sherpa_ai.config as cfg
 from sherpa_ai.utils import (
+    UnsafeURLError,
     chunk_and_summarize_file,
     count_string_tokens,
     extract_text_from_pdf,
     question_with_file_reconstructor,
+    safe_get,
 )
 
 
@@ -131,9 +131,23 @@ class QuestionWithFileHandler:
             "Authorization": f"Bearer {self.token}",
             "Accept": file["mimetype"],
         }
-        response = requests.get(
-            file["url_private_download"], headers=headers, timeout=DOWNLOAD_TIMEOUT
-        )
+        # SSRF guard: the download URL comes from an externally-provided (Slack)
+        # file dict, and we attach a bearer token to the request. Validate the
+        # host (and every redirect hop) before connecting, and never forward the
+        # Authorization header across a redirect, so the token cannot be
+        # exfiltrated to an attacker-influenced or internal address.
+        try:
+            response = safe_get(
+                file["url_private_download"],
+                headers=headers,
+                timeout=DOWNLOAD_TIMEOUT,
+                forward_headers_on_redirect=False,
+            )
+        except UnsafeURLError as e:
+            return {
+                "status": "error",
+                "message": f"Refusing to download from unsafe URL: {e}",
+            }
         destination = file["id"] + file["filetype"]
 
         # Check if the request was successful (HTTP status code 200)

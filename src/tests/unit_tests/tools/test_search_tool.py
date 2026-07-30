@@ -1,3 +1,4 @@
+import re
 from unittest.mock import patch
 
 import pytest
@@ -5,6 +6,14 @@ from loguru import logger
 
 from sherpa_ai.config import AgentConfig
 from sherpa_ai.tools import SearchTool
+
+
+def _extract_links(search_result: str) -> list:
+    """Pull every `Link:<url>` field value out of a formatted search
+    result, so tests can assert on the parsed link tokens directly
+    instead of doing a raw substring/containment check against the whole
+    text blob."""
+    return re.findall(r"Link:(\S+)", search_result)
 
 
 def test_formulate_search_query():
@@ -25,8 +34,12 @@ def test_search_query_includes_gsite_config():
 
     query = "What is the weather today?"
     search_result = search_tool._run(query)
-    assert search_result is not None
-    assert search_result != ""
+    # The mocked Serper response (see conftest.GOOGLE_SEARCH_MOCK) must actually
+    # flow through the result parsing: title, snippet and link should survive.
+    # Exact equality (not substring containment) so CodeQL does not mistake this
+    # for URL sanitization logic.
+    assert "Google is a search engine" in search_result
+    assert _extract_links(search_result) == ["https://www.google.com"]
 
 
 def test_search_query_includes_multiple_gsite_config():
@@ -38,8 +51,26 @@ def test_search_query_includes_multiple_gsite_config():
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
     search_result = search_tool._run(query)
-    assert search_result is not None
-    assert search_result != ""
+    # One mocked organic result per site-restricted query must be parsed through:
+    # the static mock returns the same single link for each of the site queries.
+    assert search_result.count("Google is a search engine") == len(site.split(", "))
+    assert _extract_links(search_result) == ["https://www.google.com"] * len(
+        site.split(", ")
+    )
+
+
+def test_search_returns_resources_for_citation():
+    config = AgentConfig(verbose=True)
+    search_tool = SearchTool(config=config)
+    resources = search_tool._run("What is the weather today?", return_resources=True)
+
+    # The resource contract (Document/Source keys) is relied on by citation
+    # validation and retrieval actions; verify the mocked search result is
+    # mapped into it correctly.
+    assert isinstance(resources, list)
+    assert len(resources) == 1
+    assert resources[0]["Document"] == "Description: GoogleGoogle is a search engine"
+    assert resources[0]["Source"] == "https://www.google.com"
 
 
 @pytest.fixture
@@ -70,8 +101,9 @@ def test_search_query_includes_more_gsite_config_empty():
     search_tool = SearchTool(config=config)
     query = "What is the weather today?"
     search_result = search_tool._run(query)
-    assert search_result is not None
-    assert search_result != ""
+    # Empty gsite means a single unrestricted query, so exactly one mocked link.
+    assert "Google is a search engine" in search_result
+    assert _extract_links(search_result) == ["https://www.google.com"]
 
 
 def test_search_query_includes_invalid_url(mock_logger):

@@ -1,4 +1,3 @@
-import socket
 from unittest.mock import patch
 
 import pytest
@@ -16,15 +15,6 @@ def mock_reranker():
     with patch("sherpa_ai.actions.base.BaseRetrievalAction.reranking") as mock_reranker:
         mock_reranker.side_effect = lambda x: x
         yield mock_reranker
-
-
-def is_offline():
-    try:
-        # Try to connect to a DNS server (Cloudflare)
-        socket.create_connection(("1.1.1.1", 53), timeout=2)
-        return False
-    except OSError:
-        return True
 
 
 def test_qa_agent_succeeds(get_llm):  # noqa: F811
@@ -95,7 +85,9 @@ def test_qa_agent_citation_validation_no_action(get_llm):  # noqa: F811
     assert len(results) == 1
 
 
-def test_qa_agent_citation_validation_multiple_action(get_llm):  # noqa: F811
+def test_qa_agent_citation_validation_multiple_action(
+    get_llm, external_api: bool
+):  # noqa: F811
     # Make sure the citation validation works even when the the action providing citation is not selected
     llm = get_llm(__file__, test_qa_agent_citation_validation_multiple_action.__name__)
 
@@ -105,7 +97,11 @@ def test_qa_agent_citation_validation_multiple_action(get_llm):  # noqa: F811
 
     citation_validation = CitationValidation()
 
-    if is_offline():
+    # Gate live HTTP on --external_api rather than on whether the machine
+    # happens to have connectivity: ArxivSearch/GoogleSearch hit real APIs, so
+    # a connectivity probe made this test fetch export.arxiv.org during the
+    # offline suite and fail whenever arXiv was slow or rate-limiting.
+    if not external_api:
         # Mock versions
         arxiv_search = MockAction(
             name="ArxivSearch",

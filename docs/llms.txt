@@ -21,14 +21,6 @@
 - [Self Consistency](https://docs.ai.science/en/latest/How_To/Tutorials/self_consistency.html): Use self-consistency techniques to improve agent output reliability
 - [Blueprint Parser](https://docs.ai.science/en/latest/How_To/Tutorials/blueprint_parser_creator.html): Create agents that parse and generate structured blueprints
 
-## SlackBot
-
-- [Run Your Own SlackBot](https://docs.ai.science/en/latest/How_To/slack_bot.html): Overview of deploying Sherpa as a Slack app in your own workspace
-- [Workspace Setup](https://docs.ai.science/en/latest/How_To/slack_bot/1_slackbot_workspace.html): Configure a Slack workspace and app for Sherpa
-- [Run the SlackBot](https://docs.ai.science/en/latest/How_To/slack_bot/2_run_slackbot.html): Deploy and run the Sherpa Slack bot
-- [Pinecone Setup](https://docs.ai.science/en/latest/How_To/slack_bot/3_pinecone_setup.html): Connect Sherpa to Pinecone for vector storage
-- [Local Vector DB](https://docs.ai.science/en/latest/How_To/slack_bot/4_local_vectordb.html): Use a local vector database instead of Pinecone
-
 ## About Sherpa
 
 - [About Sherpa](https://docs.ai.science/en/latest/About_Sherpa/index.html): Project background, KnowledgeOps philosophy, and vision

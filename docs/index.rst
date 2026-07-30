@@ -5,7 +5,6 @@
 
    How_To/tutorials
    How_To/talk_to_sherpa
-   How_To/slack_bot
    How_To/contribute
 
 .. toctree::
@@ -62,9 +61,7 @@ We also run regular **community events** that cover Sherpa and language model ad
 
 Talk to Sherpa
 ^^^^^^^^^^^^^^
-:doc:`Talk to Sherpa in our community Slack workspace<How_To/talk_to_sherpa>` 
-or check out the :doc:`SlackBot tutorial<How_To/slack_bot>`, which enables you to run Sherpa in your
-own Slack workspace.
+:doc:`Talk to Sherpa in our community Slack workspace<How_To/talk_to_sherpa>`.
 
 
 Contribute

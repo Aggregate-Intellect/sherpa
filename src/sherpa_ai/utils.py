@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import ipaddress
 import json
 import re
+import socket
 from typing import TYPE_CHECKING, Any, List, Optional, Union
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 import tiktoken
@@ -16,6 +18,264 @@ if TYPE_CHECKING:
     from langchain_core.language_models import BaseLanguageModel
 
 HTTP_GET_TIMEOUT = 2.5
+
+
+class UnsafeURLError(ValueError):
+    """Raised when a URL fails SSRF safety validation."""
+
+
+MAX_REDIRECTS = 5
+
+
+def _is_public_address(ip: str) -> bool:
+    """Return True if `ip` is a globally routable, non-internal address.
+
+    Uses ``ipaddress.is_global`` as the primary *allowlist* check: it is the
+    logical complement of every special-purpose range IANA has registered
+    (loopback, private, link-local, CGNAT 100.64.0.0/10, multicast, reserved,
+    unspecified, ...), so it catches ranges an ad-hoc denylist would miss. The
+    explicit denylist is kept as belt-and-suspenders defense in depth.
+    IPv4-mapped IPv6 addresses (e.g. ``::ffff:127.0.0.1``) are unwrapped first
+    so the underlying IPv4 address is evaluated rather than a generic IPv6 one.
+    """
+    addr = ipaddress.ip_address(ip)
+    mapped = getattr(addr, "ipv4_mapped", None)
+    if mapped is not None:
+        addr = mapped
+
+    if not addr.is_global:
+        return False
+
+    return not (
+        addr.is_private
+        or addr.is_loopback
+        or addr.is_link_local
+        or addr.is_multicast
+        or addr.is_reserved
+        or addr.is_unspecified
+    )
+
+
+def assert_safe_url(url: str) -> list[str]:
+    """Validate that `url` is http(s) and does not resolve to an internal/
+    private/link-local/metadata address, to prevent SSRF via agent- or
+    user-controlled URLs (e.g. link scraping tools).
+
+    Args:
+        url (str): The URL to validate.
+
+    Returns:
+        list[str]: The validated, resolved IP addresses for the host, in
+            connection-preference order (IPv4 before IPv6, otherwise as
+            returned by the resolver). The caller can pin the connection to
+            one of these to avoid a DNS-rebinding TOCTOU window; since not
+            every address family is reachable from every network, callers
+            should try them in order rather than assume the first always
+            connects.
+
+    Raises:
+        UnsafeURLError: If the URL's scheme is not http(s), or if its host
+            resolves to a non-public address.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise UnsafeURLError(f"URL must conform to HTTP(S) scheme: {url}")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise UnsafeURLError(f"URL has no hostname: {url}")
+
+    try:
+        # Dedup while preserving the resolver's order (rather than sorting
+        # alphabetically, which is a meaningless order that can put an
+        # unreachable address family first).
+        resolved_ips = list(
+            dict.fromkeys(info[4][0] for info in socket.getaddrinfo(hostname, None))
+        )
+    except socket.gaierror as e:
+        raise UnsafeURLError(f"Could not resolve host {hostname}: {e}") from e
+
+    if not resolved_ips or not all(_is_public_address(ip) for ip in resolved_ips):
+        raise UnsafeURLError(
+            f"URL resolves to a non-public address, refusing to fetch: {url}"
+        )
+
+    # Prefer IPv4 first: it's the more universally reachable family, and this
+    # is only an ordering preference among already-validated addresses.
+    resolved_ips.sort(key=lambda ip: ":" in ip)
+    return resolved_ips
+
+
+def safe_get(
+    url: str,
+    *,
+    headers: Optional[dict] = None,
+    timeout: float = HTTP_GET_TIMEOUT,
+    max_redirects: int = MAX_REDIRECTS,
+    forward_headers_on_redirect: bool = False,
+):
+    """Perform a GET request hardened against SSRF, redirect and rebinding bypasses.
+
+    Unlike a plain ``requests.get``, this:
+
+    * validates every URL in the redirect chain *before* fetching it, with
+      automatic redirect following disabled (``allow_redirects=False``), so an
+      attacker-controlled public host cannot 3xx-redirect the request onto an
+      internal/metadata address (e.g. ``169.254.169.254``);
+    * for plain ``http`` connects directly to the exact IP that just passed
+      validation (IP pinning), closing the DNS-rebinding TOCTOU window between
+      resolution and connection. For ``https`` the connection is made by
+      hostname so TLS SNI / certificate validation still works; the residual
+      rebinding window there is the few microseconds between validation and
+      connect and is accepted as documented.
+
+    Args:
+        url: The URL to fetch.
+        headers: Optional headers to send.
+        timeout: Per-request timeout in seconds.
+        max_redirects: Maximum number of redirect hops to follow.
+        forward_headers_on_redirect: If False, the caller-supplied headers
+            (which may carry credentials) are only sent on the initial request
+            and dropped on redirect hops, to avoid leaking credentials to a
+            redirect target.
+
+    Returns:
+        requests.Response: The final (non-redirect) response.
+
+    Raises:
+        UnsafeURLError: If any URL in the chain fails validation, or if the
+            redirect limit is exceeded.
+    """
+    current_url = url
+    base_headers = dict(headers or {})
+
+    for hop in range(max_redirects + 1):
+        validated_ips = assert_safe_url(current_url)
+        parsed = urlparse(current_url)
+
+        request_headers = dict(base_headers) if (hop == 0 or forward_headers_on_redirect) else {}
+        # Host header must be hostname[:port] only — parsed.netloc can carry
+        # "user:pass@host" userinfo, which would otherwise leak into the
+        # header and produce a malformed Host value.
+        host_header = parsed.hostname or ""
+        if parsed.port:
+            host_header = f"{host_header}:{parsed.port}"
+
+        if parsed.scheme == "http":
+            # Pin to a validated IP so the socket connects to exactly an
+            # address we vetted, defeating DNS rebinding. Not every address
+            # family is reachable from every network, so try each validated
+            # IP in preference order rather than assuming the first connects.
+            request_headers.setdefault("Host", host_header)
+            last_error = None
+            for ip in validated_ips:
+                host_part = f"[{ip}]" if ":" in ip else ip
+                netloc = f"{host_part}:{parsed.port}" if parsed.port else host_part
+                connect_url = parsed._replace(netloc=netloc).geturl()
+                try:
+                    response = requests.get(
+                        connect_url,
+                        headers=request_headers or None,
+                        timeout=timeout,
+                        allow_redirects=False,
+                    )
+                    break
+                except requests.exceptions.ConnectionError as e:
+                    last_error = e
+                    continue
+            else:
+                raise UnsafeURLError(
+                    f"Could not connect to any validated address for {current_url}: {last_error}"
+                )
+        else:
+            response = requests.get(
+                current_url,
+                headers=request_headers or None,
+                timeout=timeout,
+                allow_redirects=False,
+            )
+
+        if response.status_code in (301, 302, 303, 307, 308):
+            location = response.headers.get("Location")
+            if not location:
+                return response
+            current_url = urljoin(current_url, location)
+            continue
+
+        return response
+
+    raise UnsafeURLError(f"Too many redirects while fetching: {url}")
+
+
+#: Matches a fenced code block so its contents can be stashed out before the
+#: prose passes run. Deliberately permissive about what counts as a fence,
+#: since every shape it fails to match gets its contents mangled as if it were
+#: prose: leading indentation is allowed (fences nested in list items),
+#: ``~~~`` is accepted as well as backticks, the body may be empty, and an
+#: unterminated fence runs to end-of-input rather than not matching at all.
+_FENCE_RE = re.compile(
+    r"^[ \t]*(?P<marker>`{3,}|~{3,})[^\n]*\n"
+    r"(?P<body>.*?)"
+    r"(?:^[ \t]*(?P=marker)[ \t]*$\n?|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+_FENCE_PLACEHOLDER_RE = re.compile(r"\x00FENCE(\d+)\x00")
+
+
+def markdown_to_text(markdown: str) -> str:
+    """Strip common markdown syntax while preserving link text and URLs.
+
+    Headers, emphasis markers, list bullets, and blockquote markers are
+    removed since they add embedding noise without semantic value. Fenced
+    code blocks have their ``` (or ~~~) markers removed but their contents
+    are left untouched (stashed out before the other passes run, so code
+    isn't mistaken for headers/emphasis/etc), including when the fence is
+    indented or never closed. Links are kept as "text (url)" rather than
+    dropped, since the URLs themselves carry information (e.g. for citation
+    validation).
+
+    Args:
+        markdown (str): Raw markdown text.
+
+    Returns:
+        str: Plain text with markdown syntax removed.
+
+    Example:
+        >>> from sherpa_ai.utils import markdown_to_text
+        >>> markdown_to_text("# Title\\n\\nSee [docs](https://example.com).")
+        'Title\\n\\nSee docs (https://example.com).'
+    """
+    # NUL carries no meaning in markdown, and leaving it in would let the input
+    # forge a fence placeholder -- an out-of-range index then raised IndexError
+    # on restore, failing the whole document load.
+    markdown = markdown.replace("\x00", "")
+
+    fences = []
+
+    def _stash_fence(match):
+        # Drop the single newline that precedes the closing fence; the
+        # placeholder below supplies it, so the body round-trips verbatim.
+        body = match.group("body")
+        if body.endswith("\n"):
+            body = body[:-1]
+        fences.append(body)
+        return f"\x00FENCE{len(fences) - 1}\x00\n"
+
+    text = _FENCE_RE.sub(_stash_fence, markdown)
+    text = re.sub(r"`([^`\n]*)`", r"\1", text)
+    # Turn images into regular links first so "![alt](url)" doesn't leave a
+    # stray "!" behind once the link pattern below consumes the rest.
+    text = re.sub(r"!(\[[^\]]*\]\([^()]*(?:\([^()]*\)[^()]*)*\))", r"\1", text)
+    text = re.sub(
+        r"\[([^\]]*)\]\(([^()]*(?:\([^()]*\)[^()]*)*)\)", r"\1 (\2)", text
+    )
+    text = re.sub(r"^\s{0,3}#{1,6}\s+", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^\s{0,3}(?:>\s?)+", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^\s{0,3}[-*+]\s+", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\*\*(\S(?:[^*\n]*\S)?)\*\*", r"\1", text)
+    text = re.sub(r"\*(\S(?:[^*\n]*\S)?)\*", r"\1", text)
+    text = _FENCE_PLACEHOLDER_RE.sub(lambda m: fences[int(m.group(1))], text)
+    return text
 
 
 def load_files(files: List[str]) -> List[Document]:
@@ -35,25 +295,22 @@ def load_files(files: List[str]) -> List[Document]:
         >>> print(len(documents))
         2
     """
-    from langchain_community.document_loaders import (
-        UnstructuredMarkdownLoader,
-        UnstructuredPDFLoader,
-    )
+    from langchain_core.documents import Document
 
     documents = []
-    loader = None
     for f in files:
-        (f"Loading file {f}")
+        logger.info(f"Loading file {f}")
         if f.endswith(".pdf"):
-            loader = UnstructuredPDFLoader(f)
+            text = extract_text_from_pdf(f)
+            documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".md"):
-            loader = UnstructuredMarkdownLoader(f)
+            with open(f, encoding="utf-8", errors="replace") as md_file:
+                text = markdown_to_text(md_file.read())
+            documents.append(Document(page_content=text, metadata={"source": f}))
         elif f.endswith(".gitkeep"):
             pass
         else:
             raise NotImplementedError(f"File type {f} not supported")
-        if loader is not None:
-            documents.extend(loader.load())
     logger.info(documents)
     return documents
 
@@ -112,37 +369,6 @@ def get_base_url(link):
     return base_url
 
 
-def get_link_from_slack_client_conversation(data):
-    """Get links from a Slack client conversation.
-
-    Args:
-        data (list): The input data containing the conversation.
-
-    Returns:
-        list: A list of dictionaries containing the extracted links and their base URLs.    
-
-    Example:
-        >>> from sherpa_ai.utils import get_link_from_slack_client_conversation
-        >>> data = [{"blocks": [{"elements": [{"elements": [{"type": "link", "url": "https://www.example.com"}]}]}]}]
-        >>> links = get_link_from_slack_client_conversation(data)
-        >>> print(links)
-        [{'url': 'https://www.example.com', 'base_url': 'https://www.example.com'}]
-    """
-    links = []
-    for item in data:
-        if "blocks" in item:
-            for block in item["blocks"]:
-                if "elements" in block:
-                    for element in block["elements"]:
-                        for newElement in element["elements"]:
-                            if newElement.get("type") == "link":
-                                newUrl = newElement["url"]
-                                links.append(
-                                    {"url": newUrl, "base_url": get_base_url(newUrl)}
-                                )
-    return links
-
-
 def scrape_with_url(url: str):
     """Scrape a URL and return the text.
 
@@ -168,7 +394,7 @@ def scrape_with_url(url: str):
             "Please install it with `pip install beautifulsoup4`."
         )
 
-    response = requests.get(url, timeout=HTTP_GET_TIMEOUT)
+    response = safe_get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     data = soup.get_text(strip=True)
     status = response.status_code
@@ -256,13 +482,19 @@ def chunk_and_summarize(text_data: str, question: str, link: str, llm):
     chunked_text = text_splitter.split_text(text_data)
     chunk_summary = []
     for text in chunked_text:
-        summarized = llm.predict(
+        summarized = llm.invoke(
             f"""Write a concise summary of the following text
             {instruction}:
             "\n\n\n
             f'LITERAL TEXT: {text}
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as"""
+        )
+        # Chat models return a message object; completion models return a str.
+        # Use .text (not .content) since langchain-core 1.x content can be a
+        # list of content blocks rather than a plain string.
+        summarized = (
+            summarized.text if hasattr(summarized, "text") else str(summarized)
         )
         chunk_summary.append(summarized)
 
@@ -301,6 +533,8 @@ def chunk_and_summarize_file(
         >>> print(result)
         "This is a test text."
     """
+    from langchain_text_splitters import TokenTextSplitter
+
     title = f",title {title} " if title is not None else ""
 
     instruction = (
@@ -314,13 +548,19 @@ def chunk_and_summarize_file(
     chunked_text = text_splitter.split_text(text_data)
     chunk_summary = []
     for text in chunked_text:
-        summarized = llm.predict(
+        summarized = llm.invoke(
             f"""Write a concise summary of the following text
             {instruction}:
             "\n\n\n
             f'LITERAL TEXT: {text}
             \n\n\n
             CONCISE SUMMARY: The text is best summarized as"""
+        )
+        # Chat models return a message object; completion models return a str.
+        # Use .text (not .content) since langchain-core 1.x content can be a
+        # list of content blocks rather than a plain string.
+        summarized = (
+            summarized.text if hasattr(summarized, "text") else str(summarized)
         )
         chunk_summary.append(summarized)
     return " ".join(chunk_summary)
@@ -485,15 +725,15 @@ def check_url(url):
     Returns:
         bool: True if the URL is valid, False otherwise.
     """
-    if urlparse(url).scheme in ["http", "https"]:
-        try:
-            _ = requests.get(url, timeout=HTTP_GET_TIMEOUT)
-            return True
-        except Exception as e:
-            logger.info(f"{e} - {url}")
-            return False
-    else:
+    if urlparse(url).scheme not in ["http", "https"]:
         raise ValueError(f"URL must conform to HTTP(S) scheme: {url}")
+
+    try:
+        _ = safe_get(url)
+        return True
+    except Exception as e:
+        logger.info(f"{e} - {url}")
+        return False
 
 
 def extract_numbers_from_text(text):
@@ -551,55 +791,149 @@ def word_to_float(text):
         return {"success": False, "message": e}
 
 
-def extract_numeric_entities(
-    text: Optional[str],
-    entity_types: List[str] = ["DATE", "CARDINAL", "QUANTITY", "MONEY"],
-):
-    """Extract numeric entities from a text.
+# NOTE: A previous NER-based ``extract_numeric_entities`` (spaCy) was removed in
+# favor of the lexical ``extract_word_numbers`` below. NER-based extraction was
+# context-dependent: the same spelled-out number ("one", "two hundred") could be
+# tagged differently depending on the surrounding sentence, so a number present in
+# the source could fail to match the same number in a generated answer (and vice
+# versa). The lexical matcher is deterministic and context-independent, which is
+# what number validation actually needs.
+
+
+#: Regex matching maximal runs of spelled-out number words, e.g.
+#: "one thousand two hundred thirty-four" or "two hundred and five".
+_NUMBER_WORD = (
+    r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
+    r"thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|"
+    r"thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|"
+    r"million|billion|trillion|point)"
+)
+#: Runs never cross a comma: word-form numbers written with a comma (e.g.
+#: "one thousand, two hundred thirty-four") split into separate numbers
+#: instead of merging, which is a safer failure mode for validation than
+#: treating comma-separated enumerations ("one, two, three") as one phantom
+#: number.
+_NUMBER_WORD_RUN_PATTERN = re.compile(
+    rf"\b{_NUMBER_WORD}(?:(?:[\s-]+(?:and[\s-]+)?){_NUMBER_WORD})*\b",
+    re.IGNORECASE,
+)
+
+# "one" and "point" are grammatically overloaded in ordinary English ("one" as
+# a pronoun/article in "no one", "at one point"; "point" as an ordinary noun),
+# so a single bare occurrence of either is not reliably a number and is
+# excluded unless it's part of a longer numeric phrase (e.g. "twenty one",
+# "two point five").
+_AMBIGUOUS_STANDALONE = {"one", "point"}
+
+#: Magnitude words that scale a preceding decimal. word2number parses a
+#: decimal followed by a magnitude ("two point five million") as just its
+#: integer part, silently dropping both the fraction and the magnitude, so
+#: that shape is split apart and recombined by hand.
+_MAGNITUDE_MULTIPLIERS = {
+    "hundred": 100,
+    "thousand": 1_000,
+    "million": 1_000_000,
+    "billion": 1_000_000_000,
+    "trillion": 1_000_000_000_000,
+}
+
+
+def _word_run_to_number(tokens: List[str]):
+    """Convert a run of number words to a numeric value, or None if it isn't one.
 
     Args:
-        text (str): The text to extract numeric entities from.
-        entity_types (List[str]): A list of spaCy entity types to consider for extraction.
+        tokens (List[str]): The number words making up a single run.
 
     Returns:
-        list: A list of numeric entities.
+        The numeric value of the run, or None if it could not be parsed.
     """
-    try:
-        import spacy
-    except ImportError:
-        raise ImportError(
-            "Could not import spacy python package. "
-            "This is needed in order to to use extract_numerical_entities. "
-            "Please install it with `pip install spacy`."
-        )
+    # Only decimals are mis-parsed by word2number, so leave every other shape
+    # (e.g. "one thousand two hundred thirty-four") to it untouched.
+    if "point" in tokens:
+        magnitudes = []
+        while len(tokens) > 1 and tokens[-1] in _MAGNITUDE_MULTIPLIERS:
+            magnitudes.insert(0, tokens.pop())
+        if magnitudes:
+            base = word_to_float(" ".join(tokens))
+            if not base["success"]:
+                return None
+            value = base["data"]
+            for word in magnitudes:
+                value *= _MAGNITUDE_MULTIPLIERS[word]
+            return value
 
+    result = word_to_float(" ".join(tokens))
+    return result["data"] if result["success"] else None
+
+
+def _format_number(value) -> str:
+    """Render a number without a spurious trailing ".0".
+
+    Args:
+        value: The numeric value to render.
+
+    Returns:
+        str: The number as a string (e.g. "2500000", "2.5").
+    """
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def extract_word_numbers(text: Optional[str]):
+    """Extract numbers written as words from a text.
+
+    Finds maximal runs of spelled-out number words (e.g. "one thousand two
+    hundred thirty-four") and converts each run to its numeric value. Unlike
+    NER-based extraction, this is purely lexical, so the same phrase always
+    yields the same number regardless of the surrounding text.
+
+    Args:
+        text (Optional[str]): The text to extract word-form numbers from.
+
+    Returns:
+        list: A list of numbers as strings (e.g. ["1234", "0.5"]).
+    """
     if text is None:
         return []
 
-    text = text.lower()
-    text = re.sub(r"\s+", " ", text)
-
-    # This loading requires running python -m spacy download en_core_web_sm first
-    nlp = spacy.load("en_core_web_sm")
-    doc = nlp(text)
     numbers = []
-    filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]
-    for entity in filtered_entities:
-        if "'" in entity:
-            entity = entity.split("'")[1]
-        if any(char.isdigit() for char in entity):
-            result = extract_numbers_from_text(entity)
-            numbers.extend(result)
-        else:
-            result = word_to_float(entity)
-            if result["success"]:
-                numbers.append(str(result["data"]))
+    for match in _NUMBER_WORD_RUN_PATTERN.finditer(text.lower()):
+        tokens = re.sub(r"-", " ", match.group()).split()
 
+        # "point" only means a decimal separator when flanked by number words
+        # on both sides. At the start or end of a run it's the ordinary noun,
+        # so drop it and keep evaluating the rest — the numbers beside it are
+        # still real ("at some point one hundred people left" -> 100).
+        while tokens and tokens[0] == "point":
+            tokens.pop(0)
+        while tokens and tokens[-1] == "point":
+            tokens.pop()
+
+        if not tokens:
+            continue
+        if len(tokens) == 1 and tokens[0] in _AMBIGUOUS_STANDALONE:
+            continue
+        # A repeated adjacent word (e.g. "one one one") reads as a spoken
+        # digit sequence (like a phone number), not an additive/compound
+        # number — no legitimate compound number repeats a word back-to-back.
+        if any(a == b for a, b in zip(tokens, tokens[1:])):
+            continue
+
+        value = _word_run_to_number(tokens)
+        if value is not None:
+            numbers.append(_format_number(value))
     return numbers
 
 
 def combined_number_extractor(text: str):
     """Extract unique numeric values from a text by combining results from two different extraction methods.
+
+    Combines digit extraction (e.g. "42", "56.45", "123,345") with lexical
+    word-number extraction (e.g. "one thousand two hundred thirty-four").
+    Both methods are deterministic and context-independent, so the same
+    phrase always produces the same set of numbers whether it appears in a
+    source document or in a generated answer.
 
     Args:
         text (str): The text to extract numeric values from.
@@ -609,7 +943,7 @@ def combined_number_extractor(text: str):
     """
     result = set()
     result.update(extract_numbers_from_text(text))
-    result.update(extract_numeric_entities(text))
+    result.update(extract_word_numbers(text))
 
     return list(result)
 
@@ -634,9 +968,11 @@ def verify_numbers_against_source(
     incorrect_candidates = candidate_numbers - source_numbers
 
     if len(incorrect_candidates) > 0:
-        joined_numbers = ", ".join(incorrect_candidates)
-        message = "Don't use the numbers"
-        f"{joined_numbers} to answer the question. Instead, stick to the numbers mentioned in the context." 
+        joined_numbers = ", ".join(sorted(incorrect_candidates))
+        message = (
+            f"Don't use the numbers {joined_numbers} to answer the question. "
+            "Instead, stick to the numbers mentioned in the context."
+        )
         return False, message
     return True, None
 
@@ -662,10 +998,11 @@ def check_if_number_exist(result: str, source: str):
             error_numbers.append(data)
     error_numbers = set(error_numbers)
     if len(error_numbers) > 0:
-        for numbers in error_numbers:
-            message += numbers + ", "
-        message = "Don't use the numbers"
-        f"{message} to answer the question instead stick to the numbers mentioned in the context."
+        joined_numbers = ", ".join(sorted(error_numbers))
+        message = (
+            f"Don't use the numbers {joined_numbers} to answer the question. "
+            "Instead, stick to the numbers mentioned in the context."
+        )
         return {"number_exists": False, "messages": message}
     return {"number_exists": True, "messages": message}
 
@@ -733,7 +1070,20 @@ def extract_entities(text):
             "Please install it with `pip install spacy`."
         )
 
-    nlp = spacy.load("en_core_web_sm")
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError as e:
+        # en_core_web_sm is a direct-URL wheel, so it can't be a main-group
+        # dependency without breaking `poetry publish` (PyPI rejects direct
+        # references in published metadata). Ask the caller to install it
+        # rather than fetching and installing a wheel at runtime — nothing
+        # reaches this path unless entity validation is explicitly enabled
+        # (BaseAgent.validations is empty by default).
+        raise OSError(
+            "The spaCy model 'en_core_web_sm' is required by extract_entities "
+            "but is not installed. Install it with:\n"
+            "    python -m spacy download en_core_web_sm"
+        ) from e
     doc = nlp(text)
     entity_types = ["NORP", "ORG", "GPE", "LOC"]
     filtered_entities = [ent.text for ent in doc.ents if ent.label_ in entity_types]

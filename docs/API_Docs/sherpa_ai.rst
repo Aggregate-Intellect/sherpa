@@ -103,10 +103,6 @@ Submodules
      - Event system for coordinating component interactions and message passing.
    * - :mod:`sherpa_ai.output_parsers`
      - Tools for parsing and processing model outputs into usable formats.
-   * - :mod:`sherpa_ai.post_processors`
-     - Processes model outputs for additional formatting and enhancement.
-   * - :mod:`sherpa_ai.prompt`
-     - Tools for creating and managing prompts for language models.
    * - :mod:`sherpa_ai.prompt_generator`
      - Dynamic prompt generation based on context and requirements.
    * - :mod:`sherpa_ai.reflection`
@@ -121,8 +117,6 @@ Submodules
 
    sherpa_ai.events
    sherpa_ai.output_parsers
-   sherpa_ai.post_processors
-   sherpa_ai.prompt
    sherpa_ai.prompt_generator
    sherpa_ai.reflection
    sherpa_ai.tools
@@ -141,22 +135,6 @@ sherpa\_ai.output\_parsers module
 --------------------------------
 
 .. automodule:: sherpa_ai.output_parsers
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.post\_processors module
-----------------------------------
-
-.. automodule:: sherpa_ai.post_processors
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-sherpa\_ai.prompt module
-------------------------
-
-.. automodule:: sherpa_ai.prompt
    :members:
    :undoc-members:
    :show-inheritance:

@@ -3,8 +3,7 @@ App configuration settings.
 
 This module provides configuration settings for the Sherpa AI application,
 loading values from environment variables or a .env file. It includes settings
-for logging, language models, Slack integration, vector databases, and various
-API keys.
+for logging, language models, vector databases, and various API keys.
 
 Usage:
 
@@ -13,7 +12,7 @@ Usage:
     Then, in your code, use the values like this:
 
         import Config as cfg
-        secret = cfg.SLACK_SIGNING_SECRET
+        secret = cfg.OPENAI_API_KEY
         another_variable = cfg.ANOTHER_ENVIRONMENT_VARIABLE
 
 To add, remove, or change variables, ...
@@ -44,7 +43,6 @@ FLASK_DEBUG = environ.get("FLASK_DEBUG", False) == "True"
 
 # Language model settings
 OPENAI_API_KEY = environ.get("OPENAI_API_KEY")
-TEMPERATURE = environ.get("TEMPERATURE") or 0
 DAILY_TOKEN_LIMIT = float(environ.get("DAILY_TOKEN_LIMIT") or 20000)
 DAILY_LIMIT_REACHED_MESSAGE = (
     environ.get("DAILY_LIMIT_REACHED_MESSAGE")
@@ -70,28 +68,10 @@ USAGE_LOG_FILE_PATH = environ.get("USAGE_LOG_FILE_PATH", "./usage_logs.txt")
 MODEL_PRICING_CONFIG_PATH = environ.get("MODEL_PRICING_CONFIG_PATH")  # Path to JSON pricing config file
 MODEL_PRICING_JSON = environ.get("MODEL_PRICING_JSON")  # JSON string with pricing data
 
-# Slack integration
-SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
-SLACK_OAUTH_TOKEN = environ.get("SLACK_OAUTH_TOKEN")
-SLACK_VERIFICATION_TOKEN = environ.get("SLACK_VERIFICATION_TOKEN")
-SLACK_PORT = environ.get("SLACK_PORT", 3000)
-
-# Check if Slack integration is fully configured
-SLACK_ENABLED = all([
-    SLACK_SIGNING_SECRET,
-    SLACK_OAUTH_TOKEN,
-    SLACK_VERIFICATION_TOKEN,
-])
-
-# Vector database settings, for embeddings. Choose from Pinecone or Chroma.
+# Vector database settings, for embeddings. Uses Chroma.
 # If none is configured, Sherpa uses an in-memory version of Chroma. If you're running
 # Sherpa via docker-compose, Docker settings are used instead of these values.
 
-# Pinecone. Optional. Enables cloud-based storage of vector embeddings.
-PINECONE_API_KEY = environ.get("PINECONE_API_KEY")
-PINECONE_NAMESPACE = environ.get("PINECONE_NAMESPACE", "ReadTheDocs")
-PINECONE_ENV = environ.get("PINECONE_ENV")
-PINECONE_INDEX = environ.get("PINECONE_INDEX")
 INDEX_NAME_FILE_STORAGE = environ.get("INDEX_NAME_FILE_STORAGE", "sherpa_db")
 
 # Chroma. Optional. Enables local, docker or cloud based storage of vector embeddings.
@@ -122,9 +102,9 @@ this = sys.modules[__name__]
 def check_vectordb_setting():
     """Determine which vector database to use based on environment variables.
 
-    This function checks the environment variables for Pinecone and Chroma
-    settings and sets the VECTORDB variable accordingly. If neither is configured,
-    it defaults to an in-memory Chroma database.
+    This function checks the environment variables for Chroma settings and
+    sets the VECTORDB variable accordingly. If not configured, it defaults
+    to an in-memory Chroma database.
 
     Example:
         >>> from sherpa_ai.config import check_vectordb_setting
@@ -132,17 +112,7 @@ def check_vectordb_setting():
         >>> print(VECTORDB)
         in-memory
     """
-    if (
-        this.PINECONE_API_KEY
-        and this.PINECONE_NAMESPACE
-        and this.PINECONE_ENV
-        and this.PINECONE_INDEX
-    ):
-        logger.info(
-            "Config: Pinecone environment variables are set. Using Pinecone database."
-        )
-        this.VECTORDB = "pinecone"
-    elif this.CHROMA_HOST and this.CHROMA_PORT and this.CHROMA_INDEX:
+    if this.CHROMA_HOST and this.CHROMA_PORT and this.CHROMA_INDEX:
         logger.info(
             "Config: Chroma environment variables are set. Using Chroma database."
         )
@@ -162,13 +132,8 @@ if this.OPENAI_API_KEY is None:
 else:
     logger.info("Config: OpenAI environment variables are set")
 
-# Slack integration status (optional)
-if any([this.SLACK_SIGNING_SECRET, this.SLACK_OAUTH_TOKEN, this.SLACK_VERIFICATION_TOKEN]) and not this.SLACK_ENABLED:
-    logger.warning("Config: Slack integration partially configured - some variables are missing")
-
 check_vectordb_setting()
 
 __all__ = [
     "AgentConfig",
-    "SLACK_ENABLED",
 ]

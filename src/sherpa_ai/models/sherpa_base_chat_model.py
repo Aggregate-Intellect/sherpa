@@ -7,18 +7,38 @@ like usage tracking and verbose logging.
 
 from typing import Any, List, Optional
 
-from langchain_openai import ChatOpenAI 
-from langchain_core.callbacks import ( 
+from langchain_openai import ChatOpenAI
+from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
-    UsageMetadataCallbackHandler,
 )
-from langchain_core.language_models import BaseChatModel 
-from langchain_core.messages import BaseMessage 
-from langchain_core.outputs import ChatResult 
+from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import ChatResult
 
 from sherpa_ai.database.user_usage_tracker import UserUsageTracker
 from sherpa_ai.verbose_loggers.base import BaseVerboseLogger
+
+
+def usage_metadata_from_result(response: ChatResult) -> Optional[dict]:
+    """Extract usage metadata from the AI message of a chat result.
+
+    Reads the ``usage_metadata`` attached to the generated message directly,
+    which works regardless of whether a callback run manager is present.
+
+    NOTE: This returns the usage metadata of the *first* generation that carries
+    it. For multi-generation responses (``n > 1``), token counts from the
+    remaining generations are not aggregated. Aggregation is intentionally not
+    done here because providers differ in whether per-generation ``usage_metadata``
+    holds that generation's own tokens or the request-wide total (summing the
+    latter would double-count). ``n > 1`` is not currently used by Sherpa's call
+    paths; revisit this if multi-generation sampling is introduced.
+    """
+    for generation in response.generations:
+        message = getattr(generation, "message", None)
+        if message is not None and getattr(message, "usage_metadata", None):
+            return dict(message.usage_metadata)
+    return None
 
 
 class SherpaBaseChatModel(BaseChatModel):
@@ -105,28 +125,21 @@ class SherpaBaseChatModel(BaseChatModel):
             >>> print(result.generations[0].text)
             'Hi there!'
         """
-        # Create UsageMetadataCallbackHandler to track token usage
-        usage_callback = UsageMetadataCallbackHandler()
-        
-        # Add the callback to the run manager if provided
-        if run_manager:
-            run_manager.add_handler(usage_callback)
-        
-        # Generate response with usage tracking
+        # Generate response first, then read token usage from the result
         response = super()._generate(messages, stop, run_manager, **kwargs)
-        
+
         # Track usage if user_id is provided
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            
+
             # Get model name and metadata
             model_name = getattr(self, 'model_name', 'unknown')
             session_id = getattr(self, 'session_id', None)
             agent_name = getattr(self, 'agent_name', None)
-            
-            # Extract usage metadata from callback
-            usage_metadata = usage_callback.usage_metadata
-            
+
+            # Extract usage metadata from the generated message
+            usage_metadata = usage_metadata_from_result(response)
+
             if usage_metadata:
                 # Use the new usage metadata-based tracking
                 user_db.add_usage(
@@ -147,7 +160,7 @@ class SherpaBaseChatModel(BaseChatModel):
                     session_id=session_id,
                     agent_name=agent_name
                 )
-            
+
             user_db.close_connection()
 
         return response
@@ -236,28 +249,21 @@ class SherpaChatOpenAI(ChatOpenAI):
             >>> print(result.generations[0].text)
             'Hi there!'
         """
-        # Create UsageMetadataCallbackHandler to track token usage
-        usage_callback = UsageMetadataCallbackHandler()
-        
-        # Add the callback to the run manager if provided
-        if run_manager:
-            run_manager.add_handler(usage_callback)
-        
-        # Generate response with usage tracking
+        # Generate response first, then read token usage from the result
         response = super()._generate(messages, stop, run_manager, **kwargs)
-        
+
         # Track usage if user_id is provided
         if self.user_id:
             user_db = UserUsageTracker(verbose_logger=self.verbose_logger)
-            
+
             # Get model name and metadata
             model_name = getattr(self, 'model_name', 'unknown')
             session_id = getattr(self, 'session_id', None)
             agent_name = getattr(self, 'agent_name', None)
-            
-            # Extract usage metadata from callback
-            usage_metadata = usage_callback.usage_metadata
-            
+
+            # Extract usage metadata from the generated message
+            usage_metadata = usage_metadata_from_result(response)
+
             if usage_metadata:
                 # Use the new usage metadata-based tracking
                 user_db.add_usage(

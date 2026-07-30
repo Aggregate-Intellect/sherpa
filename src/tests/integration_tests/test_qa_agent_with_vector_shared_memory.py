@@ -46,7 +46,7 @@ data2 = """
     """  # noqa E501
 session_id2 = "5"
 meta_data2 = {
-    "session_id": f"{session_id}",
+    "session_id": f"{session_id2}",
     "file_name": "kk",
 }
 
@@ -73,6 +73,22 @@ class FakeEmbeddingFunction:
                 values[0] = 1
                 results.append(values)
         return results
+
+    def embed_documents(self, input):
+        # chromadb EmbeddingFunction API: called as embed_documents(input=[...])
+        # with a list of documents; must return a list of vectors.
+        if isinstance(input, str):
+            input = [input]
+        return self(input)
+
+    def embed_query(self, input):
+        # chromadb EmbeddingFunction API (NOT langchain's single-string API):
+        # chromadb's CollectionCommon._embed calls embed_query(input=[query, ...])
+        # with a list of query texts and expects a list of vectors back.
+        # Guard against a bare string so __call__ never iterates characters.
+        if isinstance(input, str):
+            input = [input]
+        return self(input)
 
 
 fake_embedding = FakeEmbeddingFunction(EMBEDDING_MODEL_NAME)
@@ -108,40 +124,61 @@ def create_mock_vector_storage():
     return mock_vector_storage
 
 
-def test_chroma_vector_store_from_texts(mock_chroma_vector_store):
+def test_chroma_vector_store_from_texts(mock_chroma_vector_store, tmp_path):
     """
-    Test to create a Chroma Vector Store from texts and
+    Test a real insert/query round trip: documents added via chroma_from_texts
+    must come back from similarity_search with their content and metadata intact.
     """
+    db_path = str(tmp_path / "db")
     split_data = file_text_splitter(data=data, meta_data=meta_data)
     chroma = ChromaVectorStore.chroma_from_texts(
-        texts=split_data["texts"], meta_datas=split_data["meta_datas"]
+        texts=split_data["texts"],
+        meta_datas=split_data["meta_datas"],
+        path=db_path,
     )
+
+    assert chroma.db.count() == len(split_data["texts"]), (
+        "Collection should contain exactly the inserted chunks"
+    )
+
     result = chroma.similarity_search(
         query="avocado",
         number_of_results=1,
         k=1
     )
+    assert len(result) == 1, "Expected exactly one result"
     result_content = result[0].page_content
     logger.debug(result_content)
-    assert len(result_content) > 0, "Failed to do similarity search from text"
+    assert result_content in split_data["texts"], (
+        "Returned chunk must be one of the inserted texts, unmodified"
+    )
+    assert result[0].metadata == meta_data, (
+        "Returned chunk must carry the metadata it was inserted with"
+    )
 
 
-def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store):
+def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store, tmp_path):
     """
     Test to create a Chroma Vector Store from an existing store and
-    check if the similarity search is working as expected by checking where the chunk
-    comes from
+    check that similarity search actually discriminates between documents:
+    a "comets" query must return the comets document, and a non-comet query
+    must not return the comets document.
     """
+    db_path = str(tmp_path / "db")
     split_data = file_text_splitter(data=data2, meta_data=meta_data2)
     ChromaVectorStore.chroma_from_texts(
-        texts=split_data["texts"], meta_datas=split_data["meta_datas"]
+        texts=split_data["texts"],
+        meta_datas=split_data["meta_datas"],
+        path=db_path,
     )
     split_data_two = file_text_splitter(data=data, meta_data=meta_data)
     ChromaVectorStore.chroma_from_texts(
-        texts=split_data_two["texts"], meta_datas=split_data_two["meta_datas"]
+        texts=split_data_two["texts"],
+        meta_datas=split_data_two["meta_datas"],
+        path=db_path,
     )
 
-    chroma = ChromaVectorStore.chroma_from_existing()
+    chroma = ChromaVectorStore.chroma_from_existing(path=db_path)
     result = chroma.similarity_search(
         query="comets",
         number_of_results=1,
@@ -153,6 +190,56 @@ def test_chroma_vector_store_from_existing_store(mock_chroma_vector_store):
 
     assert len(result_content) > 0, "Failed to do similarity search from exsiting store"
     assert result[0].metadata["file_name"] == "kk", "Chunk is not from the correct file"
+    assert "comets" in result_content.lower(), (
+        "Comets query must return the comets document content"
+    )
+
+    # The reverse query must NOT return the comets document
+    other_result = chroma.similarity_search(
+        query="avocado",
+        number_of_results=1,
+        k=1
+    )
+    assert other_result[0].metadata["file_name"] == "rtgfqq", (
+        "Non-comet query must return a chunk from the facts file, not the comets file"
+    )
+
+
+def test_chroma_vector_store_session_id_filter(mock_chroma_vector_store, tmp_path):
+    """
+    Test that the session_id filter in similarity_search is actually applied:
+    even though the comets document is the best embedding match for a "comets"
+    query, filtering on the other session must exclude it.
+    """
+    db_path = str(tmp_path / "db")
+    split_data = file_text_splitter(data=data2, meta_data=meta_data2)
+    ChromaVectorStore.chroma_from_texts(
+        texts=split_data["texts"],
+        meta_datas=split_data["meta_datas"],
+        path=db_path,
+    )
+    split_data_two = file_text_splitter(data=data, meta_data=meta_data)
+    chroma = ChromaVectorStore.chroma_from_texts(
+        texts=split_data_two["texts"],
+        meta_datas=split_data_two["meta_datas"],
+        path=db_path,
+    )
+
+    # Unfiltered, the comets document (session_id2) wins
+    unfiltered = chroma.similarity_search(
+        query="comets", number_of_results=1, k=1
+    )
+    assert unfiltered[0].metadata["session_id"] == session_id2
+
+    # Filtered to the other session, the comets document must be excluded
+    filtered = chroma.similarity_search(
+        query="comets", number_of_results=1, k=1, session_id=session_id
+    )
+    assert len(filtered) == 1
+    assert filtered[0].metadata["session_id"] == session_id, (
+        "session_id filter must exclude documents from other sessions"
+    )
+    assert filtered[0].metadata["file_name"] == "rtgfqq"
 
 
 @pytest.mark.external_api

@@ -410,9 +410,7 @@ class BaseAgent(ABC, BaseModel):
                 return task_result
 
             logger.debug(f"Action selected: {result}")
-            logger.debug(
-                f"🤖{self.name} is executing```" "``` {result.action.name}...```"
-            )
+            logger.debug(f"```🤖{self.name} is executing {result.action.name}...```")
 
             action_output = await self.async_act(result.action, result.args)
             if action_output is None:

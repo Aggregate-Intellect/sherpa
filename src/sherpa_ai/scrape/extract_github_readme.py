@@ -1,19 +1,16 @@
 """GitHub README extraction module for Sherpa AI.
 
 This module provides functionality for extracting and processing README files
-from GitHub repositories. It handles authentication, content extraction,
-and storage of README content in vector databases.
+from GitHub repositories. It handles authentication and content extraction.
 """
 
 import base64
 import re
 
 import requests
-from langchain_openai import OpenAIEmbeddings
 from loguru import logger
 
 import sherpa_ai.config as cfg
-from sherpa_ai.connectors.vectorstores import ConversationStore
 
 GITHUB_REQUEST_TIMEOUT = 2.5
 
@@ -46,8 +43,7 @@ def extract_github_readme(repo_url):
     """Extract README content from a GitHub repository.
 
     This function downloads and extracts the content of a repository's README
-    file (either .md or .rst). It also saves the content to a vector store
-    for future reference.
+    file (either .md or .rst).
 
     Args:
         repo_url (str): GitHub repository URL.
@@ -108,44 +104,6 @@ def extract_github_readme(repo_url):
         data = response.json()
         if "content" in data:
             content = base64.b64decode(data["content"]).decode("utf-8")
-            metadata = [{"type": "github", "url": repo_url}]
-            save_to_pine_cone(content, metadata)
             return content
         else:
             logger.warning("README file not found.")
-
-
-def save_to_pine_cone(content, metadatas):
-    """Save content to Pinecone vector store.
-
-    This function saves text content and associated metadata to a Pinecone
-    vector store for efficient retrieval. It uses OpenAI embeddings for
-    vectorization.
-
-    Args:
-        content (str): Text content to be stored.
-        metadatas (list): List of metadata dictionaries for the content.
-
-    Raises:
-        ImportError: If pinecone-client package is not installed.
-
-    Example:
-        >>> content = "# Project Documentation\\nThis is a guide..."
-        >>> metadata = [{"type": "github", "url": "https://github.com/org/repo"}]
-        >>> save_to_pine_cone(content, metadata)  # Saves to vector store
-    """
-    try:
-        import pinecone
-    except ImportError:
-        raise ImportError(
-            "Could not import pinecone-client python package. "
-            "This is needed in order to to use ConversationStore. "
-            "Please install it with `pip install pinecone-client`"
-        )
-
-    pinecone.init(api_key=cfg.PINECONE_API_KEY, environment=cfg.PINECONE_ENV)
-    index = pinecone.Index("langchain")
-    embeddings = OpenAIEmbeddings(openai_api_key=cfg.OPENAI_API_KEY)
-
-    vectorstore = ConversationStore("Github_data", index, embeddings, "text")
-    vectorstore.add_texts(content, metadatas)
