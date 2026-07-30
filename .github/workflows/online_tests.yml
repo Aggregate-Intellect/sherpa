@@ -26,11 +26,7 @@ jobs:
 
       - name: Run tests
         env:
-          SLACK_SIGNING_SECRET: ${{ secrets.SLACKSIGNINGSECRET }}
-          SLACK_OAUTH_TOKEN: ${{ secrets.SLACKOAUTHTOKEN }}
-          SLACK_VERIFICATION_TOKEN: ${{ secrets.SLACKVERIFICATIONTOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAIKEY }}
-          SLACK_PORT: ${{ secrets.SLACKPORT }}
           SERPER_API_KEY: ${{ secrets.SERPAAPIKEY }}
           GITHUB_AUTH_TOKEN: ${{ secrets.GITHUBOATHKEY }}
           DAILY_TOKEN_LIMIT: ${{ secrets.TOKENLIMIT }}
