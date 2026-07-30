@@ -87,6 +87,46 @@ def test_markdown_to_text_handles_nested_blockquotes():
     assert text == "nested quote"
 
 
+@pytest.mark.parametrize(
+    "label,markdown",
+    [
+        # Every fence shape the stash pattern must recognise. Whatever it fails
+        # to match gets run through the prose passes instead, which mangles the
+        # code (a "#" comment read as a header, "*x*" read as emphasis) and
+        # leaves stray backticks behind from the inline-code pass.
+        ("unterminated", "intro\n```bash\n# comment\n*starred*\n"),
+        (
+            "indented in a list item",
+            "- item\n    ```bash\n    # comment\n    *starred*\n    ```\n",
+        ),
+        ("tilde", "~~~bash\n# comment\n*starred*\n~~~\n"),
+        ("longer marker", "````\n# comment\n*starred*\n````\n"),
+    ],
+)
+def test_markdown_to_text_protects_code_in_all_fence_shapes(label, markdown):
+    text = markdown_to_text(markdown)
+    assert "# comment" in text, f"{label}: comment was mangled as a header"
+    assert "*starred*" in text, f"{label}: emphasis markers stripped inside code"
+    assert "`" not in text, f"{label}: stray backtick left behind"
+
+
+def test_markdown_to_text_empty_fence_leaves_no_markers():
+    assert markdown_to_text("```\n```\n") == "\n"
+
+
+def test_markdown_to_text_round_trips_fenced_body_verbatim():
+    assert markdown_to_text("a\n```\nl1\nl2\n```\nb\n") == "a\nl1\nl2\nb\n"
+
+
+def test_markdown_to_text_survives_forged_fence_placeholder():
+    """A NUL in the input must not be able to forge a fence placeholder.
+
+    The restore step indexes into the stashed-fence list, so an out-of-range
+    forged index previously raised IndexError and failed the whole document.
+    """
+    assert markdown_to_text("text \x00FENCE7\x00 more") == "text FENCE7 more"
+
+
 def test_load_files_strips_markdown_syntax(tmp_path):
     md_file = tmp_path / "doc.md"
     md_file.write_text("# Title\n\nSee [docs](https://example.com).\n")

@@ -207,7 +207,18 @@ def safe_get(
     raise UnsafeURLError(f"Too many redirects while fetching: {url}")
 
 
-_FENCE_RE = re.compile(r"^```[^\n]*\n(.*?)\n^```[ \t]*$\n?", re.MULTILINE | re.DOTALL)
+#: Matches a fenced code block so its contents can be stashed out before the
+#: prose passes run. Deliberately permissive about what counts as a fence,
+#: since every shape it fails to match gets its contents mangled as if it were
+#: prose: leading indentation is allowed (fences nested in list items),
+#: ``~~~`` is accepted as well as backticks, the body may be empty, and an
+#: unterminated fence runs to end-of-input rather than not matching at all.
+_FENCE_RE = re.compile(
+    r"^[ \t]*(?P<marker>`{3,}|~{3,})[^\n]*\n"
+    r"(?P<body>.*?)"
+    r"(?:^[ \t]*(?P=marker)[ \t]*$\n?|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
 _FENCE_PLACEHOLDER_RE = re.compile(r"\x00FENCE(\d+)\x00")
 
 
@@ -216,11 +227,12 @@ def markdown_to_text(markdown: str) -> str:
 
     Headers, emphasis markers, list bullets, and blockquote markers are
     removed since they add embedding noise without semantic value. Fenced
-    code blocks have their ``` markers removed but their contents are left
-    untouched (stashed out before the other passes run, so code isn't
-    mistaken for headers/emphasis/etc). Links are kept as "text (url)"
-    rather than dropped, since the URLs themselves carry information (e.g.
-    for citation validation).
+    code blocks have their ``` (or ~~~) markers removed but their contents
+    are left untouched (stashed out before the other passes run, so code
+    isn't mistaken for headers/emphasis/etc), including when the fence is
+    indented or never closed. Links are kept as "text (url)" rather than
+    dropped, since the URLs themselves carry information (e.g. for citation
+    validation).
 
     Args:
         markdown (str): Raw markdown text.
@@ -233,10 +245,20 @@ def markdown_to_text(markdown: str) -> str:
         >>> markdown_to_text("# Title\\n\\nSee [docs](https://example.com).")
         'Title\\n\\nSee docs (https://example.com).'
     """
+    # NUL carries no meaning in markdown, and leaving it in would let the input
+    # forge a fence placeholder -- an out-of-range index then raised IndexError
+    # on restore, failing the whole document load.
+    markdown = markdown.replace("\x00", "")
+
     fences = []
 
     def _stash_fence(match):
-        fences.append(match.group(1))
+        # Drop the single newline that precedes the closing fence; the
+        # placeholder below supplies it, so the body round-trips verbatim.
+        body = match.group("body")
+        if body.endswith("\n"):
+            body = body[:-1]
+        fences.append(body)
         return f"\x00FENCE{len(fences) - 1}\x00\n"
 
     text = _FENCE_RE.sub(_stash_fence, markdown)
