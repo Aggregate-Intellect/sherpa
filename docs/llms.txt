@@ -10,7 +10,6 @@
 
 ## Tutorials
 
-- [Blog Writer](https://docs.ai.science/en/latest/How_To/Tutorials/blog_writer.html): Build a multi-agent blog writer that reads transcripts, creates outlines, and writes posts using web and document search
 - [Document Reader](https://docs.ai.science/en/latest/How_To/Tutorials/document_reader.html): Build an agent that reads and answers questions from PDF documents
 - [Add Citations](https://docs.ai.science/en/latest/How_To/Tutorials/add_citation.html): Add citation validation to Sherpa agents
 - [Multi-Agent Systems](https://docs.ai.science/en/latest/How_To/Tutorials/multi_agent.html): Build systems with multiple collaborating agents

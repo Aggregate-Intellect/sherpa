@@ -49,9 +49,9 @@ Learn
 
 The 
 :doc:`tutorials<How_To/tutorials>`
-are a hands-on way for software developers to learn about Sherpa's capabilities. 
-For example, see 
-:doc:`How to Create a Blog Writer with Sherpa<How_To/Tutorials/blog_writer>`.
+are a hands-on way for software developers to learn about Sherpa's capabilities.
+For example, see
+:doc:`How to Create a Blueprint Parser with Sherpa<How_To/Tutorials/blueprint_parser_creator>`.
 
 We also run regular **community events** that cover Sherpa and language model advancements:
 
