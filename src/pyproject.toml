@@ -57,7 +57,7 @@ transformers = "^5.14.1"
 [tool.poetry.group.test.dependencies]
 pytest = "^9.0.3"
 pytest-asyncio = "^1.0.0"
-pytest-cov = "^4.1.0"
+pytest-cov = ">=4.1,<8.0"
 # Direct-URL wheel: cannot live in [tool.poetry.dependencies], PyPI rejects
 # direct references in published package metadata. Only extract_entities()
 # needs it, and that is unreachable unless entity validation is explicitly
