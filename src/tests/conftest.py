@@ -46,7 +46,7 @@ def mock_env(external_api):
     os.environ["OPENAI_API_KEY"] = "dummy"
 
     with mock.patch(
-        "langchain_community.utilities.GoogleSerperAPIWrapper._google_serper_api_results"
+        "sherpa_ai.tools._google_serper_search"
     ) as mock_search, mock.patch("sherpa_ai.utils.scrape_with_url") as mock_scrape:
         mock_search.return_value = GOOGLE_SEARCH_MOCK
         # mock_socket.side_effect = guard
