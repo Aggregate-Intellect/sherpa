@@ -38,17 +38,6 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: "pip"
-    directory: "/demo/blog_writer"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    groups:
-      security-updates:
-        applies-to: security-updates
-        patterns:
-          - "*"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
