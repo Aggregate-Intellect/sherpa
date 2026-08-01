@@ -40,11 +40,12 @@ class UsageLogger:
         usage_metadata: Optional[Dict[str, Any]] = None
     ):
         """Log usage data and check cost thresholds."""
-        # Update user cost tracking
-        self.user_costs[user_id] = self.user_costs.get(user_id, 0.0) + cost
-        
-        # Check cost thresholds and send alerts
-        self._check_cost_thresholds(user_id, self.user_costs[user_id])
+        if cfg.ENABLE_COST_TRACKING:
+            # Update user cost tracking
+            self.user_costs[user_id] = self.user_costs.get(user_id, 0.0) + cost
+
+            # Check cost thresholds and send alerts
+            self._check_cost_thresholds(user_id, self.user_costs[user_id])
         
         # Log usage data if enabled
         if not self.log_to_file:

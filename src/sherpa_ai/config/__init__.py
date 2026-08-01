@@ -85,9 +85,6 @@ SERPER_API_KEY = environ.get("SERPER_API_KEY")
 # Github auth for extracting readme files from GitHub repositories. Optional.
 GITHUB_AUTH_TOKEN = environ.get("GITHUB_AUTH_TOKEN")
 
-# Amazon Web Sevices - for transcript summaries. Optional.
-AWS_ACCESS_KEY = environ.get("AWS_ACCESS_KEY")
-AWS_SECRET_KEY = environ.get("AWS_SECRET_KEY")
 
 # Configure logger. To get JSON serialization, set serialize=True.
 # See https://loguru.readthedocs.io/en/stable/ for info on Loguru features.

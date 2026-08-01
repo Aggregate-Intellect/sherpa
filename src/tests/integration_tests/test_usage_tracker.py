@@ -158,6 +158,9 @@ def test_check_usage_limits_remaining_tokens(tracker, mock_s3_client):
     # Try to use more than remaining - should fail
     check_usage = tracker.check_usage(user_id="jack", input_tokens=500, output_tokens=600)
     assert check_usage["can_execute"] is False
+    # The user-facing message should come from cfg.DAILY_LIMIT_REACHED_MESSAGE,
+    # not a hardcoded string that ignores the configured setting.
+    assert check_usage["message"] == cfg.DAILY_LIMIT_REACHED_MESSAGE
 
 
 # # TODO mock time or remove this entirely

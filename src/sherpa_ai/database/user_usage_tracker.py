@@ -277,32 +277,33 @@ class UserUsageTracker:
         
         # Get current usage
         current_usage = self._get_sum_of_tokens_since_last_reset(user_id)
-        
+        remaining_tokens = self.max_daily_token - current_usage
+
         # Use total_tokens from usage_metadata if available, otherwise calculate
         if usage_metadata and "total_tokens" in usage_metadata:
             total_tokens = usage_metadata["total_tokens"]
         else:
             total_tokens = input_tokens + output_tokens
-        
+
         # Check limits
         if total_tokens > self.max_daily_token:
             return {
-                "token-left": 0,
+                "token-left": remaining_tokens,
                 "can_execute": False,
                 "message": "Your request exceeds token limit. Try using smaller context.",
                 "time_left": ""
             }
-        
+
         if current_usage + total_tokens > self.max_daily_token:
             return {
-                "token-left": self.max_daily_token - current_usage,
+                "token-left": remaining_tokens,
                 "can_execute": False,
-                "message": "Daily token limit exceeded.",
+                "message": cfg.DAILY_LIMIT_REACHED_MESSAGE,
                 "time_left": ""
             }
-        
+
         return {
-            "token-left": self.max_daily_token - current_usage - total_tokens,
+            "token-left": remaining_tokens,
             "can_execute": True,
             "message": "",
             "time_left": ""
@@ -513,25 +514,6 @@ class UserUsageTracker:
     def is_in_whitelist(self, user_id: str) -> bool:
         """Check if user is in whitelist."""
         return self.session.query(Whitelist).filter_by(user_id=user_id).first() is not None
-    
-    def check_usage(self, user_id: str, input_tokens: int, output_tokens: int, 
-                   usage_metadata: Dict[str, Any] = None) -> dict:
-        """Check usage limits."""
-        # Use total_tokens from usage_metadata if available
-        if usage_metadata and "total_tokens" in usage_metadata:
-            total_tokens = usage_metadata["total_tokens"]
-        else:
-            total_tokens = input_tokens + output_tokens
-        
-        current_usage = self._get_sum_of_tokens_since_last_reset(user_id)
-        remaining_tokens = self.max_daily_token - current_usage
-        
-        return {
-            "can_execute": total_tokens <= remaining_tokens,
-            "token-left": remaining_tokens,
-            "current_usage": current_usage,
-            "requested_tokens": total_tokens
-        }
     
     def get_usage_metadata_statistics(self, user_id: Optional[str] = None) -> Dict[str, Any]:
         """Get detailed usage statistics from usage metadata."""
