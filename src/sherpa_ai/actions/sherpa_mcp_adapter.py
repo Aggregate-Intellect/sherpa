@@ -154,8 +154,11 @@ class MCPServerToolsToSherpaActions(BaseAction):
             self.actions.append(action_instance)
 
     def _parse_args_from_tool(self, tool):
-        if hasattr(tool, 'inputSchema') and tool.inputSchema and 'properties' in tool.inputSchema:
-            return {k: v.get('description', '') for k, v in tool.inputSchema['properties'].items()}
+        # mcp>=2.0 renamed Tool.inputSchema to Tool.input_schema; support both
+        # so this keeps working across the v1/v2 boundary.
+        schema = getattr(tool, 'input_schema', None) or getattr(tool, 'inputSchema', None)
+        if schema and 'properties' in schema:
+            return {k: v.get('description', '') for k, v in schema['properties'].items()}
         desc = getattr(tool, 'description', '')
         args = {}
         if desc:
