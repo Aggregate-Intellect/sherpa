@@ -79,7 +79,6 @@ en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/down
 # requires running the Chroma server with trust_remote_code=true, which Sherpa
 # does not do. Bump once an upstream fixed release ships.
 chromadb = "^1.0.9"
-langchain-chroma = "^0.2.5"
 langchain-anthropic = ">=1.0.0,<2.0"
 langchain-google-genai = ">=2.0.0,<3.0"
 boto3 = "^1.28.77"
