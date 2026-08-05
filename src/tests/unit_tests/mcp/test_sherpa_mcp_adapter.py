@@ -40,7 +40,10 @@ def mock_llm():
 
 @pytest.fixture
 def mock_tool():
-    tool = MagicMock()
+    # spec constrains attribute access to this real v1 Tool surface, so
+    # unset attributes (e.g. input_schema) raise AttributeError like the
+    # real object instead of silently auto-vivifying a truthy stub.
+    tool = MagicMock(spec=["name", "description", "inputSchema"])
     tool.name = "test_tool"
     tool.description = "A test tool"
     tool.inputSchema = {
@@ -50,9 +53,21 @@ def mock_tool():
     }
     return tool
 
+class ToolV2Schema:
+    """Mimics mcp>=2.0's Tool, which exposes input_schema (snake_case) and
+    no longer has inputSchema at all."""
+    name = "test_tool"
+    description = "A test tool"
+    input_schema = {
+        "properties": {
+            "foo": {"type": "string", "description": "A foo param"}
+        }
+    }
+
+
 @pytest.fixture
 def mock_tool_no_schema():
-    tool = MagicMock()
+    tool = MagicMock(spec=["name", "description", "inputSchema"])
     tool.name = "test_tool"
     tool.description = "foo: A foo param\nbar: A bar param"
     tool.inputSchema = None
@@ -75,6 +90,14 @@ class TestMCPServerToolsToSherpaActions:
         args = adapter._parse_args_from_tool(mock_tool)
         assert "foo" in args
         assert args["foo"] == "A foo param"
+
+    def test_parse_args_from_tool_with_v2_snake_case_schema(self, adapter):
+        # Regression test: mcp>=2.0 renamed Tool.inputSchema to
+        # Tool.input_schema. Without the fallback, this silently degrades to
+        # parsing args out of the free-text description instead of the
+        # real schema.
+        args = adapter._parse_args_from_tool(ToolV2Schema())
+        assert args == {"foo": "A foo param"}
 
     def test_parse_args_from_tool_without_input_schema(self, adapter, mock_tool_no_schema):
         args = adapter._parse_args_from_tool(mock_tool_no_schema)
