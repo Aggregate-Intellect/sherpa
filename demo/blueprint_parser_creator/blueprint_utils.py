@@ -35,7 +35,7 @@ import os
 # import re  # No longer needed - removed regex-based methods
 from collections import defaultdict
 from dotenv import load_dotenv
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from pathlib import Path
 from shapely.geometry import Polygon, Point, LineString
 from shapely.ops import unary_union

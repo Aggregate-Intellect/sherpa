@@ -52,7 +52,7 @@ from sherpa_ai.config.task_config import AgentConfig
 from sherpa_ai.agents.qa_agent import QAAgent
 
 # LangChain's ChatOpenAI model as the LLM for the Sherpa agent.
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
