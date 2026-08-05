@@ -173,6 +173,30 @@ class ActionFinishEvent(Event):
     event_type: str = Field("action_finish", frozen=True)
 
 
+class DecisionEvent(Event):
+    """Event recording an action selection decision.
+
+    Captures which action was chosen from the available candidates,
+    along with the alternatives that were not taken. Used for
+    trajectory analysis and state machine visualization.
+
+    Attributes:
+        name (str): Name of the decision point.
+        chosen (str): Name of the action that was selected.
+        alternatives (list[str]): Names of actions that were available
+            but not selected.
+        state (str): The state machine state at decision time, or empty
+            string if no state machine is used.
+        event_type (str): Fixed to "decision".
+    """
+
+    name: str
+    chosen: str
+    alternatives: list[str]
+    state: str = ""
+    event_type: str = Field("decision", frozen=True)
+
+
 def build_event(event_type: str, name: str, **kwargs) -> Event:
     """Factory function to create appropriate Event objects based on event type.
 
@@ -193,6 +217,7 @@ def build_event(event_type: str, name: str, **kwargs) -> Event:
         Event: An instance of the appropriate Event subclass:
             - ActionStartEvent for "action_start" event_type
             - ActionFinishEvent for "action_finish" event_type
+            - DecisionEvent for "decision" event_type
             - GenericEvent for all other event_type values
 
     Example:
@@ -206,6 +231,8 @@ def build_event(event_type: str, name: str, **kwargs) -> Event:
         return ActionStartEvent(**kwargs, name=name)
     elif event_type == "action_finish":
         return ActionFinishEvent(**kwargs, name=name)
+    elif event_type == "decision":
+        return DecisionEvent(name=name, **kwargs)
     elif event_type == "trigger":
         if not kwargs.get("args"):
             # Default to no args if not provided
