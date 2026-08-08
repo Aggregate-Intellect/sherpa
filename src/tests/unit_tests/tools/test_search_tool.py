@@ -6,7 +6,11 @@ from loguru import logger
 
 import sherpa_ai.config as cfg
 from sherpa_ai.config import AgentConfig
-from sherpa_ai.tools import SearchTool, _google_serper_search
+from sherpa_ai.tools import GoogleSerperAPIWrapper, SearchTool
+
+# Captured at collection time, before the autouse `mock_env` fixture (conftest.py)
+# patches GoogleSerperAPIWrapper.search for every test.
+_real_search = GoogleSerperAPIWrapper.search
 
 
 def _extract_links(search_result: str) -> list:
@@ -26,7 +30,7 @@ def test_google_serper_search_calls_serper_api_directly():
 
     with patch.object(cfg, "SERPER_API_KEY", "test-key"), \
          patch("sherpa_ai.tools.requests.post", return_value=mock_response) as mock_post:
-        result = _google_serper_search("what is the weather today?")
+        result = _real_search(GoogleSerperAPIWrapper(), "what is the weather today?")
 
     mock_post.assert_called_once_with(
         "https://google.serper.dev/search",

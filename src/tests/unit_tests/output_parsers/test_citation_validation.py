@@ -77,7 +77,7 @@ def test_task_agent_succeeds(get_llm, external_api):  # noqa: F811
         }
 
         with mock.patch(
-            "sherpa_ai.tools._google_serper_search"
+            "sherpa_ai.tools.GoogleSerperAPIWrapper.search"
         ) as mock_search:
             mock_search.return_value = GOOGLE_SEARCH_MOCK
             result = task_agent.run()

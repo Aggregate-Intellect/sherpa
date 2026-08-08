@@ -6,6 +6,7 @@ import requests
 from langchain_core.tools import BaseTool
 from langchain_core.vectorstores import VectorStoreRetriever
 from loguru import logger
+from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
 import sherpa_ai.config as cfg
@@ -18,26 +19,32 @@ from sherpa_ai.utils import (UnsafeURLError, chunk_and_summarize,
 HTTP_GET_TIMEOUT = 20.0
 
 
-def _google_serper_search(query: str) -> dict:
-    """Query the Serper.dev Google Search API directly.
+class GoogleSerperAPIWrapper(BaseModel):
+    """Wrapper around the Serper.dev Google Search API.
 
     Replaces langchain_community's GoogleSerperAPIWrapper, which was the
     package's only remaining use of langchain-community (a project that
     now prints its own "being sunset, no longer actively maintained"
     deprecation warning on import).
     """
-    headers = {
-        "X-API-KEY": cfg.SERPER_API_KEY or "",
-        "Content-Type": "application/json",
-    }
-    response = requests.post(
-        "https://google.serper.dev/search",
-        headers=headers,
-        params={"q": query},
-        timeout=HTTP_GET_TIMEOUT,
-    )
-    response.raise_for_status()
-    return response.json()
+
+    url: str = "https://google.serper.dev/search"
+    api_key: str = Field(default_factory=lambda: cfg.SERPER_API_KEY or "")
+
+    def search(self, query: str) -> dict:
+        """Query the Serper.dev Google Search API directly."""
+        headers = {
+            "X-API-KEY": self.api_key,
+            "Content-Type": "application/json",
+        }
+        response = requests.post(
+            self.url,
+            headers=headers,
+            params={"q": query},
+            timeout=HTTP_GET_TIMEOUT,
+        )
+        response.raise_for_status()
+        return response.json()
 
 
 def get_tools(memory, config):
@@ -349,7 +356,7 @@ class SearchTool(BaseTool):
             Link: https://example.com/python
         """
         logger.debug(f"Search query: {query}")
-        search_results = _google_serper_search(query)
+        search_results = GoogleSerperAPIWrapper().search(query)
         logger.debug(f"Google Search Result: {search_results}")
 
         # case 1: answerBox in the result dictionary
