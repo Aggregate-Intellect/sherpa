@@ -301,20 +301,41 @@ class ConversationStore(VectorStore):
         return retriever
 
     @classmethod
-    def from_texts(cls, texts: List[str], embedding: Embeddings, metadatas: list[dict]):
+    def from_texts(
+        cls,
+        texts: List[str],
+        embedding: Embeddings,
+        metadatas: Optional[list[dict]] = None,
+        namespace: str = "",
+        db: Optional[Any] = None,
+        text_key: str = "text",
+        **kwargs: Any,
+    ) -> "ConversationStore":
         """Create a ConversationStore from a list of texts.
-
-        This method is not implemented for ConversationStore.
 
         Args:
             texts (List[str]): The texts to add.
             embedding (Embeddings): The embedding function to use.
-            metadatas (list[dict]): The metadata for each text.
+            metadatas (Optional[list[dict]], optional): The metadata for each text.
+                Defaults to an empty dict per text.
+            namespace (str, optional): The namespace for the vector store.
+            db: The database connection (e.g. a Pinecone index) to store vectors in.
+            text_key (str, optional): The key used to store the text in metadata.
+                Defaults to "text".
 
-        Raises:
-            NotImplementedError: This method is not implemented for ConversationStore.
+        Returns:
+            ConversationStore: A new ConversationStore instance with the texts added.
+
+        Example:
+            >>> from sherpa_ai.connectors.vectorstores import ConversationStore
+            >>> store = ConversationStore.from_texts(
+            ...     ["hello", "world"], embedding, namespace="my_namespace", db=index
+            ... )
         """
-        raise NotImplementedError("ConversationStore does not support from_texts")
+        store = cls(namespace, db, embedding, text_key)
+        metadatas = metadatas or [{} for _ in texts]
+        store.add_texts(texts, metadatas)
+        return store
 
 
 class LocalChromaStore(VectorStore):
@@ -336,7 +357,14 @@ class LocalChromaStore(VectorStore):
         embedding_function: Optional[Embeddings] = None,
         client: Optional[Any] = None,
     ):
-        import chromadb
+        try:
+            import chromadb
+        except ImportError:
+            raise ImportError(
+                "Could not import chromadb python package. "
+                "This is needed in order to use LocalChromaStore. "
+                "Please install it with `pip install chromadb`"
+            )
 
         self._embedding_function = embedding_function
         self._client = client if client is not None else chromadb.EphemeralClient()

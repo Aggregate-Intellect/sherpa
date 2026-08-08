@@ -1,3 +1,5 @@
+import builtins
+
 import pytest
 
 from sherpa_ai.connectors.vectorstores import LocalChromaStore
@@ -17,6 +19,20 @@ class FakeEmbeddings:
 @pytest.fixture
 def store():
     return LocalChromaStore(collection_name="test", embedding_function=FakeEmbeddings())
+
+
+def test_init_raises_clear_error_when_chromadb_missing(monkeypatch):
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "chromadb":
+            raise ImportError("no chromadb")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    with pytest.raises(ImportError, match="Could not import chromadb"):
+        LocalChromaStore(collection_name="test", embedding_function=FakeEmbeddings())
 
 
 def test_add_texts_and_similarity_search_round_trip(store):
