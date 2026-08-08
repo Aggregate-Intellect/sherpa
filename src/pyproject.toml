@@ -54,6 +54,7 @@ nltk = "^3.9.1"
 # previously pulled in transitively by `unstructured`.
 transformers = "^5.14.1"
 
+
 [tool.poetry.group.test.dependencies]
 pytest = "^9.0.3"
 pytest-asyncio = "^1.0.0"
@@ -75,9 +76,10 @@ en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/down
 # does not do. Bump once an upstream fixed release ships.
 chromadb = "^1.0.9"
 langchain-chroma = "^0.2.5"
+langchain-anthropic = ">=1.0.0,<2.0"
+langchain-google-genai = ">=2.0.0,<3.0"
 boto3 = "^1.28.77"
 beautifulsoup4 = "4.15.0"
-
 
 [tool.poetry.group.lint.dependencies]
 bandit = "^1.7.8"
