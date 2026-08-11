@@ -1,11 +1,16 @@
 import re
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from loguru import logger
 
+import sherpa_ai.config as cfg
 from sherpa_ai.config import AgentConfig
-from sherpa_ai.tools import SearchTool
+from sherpa_ai.tools import GoogleSerperAPIWrapper, SearchTool
+
+# Captured at collection time, before the autouse `mock_env` fixture (conftest.py)
+# patches GoogleSerperAPIWrapper.search for every test.
+_real_search = GoogleSerperAPIWrapper.search
 
 
 def _extract_links(search_result: str) -> list:
@@ -14,6 +19,27 @@ def _extract_links(search_result: str) -> list:
     instead of doing a raw substring/containment check against the whole
     text blob."""
     return re.findall(r"Link:(\S+)", search_result)
+
+
+def test_google_serper_search_calls_serper_api_directly():
+    """Regression test for the langchain-community removal: this hits
+    Serper's API directly (no GoogleSerperAPIWrapper in between), so pin
+    down the request shape it relies on."""
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"organic": []}
+
+    with patch.object(cfg, "SERPER_API_KEY", "test-key"), \
+         patch("sherpa_ai.tools.requests.post", return_value=mock_response) as mock_post:
+        result = _real_search(GoogleSerperAPIWrapper(), "what is the weather today?")
+
+    mock_post.assert_called_once_with(
+        "https://google.serper.dev/search",
+        headers={"X-API-KEY": "test-key", "Content-Type": "application/json"},
+        params={"q": "what is the weather today?"},
+        timeout=pytest.approx(20.0),
+    )
+    mock_response.raise_for_status.assert_called_once()
+    assert result == {"organic": []}
 
 
 def test_formulate_search_query():
