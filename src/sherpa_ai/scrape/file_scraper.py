@@ -152,6 +152,12 @@ class QuestionWithFileHandler:
 
         # Check if the request was successful (HTTP status code 200)
         if response.status_code == 200:
+            if len(response.content) > cfg.FILE_SIZE_LIMIT:
+                return {
+                    "status": "error",
+                    "message": f"File size exceeds the limit of {cfg.FILE_SIZE_LIMIT} bytes.",
+                }
+
             content_data = ""
             if file["filetype"] == "pdf":
                 # Open the local file and write the content of the downloaded file

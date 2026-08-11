@@ -86,6 +86,29 @@ class TestPricingManager:
         finally:
             os.unlink(temp_file)
 
+    def test_config_path_falls_back_to_env_setting(self):
+        """PricingManager() with no explicit config_path should still pick up
+        cfg.MODEL_PRICING_CONFIG_PATH (set via the MODEL_PRICING_CONFIG_PATH
+        env var) instead of silently ignoring it."""
+        custom_pricing = {
+            "env-configured-model": {
+                "input_price_per_1k": 0.001,
+                "output_price_per_1k": 0.002,
+            }
+        }
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(custom_pricing, f)
+            temp_file = f.name
+
+        try:
+            with patch("sherpa_ai.cost_tracking.pricing.cfg.MODEL_PRICING_CONFIG_PATH", temp_file):
+                pricing = PricingManager()
+
+            assert "env-configured-model" in pricing.pricing_data
+        finally:
+            os.unlink(temp_file)
+
     def test_get_pricing(self):
         """Test getting pricing information."""
         pricing = PricingManager()
@@ -198,6 +221,23 @@ class TestCostThresholdAlerts:
         assert call_args[1]["cost_percentage"] == 80.0
         assert call_args[1]["alert_level"] == "WARNING"
         assert call_args[1]["threshold"] == 80
+
+    def test_disabled_cost_tracking_suppresses_alerts(self):
+        """cfg.ENABLE_COST_TRACKING=False should turn off cost tracking and
+        alerting entirely, not just be an ignored setting."""
+        alert_callback = Mock()
+        logger = UsageLogger(
+            daily_cost_limit=10.0,
+            alert_threshold=0.8,
+            alert_callback=alert_callback
+        )
+
+        with patch("sherpa_ai.cost_tracking.logger.cfg.ENABLE_COST_TRACKING", False):
+            # Usage that would normally trigger both the 80% and 100% alerts
+            logger.log_usage("user1", 10.0, "gpt-4o")
+
+        alert_callback.assert_not_called()
+        assert logger.get_user_cost("user1") == 0.0
 
     def test_100_percent_alert(self):
         """Test that 100% threshold alert is triggered."""

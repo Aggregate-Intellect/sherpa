@@ -117,7 +117,7 @@ class PricingManager:
     def __init__(self, config_path: Optional[str] = None):
         """Initialize the pricing manager."""
         self.pricing_data = {}
-        self._load_pricing_config(config_path)
+        self._load_pricing_config(config_path or cfg.MODEL_PRICING_CONFIG_PATH)
     
     def _load_pricing_config(self, config_path: Optional[str] = None):
         """Load pricing configuration from JSON file."""
