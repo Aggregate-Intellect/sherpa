@@ -2,10 +2,10 @@ import argparse
 import json
 import uuid
 
-import chromadb 
-from chromadb.config import Settings 
-from dotenv import load_dotenv 
-from langchain_openai import OpenAIEmbeddings 
+import chromadb
+from chromadb.config import Settings
+from chromadb.utils import embedding_functions
+from dotenv import load_dotenv
 from loguru import logger
 
 
@@ -16,29 +16,17 @@ def main(args):
         settings=Settings(allow_reset=True),
     )
 
-    embedding_func = OpenAIEmbeddings()
-    try:
-        from langchain_chroma import Chroma
-    except ImportError:
-        raise ImportError(
-            "Could not import langchain_chroma python package. "
-            "This is needed in order to use Chroma. "
-            "Please install it with `pip install langchain-chroma`"
-        )
-    chroma = Chroma(
-        client=client,
-        collection_name=args.chroma_index,
-        embedding_function=embedding_func,
+    embedding_func = embedding_functions.OpenAIEmbeddingFunction(
+        model_name="text-embedding-ada-002"
+    )
+    collection = client.get_or_create_collection(
+        name=args.chroma_index, embedding_function=embedding_func
     )
 
     query = input("Enter query: ")
-    results = chroma.similarity_search(
-        query=query, 
-        number_of_results=5, 
-        k=1
-    )
+    results = collection.query(query_texts=[query], n_results=1)
 
-    logger.info(results[0].page_content)
+    logger.info(results["documents"][0][0])
 
     logger.info("Done! Chroma is up and running.")
 
