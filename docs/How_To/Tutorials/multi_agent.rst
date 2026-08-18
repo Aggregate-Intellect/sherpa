@@ -121,6 +121,3 @@ Finally, you can wait for an agent to finish anything it is currently processing
 
     # Wait for agent1 to finish processing all current events
     agent1_runtime.proxy().wait()
-
-
-A complete example of multi-agent communication using shared memory can be found at `demo folder <https://github.com/Aggregate-Intellect/sherpa/tree/main/demo/multi-agents>`_

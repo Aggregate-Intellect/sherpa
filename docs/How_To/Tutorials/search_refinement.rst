@@ -44,9 +44,9 @@ Now, run the agent and ask a question that will trigger the Google search action
 
 .. code-block:: bash
 
-    (sherpa) (yourenv) yourlaptop sherpa % cd demo 
-    (sherpa) (yourenv) yourlaptop demo % cd pdf_question_answering 
-    (sherpa) (yourenv) yourlaptop pdf_question_answering % python main.py
+    (sherpa) (yourenv) yourlaptop sherpa % cd demo
+    (sherpa) (yourenv) yourlaptop demo % cd blueprint_parser_creator
+    (sherpa) (yourenv) yourlaptop blueprint_parser_creator % python main.py
     Ask me a question: why global warming is happening
     2024-09-02 00:23:16.881 | INFO     | sherpa_ai.agents.base:run:76 - Action selected: action={
         "name": "Google Search",

@@ -19,8 +19,7 @@ agents.
 Context
 -------
 
-Recall that in the `question answering
-demo <https://github.com/Aggregate-Intellect/sherpa/tree/main/demo/question_answering>`__,
+Recall that with a simple question answering agent,
 we used Sherpa to create a simple agent that can answer user’s
 questions. However, in this simple example, the agent will try to answer
 the question even if the the question contains vague or unspecified
@@ -149,9 +148,7 @@ enforced this order explicitly by adding a new state:
 Implementation
 --------------
 
-Now, let’s implement an agent on this state machine using Sherpa. Full
-code for this example is available
-`here <https://github.com/Aggregate-Intellect/sherpa/tree/main/demo/state_based_question_answering>`__.
+Now, let’s implement an agent on this state machine using Sherpa.
 
 In ``actions.py``, we defined some actions that are useful to happen
 during transitions from one state to another. With the help of
