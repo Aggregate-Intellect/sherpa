@@ -2,7 +2,7 @@
 # Install with: pip install -r requirements.txt
 
 sherpa-ai>=0.1.0
-streamlit>=1.28.0
+streamlit>=1.61.1
 langchain-community>=0.4.2
 langchain-core>=0.1.0
 langchain-openai>=1.0.0
