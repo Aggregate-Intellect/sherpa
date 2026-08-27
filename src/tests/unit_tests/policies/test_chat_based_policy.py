@@ -98,5 +98,5 @@ def test_chat_based_policy_with_agent(get_llm):  # noqa: F811
 
     # The agent should be able to move to state D
     assert result.status == "success"
-    assert len(belief.internal_events) == 4
+    assert len(belief.internal_events) == 6
     assert belief.get_state() == "D"

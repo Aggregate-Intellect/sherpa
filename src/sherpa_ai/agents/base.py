@@ -400,6 +400,34 @@ class BaseAgent(ABC, BaseModel):
 
             result = await self.async_select_action()
 
+            # Record the decision: what was chosen and what was skipped
+            if result is not None and not isinstance(result, Exception):
+                chosen_name = result.action.name
+                alternative_names = [
+                    a.name for a in actions if a.name != chosen_name
+                ]
+                current_state = (
+                    self.belief.get_state()
+                    if self.belief.state_machine
+                    else ""
+                )
+                self.belief.update_internal(
+                    "decision",
+                    self.name,
+                    chosen=chosen_name,
+                    alternatives=alternative_names,
+                    state=current_state or "",
+                )
+                if self.shared_memory is not None:
+                    await self.shared_memory.async_add(
+                        "decision",
+                        self.name,
+                        sender=self.name,
+                        chosen=chosen_name,
+                        alternatives=alternative_names,
+                        state=current_state or "",
+                    )
+
             if result is None:
                 # this means no action is selected
                 continue
