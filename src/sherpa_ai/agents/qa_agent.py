@@ -1,3 +1,4 @@
+import re
 from typing import List, Optional
 
 from sherpa_ai.actions import GoogleSearch, SynthesizeOutput
@@ -113,6 +114,14 @@ class QAAgent(BaseAgent):
                 version="1.0",
             )
 
+        action_planner += (
+            "\nWhen comparing multiple named subjects, gather evidence for "
+            "each subject rather than assuming one search covers them all. "
+            "If an earlier response failed to find a subject, use a fresh "
+            "targeted search query on a follow-up request. Previous retrieval "
+            "failures are not proof that the subject cannot be found."
+        )
+
         self.description = self.description + "\n\n" + f"Your name is {self.name}."
 
         if self.policy is None:
@@ -132,6 +141,65 @@ class QAAgent(BaseAgent):
             if isinstance(validation, CitationValidation):
                 self.citation_enabled = True
                 break
+
+    def _missing_subject_for_retry(self) -> Optional[str]:
+        """Find a subject missing from the most recent answer."""
+        if self.belief.current_task is None:
+            return None
+
+        question = self.belief.current_task.content
+
+        for event in reversed(self.belief.events):
+            if event.event_type != "result":
+                continue
+
+            answer = event.content or ""
+
+            pattern = (
+                r"(?:could not|couldn't|cannot|can't|did not|didn't)"
+                r" find (?:any )?information (?:about|on) "
+                r"([A-Za-z][A-Za-z0-9_.+-]*)"
+            )
+
+            match = re.search(pattern, answer, re.IGNORECASE)
+            if match is None:
+                return None
+
+            subject = match.group(1).rstrip(".,;:!?")
+
+            # Match the complete subject, ignoring capitalization.
+            words = re.findall(r"[A-Za-z][A-Za-z0-9_.+-]*", question)
+            if subject.lower() in (word.lower() for word in words):
+                return subject
+
+            return None
+
+        return None
+
+    async def async_run(self):
+        """Retry an explicitly missing subject before normal execution."""
+        subject = self._missing_subject_for_retry()
+
+        if subject is not None:
+            actions = await self.belief.async_get_actions()
+
+            if not actions and self.belief.state_machine is None:
+                actions = self.actions or self.create_actions()
+                self.belief.set_actions(actions)
+
+            search = next(
+                (action for action in actions if action.name == "Google Search"),
+                None,
+            )
+
+            if search is not None:
+                # At most one recovery search per execution.
+                await self.async_act(
+                    search,
+                    {"query": f"{subject} documentation overview"},
+                )
+
+        return await super().async_run()
 
     def create_actions(self) -> List[BaseAction]:
         """Create and return the list of actions available to this agent.

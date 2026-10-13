@@ -122,13 +122,27 @@ class ReactPolicy(BasePolicy):
             self.llm.get_num_tokens
         )
 
+        # A previous unsuccessful retrieval is not evidence that the information
+        # does not exist. Give the policy the current conversation and explicitly
+        # permit further retrieval when an earlier query missed an entity.
+        task_context = belief.get_context(self.llm.get_num_tokens)
+        recovery_instruction = (
+            "Treat previous failed searches and 'not found' answers as "
+            "inconclusive, not as facts. If the current user request asks for "
+            "information missing from earlier results, select an available "
+            "retrieval action with a new, targeted query. For comparisons, "
+            "retrieve evidence for each missing subject separately; do not "
+            "repeat an unsupported previous conclusion."
+        )
+
         response_format = json.dumps(self.response_format, indent=4)
 
         variables = {
             "role_description": self.role_description,
-            "output_instruction": self.output_instruction,
+            "output_instruction": self.output_instruction + "\n\n" + recovery_instruction,
             "task_description": task_description,
             "possible_actions": possible_actions,
+            "task_context": task_context,
             "history_of_previous_actions": history_of_previous_actions,
             "response_format": response_format,
         }
