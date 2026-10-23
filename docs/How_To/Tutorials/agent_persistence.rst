@@ -47,8 +47,10 @@ For multi-user applications, use the UserAgentManager:
     # Start session and use agent
     session_id = manager.start_user_session("user123", "My Assistant")
     agent = manager.get_agent_for_user("user123", "My Assistant")
-    result = agent.synthesize_output()
+    print(f"Loaded agent: {agent.name}")
     manager.end_user_session(session_id)
+
+No model call is made in this persistence example. Configure an LLM before invoking model-backed methods such as ``run()`` or ``synthesize_output()``.
 
 Storage Backends
 ****************

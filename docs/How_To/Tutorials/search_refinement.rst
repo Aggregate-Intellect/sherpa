@@ -19,7 +19,7 @@ Below is an example of adding a refinement method for google search:
 
 .. code-block:: yaml
 
-    refinement:
+    refiner:
         _target_: sherpa_ai.actions.utils.refinement.RefinementBySentence
         llm: ${llm}
 
@@ -29,7 +29,8 @@ Below is an example of adding a refinement method for google search:
         task: Question answering
         llm: ${llm}
         config: ${agent_config}
-        refinement: ${refinement}
+        refiner: ${refiner}
+        perform_refinement: true
 
 Then, add the `google_search` action to the `qa_agent` section:
 

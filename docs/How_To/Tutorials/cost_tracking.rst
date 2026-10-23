@@ -142,15 +142,37 @@ Set up automatic cost monitoring with alerts:
 
     from sherpa_ai.cost_tracking.logger import UsageLogger
 
-    def cost_alert_callback(user_id: str, current_cost: float, limit: float):
-        print(f"ALERT: User {user_id} has reached ${current_cost:.2f} (${limit:.2f} limit)")
+    def cost_alert_callback(
+        user_id: str,
+        total_cost: float,
+        cost_percentage: float,
+        alert_level: str,
+        threshold: int,
+        daily_limit: float,
+    ):
+        print(
+            f"{alert_level}: {user_id} has reached {cost_percentage:.1f}% "
+            f"of the ${daily_limit:.2f} daily limit (${total_cost:.2f}; {threshold}% threshold)"
+        )
 
-    # Initialize logger with alerts
+    # The current logger checks at 80% and 100% of the daily limit.
+    # Enable cost tracking in the environment to activate these checks.
     logger = UsageLogger(
-        log_to_file=True,
+        log_to_file=False,
         daily_cost_limit=10.0,
-        alert_threshold=0.8,
         alert_callback=cost_alert_callback
+    )
+
+    # Feed a synthetic record to demonstrate the callback; this makes no model call.
+    logger.log_usage(
+        user_id="example-user",
+        cost=8.50,
+        model_name="example-model",
+        usage_metadata={
+            "input_tokens": 1000,
+            "output_tokens": 500,
+            "total_tokens": 1500,
+        },
     )
 
 Cost Reporting
@@ -168,7 +190,8 @@ Generate cost reports:
     print(f"Model breakdown: {summary['model_breakdown']}")
 
     # Get top users by cost
-    top_users = tracker.get_top_users_by_cost(limit=5)
+    reporter = CostReporter(tracker=tracker)
+    top_users = reporter.get_top_users_by_cost(limit=5)
     for user_data in top_users:
         print(f"User {user_data['user_id']}: ${user_data['total_cost']:.2f}")
 

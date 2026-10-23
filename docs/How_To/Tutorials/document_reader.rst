@@ -17,7 +17,7 @@ To create the PDF reader we will define four components:
 Install dependencies
 *********************
 
-Step 1. Install Python **v3.9** using your preferred installation method.
+Step 1. Install Python **3.10–3.13** using your preferred installation method. Sherpa currently requires Python 3.10 or newer and earlier than 3.14.
 
 Step 2. Create a folder for storing your tutorial code and PDF files:
 
@@ -41,11 +41,11 @@ Step 4: Install the Sherpa library.
 
     pip install sherpa_ai
 
-Step 5: install pdfminer.six for extracting text from PDF files and sentence-transformers for creating text embeddings:
+Step 5: install the packages used by this example: the LangChain community PDF/vector-store integrations, Chroma, Hydra, PDFMiner, and Sentence Transformers:
 
 .. code-block:: bash
 
-    pip install pdfminer.six sentence-transformers
+    pip install langchain-community chromadb hydra-core pdfminer.six sentence-transformers
 
 Define the custom action
 ************************
@@ -155,7 +155,7 @@ Create a file called `agent_config.yml` and add the following code:
 
 
     llm:  # Configuration for the llm, here we are using the OpenAI GPT-3.5-turbo model
-        _target_: langchain_community.chat_models.ChatOpenAI
+        _target_: langchain_openai.ChatOpenAI
         model_name: gpt-3.5-turbo
         temperature: 0
 
@@ -175,7 +175,7 @@ Create a file called `agent_config.yml` and add the following code:
         shared_memory: ${shared_memory}
         name: QA Sherpa
         description: You are a question answering assistant helping users to find answers to their questions. Based on the input question, you will provide the answer from the text ONLY.
-        agent_config: ${agent_config}
+        config: ${agent_config}
         num_runs: 1
         actions:
             - ${doc_search}
@@ -232,7 +232,7 @@ Now, let's put everything together to create the PDF reader. Create a file calle
         config = OmegaConf.load(config_path)
 
         agent_config = instantiate(config.agent_config)
-        qa_agent: QAAgent = instantiate(config.qa_agent, agent_config=agent_config)
+        qa_agent: QAAgent = instantiate(config.qa_agent, config=agent_config)
 
         return qa_agent
 
@@ -335,7 +335,7 @@ The final `qa_agent` section should look like this:
         shared_memory: ${shared_memory}
         name: QA Sherpa
         description: You are a question-answering assistant helping users to find answers based on the document. For each question, first try to collect relevant information by DocumentSearch. Then, use Google Search to find the answer in the next step.
-        agent_config: ${agent_config}
+        config: ${agent_config}
         num_runs: 2
         validation_steps: 1
         actions:
