@@ -18,7 +18,7 @@ The demo showcases seven Sherpa actions working together for blueprint operation
 Install Dependencies
 -------------------
 
-Step 1. Install Python 3.9+ and create a project folder:
+Step 1. Install Python 3.10–3.13 (Sherpa currently requires Python 3.10 or newer and earlier than 3.14) and create a project folder:
 
 .. code-block:: bash
 
@@ -26,14 +26,13 @@ Step 1. Install Python 3.9+ and create a project folder:
    mkdir sherpa_blueprint_parser
    cd sherpa_blueprint_parser
 
-Step 2. Install Sherpa and dependencies:
+Step 2. Download all files from the `demo/blueprint_parser_creator <https://github.com/Aggregate-Intellect/sherpa/tree/main/demo/blueprint_parser_creator>`_ directory into your project folder, including ``requirements.txt``.
+
+Step 3. Install the demo's dependencies from that folder:
 
 .. code-block:: bash
 
-   poetry install
    pip install -r requirements.txt
-
-Step 3. Download files from the `demo/blueprint_parser_creator <https://github.com/Aggregate-Intellect/sherpa/tree/main/demo/blueprint_parser_creator>`_ directory.
 
 Step 4. Set up environment variables:
 

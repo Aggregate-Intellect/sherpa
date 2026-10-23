@@ -115,7 +115,7 @@ can utilize the hierarchical ability in Sherpa’s state management:
     :width: 600
 
 Notice that now ``QA`` is a container state that contains two states
-``Thinking`` and ``Clarification``. And ``Retrievel_belief`` transition
+``Thinking`` and ``Clarification``. And ``Retrieve_belief`` transition
 can happen in either the two sub states.
 
 Sometimes if we give too much freedom to the agent, it may not perform
@@ -152,10 +152,9 @@ Now, let’s implement an agent on this state machine using Sherpa.
 
 In ``actions.py``, we defined some actions that are useful to happen
 during transitions from one state to another. With the help of
-``pytransition``, we can define the above transition as a ``JSON``
-object in ``states.py``:
+``pytransition``, we can define the above transition as Python objects in ``states.py``:
 
-.. code:: json
+.. code:: python
 
    states = [
        "Start",
@@ -213,7 +212,7 @@ object in ``states.py``:
 
 In this example, we use Sherpa’s default policy (ReAct) to navigate the
 state machine. Now, let’s run ``main.py`` and then we can start asking
-quesitons::
+questions::
 
     U: What is the distance between city A and city B
     Sherpa:
@@ -226,7 +225,7 @@ quesitons::
         * Ask_for_clarification: Could you please specify the second city B you are referring to? (QA.Clarification -> QA.Clarified)
     U: City B is Beijing
     Sherpa:
-        * Update_belief: {"cityA": "Beijing"} (QA.Clarified -> QA.Clarification)
+        * Update_belief: {"cityB": "Beijing"} (QA.Clarified -> QA.Clarification)
         * Finish_clarification (QA.Clarification -> QA.Thinking)
         * Answer_question: The distance between Toronto and Beijing is approximately 6,300 kilometers (3,900 miles) when measured in a straight line. (QA.Thinking -> Waiting)
 

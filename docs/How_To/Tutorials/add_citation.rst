@@ -17,10 +17,10 @@ First add the citation validation in the configuration of the agent if it is not
 .. code-block:: yaml
 
     citation_validation:  # The tool used to validate and add citation to the answer
-    _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
-    sequence_threshold: 0.6
-    jaccard_threshold: 0.6
-    token_overlap: 0.6
+        _target_: sherpa_ai.output_parsers.citation_validation.CitationValidation
+        sequence_threshold: 0.6
+        jaccard_threshold: 0.6
+        token_overlap: 0.6
 
 Then, add the citation validation step to the validations available in the agent:
 
